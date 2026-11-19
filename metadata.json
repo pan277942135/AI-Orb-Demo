@@ -1,0 +1,6 @@
+{
+  "name": "AI Orb",
+  "description": "Real-time GPU 3D active AI Orb visual demo with liquid glass refraction, inner volumetric fluid caustics, 3D orbiting ribbons, energy flares, and optical post-processing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
