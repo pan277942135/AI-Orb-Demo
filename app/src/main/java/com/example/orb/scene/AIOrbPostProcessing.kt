@@ -130,19 +130,24 @@ class AIOrbPostProcessing {
     GLES30.glDisable(GLES30.GL_BLEND)
     GLES30.glDisable(GLES30.GL_CULL_FACE)
 
-    // 1. Strict linear HDR bright-pass extraction (> 1.12 linear HDR only!)
+    val bloomDisabled = config.debugMode == com.example.orb.config.RenderDebugMode.BLOOM_OFF ||
+      config.debugMode == com.example.orb.config.RenderDebugMode.DEPTH_DEBUG ||
+      config.debugMode == com.example.orb.config.RenderDebugMode.FLUID_FLOW ||
+      config.debugMode == com.example.orb.config.RenderDebugMode.MENISCUS_DEBUG
+
+    // 1. Strict linear HDR bright-pass extraction (> 1.32 linear HDR only — zero diffuse bloom wash!)
     ping.bind()
     extractProg.use()
     GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
     GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, src.colorTexId)
     extractProg.setInt("uSceneTex", 0)
-    extractProg.setFloat("uThreshold", 1.12f)
-    extractProg.setFloat("uKnee", 0.22f)
+    extractProg.setFloat("uThreshold", 1.32f)
+    extractProg.setFloat("uKnee", 0.24f)
     extractProg.setFloat("uHdrScale", scale)
     mesh.draw()
 
     // 2. Separable 9-tap Gaussian Blur iterations (ping <-> pong)
-    val iterations = config.quality.bloomIterations.coerceIn(1, 5)
+    val iterations = if (bloomDisabled) 1 else config.quality.bloomIterations.coerceIn(1, 5)
     blurProg.use()
     blurProg.setInt("uSourceTex", 0)
     val invW = 1.0f / ping.width.toFloat()
@@ -163,7 +168,7 @@ class AIOrbPostProcessing {
       mesh.draw()
     }
 
-    // 3. Final ACES Filmic Composite to screen framebuffer (0)
+    // 3. Final ACES Filmic + sRGB 2.2 Composite to screen framebuffer (0)
     GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
     GLES30.glViewport(0, 0, surfaceWidth, surfaceHeight)
     compProg.use()
@@ -173,9 +178,9 @@ class AIOrbPostProcessing {
     GLES30.glActiveTexture(GLES30.GL_TEXTURE1)
     GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, ping.colorTexId)
     compProg.setInt("uBloomTex", 1)
-    compProg.setFloat("uBloomStrength", config.bloom)
+    compProg.setFloat("uBloomStrength", if (bloomDisabled) 0f else config.bloom)
     compProg.setFloat("uOverallIntensity", config.overallIntensity)
-    compProg.setFloat("uChromaticAmount", 0.0042f * (0.45f + 0.55f * config.refraction))
+    compProg.setFloat("uChromaticAmount", if (bloomDisabled) 0f else 0.0038f * (0.45f + 0.55f * config.refraction))
     compProg.setFloat("uHdrScale", scale)
     mesh.draw()
 

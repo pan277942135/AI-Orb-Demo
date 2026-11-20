@@ -38,4 +38,10 @@
     <string name="param_particle_density">Particle Density</string>
     <string name="param_bloom">Bloom</string>
     <string name="param_overall_intensity">Overall Intensity</string>
+    <string name="section_qa">GPU &amp; Motion Diagnostics</string>
+    <string name="qa_isolate_core">Isolate Core Rotation</string>
+    <string name="qa_motion_overlay">Motion Telemetry Overlay</string>
+    <string name="qa_render_mode_label">GPU Diagnostic Render Mode</string>
+    <string name="qa_reference_only_badge">QA · REFERENCE_ONLY (STATIC MASTER)</string>
+    <string name="cd_reference_master">High-fidelity static reference master image</string>
 </resources>

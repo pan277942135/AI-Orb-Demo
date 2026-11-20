@@ -13,6 +13,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -54,6 +56,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -73,6 +76,7 @@ import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.orb.config.AIOrbConfig
 import com.example.orb.config.QualityTier
+import com.example.orb.config.RenderDebugMode
 import java.util.Locale
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
@@ -90,6 +94,7 @@ fun AIOrbControlsOverlay(
   onTogglePause: () -> Unit,
   onReset: () -> Unit,
   onSelectQuality: (QualityTier) -> Unit,
+  onSelectDebugMode: (RenderDebugMode) -> Unit = {},
   onOpenExportDialog: () -> Unit,
   onDismissExportDialog: () -> Unit,
   modifier: Modifier = Modifier,
@@ -111,6 +116,59 @@ fun AIOrbControlsOverlay(
       .navigationBarsPadding()
       .padding(14.dp),
   ) {
+    // Optional QA Motion Telemetry HUD (strictly OFF by default; only for QA rotation/perf checks)
+    if (uiState.config.showMotionOverlay) {
+      val tel = uiState.telemetry
+      Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.55f)),
+        modifier = Modifier
+          .align(Alignment.TopStart)
+          .testTag("motion_telemetry_overlay"),
+      ) {
+        Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
+          Text(
+            text = String.format(
+              Locale.US,
+              "%s · %s",
+              uiState.config.debugMode.name,
+              tel.renderingBackendLabel,
+            ),
+            style = MaterialTheme.typography.labelMedium,
+            color = if (tel.isSoftwareRenderer) {
+              MaterialTheme.colorScheme.secondary
+            } else {
+              MaterialTheme.colorScheme.primary
+            },
+          )
+          Text(
+            text = String.format(
+              Locale.US,
+              "CORE %.1f° (%.1f°/s) · %d FPS · P50 %.1fms · P95 %.1fms",
+              tel.coreAngleDeg,
+              tel.coreAngularVelDegPerSec,
+              tel.fps,
+              tel.frameMsP50,
+              tel.frameMsP95,
+            ),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+          )
+          Text(
+            text = "FBO: ${tel.fboFormatLabel} · ${tel.glVendor} / ${tel.glRenderer}",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
+          Text(
+            text = "${tel.glVersion} · EGL ${tel.eglVersion}",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
+        }
+      }
+    }
+
     // Subtle collapsed icon button in top-right corner
     AnimatedVisibility(
       visible = !uiState.isControlsExpanded,
@@ -155,6 +213,7 @@ fun AIOrbControlsOverlay(
         onTogglePause = onTogglePause,
         onReset = onReset,
         onSelectQuality = onSelectQuality,
+        onSelectDebugMode = onSelectDebugMode,
         onOpenExportDialog = onOpenExportDialog,
       )
     }
@@ -230,6 +289,7 @@ fun AIOrbControlsOverlay(
   }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DebugControlPanel(
   uiState: AIOrbUiState,
@@ -238,6 +298,7 @@ private fun DebugControlPanel(
   onTogglePause: () -> Unit,
   onReset: () -> Unit,
   onSelectQuality: (QualityTier) -> Unit,
+  onSelectDebugMode: (RenderDebugMode) -> Unit,
   onOpenExportDialog: () -> Unit,
 ) {
   val cfg = uiState.config
@@ -534,6 +595,133 @@ private fun DebugControlPanel(
           testTag = "slider_overall_intensity",
           onValueChange = { v -> onUpdateConfig { it.copy(overallIntensity = v) } },
         )
+
+        SectionHeader(stringResource(R.string.section_qa))
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.SpaceBetween,
+          modifier = Modifier.fillMaxWidth(),
+        ) {
+          Text(
+            text = stringResource(R.string.qa_isolate_core),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+          )
+          Switch(
+            checked = cfg.isolateCoreDebug,
+            onCheckedChange = { checked -> onUpdateConfig { it.copy(isolateCoreDebug = checked) } },
+            modifier = Modifier.testTag("switch_isolate_core"),
+          )
+        }
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.SpaceBetween,
+          modifier = Modifier.fillMaxWidth(),
+        ) {
+          Text(
+            text = stringResource(R.string.qa_motion_overlay),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+          )
+          Switch(
+            checked = cfg.showMotionOverlay,
+            onCheckedChange = { checked -> onUpdateConfig { it.copy(showMotionOverlay = checked) } },
+            modifier = Modifier.testTag("switch_motion_overlay"),
+          )
+        }
+
+        Spacer(Modifier.height(4.dp))
+        Text(
+          text = stringResource(R.string.qa_render_mode_label),
+          style = MaterialTheme.typography.labelMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        FlowRow(
+          horizontalArrangement = Arrangement.spacedBy(6.dp),
+          verticalArrangement = Arrangement.spacedBy(2.dp),
+          modifier = Modifier.fillMaxWidth(),
+        ) {
+          RenderDebugMode.entries.forEach { mode ->
+            FilterChip(
+              selected = cfg.debugMode == mode,
+              onClick = { onSelectDebugMode(mode) },
+              label = {
+                Text(
+                  text = mode.displayLabel,
+                  style = MaterialTheme.typography.labelSmall,
+                )
+              },
+              colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.24f),
+                selectedLabelColor = MaterialTheme.colorScheme.secondary,
+              ),
+              modifier = Modifier.testTag("debug_mode_${mode.name.lowercase(Locale.US)}_chip"),
+            )
+          }
+        }
+
+        // Compact GPU Runtime Info card (GL/EGL/FBO/HW-vs-SW/FPS/P50/P95/Mode)
+        Spacer(Modifier.height(6.dp))
+        val tel = uiState.telemetry
+        Surface(
+          shape = RoundedCornerShape(10.dp),
+          color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f),
+          border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)),
+          modifier = Modifier
+            .fillMaxWidth()
+            .testTag("gpu_runtime_info_card"),
+        ) {
+          Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier.padding(10.dp),
+          ) {
+            Text(
+              text = "GPU RUNTIME · ${tel.renderingBackendLabel}",
+              style = MaterialTheme.typography.labelMedium,
+              color = if (tel.isSoftwareRenderer) {
+                MaterialTheme.colorScheme.secondary
+              } else {
+                MaterialTheme.colorScheme.primary
+              },
+            )
+            Text(
+              text = "Mode: ${cfg.debugMode.name}  |  FBO: ${tel.fboFormatLabel}",
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+              text = String.format(
+                Locale.US,
+                "Perf: %d FPS  |  P50 %.1f ms  |  P95 %.1f ms",
+                tel.fps,
+                tel.frameMsP50,
+                tel.frameMsP95,
+              ),
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+              text = "GL_VENDOR: ${tel.glVendor}",
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+              text = "GL_RENDERER: ${tel.glRenderer}",
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+              text = "GL_VERSION: ${tel.glVersion}",
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+              text = "EGL_VERSION: ${tel.eglVersion}",
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+          }
+        }
       }
     }
   }

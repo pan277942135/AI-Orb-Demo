@@ -290,15 +290,16 @@ object OrbGeometryBuilder {
       val crossDir = (baseB * ct + baseN * st).normalized()
       val surfNormal = (baseN * ct - baseB * st).normalized()
 
-      // Smooth organic width modulation + graceful tapered tips for open silk ribbons
+      // Smooth organic width modulation: pinched-and-flared botanical leaf profile for open silk ribbons
       val taper = if (taperEnds) {
-        val fadeIn = (u / 0.14f).coerceIn(0f, 1f)
-        val fadeOut = ((1f - u) / 0.16f).coerceIn(0f, 1f)
+        val fadeIn = (u / 0.16f).coerceIn(0f, 1f)
+        val fadeOut = ((1f - u) / 0.22f).coerceIn(0f, 1f)
         val sIn = fadeIn * fadeIn * (3f - 2f * fadeIn)
         val sOut = fadeOut * fadeOut * (3f - 2f * fadeOut)
-        sIn * sOut
+        val leafPinch = 0.64f + 0.36f * sin(u * PI.toFloat() * 3.0f + 0.45f)
+        sIn * sOut * leafPinch
       } else {
-        0.78f + 0.22f * sin(u * 2f * PI.toFloat() * 2f + 0.7f)
+        0.74f + 0.26f * sin(u * 2f * PI.toFloat() * 2f + 0.7f)
       }
       val localHalfW = halfWidth * taper
 

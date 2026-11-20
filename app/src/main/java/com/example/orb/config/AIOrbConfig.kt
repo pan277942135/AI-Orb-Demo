@@ -9,6 +9,7 @@ enum class QualityTier(
   val fluidSubdivisions: Int,
   val ribbonSegments: Int,
   val bloomIterations: Int,
+  val raymarchSteps: Int,
 ) {
   LOW(
     displayName = "Low",
@@ -17,6 +18,7 @@ enum class QualityTier(
     fluidSubdivisions = 2,
     ribbonSegments = 72,
     bloomIterations = 2,
+    raymarchSteps = 12,
   ),
   MEDIUM(
     displayName = "Medium",
@@ -25,6 +27,7 @@ enum class QualityTier(
     fluidSubdivisions = 3,
     ribbonSegments = 104,
     bloomIterations = 3,
+    raymarchSteps = 16,
   ),
   HIGH(
     displayName = "High",
@@ -33,36 +36,87 @@ enum class QualityTier(
     fluidSubdivisions = 3,
     ribbonSegments = 128,
     bloomIterations = 4,
+    raymarchSteps = 20,
   ),
 }
 
 /**
- * Centralized, immutable configuration contract for the AI Orb Active State renderer.
- * Designed to be UI-agnostic and portable across Android GPU rendering pipelines.
+ * Production-pipeline GPU diagnostic & isolation modes (Sections 4.3 & XVII).
+ * Every GPU diagnostic mode executes the real production shaders and render passes —
+ * never a parallel fake shader. `REFERENCE_ONLY` is strictly an isolated QA image viewer
+ * and is never composited with `GPU_ONLY` or `FULL_RENDER`.
+ */
+enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
+  FULL_RENDER(0, "Full Render"),
+  GPU_ONLY(0, "GPU Only"),
+  REFERENCE_ONLY(0, "Reference Only"),
+  CORE_ONLY(0, "Core Only"),
+  CORE_ROTATION_ONLY(0, "Core Rotation"),
+  FLUID_DENSITY(1, "Fluid Density"),
+  FLUID_FLOW(2, "Fluid Flow"),
+  MENISCUS_DEBUG(3, "Meniscus"),
+  CAUSTICS_ONLY(4, "Caustics Only"),
+  GLASS_ONLY(5, "Glass Only"),
+  RIBBONS_ONLY(0, "Ribbons Only"),
+  OPTICS_ONLY(0, "Optics Only"),
+  DEPTH_DEBUG(6, "Depth Debug"),
+  BLOOM_OFF(0, "Bloom Off"),
+  ;
+
+  val isCoreIsolated: Boolean
+    get() = this == CORE_ROTATION_ONLY ||
+      this == CORE_ONLY ||
+      this == FLUID_DENSITY ||
+      this == FLUID_FLOW ||
+      this == MENISCUS_DEBUG ||
+      this == CAUSTICS_ONLY ||
+      this == GLASS_ONLY
+
+  val locksCameraAndOuterShell: Boolean
+    get() = this == CORE_ROTATION_ONLY
+}
+
+/**
+ * Centralized, immutable configuration contract for AI Orb Active State V2.
+ * UI-agnostic and portable across Android OpenGL ES 3.0 rendering pipelines.
  */
 data class AIOrbConfig(
   val coreScale: Float = 1.0f,
-  val coreTransparency: Float = 0.88f,
-  val refraction: Float = 0.72f,
+  val coreTransparency: Float = 0.90f,
+  val refraction: Float = 0.76f,
   val fluidSpeed: Float = 1.0f,
   val fluidIntensity: Float = 1.08f,
   val ribbonCount: Int = 8,
   val ribbonWidth: Float = 1.0f,
   val ribbonSpeed: Float = 1.0f,
-  val ribbonTransparency: Float = 0.84f,
-  val energyIntensity: Float = 1.08f,
-  val particleDensity: Float = 0.90f,
-  val bloom: Float = 0.54f,
+  val ribbonTransparency: Float = 0.86f,
+  val energyIntensity: Float = 0.92f,
+  val particleDensity: Float = 0.88f,
+  val bloom: Float = 0.38f,
   val overallIntensity: Float = 1.0f,
   val quality: QualityTier = QualityTier.HIGH,
   val isPaused: Boolean = false,
+  // QA diagnostic options (strictly OFF / FULL_RENDER by default; never affect formal active visuals)
+  val isolateCoreDebug: Boolean = false,
+  val showMotionOverlay: Boolean = false,
+  val debugMode: RenderDebugMode = RenderDebugMode.FULL_RENDER,
 ) {
+  /** Effective core-rotation lock flag honoring both legacy switch and explicit RenderDebugMode. */
+  val effectiveLockCoreRotation: Boolean
+    get() = isolateCoreDebug || debugMode.locksCameraAndOuterShell
+
+  /** Effective flag hiding outer ribbons/particles for core-focused QA modes. */
+  val effectiveHideOuterOrbitals: Boolean
+    get() = isolateCoreDebug || debugMode.isCoreIsolated
+
   fun toJson(): String {
     fun f(v: Float): String = String.format(Locale.US, "%.3f", v)
     return buildString {
       appendLine("{")
       appendLine("  \"schema\": \"AI_ORB_ACTIVE_STATE_VISUAL_DEMO_V1\",")
+      appendLine("  \"version\": \"V2_FULL_VISUAL_RESTORE\",")
       appendLine("  \"state\": \"AI_ORB_ACTIVE\",")
+      appendLine("  \"renderMode\": \"${debugMode.name}\",")
       appendLine("  \"coreScale\": ${f(coreScale)},")
       appendLine("  \"coreTransparency\": ${f(coreTransparency)},")
       appendLine("  \"refraction\": ${f(refraction)},")
@@ -84,6 +138,7 @@ data class AIOrbConfig(
   companion object {
     const val MIN_RIBBON_COUNT = 2
     const val MAX_RIBBON_COUNT = 10
+    const val CANONICAL_RESIDENT_COUNT = 5
     val Default = AIOrbConfig()
   }
 }

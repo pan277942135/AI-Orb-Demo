@@ -16,22 +16,20 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.orb.config.AIOrbConfig
 import com.example.orb.scene.AIOrbScene
+import com.example.orb.scene.AIOrbTelemetry
 
 /**
  * Composable host for the OpenGL ES 3.0 AIOrbScene renderer.
- * - Decouples the continuous GPU animation clock from Jetpack Compose recomposition.
- * - Handles Activity pause/resume & EGL context preservation cleanly.
- * - Supports subtle drag-to-inspect 3D orbit that springs back to hero framing on release.
  */
 @Composable
 fun AIOrbCanvas(
   config: AIOrbConfig,
-  onFpsUpdated: (Int) -> Unit,
+  onTelemetryUpdated: (AIOrbTelemetry) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   val lifecycleOwner = LocalLifecycleOwner.current
   val renderer = remember {
-    AIOrbScene(initialConfig = config, onFpsUpdated = onFpsUpdated)
+    AIOrbScene(initialConfig = config, onTelemetryUpdated = onTelemetryUpdated)
   }
 
   LaunchedEffect(config) {

@@ -76,6 +76,11 @@ class GlShaderProgram(vertexSrc: String, fragmentSrc: String, val label: String)
     if (loc >= 0) GLES30.glUniform4f(loc, x, y, z, w)
   }
 
+  fun setMat3(name: String, mat: FloatArray) {
+    val loc = uniformLocation(name)
+    if (loc >= 0) GLES30.glUniformMatrix3fv(loc, 1, false, mat, 0)
+  }
+
   fun setMat4(name: String, mat: FloatArray) {
     val loc = uniformLocation(name)
     if (loc >= 0) GLES30.glUniformMatrix4fv(loc, 1, false, mat, 0)

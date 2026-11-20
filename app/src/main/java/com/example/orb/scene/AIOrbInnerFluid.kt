@@ -7,13 +7,12 @@ import com.example.orb.geometry.OrbGeometryBuilder
 import com.example.orb.gl.CoreFluidShaders
 import com.example.orb.gl.GlMesh
 import com.example.orb.gl.GlShaderProgram
-import kotlin.math.sin
 
 /**
- * Renders the concave back inner liquid bowl of the crystal sphere (front faces culled!).
- * This establishes deep dark sapphire-teal optical depth, swirling emerald-jade interior
- * wall curtains, and backlit lower underwater caustics captured into the refraction FBO
- * without washing out the front hemisphere.
+ * Renders the concave inner back-wall liquid bowl (front faces culled) locked strictly
+ * to the unified [AIOrbMotionSnapshot] coordinate frame (`outerGlassModelMatrix` + `coreRotationMat3`).
+ * Eliminates independent bowl-vs-core rotation drift so back-wall emerald folds, meniscus,
+ * and volumetric underwater caustics move in 100% spatial lockstep.
  */
 class AIOrbInnerFluid {
   private var program: GlShaderProgram? = null
@@ -44,11 +43,10 @@ class AIOrbInnerFluid {
   }
 
   fun draw(
-    baseModel: FloatArray,
+    outerGlassModel: FloatArray,
     viewMatrix: FloatArray,
     projMatrix: FloatArray,
-    cameraPos: FloatArray,
-    time: Float,
+    motion: AIOrbMotionSnapshot,
     hdrScale: Float,
     config: AIOrbConfig,
   ) {
@@ -58,25 +56,23 @@ class AIOrbInnerFluid {
     GLES30.glEnable(GLES30.GL_DEPTH_TEST)
     GLES30.glDepthFunc(GLES30.GL_LEQUAL)
     GLES30.glDepthMask(false)
-    // Cull FRONT faces so only the concave inner back wall of the crystal liquid bowl renders
     GLES30.glEnable(GLES30.GL_CULL_FACE)
     GLES30.glCullFace(GLES30.GL_FRONT)
     GLES30.glEnable(GLES30.GL_BLEND)
     GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA)
 
-    val fluidT = time * config.fluidSpeed
-    System.arraycopy(baseModel, 0, bowlModel, 0, 16)
-    Matrix.rotateM(bowlModel, 0, fluidT * 5.4f, 0f, 1f, 0f)
-    Matrix.rotateM(bowlModel, 0, sin(fluidT * 0.24f) * 7.5f, 1f, 0f, 0f)
-    Matrix.scaleM(bowlModel, 0, 0.945f, 0.945f, 0.945f)
+    // Locked directly to outerGlassModel (no conflicting ad-hoc rotation!)
+    System.arraycopy(outerGlassModel, 0, bowlModel, 0, 16)
+    Matrix.scaleM(bowlModel, 0, 0.948f, 0.948f, 0.948f)
 
     prog.use()
     prog.setMat4("uModel", bowlModel)
     prog.setMat4("uView", viewMatrix)
     prog.setMat4("uProj", projMatrix)
-    prog.setVec3("uCameraPos", cameraPos)
-    prog.setFloat("uTime", time)
-    prog.setFloat("uFluidSpeed", config.fluidSpeed)
+    prog.setMat3("uCoreRotMat", motion.coreRotationMat3)
+    prog.setFloat("uFluidPhase", motion.fluidPhase)
+    prog.setFloat("uMeniscusPhase", motion.meniscusPhase)
+    prog.setFloat("uCausticsPhase", motion.causticsPhase)
     prog.setFloat("uFluidIntensity", config.fluidIntensity)
     prog.setFloat("uCoreTransparency", config.coreTransparency)
     prog.setFloat("uOverallIntensity", config.overallIntensity)

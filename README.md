@@ -1,52 +1,34 @@
-# AI Orb Active State — Real-Time 3D GPU Rendering Demo V1
+# AI Orb — High-Fidelity Real-Time 3D Liquid-Glass Active State Demo (V2 Core Rebuild)
 
-**Task ID:** `AI_ORB_ACTIVE_STATE_VISUAL_DEMO_V1`
+Standalone Android real-time GPU visual experiment implementing a luminous, refractive 3D liquid-glass AI Orb suspended in deep emerald-teal space, with unmistakable tilted-axis 3D internal liquid self-rotation, exact bisected meniscus raymarching, coupled underwater caustics, and separated Resident vs. Secondary orbital ribbons.
 
-Standalone real-time OpenGL ES 3.0 + GLSL ES 3.00 + Jetpack Compose 3D visual experiment implementing a transparent liquid-glass energy orb suspended in deep emerald-teal space.
+## Architecture Overview (V2 Core Rebuild)
 
-## Architecture & Reusable Visual Modules
+- **Unified Motion System (`AIOrbMotionController`)**:
+  - Single monotonic simulation clock (`simTimeSec`) with midpoint integration so 60 FPS and 20 FPS trajectories stay consistent and Pause/Resume freezes/continues seamlessly with zero jumps.
+  - **Calm Outer Glass Shell**: Subtle organic breathing and slow sway (`<= 3.2°`), never faking rotation by spinning the outer sphere or camera.
+  - **Unmistakable Internal Liquid Core Rotation**: Continuous `~26°/s` tilted-axis (`(0.24, 0.94, -0.22)`) 3D rotation matrix (`uCoreRotMat`) shared identically by the concave inner back-wall bowl (`AIOrbInnerFluid`), raymarched fluid volume (`AIOrbCore`), meniscus advection, and underwater caustics.
+- **Mathematical Reference Mirror (`AIOrbFluidMath`)**:
+  - Pure-Kotlin mirror of GLSL `invSmoothstep`, `advectFluidPos`, `meniscusHeight`, `findMeniscusIntersection`, and `beerLambertTransmittance` enabling deterministic JVM verification.
+- **High-Fidelity Optical Shaders (`CoreFluidShaders`, `RibbonOpticsShaders`)**:
+  - **Zero GLSL ES 3.00 §8.3 UB**: Every inverted transition uses `invSmoothstep(lo, hi, x)` (`lo < hi`), eliminating all 13 legacy inverted `smoothstep` calls.
+  - **Exact Bisected Meniscus Solver**: Bracketed `[prevT, currT]` sampling, signed crossing interpolation valid for both downward (`air -> water`) and upward (`water -> air`) crossings, 3-step binary bisection refinement, quality-adaptive step count (`LOW=12`, `MEDIUM=16`, `HIGH=20`), and early transmittance termination (`< 0.03`).
+  - **Double-Wall Crystal Shell & Linear HDR Pipeline**: Real FBO refraction with Cauchy RGB chromatic dispersion, energy-conserving speculars, and linear `uHdrScale` (`1.0f` on `RGBA16F`, `0.25f` on `RGBA8`) keeping `GL_BLEND` and Bloom (`1.12` threshold) linear on all GPUs.
+- **Separated Orbital Ribbons (`AIOrbOrbitRibbons`)**:
+  - Cleanly distinguishes **5 Canonical `RESIDENT`** orbital ribbons (`0..4`) from **5 `SECONDARY_OPTICAL`** filaments & accent streams (`5..9`), all alpha-blended with `fwidth` anti-aliasing and frustum-adaptive portrait/landscape camera framing.
+- **Collapsible Debug & Optional QA Diagnostics (`AIOrbControls`)**:
+  - Launches strictly collapsed to a pure full-bleed 3D canvas. Expanding the top-right controls exposes live FPS, Pause/Resume, Quality tiers (`Low`/`Medium`/`High`), real-time sliders, JSON preset export, and optional QA switches (`Isolate Core Rotation`, `Motion Telemetry Overlay`, both OFF by default).
 
-All visual subsystems are decoupled from UI state and driven by a single continuous monotonic clock inside `AIOrbScene`:
+## Running Automated Verification
 
-| Module | Role | Inputs | Outputs / Dependencies |
-|---|---|---|---|
-| `AIOrbConfig` | Centralized visual contract + JSON export | UI state / presets | Immutable `AIOrbConfig` + `QualityTier` |
-| `AIOrbLighting` | Directional key, warm amber rim, cool cyan rim, emerald fill | Uniform upload target | `GlShaderProgram` lighting uniforms |
-| `AIOrbBackground` | Deep emerald-teal space + soft out-of-focus bokeh | `time`, `resolution`, `parallax`, `config` | Fullscreen backdrop into `sceneFbo` |
-| `AIOrbInnerFluid` | 3 nested volumetric fluid shells (3D Simplex Noise, Domain Warping, meniscus wave, underwater caustics) | `orbModel`, `view/proj`, `time`, `config` | Layered translucent fluid inside orb |
-| `AIOrbCore` | Outer liquid-glass geodesic icosphere with real FBO refraction, RGB chromatic dispersion, dual-wall Fresnel, GGX specular | `refractionTexId`, `orbModel`, `lighting`, `config` | Refracted glass shell + accurate depth write |
-| `AIOrbOrbitRibbons` | 10 sculpted 3D Catmull-Rom swept ribbons & fine filaments (Liquid-Glass Ice/Gold, Silky Jade-Emerald, Gossamer Threads) | `clipPass (back/front)`, `time`, `config` | Depth-occluded 3D ribbons + `evaluateWorldPoint()` |
-| `AIOrbEnergyHighlights` | Travelling amber-gold & ice-cyan optical starburst flares locked to moving ribbon curves | `AIOrbOrbitRibbons`, `clipPass`, `time`, `config` | Additive HDR diffraction flares |
-| `AIOrbParticles` | 3D sphere-impostor translucent glass droplets + sparse floating luminous micro-motes | `clipPass`, `time`, `config` | Depth-parallax bubbles & dust motes |
-| `AIOrbPostProcessing` | Multi-pass HDR FBO (`RGBA16F` with automatic `RGBA8` fallback), refraction capture blit, soft-knee bloom pyramid, ACES Filmic tone mapping, vignette | `sceneFbo`, `config` | Final tone-mapped frame to screen |
-| `AIOrbScene` | `GLSurfaceView.Renderer` orchestrating the 10-pass optical pipeline, drag-orbit inspection, and FPS telemetry | `AIOrbConfig` | Continuous 60 FPS GPU rendering |
-| `AIOrbControls` | Collapsible top-right Material 3 Debug Controls panel (collapsed by default) | `AIOrbUiState` | Real-time parameter updates, Pause/Resume, Reset, Export JSON |
+```bash
+gradle :app:testDebugUnitTest
+gradle :app:assembleDebug
+```
 
-## Multi-Pass Optical Rendering Order
-
-1. `AIOrbBackground` — Deep emerald-teal atmospheric backdrop & bokeh
-2. `AIOrbParticles` (Back) — Far bubbles & motes behind the orb
-3. `AIOrbOrbitRibbons` (Back) — Ribbon segments behind the orb center plane
-4. `AIOrbEnergyHighlights` (Back) — Back-hemisphere travelling flares
-5. `AIOrbInnerFluid` — 3 nested volumetric fluid & underwater caustic shells
-6. **Refraction Capture (`glBlitFramebuffer`)** — Captures passes 1–5 into `refractionFbo`
-7. `AIOrbCore` — Outer liquid-glass shell refracting `refractionFbo` with RGB dispersion and writing displaced sphere depth
-8. `AIOrbOrbitRibbons` (Front) — Front ribbon segments hardware depth-tested against `AIOrbCore`
-9. `AIOrbEnergyHighlights` (Front) & `AIOrbParticles` (Front)
-10. `AIOrbPostProcessing` — Controlled threshold Gaussian bloom + ACES Filmic tone mapping + radial chromatic dispersion + subtle vignette
-
-## Real-Time Parameters
-
-All 14 parameters update live without pausing the GPU clock and can be exported as formatted JSON:
-
-- **Core**: `coreScale`, `coreTransparency`, `refraction`
-- **Inner Fluid**: `fluidSpeed`, `fluidIntensity`
-- **Orbiting Ribbons**: `ribbonCount` (2–10), `ribbonWidth`, `ribbonSpeed`, `ribbonTransparency`
-- **Optics & Quality**: `energyIntensity`, `particleDensity`, `bloom`, `overallIntensity`, `quality` (`LOW`, `MEDIUM`, `HIGH`)
-
-## Referenced Open-Source Graphics Techniques
-
-- **Liquid Glass Refraction & Chromatic Dispersion** (inspired by `threejs-liquid-glass-orb` FBO transmission & Ashima/Gustavson 3D Simplex Noise): Re-implemented natively in GLSL ES 3.00 with GPU framebuffer blit refraction, Cauchy RGB UV offset, and finite-difference displaced normals.
-- **Volumetric Water & Procedural Caustics** (inspired by `0s0ka/sea` multi-pass thickness/caustics): Re-implemented as 3 nested geodesic fluid shells using 2-stage Domain Warping and dual-octave ridge caustics.
-- **Parallel-Transport 3D Ribbon Sweeps & Organic Orbital Motion** (inspired by `webgl-shader-lab` & `r3f-orbital-visualizer`): Re-implemented in pure Kotlin (`OrbGeometryBuilder`) using Bishop parallel-transport frames on Catmull-Rom splines plus continuous GPU wave morphing.
-- **ACES Filmic Tone Mapping**: Standard Krzysztof Narkowicz analytical approximation in `RibbonOpticsShaders.COMPOSITE_FRAG`.
+Test suites in `app/src/test/java/com/example/`:
+- `AIOrbMotionTest.kt` — Orthogonality, analytical inverse matrix, Pause/Resume, 60 vs 20 FPS consistency, calm shell vs rotating core separation.
+- `AIOrbFluidMathTest.kt` — 3D rotational advection continuity, downward & upward bisected meniscus residual precision, NaN safety, Beer-Lambert spectral decay.
+- `AIOrbShaderContractTest.kt` — GLSL ES 3.00 header/syntax audit, zero inverted `smoothstep` scanner, shared uniform contracts, HDR scale parity, 5 Resident vs 5 Secondary ribbon separation.
+- `AIOrbIntegrationRobolectricTest.kt` — Robolectric + Compose UI CUJ verification.
+- `AIOrbConfigTest.kt` — Config JSON export, ViewModel reset, Catmull-Rom spline continuity.

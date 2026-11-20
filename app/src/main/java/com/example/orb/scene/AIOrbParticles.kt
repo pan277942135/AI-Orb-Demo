@@ -28,7 +28,7 @@ private data class OrbParticle(
 
 /**
  * Renders crisp 3D ray-shaded refractive glass water droplets (bubbles) and
- * sparse suspended luminous micro-motes tightly distributed within the active framing zone.
+ * sparse suspended luminous micro-motes driven by [AIOrbMotionSnapshot].
  */
 class AIOrbParticles {
   private var program: GlShaderProgram? = null
@@ -52,7 +52,7 @@ class AIOrbParticles {
     orbCenterViewZ: Float,
     viewMatrix: FloatArray,
     projMatrix: FloatArray,
-    time: Float,
+    motion: AIOrbMotionSnapshot,
     hdrScale: Float,
     config: AIOrbConfig,
   ) {
@@ -74,6 +74,7 @@ class AIOrbParticles {
     val activeCount = ((particles.size * (config.particleDensity / 1.5f)).toInt())
       .coerceIn(0, particles.size)
     val scaleRadial = 0.35f + 0.65f * config.coreScale
+    val time = motion.secondaryOpticsPhase
 
     for (i in 0 until activeCount) {
       val p = particles[i]
@@ -131,13 +132,12 @@ class AIOrbParticles {
       val list = ArrayList<OrbParticle>(54)
 
       val tints = arrayOf(
-        floatArrayOf(0.45f, 0.94f, 1.05f), // Crystal Ice-Cyan
-        floatArrayOf(1.15f, 0.82f, 0.34f), // Champagne Gold
-        floatArrayOf(0.44f, 0.86f, 0.48f), // Emerald Mint
-        floatArrayOf(0.92f, 0.98f, 1.00f), // Pure Specular White
+        floatArrayOf(0.45f, 0.94f, 1.05f),
+        floatArrayOf(1.15f, 0.82f, 0.34f),
+        floatArrayOf(0.44f, 0.86f, 0.48f),
+        floatArrayOf(0.92f, 0.98f, 1.00f),
       )
 
-      // 18 hero 3D crystal water droplets tightly orbiting inside visible framing zone (1.16..1.58)
       repeat(18) { idx ->
         val radius = when (idx % 3) {
           0 -> 1.16f + rng.nextFloat() * 0.18f
@@ -145,9 +145,9 @@ class AIOrbParticles {
           else -> 1.44f + rng.nextFloat() * 0.16f
         }
         val size = when {
-          idx < 6 -> 0.105f + rng.nextFloat() * 0.036f  // Crisp prominent crystal water drops
-          idx < 13 -> 0.068f + rng.nextFloat() * 0.032f // Medium bubbles
-          else -> 0.044f + rng.nextFloat() * 0.022f     // Small accent droplets
+          idx < 5 -> 0.068f + rng.nextFloat() * 0.022f
+          idx < 12 -> 0.044f + rng.nextFloat() * 0.020f
+          else -> 0.028f + rng.nextFloat() * 0.016f
         }
         val dir = if (idx % 2 == 0) 1f else -1f
         list.add(
@@ -167,7 +167,6 @@ class AIOrbParticles {
         )
       }
 
-      // 36 sparse, calm floating luminous micro-motes inside active depth space
       repeat(36) { idx ->
         val radius = 1.14f + rng.nextFloat() * 0.62f
         val dir = if (idx % 3 == 0) -1f else 1f

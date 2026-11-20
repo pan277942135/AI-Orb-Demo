@@ -1,16 +1,25 @@
 package com.example.orb.gl
 
 /**
- * V2 High-Fidelity GLSL ES 3.00 Shaders:
- * - Linear HDR range scaling (`uHdrScale`) so both RGBA16F and RGBA8 GPUs preserve full HDR headroom
- * - Deep emerald-teal atmospheric space + refined warm olive-gold & deep teal bokeh
- * - Concave inner back-wall emerald/cyan fluid bowl (`AIOrbInnerFluid`)
- * - Refracted-ray interior volume & 3D liquid meniscus raymarching + Beer-Lambert deep-water absorption
- *   + sharp cellular underwater caustics + double-wall blown crystal glass rim (`AIOrbCore`)
+ * V2 Full Visual Restoration GLSL ES 3.00 Shaders:
+ * - True Linear HDR pipeline paired with sRGB OETF in COMPOSITE_FRAG (eliminates crushed black backdrop)
+ * - Zero inverted smoothstep calls (strictly uses `invSmoothstep(lo, hi, x)` with lo < hi)
+ * - Unified tilted-axis 3D core rotation (`uCoreRotMat`) driving high-contrast swirling sapphire/emerald currents
+ * - Sculpted asymmetric 3D concave meniscus solved via bracketed 3-step binary bisection + signed secant finish
+ * - Razor-sharp dual-octave Voronoi cellular edge underwater caustics (`d2 - d1`) projected onto the
+ *   rotating curved optical floor & concave inner bowl (fast 9-tap GPU evaluation, zero volume smearing)
+ * - Crystal-clear upper glass dome, double-wall blown glass rim, localized upper-left golden key glint
+ * - Production-pipeline `uDebugMode` visualization (0=Normal, 1=FluidDensity, 2=FluidFlow, 3=Meniscus,
+ *   4=CausticsOnly, 5=GlassOnly, 6=DepthDebug)
  */
 object CoreFluidShaders {
 
-  private const val GLSL_NOISE_LIB = """
+  private const val GLSL_COMMON_MATH = """
+// Safe inverted smoothstep guaranteeing edge0 < edge1 per GLSL ES 3.00 §8.3
+float invSmoothstep(float lo, float hi, float x) {
+    return 1.0 - smoothstep(lo, hi, x);
+}
+
 vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec4 permute(vec4 x) { return mod289(((x * 34.0) + 1.0) * x); }
@@ -70,31 +79,98 @@ float fbm3(vec3 p) {
     return val;
 }
 
-// High-contrast lacy underwater caustic web (sharp bright filaments separated by deep dark cells)
-float sharpCaustics(vec3 p, float t) {
-    vec3 q = p * 2.65 + vec3(t * 0.22, -t * 0.18, t * 0.14);
-    float n1 = snoise(q);
-    float n2 = snoise(q * 1.68 - vec3(t * 0.27, t * 0.19, -t * 0.24) + vec3(n1 * 0.92));
-    float n3 = snoise(q * 2.75 + vec3(-t * 0.16, t * 0.29, t * 0.18) + vec3(n2 * 0.70));
-    float r1 = 1.0 - abs(n1 * 0.55 + n2 * 0.45);
-    float r2 = 1.0 - abs(n2 * 0.50 - n3 * 0.50);
-    float web1 = pow(clamp(r1, 0.0, 1.0), 9.5);
-    float web2 = pow(clamp(r2, 0.0, 1.0), 11.0);
-    return clamp(web1 * 0.95 + web2 * 0.85, 0.0, 1.8);
+// True 3D rotational advection + differential azimuthal vortex swirl + divergence-free curl perturbation.
+// Carries clearly recognizable high-contrast liquid ribbons around the tilted 3D core axis continuously.
+vec3 advectFluidPos(vec3 sp, mat3 coreRot, float fluidPhase) {
+    vec3 rotated = coreRot * sp;
+    float rXZ = length(rotated.xz);
+    float twistAngle = (1.0 - clamp(rXZ, 0.0, 1.0)) * 0.92
+                     + 0.26 * sin(rotated.y * 2.5 - fluidPhase * 0.58);
+    float ct = cos(twistAngle);
+    float st = sin(twistAngle);
+    vec3 swirled = vec3(
+        rotated.x * ct - rotated.z * st,
+        rotated.y,
+        rotated.x * st + rotated.z * ct
+    );
+
+    float freq = 2.65;
+    vec3 curl = vec3(
+        sin(swirled.y * freq + fluidPhase * 0.62) * cos(swirled.z * freq - fluidPhase * 0.44),
+        sin(swirled.z * freq - fluidPhase * 0.50) * cos(swirled.x * freq + fluidPhase * 0.48),
+        sin(swirled.x * freq + fluidPhase * 0.56) * cos(swirled.y * freq - fluidPhase * 0.38)
+    ) * 0.15;
+
+    return swirled + curl;
 }
 
-// Curved, slowly undulating 3D liquid meniscus surface inside the unit crystal sphere
-float meniscusHeight(vec2 xz, float t) {
-    float bowl = 0.16 * (xz.x * xz.x + xz.y * xz.y) - 0.10 * xz.x;
-    float wave1 = 0.095 * sin(xz.x * 3.1 + t * 0.62 + xz.y * 1.4);
-    float wave2 = 0.055 * cos(xz.y * 3.8 - t * 0.48 - xz.x * 1.9);
-    float ripple = 0.032 * snoise(vec3(xz * 2.8, t * 0.34));
-    return 0.06 + bowl + wave1 + wave2 + ripple;
+// Sculpted, asymmetric, gracefully dipped 3D concave liquid meniscus inside the unit sphere
+float meniscusHeight(vec2 xz, float meniscusPhase) {
+    float c = cos(meniscusPhase * 0.38);
+    float s = sin(meniscusPhase * 0.38);
+    vec2 r = vec2(xz.x * c - xz.y * s, xz.x * s + xz.y * c);
+
+    float r2 = dot(xz, xz);
+    float bowl = 0.24 * r2 - 0.11 * xz.x + 0.055 * xz.y;
+    float swell = 0.072 * sin(r.x * 2.8 + meniscusPhase * 0.62 + r.y * 1.4);
+    float crossWave = 0.044 * cos(r.y * 3.6 - meniscusPhase * 0.54 - r.x * 1.9);
+    float capillary = 0.020 * sin((r.x * 1.3 - r.y * 1.1) * 4.8 + meniscusPhase * 0.92);
+    return 0.02 + bowl + swell + crossWave + capillary;
+}
+
+vec2 hash22(vec2 p) {
+    vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.xx + p3.yz) * p3.zy);
+}
+
+// Fast 9-tap Voronoi cellular-edge caustic filament extractor (F2 - F1 razor-sharp optical web)
+float voronoiEdge2D(vec2 uv, float phase) {
+    vec2 i = floor(uv);
+    vec2 f = fract(uv);
+    float d1 = 8.0;
+    float d2 = 8.0;
+
+    for (int y = -1; y <= 1; y++) {
+        for (int x = -1; x <= 1; x++) {
+            vec2 neighbor = vec2(float(x), float(y));
+            vec2 h = hash22(i + neighbor);
+            vec2 point = 0.5 + 0.38 * sin(phase * 0.62 + 6.2831853 * h);
+            vec2 diff = neighbor + point - f;
+            float dist = length(diff);
+            if (dist < d1) {
+                d2 = d1;
+                d1 = dist;
+            } else if (dist < d2) {
+                d2 = dist;
+            }
+        }
+    }
+    float edge = max(d2 - d1, 0.0);
+    return exp(-edge * 13.5);
+}
+
+// Dual-octave lacy underwater Voronoi caustic network coupled to core rotation & meniscus slope
+float opticalCaustics(vec3 advectedPos, vec2 meniscusSlope, float causticsPhase) {
+    // Project 3D rotating interior point onto curved optical caustic sheet with meniscus refraction warp
+    vec2 projA = advectedPos.xz * 2.85 + vec2(advectedPos.y * 0.95, -advectedPos.y * 0.65)
+               + meniscusSlope * 0.42;
+    vec2 projB = vec2(
+        projA.x * 0.78 - projA.y * 0.62,
+        projA.x * 0.62 + projA.y * 0.78
+    ) * 1.58 + vec2(3.7, -2.1);
+
+    float web1 = voronoiEdge2D(projA, causticsPhase * 0.85);
+    float web2 = voronoiEdge2D(projB, -causticsPhase * 1.05 + 1.9);
+    // Bright caustic node intersections where two optical sheets cross
+    float nodes = pow(clamp(web1 * web2 * 2.2, 0.0, 1.0), 1.35);
+    return clamp(web1 * 0.88 + web2 * 0.62 + nodes * 1.15, 0.0, 2.25);
 }
 """
 
   // -------------------------------------------------------------------------
-  // 1. DEEP EMERALD-TEAL SPACE BACKGROUND + REFINED WARM OLIVE-GOLD & TEAL BOKEH
+  // 1. DEEP EMERALD-TEAL UNDERWATER SPACE + MULTI-DEPTH OLIVE-GOLD & TEAL BOKEH
+  //    (Calibrated in True Linear Space for ACES + sRGB 2.2 OETF)
   // -------------------------------------------------------------------------
   const val BACKGROUND_VERT = """#version 300 es
 precision highp float;
@@ -118,15 +194,14 @@ uniform vec2 uParallax;
 uniform float uOverallIntensity;
 uniform float uHdrScale;
 
-$GLSL_NOISE_LIB
+$GLSL_COMMON_MATH
 
 float softBokeh(vec2 uv, vec2 center, float radius) {
     float d = length(uv - center) / max(radius, 1e-4);
-    if (d > 1.35) return 0.0;
-    // Ultra-soft out-of-focus lens bokeh falloff (no hard circular edge)
-    float disc = exp(-d * d * 2.8);
-    float rim = exp(-pow((d - 0.62) * 3.6, 2.0)) * 0.22;
-    return disc * 0.82 + rim;
+    if (d > 1.45) return 0.0;
+    float disc = exp(-d * d * 2.35);
+    float rim = exp(-pow((d - 0.66) * 3.8, 2.0)) * 0.24;
+    return disc * 0.84 + rim;
 }
 
 void main() {
@@ -135,73 +210,77 @@ void main() {
     vec2 pShift = p + uParallax * 0.04;
     float dist = length(p);
 
-    // Rich abyssal emerald-teal space (deep dark edges, subtle moody forest-teal mid-depth)
-    vec3 abyssCorner = vec3(0.005, 0.024, 0.032);
-    vec3 deepTeal    = vec3(0.012, 0.058, 0.066);
-    vec3 pineEmerald = vec3(0.018, 0.088, 0.074);
+    // Rich deep emerald-teal underwater gradient (never crushed to pure black after sRGB OETF!)
+    vec3 abyssCorner = vec3(0.0018, 0.0155, 0.0205);
+    vec3 deepTeal    = vec3(0.0045, 0.0360, 0.0440);
+    vec3 pineEmerald = vec3(0.0090, 0.0580, 0.0480);
 
-    float mist1 = fbm3(vec3(pShift * 1.4, uTime * 0.028));
-    float mist2 = fbm3(vec3(pShift * 2.2 + vec2(3.1, -2.4), -uTime * 0.022));
+    float mist1 = fbm3(vec3(pShift * 1.45, uTime * 0.028));
+    float mist2 = fbm3(vec3(pShift * 2.35 + vec2(3.1, -2.4), -uTime * 0.022));
 
-    vec3 col = mix(deepTeal, abyssCorner, smoothstep(0.18, 0.88, dist));
-    col += pineEmerald * smoothstep(-0.15, 0.72, mist1) * 0.42 * (1.0 - smoothstep(0.32, 0.95, dist));
-    col += vec3(0.035, 0.085, 0.068) * smoothstep(0.10, 0.85, mist2) * 0.24 * smoothstep(0.85, 0.10, dist);
+    vec3 col = mix(deepTeal, abyssCorner, smoothstep(0.16, 0.86, dist));
+    col += pineEmerald * smoothstep(-0.18, 0.68, mist1) * 0.52 * invSmoothstep(0.28, 0.96, dist);
+    col += vec3(0.014, 0.048, 0.042) * smoothstep(0.05, 0.80, mist2) * 0.34 * invSmoothstep(0.10, 0.88, dist);
 
-    // Very subtle central depth glow behind the orb
-    float aura = exp(-dist * dist * 5.2);
-    col += vec3(0.022, 0.115, 0.125) * aura * 0.55;
+    // Subtle deep cyan-emerald volumetric back-glow behind the suspended crystal orb
+    float aura = exp(-dist * dist * 4.4);
+    col += vec3(0.010, 0.068, 0.074) * aura * 0.62;
 
-    // Refined sparse out-of-focus bokeh (warm olive-gold in lower-left & right, muted emerald-teal top)
-    vec2 bPos[10];
-    float bRad[10];
-    vec3 bTint[10];
+    // Multi-depth soft underwater bokeh (warm olive-gold left/lower-left + cool teal upper/right)
+    vec2 bPos[12];
+    float bRad[12];
+    vec3 bTint[12];
 
-    // Warm olive-gold bokeh matching reference lower-left & far-right
-    bPos[0] = vec2(-0.39, -0.09) + vec2(sin(uTime * 0.10) * 0.014, cos(uTime * 0.08) * 0.012);
-    bRad[0] = 0.055; bTint[0] = vec3(0.42, 0.36, 0.11) * 0.42;
+    bPos[0] = vec2(-0.42, -0.07) + vec2(sin(uTime * 0.09) * 0.012, cos(uTime * 0.08) * 0.010);
+    bRad[0] = 0.060; bTint[0] = vec3(0.160, 0.130, 0.024) * 0.82;
 
-    bPos[1] = vec2(-0.30, -0.34) + vec2(cos(uTime * 0.09) * 0.012, sin(uTime * 0.11) * 0.014);
-    bRad[1] = 0.072; bTint[1] = vec3(0.32, 0.34, 0.10) * 0.32;
+    bPos[1] = vec2(-0.34, -0.34) + vec2(cos(uTime * 0.08) * 0.011, sin(uTime * 0.10) * 0.012);
+    bRad[1] = 0.078; bTint[1] = vec3(0.115, 0.118, 0.022) * 0.64;
 
-    bPos[2] = vec2(0.42, 0.08) + vec2(sin(uTime * 0.08 + 2.4) * 0.011, cos(uTime * 0.10) * 0.012);
-    bRad[2] = 0.048; bTint[2] = vec3(0.40, 0.34, 0.10) * 0.34;
+    bPos[2] = vec2(0.44, 0.08) + vec2(sin(uTime * 0.08 + 2.4) * 0.010, cos(uTime * 0.09) * 0.010);
+    bRad[2] = 0.054; bTint[2] = vec3(0.145, 0.118, 0.024) * 0.68;
 
-    bPos[3] = vec2(-0.44, -0.02) + vec2(sin(uTime * 0.12 + 1.5) * 0.009, cos(uTime * 0.09) * 0.009);
-    bRad[3] = 0.026; bTint[3] = vec3(0.46, 0.48, 0.34) * 0.36;
+    bPos[3] = vec2(-0.47, 0.01) + vec2(sin(uTime * 0.11 + 1.5) * 0.008, cos(uTime * 0.09) * 0.008);
+    bRad[3] = 0.030; bTint[3] = vec3(0.190, 0.185, 0.105) * 0.56;
 
-    // Muted emerald-teal upper & lower depth bokeh
-    bPos[4] = vec2(-0.14, 0.44) + vec2(sin(uTime * 0.09 + 1.1) * 0.014, cos(uTime * 0.07) * 0.011);
-    bRad[4] = 0.062; bTint[4] = vec3(0.11, 0.28, 0.23) * 0.30;
+    bPos[4] = vec2(-0.18, 0.45) + vec2(sin(uTime * 0.09 + 1.1) * 0.012, cos(uTime * 0.07) * 0.010);
+    bRad[4] = 0.068; bTint[4] = vec3(0.024, 0.098, 0.088) * 0.68;
 
-    bPos[5] = vec2(0.16, 0.46) + vec2(cos(uTime * 0.10 + 2.1) * 0.013, sin(uTime * 0.08) * 0.011);
-    bRad[5] = 0.054; bTint[5] = vec3(0.20, 0.30, 0.18) * 0.28;
+    bPos[5] = vec2(0.14, 0.46) + vec2(cos(uTime * 0.10 + 2.1) * 0.012, sin(uTime * 0.08) * 0.010);
+    bRad[5] = 0.058; bTint[5] = vec3(0.052, 0.105, 0.064) * 0.58;
 
-    bPos[6] = vec2(-0.36, 0.32) + vec2(sin(uTime * 0.11 + 3.8) * 0.012, cos(uTime * 0.08) * 0.010);
-    bRad[6] = 0.074; bTint[6] = vec3(0.08, 0.24, 0.24) * 0.26;
+    bPos[6] = vec2(-0.38, 0.34) + vec2(sin(uTime * 0.10 + 3.8) * 0.011, cos(uTime * 0.08) * 0.010);
+    bRad[6] = 0.082; bTint[6] = vec3(0.018, 0.086, 0.092) * 0.62;
 
-    bPos[7] = vec2(0.32, -0.38) + vec2(cos(uTime * 0.08 + 0.7) * 0.012, sin(uTime * 0.09) * 0.012);
-    bRad[7] = 0.070; bTint[7] = vec3(0.07, 0.22, 0.22) * 0.28;
+    bPos[7] = vec2(0.35, -0.38) + vec2(cos(uTime * 0.08 + 0.7) * 0.011, sin(uTime * 0.09) * 0.011);
+    bRad[7] = 0.076; bTint[7] = vec3(0.018, 0.082, 0.088) * 0.64;
 
-    bPos[8] = vec2(0.06, -0.46) + vec2(cos(uTime * 0.07 + 1.9) * 0.012, sin(uTime * 0.10) * 0.010);
-    bRad[8] = 0.052; bTint[8] = vec3(0.14, 0.26, 0.18) * 0.24;
+    bPos[8] = vec2(0.05, -0.46) + vec2(cos(uTime * 0.07 + 1.9) * 0.011, sin(uTime * 0.10) * 0.010);
+    bRad[8] = 0.058; bTint[8] = vec3(0.036, 0.092, 0.062) * 0.52;
 
-    bPos[9] = vec2(0.38, -0.10) + vec2(sin(uTime * 0.10 + 4.5) * 0.010, cos(uTime * 0.09) * 0.010);
-    bRad[9] = 0.036; bTint[9] = vec3(0.38, 0.32, 0.11) * 0.28;
+    bPos[9] = vec2(0.40, -0.11) + vec2(sin(uTime * 0.10 + 4.5) * 0.009, cos(uTime * 0.09) * 0.009);
+    bRad[9] = 0.040; bTint[9] = vec3(0.145, 0.118, 0.028) * 0.58;
+
+    bPos[10] = vec2(-0.24, -0.44) + vec2(sin(uTime * 0.07 + 3.1) * 0.010, cos(uTime * 0.09) * 0.010);
+    bRad[10] = 0.064; bTint[10] = vec3(0.092, 0.110, 0.026) * 0.50;
+
+    bPos[11] = vec2(0.32, 0.36) + vec2(cos(uTime * 0.09 + 1.4) * 0.010, sin(uTime * 0.08) * 0.010);
+    bRad[11] = 0.072; bTint[11] = vec3(0.020, 0.080, 0.076) * 0.55;
 
     vec2 bp = p + uParallax * 0.06;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 12; i++) {
         col += bTint[i] * softBokeh(bp, bPos[i], bRad[i]);
     }
 
-    col *= (0.82 + 0.18 * uOverallIntensity);
+    col *= (0.85 + 0.15 * uOverallIntensity);
     fragColor = vec4(col * uHdrScale, 1.0);
 }
 """
 
   // -------------------------------------------------------------------------
-  // 2. CONCAVE INNER BACK-WALL LIQUID BOWL (AIOrbInnerFluid — GL_FRONT culled!)
-  //    Provides deep sapphire-teal concave depth, emerald-jade inner wall curtains,
-  //    and backlit lower underwater caustics to be refracted through AIOrbCore.
+  // 2. CONCAVE INNER BACK-WALL LIQUID BOWL (LOCKED TO UNIFIED `uCoreRotMat`)
+  //    Provides deep sapphire abyss floor, rotating translucent emerald-jade side folds,
+  //    and razor-sharp back-wall Voronoi underwater caustic web!
   // -------------------------------------------------------------------------
   const val INNER_FLUID_VERT = """#version 300 es
 precision highp float;
@@ -211,25 +290,22 @@ layout(location = 1) in vec3 aNormal;
 uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProj;
-uniform float uTime;
-uniform float uFluidSpeed;
+uniform float uFluidPhase;
 
 out vec3 vLocalPos;
 out vec3 vWorldPos;
 out vec3 vWorldNormal;
 
-$GLSL_NOISE_LIB
+$GLSL_COMMON_MATH
 
 void main() {
-    float t = uTime * uFluidSpeed;
     vec3 p = normalize(aPos);
-    float disp = snoise(p * 2.1 + vec3(t * 0.20, -t * 0.16, t * 0.15)) * 0.022;
+    float disp = snoise(p * 2.0 + vec3(uFluidPhase * 0.18, -uFluidPhase * 0.14, uFluidPhase * 0.12)) * 0.014;
     vec3 displaced = p * (1.0 + disp);
 
     vec4 worldPos = uModel * vec4(displaced, 1.0);
     vLocalPos = displaced;
     vWorldPos = worldPos.xyz;
-    // Inward-facing concave normal for back inner bowl
     vWorldNormal = normalize(mat3(uModel) * (-aNormal));
     gl_Position = uProj * uView * worldPos;
 }
@@ -244,67 +320,76 @@ in vec3 vWorldNormal;
 
 out vec4 fragColor;
 
-uniform vec3 uCameraPos;
-uniform float uTime;
-uniform float uFluidSpeed;
+uniform mat3 uCoreRotMat;
+uniform float uFluidPhase;
+uniform float uMeniscusPhase;
+uniform float uCausticsPhase;
 uniform float uFluidIntensity;
 uniform float uCoreTransparency;
 uniform float uOverallIntensity;
 uniform float uHdrScale;
 
-$GLSL_NOISE_LIB
+$GLSL_COMMON_MATH
 
 void main() {
-    vec3 N = normalize(vWorldNormal);
-    vec3 V = normalize(uCameraPos - vWorldPos);
-    float t = uTime * uFluidSpeed;
+    // Unified rotating & differentially swirling 3D fluid coordinate frame
+    vec3 advPos = advectFluidPos(vLocalPos, uCoreRotMat, uFluidPhase);
+    float swirl = fbm3(advPos * 1.75);
+    float vortexArm = smoothstep(0.18, 0.85, 0.5 + 0.5 * sin(atan(advPos.z, advPos.x) * 3.0 + advPos.y * 2.4 + swirl * 2.8));
 
-    // 2-stage domain-warped swirling inner liquid current
-    vec3 p = vLocalPos * 1.75;
-    vec3 warp = vec3(
-        fbm3(p + vec3(t * 0.20, -t * 0.14, t * 0.11)),
-        fbm3(p + vec3(-t * 0.16, t * 0.22, -t * 0.13) + vec3(3.7, 1.4, 2.3)),
-        fbm3(p + vec3(t * 0.13, t * 0.17, -t * 0.19) + vec3(-2.1, 4.8, 1.2))
+    // Couple concave back-wall Voronoi caustics to meniscus surface slope & rotating fluid
+    float e = 0.035;
+    float mY = meniscusHeight(vLocalPos.xz, uMeniscusPhase);
+    vec2 mSlope = vec2(
+        meniscusHeight(vLocalPos.xz + vec2(e, 0.0), uMeniscusPhase) - mY,
+        meniscusHeight(vLocalPos.xz + vec2(0.0, e), uMeniscusPhase) - mY
+    ) / e;
+    float caustic = opticalCaustics(advPos * 1.02, mSlope, uCausticsPhase);
+
+    // Strictly ordered smoothstep bounds via invSmoothstep (ZERO GLSL UB)
+    float belowLiquid = invSmoothstep(mY - 0.09, mY + 0.07, vLocalPos.y);
+
+    // Deep sapphire abyss palette (dark enough that emerald folds & turquoise Voronoi caustics pop sharply!)
+    vec3 deepAbyss    = vec3(0.0012, 0.0110, 0.0280);
+    vec3 deepSapphire = vec3(0.0035, 0.0480, 0.1150);
+    vec3 richEmerald  = vec3(0.0090, 0.1650, 0.0420);
+    vec3 brightJade   = vec3(0.0880, 0.4200, 0.0680);
+    vec3 causticAqua  = vec3(0.0550, 0.8200, 1.0500);
+
+    // High-contrast rotating emerald-jade liquid folds hugging both sides & sweeping through the back wall
+    float rotJadeLobe = smoothstep(-0.15, 0.72, sin(atan(advPos.z, advPos.x) * 2.0 + advPos.y * 1.85 + swirl * 1.6));
+    float sideWallBias = smoothstep(0.24, 0.90, length(vLocalPos.xz));
+    float jadeCurtain = clamp(
+        (0.28 + 0.72 * rotJadeLobe) * sideWallBias * invSmoothstep(-0.76, 0.58, vLocalPos.y)
+        * (0.42 + 0.58 * smoothstep(-0.25, 0.62, swirl)),
+        0.0, 1.0
     );
-    vec3 wp = p + warp * 0.85;
-    float swirl = fbm3(wp * 1.4 + vec3(-t * 0.22, t * 0.16, t * 0.18));
-    float caustic = sharpCaustics(wp * 0.92, t * 0.85);
 
-    float mY = meniscusHeight(vLocalPos.xz, t);
-    float belowLiquid = smoothstep(mY + 0.12, mY - 0.14, vLocalPos.y);
+    // Focused lower-center / lower-right underwater caustic pool
+    float lowerBelly = invSmoothstep(-0.88, 0.04, vLocalPos.y)
+                     * invSmoothstep(0.05, 0.92, length(vLocalPos.xz - vec2(0.12, -0.06)));
 
-    // Deep dark sapphire & emerald shadow base — high contrast so bright caustics pop!
-    vec3 deepAbyss    = vec3(0.008, 0.055, 0.095);
-    vec3 oceanTeal    = vec3(0.015, 0.185, 0.285);
-    vec3 richEmerald  = vec3(0.055, 0.320, 0.140);
-    vec3 brightJade   = vec3(0.240, 0.580, 0.175);
-    vec3 electricCyan = vec3(0.090, 0.860, 0.980);
+    vec3 col = mix(deepAbyss, deepSapphire, (0.25 + 0.75 * vortexArm) * belowLiquid);
+    col = mix(col, mix(richEmerald, brightJade, smoothstep(0.0, 0.68, swirl)), jadeCurtain * 0.90);
+    // Razor-sharp lacy turquoise Voronoi caustic web gleaming on the dark concave floor
+    col += causticAqua * caustic * (0.08 + 1.05 * lowerBelly) * belowLiquid * 0.52 * uFluidIntensity;
 
-    // Emerald-jade translucent folds hugging left & upper-right interior curved glass wall
-    float leftJade  = smoothstep(-0.18, -0.78, vLocalPos.x + warp.x * 0.22) * smoothstep(0.58, -0.68, vLocalPos.y);
-    float rightJade = smoothstep(0.26, 0.82, vLocalPos.x + warp.z * 0.24) * smoothstep(-0.35, 0.62, vLocalPos.y);
-    float jadeCurtain = clamp((leftJade * 1.05 + rightJade * 0.72) * (0.48 + 0.52 * smoothstep(-0.3, 0.6, swirl)), 0.0, 1.0);
+    // Keep upper air cavity nearly transparent so the glass dome stays crystal-clear
+    float cavityAlpha = mix(0.08, 0.82, belowLiquid);
+    float alpha = clamp((cavityAlpha + jadeCurtain * 0.28) * (1.02 - uCoreTransparency * 0.24), 0.06, 0.88);
 
-    // Lower-center / lower-right focused cyan caustic pool
-    float lowerBelly = smoothstep(0.12, -0.82, vLocalPos.y) * smoothstep(0.98, 0.12, length(vLocalPos.xz - vec2(0.12, -0.18)));
-
-    vec3 col = mix(deepAbyss, oceanTeal, smoothstep(-0.35, 0.60, swirl) * (0.35 + 0.65 * belowLiquid));
-    col = mix(col, mix(richEmerald, brightJade, smoothstep(0.0, 0.65, swirl)), jadeCurtain * 0.85);
-
-    // Focused lacy cyan underwater caustics on the dark concave lower wall
-    col += electricCyan * caustic * (0.18 + 0.95 * lowerBelly) * belowLiquid * 0.75 * uFluidIntensity;
-
-    // Upper dome stays very dark & transparent so glass cavity looks crystal clear
-    float cavityAlpha = mix(0.24, 0.74, belowLiquid);
-    float alpha = clamp((cavityAlpha + jadeCurtain * 0.38) * (1.06 - uCoreTransparency * 0.35), 0.15, 0.84);
-
-    col *= (0.80 + 0.24 * uOverallIntensity);
+    col *= (0.85 + 0.18 * uOverallIntensity);
     fragColor = vec4(col * uHdrScale, alpha);
 }
 """
 
   // -------------------------------------------------------------------------
-  // 3. OUTER LIQUID-GLASS CORE WITH REFRACTED-RAY 3D MENISCUS & VOLUME TRACING
+  // 3. OUTER BLOWN CRYSTAL GLASS CORE WITH:
+  //    - CRYSTAL-CLEAR UPPER DOME & DOUBLE-WALL BLOWN GLASS RIM
+  //    - HIGH-CONTRAST ROTATING SAPPHIRE/EMERALD VOLUMETRIC CURRENTS
+  //    - EXACT BISECTED ASYMMETRIC 3D MENISCUS SURFACE
+  //    - RAZOR-SHARP DUAL-OCTAVE VORONOI CELLULAR UNDERWATER CAUSTICS
+  //    - PRODUCTION GPU DIAGNOSTIC MODES (`uDebugMode`)
   // -------------------------------------------------------------------------
   const val CORE_GLASS_VERT = """#version 300 es
 precision highp float;
@@ -314,40 +399,39 @@ layout(location = 1) in vec3 aNormal;
 uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProj;
-uniform float uTime;
-uniform float uFluidSpeed;
+uniform float uFluidPhase;
 
 out vec3 vWorldPos;
 out vec3 vWorldNormal;
 out vec3 vViewNormal;
 out vec3 vLocalPos;
+out float vViewZ;
 
-$GLSL_NOISE_LIB
+$GLSL_COMMON_MATH
 
-vec3 displaceGlass(vec3 p, float t) {
-    // Organic subtle liquid-glass surface breathing undulation
-    float n1 = snoise(p * 1.85 + vec3(t * 0.22, -t * 0.17, t * 0.14));
-    float n2 = snoise(p * 3.50 + vec3(-t * 0.25, t * 0.19, -t * 0.16));
-    float amp = 0.014 * n1 + 0.005 * n2;
+vec3 displaceGlass(vec3 p, float phase) {
+    // Subtle living blown-glass undulation (keeps outer shell optically steady & crisp)
+    float n1 = snoise(p * 1.85 + vec3(phase * 0.16, -phase * 0.12, phase * 0.10));
+    float n2 = snoise(p * 3.50 + vec3(-phase * 0.19, phase * 0.14, -phase * 0.12));
+    float amp = 0.0085 * n1 + 0.0032 * n2;
     return p * (1.0 + amp);
 }
 
 void main() {
-    float t = uTime * (0.45 + 0.55 * uFluidSpeed);
     vec3 p = normalize(aPos);
-    vec3 displaced = displaceGlass(p, t);
+    vec3 displaced = displaceGlass(p, uFluidPhase);
 
-    // Finite-difference perturbed liquid-glass normal
     vec3 up = abs(p.y) < 0.92 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
     vec3 tangent = normalize(cross(up, p));
     vec3 bitangent = normalize(cross(p, tangent));
     float eps = 0.014;
-    vec3 pT = displaceGlass(normalize(p + tangent * eps), t);
-    vec3 pB = displaceGlass(normalize(p + bitangent * eps), t);
+    vec3 pT = displaceGlass(normalize(p + tangent * eps), uFluidPhase);
+    vec3 pB = displaceGlass(normalize(p + bitangent * eps), uFluidPhase);
     vec3 localNormal = normalize(cross(pT - displaced, pB - displaced));
     if (dot(localNormal, p) < 0.0) localNormal = -localNormal;
 
     vec4 worldPos = uModel * vec4(displaced, 1.0);
+    vec4 viewPos = uView * worldPos;
     vec3 worldN = normalize(mat3(uModel) * localNormal);
     vec3 viewN = normalize(mat3(uView) * worldN);
 
@@ -355,7 +439,8 @@ void main() {
     vWorldNormal = worldN;
     vViewNormal = viewN;
     vLocalPos = displaced;
-    gl_Position = uProj * uView * worldPos;
+    vViewZ = viewPos.z;
+    gl_Position = uProj * viewPos;
 }
 """
 
@@ -366,20 +451,25 @@ in vec3 vWorldPos;
 in vec3 vWorldNormal;
 in vec3 vViewNormal;
 in vec3 vLocalPos;
+in float vViewZ;
 
 out vec4 fragColor;
 
 uniform sampler2D uRefractionTex;
 uniform vec2 uViewportSize;
 uniform mat4 uInvModel;
+uniform mat3 uCoreRotMat;
 uniform vec3 uCameraPos;
-uniform float uTime;
-uniform float uFluidSpeed;
+uniform float uFluidPhase;
+uniform float uMeniscusPhase;
+uniform float uCausticsPhase;
 uniform float uFluidIntensity;
 uniform float uCoreTransparency;
 uniform float uRefraction;
 uniform float uOverallIntensity;
 uniform float uHdrScale;
+uniform int uRaymarchSteps;
+uniform int uDebugMode; // 0=Normal, 1=FluidDensity, 2=FluidFlow, 3=Meniscus, 4=CausticsOnly, 5=GlassOnly, 6=DepthDebug
 
 uniform vec3 uKeyLightDir;
 uniform vec3 uKeyLightColor;
@@ -389,32 +479,33 @@ uniform vec3 uCoolRimDir;
 uniform vec3 uCoolRimColor;
 uniform vec3 uEmeraldFillColor;
 
-$GLSL_NOISE_LIB
+$GLSL_COMMON_MATH
 
-// Analytic 3D meniscus wave normal via central differences
-vec3 meniscusNormal(vec2 xz, float t) {
-    float e = 0.02;
-    float hx = meniscusHeight(xz + vec2(e, 0.0), t) - meniscusHeight(xz - vec2(e, 0.0), t);
-    float hz = meniscusHeight(xz + vec2(0.0, e), t) - meniscusHeight(xz - vec2(0.0, e), t);
+// Exact central-difference 3D meniscus surface normal & slope
+vec3 meniscusNormal(vec2 xz, float meniscusPhase, out vec2 slopeOut) {
+    float e = 0.016;
+    float hx = meniscusHeight(xz + vec2(e, 0.0), meniscusPhase) - meniscusHeight(xz - vec2(e, 0.0), meniscusPhase);
+    float hz = meniscusHeight(xz + vec2(0.0, e), meniscusPhase) - meniscusHeight(xz - vec2(0.0, e), meniscusPhase);
+    slopeOut = vec2(hx, hz) / (2.0 * e);
     return normalize(vec3(-hx, 2.0 * e, -hz));
 }
 
-// High-contrast, dark-dominated crystal studio environment (keeps orb center ultra-clear!)
+// High-contrast dark-dominated studio crystal environment (strictly transparent center!)
 vec3 sampleCrystalEnv(vec3 R) {
-    vec3 env = vec3(0.008, 0.032, 0.044);
+    vec3 env = vec3(0.0025, 0.0160, 0.0240);
 
-    // Compact curved upper-left warm sunlit studio reflection window (~10:30)
-    vec3 keyAxis = normalize(vec3(-0.56, 0.72, 0.40));
-    float keySpot = smoothstep(0.84, 0.985, dot(R, keyAxis));
-    env += vec3(1.85, 1.48, 0.88) * keySpot;
+    // Focused sunlit champagne-gold key reflection at upper-left (~10:30)
+    vec3 keyAxis = normalize(vec3(-0.54, 0.72, 0.43));
+    float keySpot = smoothstep(0.91, 0.992, dot(R, keyAxis));
+    env += vec3(1.65, 1.24, 0.62) * keySpot;
 
-    // Warm golden orbital ribbon reflection curving along right & top-right edge
-    float goldBand = exp(-pow((R.y - 0.22 * R.x - 0.08) * 6.5, 2.0)) * smoothstep(0.18, 0.88, R.x);
-    env += vec3(1.45, 0.86, 0.22) * goldBand * 0.92;
+    // Warm golden arc reflection along upper-right glass curvature
+    float goldBand = exp(-pow((R.y - 0.20 * R.x - 0.10) * 8.0, 2.0)) * smoothstep(0.24, 0.90, R.x);
+    env += vec3(1.38, 0.78, 0.16) * goldBand * 0.78;
 
-    // Ice-cyan ribbon reflection along lower-left / bottom rim
-    float cyanBand = exp(-pow((R.y + 0.36 + 0.24 * R.x) * 6.0, 2.0)) * smoothstep(0.12, -0.78, R.x);
-    env += vec3(0.18, 0.88, 1.15) * cyanBand * 0.85;
+    // Cool ice-cyan crescent reflection along lower-left glass curvature
+    float cyanBand = exp(-pow((R.y + 0.34 + 0.22 * R.x) * 7.2, 2.0)) * invSmoothstep(-0.82, 0.08, R.x);
+    env += vec3(0.14, 0.84, 1.18) * cyanBand * 0.72;
 
     return env;
 }
@@ -424,27 +515,30 @@ void main() {
     vec3 V = normalize(uCameraPos - vWorldPos);
     vec3 VN = normalize(vViewNormal);
 
-    float t = uTime * uFluidSpeed;
-
-    // Subtle micro-liquid ripple on outer glass normal
-    float micro = snoise(vLocalPos * 4.8 + vec3(t * 0.16, -t * 0.14, t * 0.12));
-    vec3 pN = normalize(N + vec3(micro * 0.018, -micro * 0.016, micro * 0.018));
+    float micro = snoise(vLocalPos * 4.6 + vec3(uFluidPhase * 0.14, -uFluidPhase * 0.12, uFluidPhase * 0.10));
+    vec3 pN = normalize(N + vec3(micro * 0.010, -micro * 0.009, micro * 0.010));
     float NdotV = clamp(dot(pN, V), 0.0, 1.0);
 
+    // Debug Mode 6: View-space depth visualization
+    if (uDebugMode == 6) {
+        float depthVis = clamp((-vViewZ - 2.5) / 4.5, 0.0, 1.0);
+        vec3 dCol = mix(vec3(0.15, 0.95, 1.0), vec3(0.03, 0.08, 0.25), depthVis);
+        fragColor = vec4(dCol * uHdrScale, 1.0);
+        return;
+    }
+
     // -----------------------------------------------------------------------
-    // 1. REAL FBO REFRACTION OF BACKGROUND + BACK RIBBONS + CONCAVE INNER BOWL
+    // 1. REAL FBO REFRACTION + CAUCHY CHROMATIC DISPERSION (CENTER-CLEAR, RIM-PRISMATIC)
     // -----------------------------------------------------------------------
     vec2 screenUv = gl_FragCoord.xy / max(uViewportSize, vec2(1.0));
-    // Lens-style refraction: stronger outward bend near the thick curved rim
-    float rimCurve = pow(1.0 - NdotV, 1.15);
-    vec2 refractUvShift = VN.xy * (0.018 + 0.095 * rimCurve) * uRefraction;
-    float dispSplit = 0.11 * (0.45 + 0.55 * uRefraction);
+    float rimCurve = pow(1.0 - NdotV, 1.35);
+    vec2 refractUvShift = VN.xy * (0.014 + 0.105 * rimCurve) * uRefraction;
+    float dispSplit = 0.14 * (0.30 + 0.70 * pow(1.0 - NdotV, 1.5)) * (0.45 + 0.55 * uRefraction);
 
     vec2 uvR = clamp(screenUv - refractUvShift * (1.0 + dispSplit), vec2(0.002), vec2(0.998));
     vec2 uvG = clamp(screenUv - refractUvShift, vec2(0.002), vec2(0.998));
     vec2 uvB = clamp(screenUv - refractUvShift * (1.0 - dispSplit), vec2(0.002), vec2(0.998));
 
-    // Decode linear HDR out of refractionFbo
     float invHdr = 1.0 / max(uHdrScale, 1e-4);
     vec3 refractedBack;
     refractedBack.r = texture(uRefractionTex, uvR).r * invHdr;
@@ -452,140 +546,261 @@ void main() {
     refractedBack.b = texture(uRefractionTex, uvB).b * invHdr;
 
     // -----------------------------------------------------------------------
-    // 2. REFRACTED-RAY 3D INTERIOR LIQUID MENISCUS & VOLUMETRIC CAUSTICS
+    // 2. REFRACTED-RAY 3D ROTATING VORTEX VOLUME + EXACT BISECTED MENISCUS SOLVER
     // -----------------------------------------------------------------------
     vec3 safeN = dot(pN, V) > 0.02 ? pN : normalize(pN + V * 0.08);
-    vec3 refrWorld = refract(-V, safeN, 1.0 / 1.36);
+    vec3 refrWorld = refract(-V, safeN, 1.0 / 1.42);
     if (dot(refrWorld, refrWorld) < 1e-5) refrWorld = -V;
     vec3 rayDir = normalize(mat3(uInvModel) * refrWorld);
     vec3 rayOrg = vLocalPos * 0.96;
 
-    // Analytic distance to exit the interior unit sphere along rayDir
     float bDot = dot(rayOrg, rayDir);
-    float cRad = dot(rayOrg, rayOrg) - 0.94 * 0.94;
+    float cRad = dot(rayOrg, rayOrg) - 0.945 * 0.945;
     float disc = max(bDot * bDot - cRad, 0.0);
     float tExit = max(-bDot + sqrt(disc), 0.05);
 
-    // March 10 steps through the interior to locate exact 3D meniscus surface & integrate liquid depth
+    int steps = clamp(uRaymarchSteps, 8, 24);
+    float stepLen = tExit / float(steps);
+
     float liquidPath = 0.0;
     float hitMeniscus = 0.0;
+    float meniscusCrossingDir = 1.0; // +1 air->water, -1 water->air
     vec3 meniscusHitPos = vec3(0.0);
     vec3 volumeGlow = vec3(0.0);
-    float prevDiff = rayOrg.y - meniscusHeight(rayOrg.xz, t);
-    float stepLen = tExit / 10.0;
+    vec3 debugDensityAcc = vec3(0.0);
+    vec3 debugFlowSample = vec3(0.0);
+    float debugFlowWeight = 0.0;
+    float opticalTrans = 1.0;
 
-    for (int i = 1; i <= 10; i++) {
-        float distS = (float(i) - 0.35) * stepLen;
-        vec3 sp = rayOrg + rayDir * distS;
-        float mH = meniscusHeight(sp.xz, t);
-        float diff = sp.y - mH;
+    float prevT = 0.0;
+    float prevDiff = rayOrg.y - meniscusHeight(rayOrg.xz, uMeniscusPhase);
+    float absorptionDensity = 1.35 - uCoreTransparency * 0.48;
 
-        // Detect first crossing of the 3D wavy water-air meniscus interface
-        if (hitMeniscus < 0.5 && ((prevDiff > 0.0 && diff <= 0.0) || (prevDiff < 0.0 && diff >= 0.0))) {
-            float frac = clamp(prevDiff / max(abs(prevDiff - diff), 1e-4), 0.0, 1.0);
-            float tHit = (float(i - 1) + frac) * stepLen;
+    for (int i = 1; i <= 24; i++) {
+        if (i > steps || opticalTrans < 0.03) break;
+
+        float currT = float(i) * stepLen;
+        vec3 sp = rayOrg + rayDir * currT;
+        float mH = meniscusHeight(sp.xz, uMeniscusPhase);
+        float currDiff = sp.y - mH;
+
+        // Exact bracketed meniscus detection + 3-step binary bisection + signed secant finish
+        bool crossedDown = (prevDiff > 0.0 && currDiff <= 0.0);
+        bool crossedUp   = (prevDiff < 0.0 && currDiff >= 0.0);
+        if (hitMeniscus < 0.5 && (crossedDown || crossedUp)) {
+            float tLo = prevT;
+            float dLo = prevDiff;
+            float tHi = currT;
+            float dHi = currDiff;
+
+            for (int b = 0; b < 3; b++) {
+                float tMid = 0.5 * (tLo + tHi);
+                vec3 pMid = rayOrg + rayDir * tMid;
+                float dMid = pMid.y - meniscusHeight(pMid.xz, uMeniscusPhase);
+                if ((dLo > 0.0 && dMid > 0.0) || (dLo < 0.0 && dMid < 0.0)) {
+                    tLo = tMid;
+                    dLo = dMid;
+                } else {
+                    tHi = tMid;
+                    dHi = dMid;
+                }
+            }
+
+            float denom = dLo - dHi;
+            float tHit = abs(denom) > 1e-6
+                ? tLo + clamp(dLo / denom, 0.0, 1.0) * (tHi - tLo)
+                : 0.5 * (tLo + tHi);
+
             meniscusHitPos = rayOrg + rayDir * tHit;
             hitMeniscus = 1.0;
+            meniscusCrossingDir = crossedDown ? 1.0 : -1.0;
         }
-        prevDiff = diff;
 
-        if (diff < 0.0) {
-            liquidPath += stepLen;
-            // Focus sharp glowing turquoise caustics in the lower-center/lower-right water belly
-            float lowerWeight = smoothstep(0.14, -0.78, sp.y) * smoothstep(0.95, 0.08, length(sp.xz - vec2(0.10, -0.05)));
-            float cSample = sharpCaustics(sp * 1.12 + vec3(0.0, t * 0.08, 0.0), t * 0.92);
+        // Crisp mid-segment liquid integration (tight +/- 0.015 meniscus transition eliminates flat band!)
+        float midT = 0.5 * (prevT + currT);
+        vec3 midP = rayOrg + rayDir * midT;
+        float midM = meniscusHeight(midP.xz, uMeniscusPhase);
+        float submerge = invSmoothstep(midM - 0.015, midM + 0.015, midP.y);
 
-            // Translucent swirling emerald-jade folds hugging left & upper-right inner volume
-            float leftJade  = smoothstep(-0.12, -0.78, sp.x) * smoothstep(0.35, -0.72, sp.y);
-            float rightJade = smoothstep(0.28, 0.80, sp.x) * smoothstep(-0.35, 0.50, sp.y);
-            float jadeFold  = clamp(leftJade * 0.95 + rightJade * 0.65, 0.0, 1.0);
-            float jadeWave  = smoothstep(-0.15, 0.65, snoise(sp * 2.4 + vec3(t * 0.24, -t * 0.18, t * 0.16)));
+        if (submerge > 0.01) {
+            float segLiquid = stepLen * submerge;
+            liquidPath += segLiquid;
 
-            vec3 cyanCausticCol = mix(vec3(0.04, 0.72, 0.92), vec3(0.45, 0.98, 1.00), clamp(cSample * 0.65, 0.0, 1.0));
-            vec3 jadeLiquidCol  = mix(vec3(0.05, 0.42, 0.16), vec3(0.32, 0.72, 0.18), jadeWave);
+            // Transform sample point into unified rotating & swirling 3D liquid vortex frame!
+            vec3 advP = advectFluidPos(midP, uCoreRotMat, uFluidPhase);
+            float nMain = fbm3(advP * 1.75);
+            float nDetail = fbm3(advP * 3.10 + vec3(2.4, -1.7, 1.9));
 
-            // Attenuate deeper slices slightly so near-mid caustics stay razor-sharp
-            float depthAtten = exp(-distS * 0.85);
-            volumeGlow += cyanCausticCol * cSample * (0.12 + 1.05 * lowerWeight) * stepLen * 0.68 * depthAtten;
-            volumeGlow += jadeLiquidCol * jadeFold * (0.28 + 0.55 * jadeWave) * stepLen * 0.42 * depthAtten;
+            // 3 distinct asymmetric rotating 3D spiral vortex plumes (visibly sweep across orb face!)
+            float rotAz = atan(advP.z, advP.x);
+            float spiralRibbon = smoothstep(0.18, 0.88, 0.5 + 0.5 * sin(rotAz * 3.0 + advP.y * 2.6 + nMain * 3.2));
+            float filamentCrest = pow(clamp(1.0 - abs(nMain * 0.72 + nDetail * 0.28), 0.0, 1.0), 4.2);
+
+            // Rich translucent emerald-jade side folds & inner swirling veins (Layer 3)
+            float radialWall = smoothstep(0.24, 0.92, length(midP.xz));
+            float jadeSpiral = smoothstep(-0.12, 0.78, sin(rotAz * 2.0 + advP.y * 2.1 + nMain * 1.9));
+            float sidePresence = smoothstep(0.18, 0.82, abs(midP.x)) * 0.65 + 0.35;
+            float jadeMask = clamp(
+                radialWall * jadeSpiral * sidePresence * invSmoothstep(-0.82, 0.42, midP.y),
+                0.0, 1.0
+            );
+
+            // Shallow cerulean highlight ONLY near the curved upper liquid surface (Layer 2),
+            // leaving deep water dark sapphire so volumetric currents & Voronoi caustics have rich contrast!
+            float depthBelowMeniscus = max(midM - midP.y, 0.0);
+            float shallowLayer = exp(-depthBelowMeniscus * 3.2);
+
+            vec3 deepSapphireCurrent = mix(vec3(0.002, 0.025, 0.068), vec3(0.012, 0.145, 0.285), spiralRibbon);
+            vec3 ceruleanStreak      = vec3(0.024, 0.340, 0.560) * (filamentCrest * 0.75 + shallowLayer * 0.24);
+            vec3 emeraldFold         = mix(vec3(0.008, 0.140, 0.036), vec3(0.105, 0.460, 0.072), smoothstep(-0.15, 0.65, nDetail));
+
+            vec3 localEmission = deepSapphireCurrent * 0.22
+                               + ceruleanStreak * (0.28 + 0.72 * spiralRibbon) * 0.46
+                               + emeraldFold * jadeMask * (0.36 + 0.64 * spiralRibbon) * 0.62;
+
+            volumeGlow += localEmission * segLiquid * opticalTrans;
+            debugDensityAcc += vec3(emeraldFold.g * jadeMask * 1.4, spiralRibbon * 0.75, filamentCrest * 1.1) * segLiquid * opticalTrans;
+            if (debugFlowWeight < 0.01) {
+                debugFlowSample = normalize(advP - midP + vec3(1e-4)) * 0.5 + 0.5;
+                debugFlowWeight = 1.0;
+            }
+
+            opticalTrans *= exp(-segLiquid * 1.15 * absorptionDensity);
         }
+
+        prevT = currT;
+        prevDiff = currDiff;
     }
 
-    // Beer-Lambert optical absorption through the deep water volume (preserves rich dark ocean contrast!)
-    vec3 waterTransmittance = exp(-liquidPath * vec3(1.65, 0.48, 0.24) * (1.25 - uCoreTransparency * 0.42));
-    vec3 interiorCol = refractedBack * waterTransmittance + volumeGlow * uFluidIntensity;
-
-    // Crisp glossy 3D water-air meniscus wave highlight (iconic curved water horizon inside reference orb!)
+    // -----------------------------------------------------------------------
+    // 2B. RAZOR-SHARP PROJECTED DUAL-OCTAVE VORONOI UNDERWATER CAUSTICS (V05)
+    //     Evaluated cleanly at the refracted optical floor (ZERO volume smearing!)
+    // -----------------------------------------------------------------------
+    vec3 floorPos = rayOrg + rayDir * (tExit * 0.76);
+    float floorMeniscusY = meniscusHeight(floorPos.xz, uMeniscusPhase);
+    float floorSubmerged = invSmoothstep(floorMeniscusY - 0.10, floorMeniscusY + 0.08, floorPos.y);
+    vec2 causticSlope = vec2(0.0);
     if (hitMeniscus > 0.5) {
-        vec3 mN = meniscusNormal(meniscusHitPos.xz, t);
-        vec3 localV = normalize(-rayDir);
-        float mFres = pow(1.0 - max(dot(mN, localV), 0.0), 3.2);
-        vec3 mHalf = normalize(localV + normalize(vec3(-0.45, 0.78, 0.45)));
-        float mSpec = pow(max(dot(mN, mHalf), 0.0), 28.0);
-        // Dark refractive meniscus under-shadow + shimmering ice-cyan wave crest highlight
-        interiorCol *= (1.0 - 0.38 * mFres);
-        interiorCol += vec3(0.28, 0.88, 0.96) * (mFres * 0.55 + mSpec * 0.62) * uFluidIntensity;
+        meniscusNormal(meniscusHitPos.xz, uMeniscusPhase, causticSlope);
+    } else {
+        meniscusNormal(floorPos.xz, uMeniscusPhase, causticSlope);
     }
 
+    vec3 advFloor = advectFluidPos(floorPos, uCoreRotMat, uFluidPhase);
+    float voronoiNet = opticalCaustics(advFloor, causticSlope, uCausticsPhase);
+    // Concentrate luminous turquoise caustic web in the lower-center / lower-right crystal water belly
+    float bellyMask = invSmoothstep(-0.92, 0.10, floorPos.y)
+                    * invSmoothstep(0.04, 0.94, length(floorPos.xz - vec2(0.12, -0.04)));
+    float causticStrength = voronoiNet * floorSubmerged * (0.14 + 0.98 * bellyMask)
+                          * smoothstep(0.04, 0.45, liquidPath);
+    vec3 causticColor = mix(vec3(0.025, 0.560, 0.860), vec3(0.320, 1.250, 1.480), clamp(voronoiNet * 0.58, 0.0, 1.0))
+                      * causticStrength * 0.72 * uFluidIntensity;
+
+    // Debug Mode 1: Raw 3D Volumetric Fluid Density & Emerald/Sapphire Spiral Structure
+    if (uDebugMode == 1) {
+        fragColor = vec4(debugDensityAcc * 2.2 * uHdrScale, 1.0);
+        return;
+    }
+    // Debug Mode 2: 3D Advected Flow Direction Field
+    if (uDebugMode == 2) {
+        vec3 fCol = debugFlowWeight > 0.5 ? debugFlowSample : vec3(0.02, 0.05, 0.08);
+        fragColor = vec4(fCol * uHdrScale, 1.0);
+        return;
+    }
+    // Debug Mode 3: Exact Bisected 3D Meniscus Normal & Curvature
+    if (uDebugMode == 3) {
+        vec3 mVis = vec3(0.015, 0.04, 0.07);
+        if (hitMeniscus > 0.5) {
+            vec2 sl;
+            vec3 mn = meniscusNormal(meniscusHitPos.xz, uMeniscusPhase, sl) * meniscusCrossingDir;
+            mVis = mn * 0.5 + 0.5;
+        }
+        fragColor = vec4(mVis * uHdrScale, 1.0);
+        return;
+    }
+    // Debug Mode 4: Isolated Razor-Sharp Voronoi Underwater Caustics
+    if (uDebugMode == 4) {
+        fragColor = vec4((vec3(0.002, 0.015, 0.032) + causticColor * 1.45) * uHdrScale, 1.0);
+        return;
+    }
+
+    // Exponential Beer-Lambert deep-water optical transmittance (rich oceanic depth!)
+    vec3 waterTransmittance = exp(-liquidPath * vec3(2.15, 0.72, 0.36) * absorptionDensity);
+    vec3 interiorCol = refractedBack * waterTransmittance
+                     + (volumeGlow * uFluidIntensity)
+                     + causticColor;
+
+    // Crisp glossy 3D curved meniscus surface (dark TIR shadow lip + sharp silvery-cyan wave crest)
+    if (hitMeniscus > 0.5) {
+        vec2 mSlope;
+        vec3 mN = meniscusNormal(meniscusHitPos.xz, uMeniscusPhase, mSlope) * meniscusCrossingDir;
+        vec3 localV = normalize(-rayDir);
+        float mNdotV = clamp(dot(mN, localV), 0.0, 1.0);
+        float mFres = pow(1.0 - mNdotV, 3.6);
+        vec3 mHalf = normalize(localV + normalize(vec3(-0.52, 0.78, 0.38)));
+        float mSpec = pow(max(dot(mN, mHalf), 0.0), 72.0);
+        // Dark internal refractive trough directly at the wave edge + thin bright crest glint
+        interiorCol *= (1.0 - 0.52 * mFres);
+        interiorCol += vec3(0.16, 0.78, 0.96) * (mFres * 0.26 + mSpec * 0.85) * uFluidIntensity;
+    }
+
+    // Clear upper glass dome subtle cool-sapphire cavity tint (keeps upper dome crisp & transparent!)
+    float airCavity = invSmoothstep(0.02, 0.28, liquidPath);
+    interiorCol = mix(interiorCol, refractedBack * vec3(0.76, 0.92, 1.04) + vec3(0.004, 0.028, 0.056), airCavity * 0.55);
+
     // -----------------------------------------------------------------------
-    // 3. DOUBLE-WALL THICK BLOWN GLASS SHELL & ENERGY-CONSERVING SPECULARS
+    // 3. DOUBLE-WALL THICK BLOWN CRYSTAL GLASS SHELL (CRYSTAL-CLEAR CENTER, RAZOR RIM)
     // -----------------------------------------------------------------------
-    // Keep front center ultra-clear (Fresnel ~0.04) so deep liquid & caustics remain razor sharp!
-    float fresnelOuter = 0.035 + 0.965 * pow(1.0 - NdotV, 4.8);
-    float razorOuterRim = pow(1.0 - NdotV, 8.5);
-    // Secondary inner glass wall thickness ring (iconic blown crystal shell depth)
-    float innerWallRing = exp(-pow((NdotV - 0.24) / 0.072, 2.0));
-    // Subtle dark total-internal-reflection groove right between outer & inner glass walls
-    float glassGroove = exp(-pow((NdotV - 0.12) / 0.045, 2.0));
+    float fresnelOuter  = 0.024 + 0.976 * pow(1.0 - NdotV, 5.2);
+    float razorOuterRim = pow(1.0 - NdotV, 9.6);
+    float innerWallRing = exp(-pow((NdotV - 0.25) / 0.052, 2.0));
+    float glassGroove   = exp(-pow((NdotV - 0.14) / 0.038, 2.0));
 
     vec3 R = reflect(-V, pN);
     vec3 envRefl = sampleCrystalEnv(R);
 
-    // Directional color-split crystal rim matching reference:
-    // Fiery champagne-amber gold along upper-left, top & right; crisp ice-cyan along bottom-left & bottom
-    float warmRimWeight = smoothstep(-0.22, 0.55, VN.x * 0.74 + VN.y * 0.66);
-    float coolRimWeight = smoothstep(-0.15, 0.70, -VN.y * 0.78 - VN.x * 0.42);
-    vec3 fieryGoldRim = vec3(1.25, 0.76, 0.22);
-    vec3 champagneRim = vec3(1.35, 1.06, 0.62);
-    vec3 iceCyanRim   = vec3(0.26, 0.92, 1.12);
+    float warmRimWeight = smoothstep(-0.18, 0.58, VN.x * 0.72 + VN.y * 0.68);
+    float coolRimWeight = smoothstep(-0.12, 0.72, -VN.y * 0.78 - VN.x * 0.44);
+    vec3 fieryGoldRim = vec3(1.55, 0.88, 0.18);
+    vec3 champagneRim = vec3(1.75, 1.28, 0.62);
+    vec3 iceCyanRim   = vec3(0.20, 0.96, 1.28);
 
-    vec3 rimPalette = mix(iceCyanRim, mix(fieryGoldRim, champagneRim, razorOuterRim * 0.55), warmRimWeight);
+    vec3 rimPalette = mix(iceCyanRim, mix(fieryGoldRim, champagneRim, razorOuterRim * 0.60), warmRimWeight);
 
-    // Energy-conserving speculars (strictly NdotL-weighted & compact — NEVER washes out the left half!)
+    // Tight localized sunlit golden caustic glint at upper-left (10:30) — ZERO milky left-hemisphere haze!
     vec3 Lkey = normalize(uKeyLightDir);
     float NdotLKey = max(dot(pN, Lkey), 0.0);
     vec3 Hkey = normalize(V + Lkey);
     float NdotHKey = max(dot(pN, Hkey), 0.0);
-    float specKeyPinpoint = pow(NdotHKey, 160.0) * NdotLKey * 2.4;
-    float specKeyCurved   = pow(NdotHKey, 28.0)  * NdotLKey * 0.34;
+    float specKeyPinpoint = pow(NdotHKey, 240.0) * NdotLKey * 2.85;
+    float specKeyTightArc = pow(NdotHKey, 64.0)  * NdotLKey * 0.28;
 
-    // Delicate golden sunlit lightning-caustic veins radiating right inside the upper-left key window
-    float sunSpot = smoothstep(0.70, 0.97, dot(pN, Lkey));
-    float sunCaustics = sharpCaustics(vLocalPos * 2.5, t * 0.48) * sunSpot * 0.85;
-    vec3 keyHighlight = vec3(1.28, 1.04, 0.64) * (specKeyPinpoint + specKeyCurved + sunCaustics);
+    float sunSpot = smoothstep(0.84, 0.985, dot(pN, Lkey));
+    vec3 sunAdv = advectFluidPos(vLocalPos, uCoreRotMat, uFluidPhase * 0.6);
+    float sunCaustics = opticalCaustics(sunAdv * 1.10, vec2(0.0), uCausticsPhase * 0.65) * sunSpot * 0.58;
+    vec3 keyHighlight = vec3(1.65, 1.25, 0.62) * (specKeyPinpoint + specKeyTightArc + sunCaustics);
 
-    // Crisp right amber rim catchlight & bottom-left ice-cyan glint
     vec3 Lwarm = normalize(uWarmRimDir);
-    float specWarm = pow(max(dot(pN, normalize(V + Lwarm)), 0.0), 48.0) * max(dot(pN, Lwarm), 0.0) * 1.15;
+    float specWarm = pow(max(dot(pN, normalize(V + Lwarm)), 0.0), 72.0) * max(dot(pN, Lwarm), 0.0) * 0.95;
     vec3 Lcool = normalize(uCoolRimDir);
-    float specCool = pow(max(dot(pN, normalize(V + Lcool)), 0.0), 44.0) * max(dot(pN, Lcool), 0.0) * 0.75;
+    float specCool = pow(max(dot(pN, normalize(V + Lcool)), 0.0), 64.0) * max(dot(pN, Lcool), 0.0) * 0.62;
 
-    // Compose glass shell: crystal-clear transmission + subtle dark wall groove + double-wall rims + specular
-    vec3 col = interiorCol * (1.0 - glassGroove * 0.28);
-    float envBlend = clamp(fresnelOuter * (1.12 - uCoreTransparency * 0.38), 0.03, 0.76);
-    col = mix(col, envRefl, envBlend * 0.58);
+    // Debug Mode 5: Outer Glass Refraction + Double-Wall Fresnel + Speculars Only
+    vec3 baseInterior = (uDebugMode == 5) ? refractedBack : interiorCol;
 
-    // Double-rim crystal glass luminance (outer sharp shell + inner refracted wall ring)
-    col += rimPalette * (fresnelOuter * 0.72 + razorOuterRim * 1.15);
-    col += mix(iceCyanRim, fieryGoldRim, warmRimWeight * 0.85) * innerWallRing * 0.36;
-    col += iceCyanRim * coolRimWeight * innerWallRing * 0.24;
+    vec3 col = baseInterior * (1.0 - glassGroove * 0.42);
+    float envBlend = clamp(fresnelOuter * (1.04 - uCoreTransparency * 0.42), 0.020, 0.68);
+    col = mix(col, envRefl, envBlend * 0.52);
 
-    // Crisp specular highlights
+    // Crisp blown-glass double wall (outer golden/cyan razor edge + recessed secondary crystal ring)
+    col += rimPalette * (fresnelOuter * 0.58 + razorOuterRim * 1.25);
+    col += mix(iceCyanRim, fieryGoldRim, warmRimWeight * 0.86) * innerWallRing * 0.34;
+    col += iceCyanRim * coolRimWeight * innerWallRing * 0.22;
     col += keyHighlight + fieryGoldRim * specWarm + iceCyanRim * specCool;
 
-    col *= (0.82 + 0.24 * uOverallIntensity);
+    col *= (0.86 + 0.18 * uOverallIntensity);
 
-    float edgeAlpha = smoothstep(0.0, 0.045, NdotV);
+    float edgeAlpha = smoothstep(0.0, 0.040, NdotV);
     fragColor = vec4(col * uHdrScale, edgeAlpha);
 }
 """
