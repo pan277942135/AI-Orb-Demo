@@ -5,6 +5,7 @@ import android.opengl.Matrix
 import com.example.orb.config.AIOrbConfig
 import com.example.orb.config.RenderDebugMode
 import com.example.orb.geometry.OrbGeometryBuilder
+import com.example.orb.geometry.OrbGeometryBuilder.RibbonSurfaceProfile
 import com.example.orb.geometry.Vec3
 import com.example.orb.gl.GlMesh
 import com.example.orb.gl.GlShaderProgram
@@ -14,42 +15,60 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * Architectural role separation between canonical Resident orbital identities (5 frozen slots)
- * and independent Secondary Optical filaments/energy streams (freely scaled by visual density).
+ * Architectural role separation between the 5 frozen R06 Resident organic ribbons
+ * and optional ultra-subtle Secondary Optical inner accents.
  */
 enum class RibbonRole {
   RESIDENT,
   SECONDARY_OPTICAL,
 }
 
+/**
+ * Dominant spatial depth relationship relative to the central glass core.
+ * Note: Every ribbon is a true 3D curving surface that weaves in/out of depth;
+ * this property governs back-to-front transparent alpha draw order.
+ */
+enum class DominantDepthLayer(val sortOrder: Int) {
+  BACK(0),
+  FRONT(1),
+}
+
 data class RibbonDescriptor(
   val id: String,
+  val residentCode: String, // Frozen R06 identity: G01, G02, A01, A02, C01 (or SEC_*)
   val role: RibbonRole,
-  val style: Int, // 0 = Refractive Liquid-Glass, 1 = Gossamer Seaweed Silk, 2 = Hair-Fine AA Filament
+  val dominantLayer: DominantDepthLayer,
+  val renderOrder: Int, // Explicit back-to-front transparent ordering
+  val style: Int, // 0 = Cyan Liquid Glass (C01), 1 = Green Aquatic Silk (G01/G02), 2 = Champagne Gold Filament (A01/A02)
   val closed: Boolean,
   val controlPoints: List<Vec3>,
   val halfWidth: Float,
-  val twistTurns: Float,
-  val tiltXDeg: Float,
-  val tiltYDeg: Float,
-  val tiltZDeg: Float,
-  val orbitAxis: Vec3,
-  val orbitSpeedDegPerSec: Float,
-  val wobbleAmpDeg: Float,
-  val wobbleFreq: Float,
-  val waveAmp: Float,
-  val waveFreq: Float,
-  val phase: Float,
+  val surfaceProfile: RibbonSurfaceProfile,
+  val periodMs: Int, // Frozen R06 independent period (G01=6100, G02=5300, A01=3700, A02=2900, C01=4400)
+  val spatialSwayAxis: Vec3,
+  val spatialSwayDeg: Float, // Gentle organic spatial swirling drift (NO rigid planetary revolution!)
+  val secondarySwayDeg: Float,
+  val waveAmp: Float,        // Flexible spine bending amplitude
+  val waveFreq: Float,       // Traveling wave cycles along arc-length
+  val twistWaveAmpRad: Float,// Progressive dynamic local twist roll (radians)
+  val widthBreathAmp: Float, // Continuous local width breathing ratio
+  val phase: Float,          // Independent initial phase offset (radians)
   val colorA: FloatArray,
   val colorB: FloatArray,
-  val flowSpeed: Float,
+  val flowSpeed: Float,      // Internal material flow direction & rate
   val pulseOffset: Float,
+  val opacityScale: Float,
   val additiveBlend: Boolean,
 )
 
 /**
- * Manages 5 canonical RESIDENT orbital ribbons plus 5 independent SECONDARY_OPTICAL
- * fine filaments & accent streams, driven strictly by [AIOrbMotionSnapshot.ribbonTimeSec].
+ * Renders the 5 frozen R06 organic Resident ribbons (`C01`, `G01`, `G02`, `A01`, `A02`)
+ * reverse-engineered directly from the high-fidelity master (`278095.png`):
+ * - Irregular, asymmetric 3D hand-sculpted Catmull-Rom surfaces (ZERO concentric ellipses!)
+ * - Continuous `WidthProfile(s)`, asymmetric blade contours, and non-uniform 3D twist turnovers
+ * - Three layered motions per Resident: gentle spatial drift + progressive flexible bending/twist + internal fluid flow
+ * - Independent frozen R06 periods (6100ms / 5300ms / 3700ms / 2900ms / 4400ms) & independent phases
+ * - Spherical-front-surface back/front partitioning with back-to-front alpha draw sorting & genuine FBO glass refraction
  */
 class AIOrbOrbitRibbons {
   private var program: GlShaderProgram? = null
@@ -81,22 +100,32 @@ class AIOrbOrbitRibbons {
     meshes.forEach { it.release() }
     meshes.clear()
     for (desc in descriptors) {
-      val crossSlices = if (desc.style == 2) 3 else 6
+      val crossSlices = when (desc.style) {
+        1 -> 8 // Smooth curved cross-section for broad translucent botanical kelp leaves
+        0 -> 7 // Curved optical water sheet for C01
+        else -> 5 // Slender sculpted gold filament + soft halo veil
+      }
       meshes.add(
         OrbGeometryBuilder.createRibbonMesh(
           controlPoints = desc.controlPoints,
           segments = segments,
           closed = desc.closed,
           halfWidth = desc.halfWidth,
-          twistTurns = desc.twistTurns,
+          twistTurns = 0f,
           taperEnds = !desc.closed,
           crossSlices = crossSlices,
+          surfaceProfile = desc.surfaceProfile,
         )
       )
     }
     currentSegments = segments
   }
 
+  /**
+   * Computes gentle, non-rigid spatial swirling drift around the frozen master sculpture.
+   * Deliberately avoids continuous 360° planetary ring revolution so ribbons stay organically
+   * interlaced around the glass core while breathing and swaying smoothly in 3D.
+   */
   fun computeRibbonModelMatrix(
     index: Int,
     motion: AIOrbMotionSnapshot,
@@ -104,30 +133,38 @@ class AIOrbOrbitRibbons {
     outMatrix: FloatArray,
   ) {
     val d = descriptors[index]
-    val t = motion.ribbonTimeSec
+    val cycle = AIOrbMotionController.residentCyclePhase(motion.ribbonTimeSec, d.periodMs, d.phase)
     Matrix.setIdentityM(outMatrix, 0)
 
-    val radialScale = 0.25f + 0.75f * config.coreScale
+    val radialScale = (0.25f + 0.75f * config.coreScale) *
+      (1.0f + 0.018f * sin(cycle * 0.5f + d.phase * 0.7f))
     Matrix.scaleM(outMatrix, 0, radialScale, radialScale, radialScale)
 
-    val wobbleX = sin(t * d.wobbleFreq + d.phase) * d.wobbleAmpDeg
-    val wobbleZ = cos(t * d.wobbleFreq * 0.78f + d.phase * 1.4f) * (d.wobbleAmpDeg * 0.85f)
+    // Gentle multi-harmonic 3D spatial precession (bounded smoothly — NEVER spins like a planetary ring!)
+    val primarySway = sin(cycle * 0.5f) * d.spatialSwayDeg +
+      cos(cycle * 0.31f + d.phase) * (d.spatialSwayDeg * 0.35f)
+    val rollSway = cos(cycle * 0.5f + d.phase * 1.3f) * d.secondarySwayDeg
+    val pitchSway = sin(cycle * 0.38f - d.phase * 0.9f) * (d.secondarySwayDeg * 0.75f)
 
-    Matrix.rotateM(outMatrix, 0, d.tiltZDeg + wobbleZ, 0f, 0f, 1f)
-    Matrix.rotateM(outMatrix, 0, d.tiltXDeg + wobbleX, 1f, 0f, 0f)
-    Matrix.rotateM(outMatrix, 0, d.tiltYDeg, 0f, 1f, 0f)
-
-    val axis = d.orbitAxis
-    val angle = (t * d.orbitSpeedDegPerSec) % 360f
-    Matrix.rotateM(outMatrix, 0, angle, axis.x, axis.y, axis.z)
+    val axis = d.spatialSwayAxis
+    Matrix.rotateM(outMatrix, 0, primarySway, axis.x, axis.y, axis.z)
+    Matrix.rotateM(outMatrix, 0, rollSway, 0f, 0f, 1f)
+    Matrix.rotateM(outMatrix, 0, pitchSway, 1f, 0f, 0f)
   }
 
   fun evaluateWorldPoint(index: Int, u: Float, motion: AIOrbMotionSnapshot, config: AIOrbConfig): Vec3 {
     val d = descriptors[index]
     val spine = OrbGeometryBuilder.sampleCatmullRom(d.controlPoints, u, d.closed)
-    val t = motion.ribbonTimeSec
-    val angle = u * (2.0 * PI).toFloat() * d.waveFreq
-    val waveR = cos(angle * 0.5f - t * 0.58f + d.phase * 1.7f) * (d.waveAmp * 0.50f)
+    val cycle = AIOrbMotionController.residentCyclePhase(motion.ribbonTimeSec, d.periodMs, d.phase)
+    val waveArg = u * (2.0 * PI).toFloat() * d.waveFreq - cycle
+    val metrics = OrbGeometryBuilder.evaluateRibbonProfileAt(
+      u = u,
+      halfWidth = d.halfWidth,
+      closed = d.closed,
+      taperEnds = !d.closed,
+      profile = d.surfaceProfile,
+    )
+    val waveR = cos(waveArg * 0.5f + d.phase) * (d.waveAmp * 0.55f) * metrics.flexWeight
     val radial = spine.normalized()
     val local = spine + radial * waveR
 
@@ -140,7 +177,8 @@ class AIOrbOrbitRibbons {
 
   fun drawPass(
     clipPass: Int,
-    orbCenterViewZ: Float,
+    orbCenterViewPos: FloatArray,
+    scaledCoreRadius: Float,
     viewMatrix: FloatArray,
     projMatrix: FloatArray,
     cameraPos: FloatArray,
@@ -168,12 +206,16 @@ class AIOrbOrbitRibbons {
     prog.setFloat("uOverallIntensity", config.overallIntensity)
     prog.setFloat("uHdrScale", hdrScale)
     prog.setInt("uClipPass", clipPass)
-    prog.setFloat("uOrbCenterViewZ", orbCenterViewZ)
+    prog.setVec3("uOrbCenterViewPos", orbCenterViewPos[0], orbCenterViewPos[1], orbCenterViewPos[2])
+    prog.setFloat("uCoreShellRadius", scaledCoreRadius)
     prog.setInt("uDepthDebug", if (config.debugMode == RenderDebugMode.DEPTH_DEBUG) 1 else 0)
 
-    for (i in 0 until activeCount) {
+    // Strict back-to-front transparent alpha sorting among active ribbons
+    val drawIndices = (0 until activeCount).sortedBy { descriptors[it].renderOrder }
+    for (i in drawIndices) {
       val d = descriptors[i]
       computeRibbonModelMatrix(i, motion, config, modelMat)
+      val cycle = AIOrbMotionController.residentCyclePhase(motion.ribbonTimeSec, d.periodMs, d.phase)
 
       if (d.additiveBlend) {
         GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE)
@@ -183,9 +225,14 @@ class AIOrbOrbitRibbons {
 
       prog.setMat4("uModel", modelMat)
       prog.setInt("uRibbonStyle", d.style)
+      prog.setFloat("uCyclePhase", cycle)
       prog.setFloat("uWaveAmp", d.waveAmp)
       prog.setFloat("uWaveFreq", d.waveFreq)
+      prog.setFloat("uTwistWaveAmp", d.twistWaveAmpRad)
+      prog.setFloat("uWidthBreathAmp", d.widthBreathAmp)
       prog.setFloat("uRibbonPhase", d.phase)
+      prog.setFloat("uIsOpen", if (d.closed) 0f else 1f)
+      prog.setFloat("uOpacityScale", d.opacityScale)
       prog.setVec3("uColorA", d.colorA)
       prog.setVec3("uColorB", d.colorB)
       prog.setFloat("uFlowSpeed", d.flowSpeed)
@@ -207,284 +254,441 @@ class AIOrbOrbitRibbons {
   }
 
   companion object {
-    private fun organicOrbitPoints(
-      count: Int,
-      rx: Float,
-      rz: Float,
-      yAmp: Float,
-      yFreq: Float,
-      eccentricity: Float,
-      seedPhase: Float,
-      arcFraction: Float = 1.0f,
-      arcStartRad: Float = 0f,
-    ): List<Vec3> {
-      val pts = ArrayList<Vec3>(count)
-      for (i in 0 until count) {
-        val frac = if (arcFraction < 0.99f) i.toFloat() / (count - 1).toFloat() else i.toFloat() / count.toFloat()
-        val theta = arcStartRad + frac * arcFraction * (2.0 * PI).toFloat()
-        val rMod = 1.0f + eccentricity * sin(theta * 2f + seedPhase) + (eccentricity * 0.42f) * cos(theta * 3f - seedPhase)
-        val x = cos(theta) * rx * rMod
-        val z = sin(theta) * rz * rMod
-        val y = sin(theta * yFreq + seedPhase * 1.3f) * yAmp + cos(theta * (yFreq + 1f) - seedPhase) * (yAmp * 0.32f)
-        pts.add(Vec3(x, y, z))
-      }
-      return pts
-    }
+    const val PERIOD_G01_MS = 6100
+    const val PERIOD_G02_MS = 5300
+    const val PERIOD_A01_MS = 3700
+    const val PERIOD_A02_MS = 2900
+    const val PERIOD_C01_MS = 4400
 
     /**
-     * Choreographed strictly to the high-fidelity reference silhouette (linear HDR color values):
-     * - Indices 0..4: 5 Canonical RESIDENT orbital identities
-     * - Indices 5..9: 5 Delicate SECONDARY_OPTICAL glass filaments & subtle accent streams
+     * Five frozen R06 organic Resident ribbons calibrated directly against the sole frozen
+     * high-fidelity master `____________910d1531.png` (world frame: glass core radius ~0.80 at
+     * origin, camera on +Z):
+     *
+     * - Index 0 (`C01`, FRONT, 4400ms): Crystal-clear multi-walled ice-blue liquid-glass band
+     *   hugging top-left crown -> broad sculptural far-left C-arc (8:30 flare) -> crisp diagonal
+     *   slash across lower-front -> translucent lower-right cyan under-arc (5:30 sparkle).
+     * - Index 1 (`G01`, BACK, 6100ms): Crisp sunlit warm olive-emerald kelp blade arching boldly
+     *   over upper-right (12:30-2:30) -> twisting cleanly down right flank behind A02's golden loop.
+     * - Index 2 (`A02`, FRONT, 2900ms): Broad sculptural molten-amber & champagne-gold refractive
+     *   glass ribbon emerging from 10:30 upper-left flare -> weaving across lower-front (5:00) ->
+     *   iconic thick glowing golden crystal loop at 3:30 -> tapering behind upper-right rim.
+     * - Index 3 (`A01`, BACK, 3700ms): Lush translucent golden glass crown & outer-right ambient
+     *   loop enriching 10:00-12:00 top-left double-arch and 2:00-4:30 outer golden halo volume.
+     * - Index 4 (`G02`, FRONT, 5300ms): Iconic broad folded foreground warm olive-kelp leaf
+     *   wrapping left cheek -> lush translucent lower-left blade -> crisp 3D turnover pinch ->
+     *   curling tapered bottom tendril.
      */
-    fun buildRibbonDescriptors(): List<RibbonDescriptor> = listOf(
-      // --- 5 CANONICAL RESIDENT RIBBONS ---
-      // 0: Hero diagonal sweeping crystal glass ribbon (ice-cyan left -> warm molten champagne-gold right)
-      RibbonDescriptor(
-        id = "resident_0_crystal_ice_amber",
-        role = RibbonRole.RESIDENT,
-        style = 0,
-        closed = true,
-        controlPoints = organicOrbitPoints(16, rx = 1.34f, rz = 1.22f, yAmp = 0.14f, yFreq = 2f, eccentricity = 0.08f, seedPhase = 0.4f),
-        halfWidth = 0.082f,
-        twistTurns = 0.5f,
-        tiltXDeg = 22f,
-        tiltYDeg = -8f,
-        tiltZDeg = -24f,
-        orbitAxis = Vec3(0.06f, 0.99f, 0.08f).normalized(),
-        orbitSpeedDegPerSec = 7.6f,
-        wobbleAmpDeg = 4.2f,
-        wobbleFreq = 0.22f,
-        waveAmp = 0.032f,
-        waveFreq = 2f,
-        phase = 0.3f,
-        colorA = floatArrayOf(0.12f, 0.78f, 1.15f),
-        colorB = floatArrayOf(1.28f, 0.64f, 0.09f),
-        flowSpeed = 1.05f,
-        pulseOffset = 0.12f,
-        additiveBlend = false,
-      ),
-      // 1: Gossamer sweeping diagonal olive-emerald seaweed silk veil (top-right -> bottom-left)
-      RibbonDescriptor(
-        id = "resident_1_silk_jade_primary",
-        role = RibbonRole.RESIDENT,
-        style = 1,
-        closed = false,
-        controlPoints = organicOrbitPoints(16, rx = 1.32f, rz = 1.24f, yAmp = 0.26f, yFreq = 1.5f, eccentricity = 0.11f, seedPhase = 1.8f, arcFraction = 0.84f, arcStartRad = -0.45f),
-        halfWidth = 0.148f,
-        twistTurns = 0.85f,
-        tiltXDeg = 52f,
-        tiltYDeg = 18f,
-        tiltZDeg = 46f,
-        orbitAxis = Vec3(-0.15f, 0.96f, -0.18f).normalized(),
-        orbitSpeedDegPerSec = -4.6f,
-        wobbleAmpDeg = 5.2f,
-        wobbleFreq = 0.18f,
-        waveAmp = 0.056f,
-        waveFreq = 2f,
-        phase = 1.7f,
-        colorA = floatArrayOf(0.09f, 0.34f, 0.04f),
-        colorB = floatArrayOf(0.32f, 0.56f, 0.06f),
-        flowSpeed = 0.75f,
-        pulseOffset = 0.44f,
-        additiveBlend = false,
-      ),
-      // 2: Warm molten champagne-amber crystal ribbon arching upper-left & right flank
-      RibbonDescriptor(
-        id = "resident_2_champagne_amber_arc",
-        role = RibbonRole.RESIDENT,
-        style = 0,
-        closed = true,
-        controlPoints = organicOrbitPoints(16, rx = 1.28f, rz = 1.20f, yAmp = 0.18f, yFreq = 2f, eccentricity = 0.07f, seedPhase = 2.6f),
-        halfWidth = 0.068f,
-        twistTurns = -0.5f,
-        tiltXDeg = -28f,
-        tiltYDeg = 12f,
-        tiltZDeg = -32f,
-        orbitAxis = Vec3(0.14f, 0.96f, -0.20f).normalized(),
-        orbitSpeedDegPerSec = -8.8f,
-        wobbleAmpDeg = 4.5f,
-        wobbleFreq = 0.24f,
-        waveAmp = 0.030f,
-        waveFreq = 3f,
-        phase = 2.9f,
-        colorA = floatArrayOf(1.22f, 0.58f, 0.08f),
-        colorB = floatArrayOf(1.36f, 0.86f, 0.24f),
-        flowSpeed = -1.12f,
-        pulseOffset = 0.66f,
-        additiveBlend = false,
-      ),
-      // 3: Crisp ice-aqua crystal ribbon sweeping upper-left -> lower-right counter-orbit
-      RibbonDescriptor(
-        id = "resident_3_ice_aqua_counter",
-        role = RibbonRole.RESIDENT,
-        style = 0,
-        closed = true,
-        controlPoints = organicOrbitPoints(16, rx = 1.24f, rz = 1.28f, yAmp = 0.16f, yFreq = 2f, eccentricity = 0.06f, seedPhase = 4.1f),
-        halfWidth = 0.058f,
-        twistTurns = 0.5f,
-        tiltXDeg = 34f,
-        tiltYDeg = -18f,
-        tiltZDeg = 22f,
-        orbitAxis = Vec3(-0.10f, 0.98f, 0.14f).normalized(),
-        orbitSpeedDegPerSec = 10.2f,
-        wobbleAmpDeg = 4.0f,
-        wobbleFreq = 0.20f,
-        waveAmp = 0.028f,
-        waveFreq = 2f,
-        phase = 4.2f,
-        colorA = floatArrayOf(0.10f, 0.78f, 1.16f),
-        colorB = floatArrayOf(0.08f, 0.66f, 0.54f),
-        flowSpeed = 1.20f,
-        pulseOffset = 0.31f,
-        additiveBlend = false,
-      ),
-      // 4: Secondary wispy olive-emerald botanical silk veil weaving lower-left -> upper-right
-      RibbonDescriptor(
-        id = "resident_4_silk_jade_secondary",
-        role = RibbonRole.RESIDENT,
-        style = 1,
-        closed = false,
-        controlPoints = organicOrbitPoints(16, rx = 1.26f, rz = 1.32f, yAmp = 0.24f, yFreq = 2f, eccentricity = 0.10f, seedPhase = 5.2f, arcFraction = 0.78f, arcStartRad = 1.18f),
-        halfWidth = 0.118f,
-        twistTurns = -0.75f,
-        tiltXDeg = -44f,
-        tiltYDeg = -14f,
-        tiltZDeg = -48f,
-        orbitAxis = Vec3(0.18f, 0.95f, 0.20f).normalized(),
-        orbitSpeedDegPerSec = 4.2f,
-        wobbleAmpDeg = 5.0f,
-        wobbleFreq = 0.16f,
-        waveAmp = 0.048f,
-        waveFreq = 2f,
-        phase = 5.1f,
-        colorA = floatArrayOf(0.07f, 0.30f, 0.06f),
-        colorB = floatArrayOf(0.28f, 0.52f, 0.06f),
-        flowSpeed = -0.68f,
-        pulseOffset = 0.82f,
-        additiveBlend = false,
-      ),
+    fun buildRibbonDescriptors(): List<RibbonDescriptor> {
+      // --- C01: Ice-Blue Crystal Liquid-Glass Water Band (FRONT, 4400ms) ---
+      // Smooth 10-point 3D loop: hugs top-left -> bold far-left 8:30 C-arc -> diagonal front slash
+      // -> iconic 5:30 lower-right translucent cyan under-arc -> returns gracefully behind right.
+      val c01Points = listOf(
+        Vec3(0.24f, 1.00f, -0.26f),   // u=0.00 upper-right crown hugging glass
+        Vec3(-0.40f, 1.04f, -0.02f),  // u=0.10 top-left crown overlapping A01/A02
+        Vec3(-0.96f, 0.72f, 0.24f),   // u=0.20 upper-left widening water arch
+        Vec3(-1.22f, 0.20f, 0.54f),   // u=0.30 far-left sculptural broad cyan glass C-arc
+        Vec3(-1.02f, -0.26f, 0.80f),  // u=0.40 8:30 iconic bright ice-cyan flare bend!
+        Vec3(-0.34f, -0.46f, 0.96f),  // u=0.50 razor-clean diagonal slash across lower-front of orb
+        Vec3(0.42f, -0.70f, 0.84f),   // u=0.60 lower-right front sweep dipping cleanly toward 5:00
+        Vec3(0.74f, -0.98f, 0.38f),   // u=0.70 5:30 iconic translucent cyan lower-right under-arc!
+        Vec3(0.96f, -0.56f, -0.20f),  // u=0.80 curving smoothly up behind lower-right
+        Vec3(0.94f, 0.24f, -0.46f),   // u=0.90 ascending behind right flank
+      )
+      val c01Profile = RibbonSurfaceProfile(
+        widthControlPoints = floatArrayOf(0.60f, 0.84f, 1.12f, 1.38f, 1.18f, 0.82f, 0.86f, 0.96f, 0.64f, 0.56f),
+        leftAsymmetryPoints = floatArrayOf(0.94f, 1.06f, 1.18f, 1.22f, 1.10f, 0.96f, 0.94f, 1.08f, 0.96f, 0.92f),
+        rightAsymmetryPoints = floatArrayOf(1.06f, 0.94f, 0.86f, 0.84f, 0.94f, 1.06f, 1.08f, 0.94f, 1.04f, 1.08f),
+        twistProfileRad = floatArrayOf(0.20f, 0.52f, 0.30f, -0.14f, 0.16f, 0.62f, 1.22f, 1.88f, 1.16f, 0.20f),
+        camberFactor = 0.26f,
+        edgeWaveAmp = 0.045f,
+        edgeWaveFreq = 2.0f,
+        edgeWavePhase = 0.4f,
+        tipFlexWeight = 0.42f,
+      )
 
-      // --- 5 DELICATE SECONDARY OPTICAL FILAMENTS (SUBTLE ACCENTS — NEVER COMPETE WITH RESIDENTS) ---
-      RibbonDescriptor(
-        id = "secondary_5_outer_amber_aqua",
-        role = RibbonRole.SECONDARY_OPTICAL,
-        style = 0,
-        closed = true,
-        controlPoints = organicOrbitPoints(16, rx = 1.36f, rz = 1.28f, yAmp = 0.18f, yFreq = 2f, eccentricity = 0.07f, seedPhase = 0.9f),
-        halfWidth = 0.040f,
-        twistTurns = 0.5f,
-        tiltXDeg = -14f,
-        tiltYDeg = 20f,
-        tiltZDeg = -16f,
-        orbitAxis = Vec3(0.08f, 0.99f, -0.08f).normalized(),
-        orbitSpeedDegPerSec = 6.4f,
-        wobbleAmpDeg = 3.5f,
-        wobbleFreq = 0.19f,
-        waveAmp = 0.028f,
-        waveFreq = 3f,
-        phase = 0.9f,
-        colorA = floatArrayOf(0.14f, 0.80f, 1.06f),
-        colorB = floatArrayOf(1.26f, 0.62f, 0.09f),
-        flowSpeed = 0.88f,
-        pulseOffset = 0.55f,
-        additiveBlend = false,
-      ),
-      RibbonDescriptor(
-        id = "secondary_6_filament_ice_cyan",
-        role = RibbonRole.SECONDARY_OPTICAL,
-        style = 2,
-        closed = true,
-        controlPoints = organicOrbitPoints(16, rx = 1.36f, rz = 1.28f, yAmp = 0.22f, yFreq = 2f, eccentricity = 0.06f, seedPhase = 3.3f),
-        halfWidth = 0.024f,
-        twistTurns = 0f,
-        tiltXDeg = 40f,
-        tiltYDeg = -10f,
-        tiltZDeg = -24f,
-        orbitAxis = Vec3(-0.14f, 0.97f, 0.18f).normalized(),
-        orbitSpeedDegPerSec = 12.8f,
-        wobbleAmpDeg = 4.2f,
-        wobbleFreq = 0.24f,
-        waveAmp = 0.022f,
-        waveFreq = 3f,
-        phase = 3.3f,
-        colorA = floatArrayOf(0.18f, 0.86f, 1.15f),
-        colorB = floatArrayOf(0.10f, 0.74f, 0.96f),
-        flowSpeed = 1.40f,
-        pulseOffset = 0.22f,
-        additiveBlend = false,
-      ),
-      RibbonDescriptor(
-        id = "secondary_7_filament_champagne_gold",
-        role = RibbonRole.SECONDARY_OPTICAL,
-        style = 2,
-        closed = true,
-        controlPoints = organicOrbitPoints(16, rx = 1.34f, rz = 1.36f, yAmp = 0.20f, yFreq = 3f, eccentricity = 0.07f, seedPhase = 1.1f),
-        halfWidth = 0.022f,
-        twistTurns = 0f,
-        tiltXDeg = -34f,
-        tiltYDeg = 16f,
-        tiltZDeg = 30f,
-        orbitAxis = Vec3(0.16f, 0.96f, -0.18f).normalized(),
-        orbitSpeedDegPerSec = -11.5f,
-        wobbleAmpDeg = 4.0f,
-        wobbleFreq = 0.22f,
-        waveAmp = 0.020f,
-        waveFreq = 2f,
-        phase = 1.1f,
-        colorA = floatArrayOf(1.26f, 0.74f, 0.16f),
-        colorB = floatArrayOf(1.18f, 0.56f, 0.09f),
-        flowSpeed = -1.35f,
-        pulseOffset = 0.77f,
-        additiveBlend = false,
-      ),
-      RibbonDescriptor(
-        id = "secondary_8_emerald_aqua_accent",
-        role = RibbonRole.SECONDARY_OPTICAL,
-        style = 2,
-        closed = true,
-        controlPoints = organicOrbitPoints(16, rx = 1.22f, rz = 1.26f, yAmp = 0.18f, yFreq = 2f, eccentricity = 0.06f, seedPhase = 2.0f),
-        halfWidth = 0.024f,
-        twistTurns = 0f,
-        tiltXDeg = 54f,
-        tiltYDeg = 24f,
-        tiltZDeg = -46f,
-        orbitAxis = Vec3(0.22f, 0.94f, 0.24f).normalized(),
-        orbitSpeedDegPerSec = 9.0f,
-        wobbleAmpDeg = 4.2f,
-        wobbleFreq = 0.21f,
-        waveAmp = 0.024f,
-        waveFreq = 2f,
-        phase = 2.0f,
-        colorA = floatArrayOf(0.10f, 0.68f, 0.36f),
-        colorB = floatArrayOf(0.16f, 0.84f, 1.04f),
-        flowSpeed = 1.10f,
-        pulseOffset = 0.39f,
-        additiveBlend = false,
-      ),
-      RibbonDescriptor(
-        id = "secondary_9_solar_gold_filament",
-        role = RibbonRole.SECONDARY_OPTICAL,
-        style = 2,
-        closed = true,
-        controlPoints = organicOrbitPoints(16, rx = 1.38f, rz = 1.32f, yAmp = 0.22f, yFreq = 2f, eccentricity = 0.07f, seedPhase = 4.8f),
-        halfWidth = 0.022f,
-        twistTurns = 0f,
-        tiltXDeg = -52f,
-        tiltYDeg = -20f,
-        tiltZDeg = 16f,
-        orbitAxis = Vec3(-0.20f, 0.95f, -0.22f).normalized(),
-        orbitSpeedDegPerSec = -10.4f,
-        wobbleAmpDeg = 4.4f,
-        wobbleFreq = 0.19f,
-        waveAmp = 0.022f,
-        waveFreq = 3f,
-        phase = 4.8f,
-        colorA = floatArrayOf(1.24f, 0.68f, 0.12f),
-        colorB = floatArrayOf(0.24f, 0.86f, 1.04f),
-        flowSpeed = 1.32f,
-        pulseOffset = 0.91f,
-        additiveBlend = false,
-      ),
-    )
+      // --- G01: Warm Sunlit Olive-Emerald Aquatic Kelp Band (BACK, 6100ms, OPEN botanical frond) ---
+      val g01Points = listOf(
+        Vec3(-0.22f, 1.18f, -0.60f),  // slender tip emerging behind upper-left crown
+        Vec3(0.28f, 1.30f, -0.34f),   // arching boldly high over 1:00 upper-right
+        Vec3(0.78f, 1.08f, -0.14f),   // broad sunlit warm olive-emerald kelp blade
+        Vec3(1.14f, 0.62f, -0.08f),   // crisp outer-right frond clearly framed behind orb
+        Vec3(1.22f, 0.12f, -0.22f),   // graceful 3D turnover waist right behind golden loop
+        Vec3(1.04f, -0.32f, -0.34f),  // re-flaring warm olive-green translucent ribbon
+        Vec3(0.70f, -0.68f, -0.42f),  // tucking smoothly inward behind lower-right
+        Vec3(0.28f, -0.92f, -0.54f),  // tapering translucent kelp tail
+        Vec3(-0.14f, -1.04f, -0.68f), // delicate vanishing tip behind bottom
+      )
+      val g01Profile = RibbonSurfaceProfile(
+        widthControlPoints = floatArrayOf(0.10f, 0.66f, 1.22f, 1.38f, 0.56f, 1.12f, 0.78f, 0.36f, 0.06f),
+        leftAsymmetryPoints = floatArrayOf(0.86f, 0.76f, 0.72f, 0.78f, 1.04f, 0.80f, 0.88f, 0.94f, 0.90f),
+        rightAsymmetryPoints = floatArrayOf(1.10f, 1.26f, 1.32f, 1.24f, 0.96f, 1.22f, 1.14f, 1.06f, 1.00f),
+        twistProfileRad = floatArrayOf(-0.22f, 0.18f, 0.46f, 0.92f, 2.08f, 2.72f, 3.12f, 3.45f, 3.68f),
+        camberFactor = 0.25f,
+        edgeWaveAmp = 0.10f,
+        edgeWaveFreq = 2.4f,
+        edgeWavePhase = 1.2f,
+        tipFlexWeight = 0.94f,
+      )
+
+      // --- A02: Broad Sculptural Molten-Amber & Champagne-Gold Glass Band (FRONT, 2900ms) ---
+      val a02Points = listOf(
+        Vec3(0.08f, 1.06f, -0.40f),   // u=0.00 tapered start behind top-center
+        Vec3(-0.54f, 1.04f, 0.10f),   // u=0.11 rising thick & bright over 11:00 crown
+        Vec3(-0.94f, 0.66f, 0.44f),   // u=0.22 10:30 blazing warm-gold shoulder flare!
+        Vec3(-0.98f, 0.08f, 0.68f),   // u=0.33 sweeping down left cheek intertwined with C01
+        Vec3(-0.36f, -0.40f, 0.90f),  // u=0.44 gliding diagonally across lower-front of orb
+        Vec3(0.38f, -0.66f, 0.88f),   // u=0.55 5:00 luminous golden rim crossing!
+        Vec3(1.02f, -0.58f, 0.64f),   // u=0.66 flaring into iconic broad lower-right golden loop
+        Vec3(1.24f, -0.14f, 0.42f),   // u=0.77 3:30 strongest blazing orange-gold outer curve!
+        Vec3(1.06f, 0.40f, 0.14f),    // u=0.88 sweeping warmly back along right shoulder
+        Vec3(0.56f, 0.84f, -0.24f),   // u=0.94 tapering gracefully behind upper-right rim
+        Vec3(0.02f, 0.96f, -0.48f),   // u=1.00 delicate vanishing golden tail
+      )
+      val a02Profile = RibbonSurfaceProfile(
+        widthControlPoints = floatArrayOf(0.14f, 0.92f, 1.18f, 0.92f, 0.84f, 1.06f, 1.36f, 1.42f, 1.04f, 0.58f, 0.08f),
+        leftAsymmetryPoints = floatArrayOf(0.95f, 1.12f, 1.06f, 0.92f, 0.94f, 1.04f, 1.16f, 1.10f, 0.96f, 0.94f, 1.00f),
+        rightAsymmetryPoints = floatArrayOf(1.05f, 0.88f, 0.94f, 1.08f, 1.06f, 0.96f, 0.86f, 0.92f, 1.04f, 1.06f, 1.00f),
+        twistProfileRad = floatArrayOf(0.0f, 0.36f, 0.72f, 0.48f, 0.18f, -0.24f, -0.52f, -0.22f, 0.28f, 0.62f, 0.85f),
+        camberFactor = 0.22f,
+        edgeWaveAmp = 0.055f,
+        edgeWaveFreq = 2.6f,
+        edgeWavePhase = 2.6f,
+        tipFlexWeight = 0.76f,
+      )
+
+      // --- A01: Lush Translucent Golden Glass Crown & Outer-Right Veil Band (BACK, 3700ms) ---
+      val a01Points = listOf(
+        Vec3(-1.04f, 0.18f, -0.26f),  // delicate start behind mid-left
+        Vec3(-0.92f, 0.78f, -0.06f),  // rising warmly behind 10:00 upper-left
+        Vec3(-0.46f, 1.14f, -0.10f),  // 11:30 double-layered sunlit top-left crown arch!
+        Vec3(0.22f, 1.12f, -0.32f),   // arching broadly behind top-right
+        Vec3(0.84f, 0.82f, -0.34f),   // weaving behind upper-right green kelp
+        Vec3(1.26f, 0.26f, -0.16f),   // wide outer-right atmospheric amber glass loop
+        Vec3(1.26f, -0.34f, -0.08f),  // sweeping brightly down outer-right flank behind A02
+        Vec3(0.88f, -0.82f, -0.32f),  // curving back behind lower-right
+        Vec3(0.22f, -1.04f, -0.52f),  // gossamer golden tail fading behind bottom
+      )
+      val a01Profile = RibbonSurfaceProfile(
+        widthControlPoints = floatArrayOf(0.12f, 0.88f, 1.24f, 0.86f, 0.96f, 1.26f, 1.08f, 0.64f, 0.08f),
+        leftAsymmetryPoints = floatArrayOf(1.00f, 1.08f, 1.12f, 0.94f, 0.92f, 1.10f, 1.06f, 0.96f, 1.00f),
+        rightAsymmetryPoints = floatArrayOf(1.00f, 0.92f, 0.88f, 1.06f, 1.08f, 0.90f, 0.94f, 1.04f, 1.00f),
+        twistProfileRad = floatArrayOf(-0.18f, 0.26f, 0.68f, 0.94f, 0.48f, 0.06f, -0.34f, -0.62f, -0.84f),
+        camberFactor = 0.18f,
+        edgeWaveAmp = 0.05f,
+        edgeWaveFreq = 2.2f,
+        edgeWavePhase = 4.1f,
+        tipFlexWeight = 0.72f,
+      )
+
+      // --- G02: Iconic Broad Folded Foreground Warm Olive-Kelp Leaf (FRONT, 5300ms) ---
+      val g02Points = listOf(
+        Vec3(-0.92f, 0.48f, -0.36f),  // emerging cleanly from behind upper-left flank
+        Vec3(-1.12f, 0.02f, 0.12f),   // curling forward tightly around left cheek of orb
+        Vec3(-1.08f, -0.46f, 0.48f),  // swelling into broad translucent lower-left kelp leaf
+        Vec3(-0.78f, -0.82f, 0.66f),  // widest lush folded foreground olive-emerald blade
+        Vec3(-0.48f, -1.00f, 0.50f),  // iconic crisp 3D turnover pinch from master ____________910d1531.png!
+        Vec3(-0.32f, -1.20f, 0.30f),  // unfurling downward into sunlit curving secondary leaf lobe
+        Vec3(-0.04f, -1.32f, 0.14f),  // sweeping smoothly right-downward under orb
+        Vec3(0.26f, -1.36f, -0.06f),  // slender undulating sunlit kelp tendril
+        Vec3(0.48f, -1.26f, -0.24f),  // delicate tapered vanishing tip
+      )
+      val g02Profile = RibbonSurfaceProfile(
+        widthControlPoints = floatArrayOf(0.10f, 0.72f, 1.28f, 1.46f, 0.48f, 1.04f, 0.66f, 0.30f, 0.06f),
+        leftAsymmetryPoints = floatArrayOf(0.90f, 1.20f, 1.30f, 1.32f, 0.94f, 1.22f, 1.12f, 1.02f, 0.95f),
+        rightAsymmetryPoints = floatArrayOf(1.06f, 0.78f, 0.70f, 0.72f, 1.06f, 0.80f, 0.88f, 0.96f, 1.00f),
+        twistProfileRad = floatArrayOf(0.16f, -0.10f, -0.24f, 0.20f, 1.88f, 2.86f, 3.42f, 3.96f, 4.32f),
+        camberFactor = 0.28f,
+        edgeWaveAmp = 0.11f,
+        edgeWaveFreq = 2.6f,
+        edgeWavePhase = 3.5f,
+        tipFlexWeight = 0.98f,
+      )
+
+      fun offsetControlPoints(src: List<Vec3>, dx: Float, dy: Float, dz: Float): List<Vec3> =
+        src.map { Vec3(it.x + dx, it.y + dy, it.z + dz) }
+
+      return listOf(
+        // ==================== 5 FROZEN R06 RESIDENT IDENTITIES ====================
+        // 0: C01 — Crystal-Clear Multi-Walled Ice-Blue Liquid-Glass Band (FRONT, 4400ms)
+        RibbonDescriptor(
+          id = "resident_C01_ice_cyan_water_band",
+          residentCode = "C01",
+          role = RibbonRole.RESIDENT,
+          dominantLayer = DominantDepthLayer.FRONT,
+          renderOrder = 2,
+          style = 0,
+          closed = true,
+          controlPoints = c01Points,
+          halfWidth = 0.138f,
+          surfaceProfile = c01Profile,
+          periodMs = PERIOD_C01_MS,
+          spatialSwayAxis = Vec3(0.18f, 0.92f, 0.34f).normalized(),
+          spatialSwayDeg = 6.2f,
+          secondarySwayDeg = 3.6f,
+          waveAmp = 0.056f,
+          waveFreq = 2.0f,
+          twistWaveAmpRad = 0.34f,
+          widthBreathAmp = 0.08f,
+          phase = 0.35f,
+          colorA = floatArrayOf(0.04f, 0.62f, 1.48f),  // Pure vivid sapphire-cyan (ACES + sRGB calibrated)
+          colorB = floatArrayOf(0.28f, 1.18f, 1.62f),  // Crystal bright ice-cyan
+          flowSpeed = 1.15f,
+          pulseOffset = 0.14f,
+          opacityScale = 1.00f,
+          additiveBlend = false,
+        ),
+        // 1: G01 — Crisp Sunlit Warm Olive-Emerald Kelp Blade (BACK, 6100ms)
+        RibbonDescriptor(
+          id = "resident_G01_emerald_kelp_back",
+          residentCode = "G01",
+          role = RibbonRole.RESIDENT,
+          dominantLayer = DominantDepthLayer.BACK,
+          renderOrder = 0,
+          style = 1,
+          closed = false,
+          controlPoints = g01Points,
+          halfWidth = 0.178f,
+          surfaceProfile = g01Profile,
+          periodMs = PERIOD_G01_MS,
+          spatialSwayAxis = Vec3(-0.22f, 0.90f, -0.36f).normalized(),
+          spatialSwayDeg = 6.8f,
+          secondarySwayDeg = 4.2f,
+          waveAmp = 0.088f,
+          waveFreq = 1.85f,
+          twistWaveAmpRad = 0.52f,
+          widthBreathAmp = 0.10f,
+          phase = 1.65f,
+          colorA = floatArrayOf(0.040f, 0.155f, 0.008f), // Rich deep moss-olive (near-zero blue!)
+          colorB = floatArrayOf(0.320f, 0.520f, 0.028f), // Warm sunlit Vallisneria olive-emerald
+          flowSpeed = 0.80f,
+          pulseOffset = 0.42f,
+          opacityScale = 0.96f,
+          additiveBlend = false,
+        ),
+        // 2: A02 — Broad Sculptural Molten-Amber & Champagne-Gold Glass Band (FRONT, 2900ms)
+        RibbonDescriptor(
+          id = "resident_A02_warm_gold_front",
+          residentCode = "A02",
+          role = RibbonRole.RESIDENT,
+          dominantLayer = DominantDepthLayer.FRONT,
+          renderOrder = 3,
+          style = 2,
+          closed = false,
+          controlPoints = a02Points,
+          halfWidth = 0.118f,
+          surfaceProfile = a02Profile,
+          periodMs = PERIOD_A02_MS,
+          spatialSwayAxis = Vec3(0.24f, 0.91f, -0.32f).normalized(),
+          spatialSwayDeg = 5.8f,
+          secondarySwayDeg = 3.4f,
+          waveAmp = 0.048f,
+          waveFreq = 2.4f,
+          twistWaveAmpRad = 0.28f,
+          widthBreathAmp = 0.07f,
+          phase = 2.85f,
+          colorA = floatArrayOf(1.58f, 0.46f, 0.015f), // Rich molten amber-orange (zero grey-beige!)
+          colorB = floatArrayOf(2.15f, 1.24f, 0.180f), // Radiant sunlit champagne-gold
+          flowSpeed = 1.32f,
+          pulseOffset = 0.64f,
+          opacityScale = 1.00f,
+          additiveBlend = false,
+        ),
+        // 3: A01 — Lush Translucent Golden Glass Crown & Outer-Right Veil (BACK, 3700ms)
+        RibbonDescriptor(
+          id = "resident_A01_warm_gold_back",
+          residentCode = "A01",
+          role = RibbonRole.RESIDENT,
+          dominantLayer = DominantDepthLayer.BACK,
+          renderOrder = 1,
+          style = 2,
+          closed = false,
+          controlPoints = a01Points,
+          halfWidth = 0.092f,
+          surfaceProfile = a01Profile,
+          periodMs = PERIOD_A01_MS,
+          spatialSwayAxis = Vec3(-0.16f, 0.94f, 0.28f).normalized(),
+          spatialSwayDeg = 5.4f,
+          secondarySwayDeg = 3.1f,
+          waveAmp = 0.044f,
+          waveFreq = 2.1f,
+          twistWaveAmpRad = 0.24f,
+          widthBreathAmp = 0.06f,
+          phase = 4.30f,
+          colorA = floatArrayOf(1.46f, 0.42f, 0.012f), // Deep warm amber-gold
+          colorB = floatArrayOf(1.98f, 1.10f, 0.150f), // Soft glowing champagne-gold
+          flowSpeed = -1.10f,
+          pulseOffset = 0.28f,
+          opacityScale = 0.82f,
+          additiveBlend = false,
+        ),
+        // 4: G02 — Iconic Broad Folded Foreground Warm Olive-Kelp Leaf (FRONT, 5300ms)
+        RibbonDescriptor(
+          id = "resident_G02_emerald_kelp_front",
+          residentCode = "G02",
+          role = RibbonRole.RESIDENT,
+          dominantLayer = DominantDepthLayer.FRONT,
+          renderOrder = 4,
+          style = 1,
+          closed = false,
+          controlPoints = g02Points,
+          halfWidth = 0.195f,
+          surfaceProfile = g02Profile,
+          periodMs = PERIOD_G02_MS,
+          spatialSwayAxis = Vec3(0.28f, 0.88f, 0.36f).normalized(),
+          spatialSwayDeg = 7.2f,
+          secondarySwayDeg = 4.5f,
+          waveAmp = 0.096f,
+          waveFreq = 1.75f,
+          twistWaveAmpRad = 0.56f,
+          widthBreathAmp = 0.11f,
+          phase = 5.20f,
+          colorA = floatArrayOf(0.045f, 0.165f, 0.008f), // Deep translucent moss-olive fold
+          colorB = floatArrayOf(0.340f, 0.560f, 0.032f), // Warm sunlit botanical olive-emerald
+          flowSpeed = -0.88f,
+          pulseOffset = 0.82f,
+          opacityScale = 1.00f,
+          additiveBlend = false,
+        ),
+
+        // ==================== 5 OPTIONAL INNER OPTICAL ACCENTS (OFF BY DEFAULT AT ribbonCount = 5) ====================
+        // Strictly paired along the sculpted Resident trajectories — NEVER independent mechanical rings!
+        RibbonDescriptor(
+          id = "secondary_5_c01_inner_refractive_vein",
+          residentCode = "SEC_C01",
+          role = RibbonRole.SECONDARY_OPTICAL,
+          dominantLayer = DominantDepthLayer.FRONT,
+          renderOrder = 5,
+          style = 0,
+          closed = true,
+          controlPoints = offsetControlPoints(c01Points, 0.03f, -0.02f, 0.02f),
+          halfWidth = 0.042f,
+          surfaceProfile = c01Profile,
+          periodMs = PERIOD_C01_MS,
+          spatialSwayAxis = Vec3(0.18f, 0.92f, 0.34f).normalized(),
+          spatialSwayDeg = 6.2f,
+          secondarySwayDeg = 3.6f,
+          waveAmp = 0.052f,
+          waveFreq = 2.0f,
+          twistWaveAmpRad = 0.30f,
+          widthBreathAmp = 0.06f,
+          phase = 0.55f,
+          colorA = floatArrayOf(0.06f, 0.72f, 1.54f),
+          colorB = floatArrayOf(0.32f, 1.24f, 1.66f),
+          flowSpeed = 1.30f,
+          pulseOffset = 0.48f,
+          opacityScale = 0.34f,
+          additiveBlend = false,
+        ),
+        RibbonDescriptor(
+          id = "secondary_6_a02_inner_shimmer_thread",
+          residentCode = "SEC_A02",
+          role = RibbonRole.SECONDARY_OPTICAL,
+          dominantLayer = DominantDepthLayer.FRONT,
+          renderOrder = 6,
+          style = 2,
+          closed = false,
+          controlPoints = offsetControlPoints(a02Points, -0.02f, 0.03f, 0.02f),
+          halfWidth = 0.036f,
+          surfaceProfile = a02Profile,
+          periodMs = PERIOD_A02_MS,
+          spatialSwayAxis = Vec3(0.24f, 0.91f, -0.32f).normalized(),
+          spatialSwayDeg = 5.8f,
+          secondarySwayDeg = 3.4f,
+          waveAmp = 0.044f,
+          waveFreq = 2.4f,
+          twistWaveAmpRad = 0.24f,
+          widthBreathAmp = 0.05f,
+          phase = 3.10f,
+          colorA = floatArrayOf(1.62f, 0.50f, 0.02f),
+          colorB = floatArrayOf(2.15f, 1.28f, 0.20f),
+          flowSpeed = 1.45f,
+          pulseOffset = 0.22f,
+          opacityScale = 0.30f,
+          additiveBlend = false,
+        ),
+        RibbonDescriptor(
+          id = "secondary_7_a01_inner_shimmer_thread",
+          residentCode = "SEC_A01",
+          role = RibbonRole.SECONDARY_OPTICAL,
+          dominantLayer = DominantDepthLayer.BACK,
+          renderOrder = 7,
+          style = 2,
+          closed = false,
+          controlPoints = offsetControlPoints(a01Points, 0.02f, 0.02f, -0.02f),
+          halfWidth = 0.032f,
+          surfaceProfile = a01Profile,
+          periodMs = PERIOD_A01_MS,
+          spatialSwayAxis = Vec3(-0.16f, 0.94f, 0.28f).normalized(),
+          spatialSwayDeg = 5.4f,
+          secondarySwayDeg = 3.1f,
+          waveAmp = 0.040f,
+          waveFreq = 2.1f,
+          twistWaveAmpRad = 0.20f,
+          widthBreathAmp = 0.05f,
+          phase = 4.60f,
+          colorA = floatArrayOf(1.48f, 0.44f, 0.015f),
+          colorB = floatArrayOf(2.00f, 1.14f, 0.16f),
+          flowSpeed = -1.20f,
+          pulseOffset = 0.76f,
+          opacityScale = 0.28f,
+          additiveBlend = false,
+        ),
+        RibbonDescriptor(
+          id = "secondary_8_g02_translucent_tendril",
+          residentCode = "SEC_G02",
+          role = RibbonRole.SECONDARY_OPTICAL,
+          dominantLayer = DominantDepthLayer.FRONT,
+          renderOrder = 8,
+          style = 1,
+          closed = false,
+          controlPoints = offsetControlPoints(g02Points, 0.04f, -0.03f, 0.03f),
+          halfWidth = 0.064f,
+          surfaceProfile = g02Profile,
+          periodMs = PERIOD_G02_MS,
+          spatialSwayAxis = Vec3(0.28f, 0.88f, 0.36f).normalized(),
+          spatialSwayDeg = 7.2f,
+          secondarySwayDeg = 4.5f,
+          waveAmp = 0.088f,
+          waveFreq = 1.75f,
+          twistWaveAmpRad = 0.48f,
+          widthBreathAmp = 0.08f,
+          phase = 5.55f,
+          colorA = floatArrayOf(0.045f, 0.17f, 0.008f),
+          colorB = floatArrayOf(0.34f, 0.56f, 0.032f),
+          flowSpeed = -0.96f,
+          pulseOffset = 0.35f,
+          opacityScale = 0.34f,
+          additiveBlend = false,
+        ),
+        RibbonDescriptor(
+          id = "secondary_9_g01_translucent_tendril",
+          residentCode = "SEC_G01",
+          role = RibbonRole.SECONDARY_OPTICAL,
+          dominantLayer = DominantDepthLayer.BACK,
+          renderOrder = 9,
+          style = 1,
+          closed = false,
+          controlPoints = offsetControlPoints(g01Points, -0.03f, 0.02f, -0.03f),
+          halfWidth = 0.058f,
+          surfaceProfile = g01Profile,
+          periodMs = PERIOD_G01_MS,
+          spatialSwayAxis = Vec3(-0.22f, 0.90f, -0.36f).normalized(),
+          spatialSwayDeg = 6.8f,
+          secondarySwayDeg = 4.2f,
+          waveAmp = 0.082f,
+          waveFreq = 1.85f,
+          twistWaveAmpRad = 0.44f,
+          widthBreathAmp = 0.07f,
+          phase = 2.00f,
+          colorA = floatArrayOf(0.040f, 0.16f, 0.008f),
+          colorB = floatArrayOf(0.32f, 0.52f, 0.028f),
+          flowSpeed = 0.90f,
+          pulseOffset = 0.88f,
+          opacityScale = 0.32f,
+          additiveBlend = false,
+        ),
+      )
+    }
   }
 }

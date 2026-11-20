@@ -173,7 +173,8 @@ class AIOrbMotionTest {
   @Test
   fun isolateCoreDebugLocksOuterShellCompletelyWhileCoreRotates() {
     val controller = AIOrbMotionController()
-    val cfg = AIOrbConfig.Default.copy(isolateCoreDebug = true, coreScale = 1.05f)
+    val cfg = AIOrbConfig.Default.copy(isolateCoreDebug = true, coreScale = 1.05f, coreShellScale = 0.80f)
+    val expectedShellScale = 1.05f * 0.80f
 
     var lastSnap = controller.step(0.0, cfg)
     repeat(180) {
@@ -181,12 +182,61 @@ class AIOrbMotionTest {
       assertEquals(0f, lastSnap.outerGlassYawDeg, 1e-6f)
       assertEquals(0f, lastSnap.outerGlassPitchDeg, 1e-6f)
       assertEquals(0f, lastSnap.outerGlassRollDeg, 1e-6f)
-      assertEquals(1.05f, lastSnap.outerGlassScaleX, 1e-6f)
-      assertEquals(1.05f, lastSnap.outerGlassScaleY, 1e-6f)
-      assertEquals(1.05f, lastSnap.outerGlassScaleZ, 1e-6f)
+      assertEquals(expectedShellScale, lastSnap.outerGlassScaleX, 1e-6f)
+      assertEquals(expectedShellScale, lastSnap.outerGlassScaleY, 1e-6f)
+      assertEquals(expectedShellScale, lastSnap.outerGlassScaleZ, 1e-6f)
     }
 
     assertTrue("Core must still rotate visibly in isolate mode", lastSnap.coreRotationAngleDeg > 65f)
+  }
+
+  @Test
+  fun coreShellScaleIndependentlyScalesCoreAndExactInverseMatrix() {
+    val c1 = AIOrbMotionController()
+    val c2 = AIOrbMotionController()
+    val cfgDefault = AIOrbConfig.Default.copy(coreScale = 1.0f, coreShellScale = 0.80f)
+    val cfgFull = AIOrbConfig.Default.copy(coreScale = 1.0f, coreShellScale = 1.00f)
+
+    repeat(90) {
+      c1.step(1.0 / 60.0, cfgDefault)
+      c2.step(1.0 / 60.0, cfgFull)
+    }
+    val snap80 = c1.step(0.0, cfgDefault)
+    val snap100 = c2.step(0.0, cfgFull)
+
+    assertEquals(0.80f, snap80.outerGlassScaleX / snap100.outerGlassScaleX, 1e-4f)
+    assertEquals(0.80f, snap80.outerGlassScaleY / snap100.outerGlassScaleY, 1e-4f)
+    assertEquals(0.80f, snap80.outerGlassScaleZ / snap100.outerGlassScaleZ, 1e-4f)
+
+    val model = FloatArray(16)
+    val inv = FloatArray(16)
+    snap80.writeOuterGlassModelMatrix(model)
+    snap80.writeInvOuterGlassModelMatrix(inv)
+
+    for (row in 0..3) {
+      for (col in 0..3) {
+        var sum = 0f
+        for (k in 0..3) {
+          sum += model[k * 4 + row] * inv[col * 4 + k]
+        }
+        val expected = if (row == col) 1f else 0f
+        assertEquals("Scaled M*M^-1 mismatch at ($row,$col)", expected, sum, 1e-4f)
+      }
+    }
+  }
+
+  @Test
+  fun energyHighlightCenterGuardAttenuatesCoreInteriorUsingScaledRadius() {
+    val scaledRadius = AIOrbConfig.Default.coreScale * AIOrbConfig.Default.coreShellScale // 0.80f
+    val center = com.example.orb.scene.AIOrbEnergyHighlights.computeCenterGuard(0.0f, scaledRadius)
+    val midCore = com.example.orb.scene.AIOrbEnergyHighlights.computeCenterGuard(0.50f, scaledRadius)
+    val rimEdge = com.example.orb.scene.AIOrbEnergyHighlights.computeCenterGuard(0.76f, scaledRadius)
+    val outerArc = com.example.orb.scene.AIOrbEnergyHighlights.computeCenterGuard(1.15f, scaledRadius)
+
+    assertTrue("Core center flare guard must be near-zero (< 0.05), got $center", center < 0.05f)
+    assertTrue("Mid-core flare guard must be near-zero (< 0.05), got $midCore", midCore < 0.05f)
+    assertTrue("Rim edge must transition smoothly, got $rimEdge", rimEdge in 0.10f..0.90f)
+    assertEquals("Outer orbital ribbon flares must stay full brightness", 1.0f, outerArc, 1e-4f)
   }
 
   @Test
@@ -196,5 +246,44 @@ class AIOrbMotionTest {
     val snap = controller.step(2.5, cfg) // huge 2.5s hitch
     assertEquals(0.05, snap.simTimeSec, 1e-6)
     assertTrue("Core rotation on clamped hitch must be < 3 deg", snap.coreRotationAngleDeg < 3.0f)
+  }
+
+  @Test
+  fun residentCyclePhasesAreIndependentSeamlessAndFpsInvariant() {
+    val periods = listOf(6100, 5300, 3700, 2900, 4400)
+    val phases = listOf(1.65f, 5.20f, 4.30f, 2.85f, 0.35f)
+    val twoPi = (2.0 * kotlin.math.PI).toFloat()
+
+    // Exact 2*PI seamless cycle advance over 1 full period for every R06 Resident
+    for (i in periods.indices) {
+      val periodSec = periods[i] / 1000.0f
+      val p0 = AIOrbMotionController.residentCyclePhase(0.0f, periods[i], phases[i])
+      val p1 = AIOrbMotionController.residentCyclePhase(periodSec, periods[i], phases[i])
+      assertEquals("Period ${periods[i]}ms must advance by exact 2*PI", twoPi, p1 - p0, 1e-4f)
+    }
+
+    // Verify 60fps vs 20fps produce identical resident phases at t = 6.0s
+    val ctrl60 = AIOrbMotionController()
+    val ctrl20 = AIOrbMotionController()
+    val cfg = AIOrbConfig.Default
+    var s60 = ctrl60.step(0.0, cfg)
+    repeat(360) { s60 = ctrl60.step(1.0 / 60.0, cfg) }
+    var s20 = ctrl20.step(0.0, cfg)
+    repeat(120) { s20 = ctrl20.step(1.0 / 20.0, cfg) }
+
+    val wrappedAt6s = periods.indices.map { i ->
+      val a60 = AIOrbMotionController.residentCyclePhase(s60.ribbonTimeSec, periods[i], phases[i])
+      val a20 = AIOrbMotionController.residentCyclePhase(s20.ribbonTimeSec, periods[i], phases[i])
+      assertEquals("FPS-invariant resident phase for ${periods[i]}ms", a60, a20, 1e-3f)
+      ((a60 % twoPi) + twoPi) % twoPi
+    }
+
+    // All 5 Residents must sit at distinct cycle phases (non-synchronized motion)
+    for (i in wrappedAt6s.indices) {
+      for (j in i + 1 until wrappedAt6s.size) {
+        val diff = abs(wrappedAt6s[i] - wrappedAt6s[j])
+        assertTrue("Residents $i and $j must not synchronize phases", diff > 0.15f)
+      }
+    }
   }
 }

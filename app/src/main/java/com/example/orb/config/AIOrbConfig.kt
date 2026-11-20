@@ -18,7 +18,7 @@ enum class QualityTier(
     fluidSubdivisions = 2,
     ribbonSegments = 72,
     bloomIterations = 2,
-    raymarchSteps = 12,
+    raymarchSteps = 16,
   ),
   MEDIUM(
     displayName = "Medium",
@@ -27,7 +27,7 @@ enum class QualityTier(
     fluidSubdivisions = 3,
     ribbonSegments = 104,
     bloomIterations = 3,
-    raymarchSteps = 16,
+    raymarchSteps = 32,
   ),
   HIGH(
     displayName = "High",
@@ -36,12 +36,12 @@ enum class QualityTier(
     fluidSubdivisions = 3,
     ribbonSegments = 128,
     bloomIterations = 4,
-    raymarchSteps = 20,
+    raymarchSteps = 48,
   ),
 }
 
 /**
- * Production-pipeline GPU diagnostic & isolation modes (Sections 4.3 & XVII).
+ * Production-pipeline GPU diagnostic & isolation modes (V2 + V3 WebP 3D Volume).
  * Every GPU diagnostic mode executes the real production shaders and render passes —
  * never a parallel fake shader. `REFERENCE_ONLY` is strictly an isolated QA image viewer
  * and is never composited with `GPU_ONLY` or `FULL_RENDER`.
@@ -52,6 +52,9 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
   REFERENCE_ONLY(0, "Reference Only"),
   CORE_ONLY(0, "Core Only"),
   CORE_ROTATION_ONLY(0, "Core Rotation"),
+  CORE_GLASS_ONLY(5, "Core Glass"),
+  FLUID_VOLUME_ONLY(7, "Fluid Volume"),
+  VOLUME_DEPTH(8, "Volume Depth"),
   FLUID_DENSITY(1, "Fluid Density"),
   FLUID_FLOW(2, "Fluid Flow"),
   MENISCUS_DEBUG(3, "Meniscus"),
@@ -66,6 +69,9 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
   val isCoreIsolated: Boolean
     get() = this == CORE_ROTATION_ONLY ||
       this == CORE_ONLY ||
+      this == CORE_GLASS_ONLY ||
+      this == FLUID_VOLUME_ONLY ||
+      this == VOLUME_DEPTH ||
       this == FLUID_DENSITY ||
       this == FLUID_FLOW ||
       this == MENISCUS_DEBUG ||
@@ -77,16 +83,17 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
 }
 
 /**
- * Centralized, immutable configuration contract for AI Orb Active State V2.
+ * Centralized, immutable configuration contract for AI Orb Active State V3.
  * UI-agnostic and portable across Android OpenGL ES 3.0 rendering pipelines.
  */
 data class AIOrbConfig(
   val coreScale: Float = 1.0f,
+  val coreShellScale: Float = 0.80f,
   val coreTransparency: Float = 0.90f,
   val refraction: Float = 0.76f,
   val fluidSpeed: Float = 1.0f,
   val fluidIntensity: Float = 1.08f,
-  val ribbonCount: Int = 8,
+  val ribbonCount: Int = 5,
   val ribbonWidth: Float = 1.0f,
   val ribbonSpeed: Float = 1.0f,
   val ribbonTransparency: Float = 0.86f,
@@ -114,10 +121,11 @@ data class AIOrbConfig(
     return buildString {
       appendLine("{")
       appendLine("  \"schema\": \"AI_ORB_ACTIVE_STATE_VISUAL_DEMO_V1\",")
-      appendLine("  \"version\": \"V2_FULL_VISUAL_RESTORE\",")
+      appendLine("  \"version\": \"V3_WEBP_3D_VOLUME_HYBRID\",")
       appendLine("  \"state\": \"AI_ORB_ACTIVE\",")
       appendLine("  \"renderMode\": \"${debugMode.name}\",")
       appendLine("  \"coreScale\": ${f(coreScale)},")
+      appendLine("  \"coreShellScale\": ${f(coreShellScale)},")
       appendLine("  \"coreTransparency\": ${f(coreTransparency)},")
       appendLine("  \"refraction\": ${f(refraction)},")
       appendLine("  \"fluidSpeed\": ${f(fluidSpeed)},")

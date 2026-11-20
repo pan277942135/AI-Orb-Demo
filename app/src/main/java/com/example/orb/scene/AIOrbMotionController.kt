@@ -186,22 +186,23 @@ class AIOrbMotionController {
     val sY: Float
     val sZ: Float
 
+    val shellBaseScale = config.coreScale * config.coreShellScale
     if (config.effectiveLockCoreRotation) {
       // Fixed outer shell & scale for isolated core-rotation QA verification
       outerYaw = 0f
       outerPitch = 0f
       outerRoll = 0f
-      sX = config.coreScale
-      sY = config.coreScale
-      sZ = config.coreScale
+      sX = shellBaseScale
+      sY = shellBaseScale
+      sZ = shellBaseScale
     } else {
       val breathe = 1.0f +
         0.013f * sin(t * 0.78f) +
         0.007f * sin(t * 1.29f + 1.15f) +
         0.003f * cos(t * 0.49f + 2.4f)
-      sX = config.coreScale * breathe * (1.0f + 0.006f * sin(t * 0.62f))
-      sY = config.coreScale * breathe * (1.0f + 0.006f * cos(t * 0.68f + 0.8f))
-      sZ = config.coreScale * breathe * (1.0f - 0.005f * sin(t * 0.55f + 1.6f))
+      sX = shellBaseScale * breathe * (1.0f + 0.006f * sin(t * 0.62f))
+      sY = shellBaseScale * breathe * (1.0f + 0.006f * cos(t * 0.68f + 0.8f))
+      sZ = shellBaseScale * breathe * (1.0f - 0.005f * sin(t * 0.55f + 1.6f))
       outerYaw = sin(t * 0.21f) * 3.2f
       outerPitch = sin(t * 0.27f + 0.7f) * 2.8f
       outerRoll = cos(t * 0.19f + 1.4f) * 2.2f
@@ -274,6 +275,27 @@ class AIOrbMotionController {
       m[1] * v.x + m[4] * v.y + m[7] * v.z,
       m[2] * v.x + m[5] * v.y + m[8] * v.z,
     )
+
+    /**
+     * Multiplies the transpose (exact orthogonal inverse) of a column-major 3x3 rotation matrix [m] by [v].
+     * Mirrors GLSL `transpose(uCoreRotMat) * v`.
+     */
+    fun mulMat3TransposeVec3(m: FloatArray, v: Vec3): Vec3 = Vec3(
+      m[0] * v.x + m[1] * v.y + m[2] * v.z,
+      m[3] * v.x + m[4] * v.y + m[5] * v.z,
+      m[6] * v.x + m[7] * v.y + m[8] * v.z,
+    )
+
+    /**
+     * Computes seamless continuous angular phase (radians) for an independent Resident ribbon
+     * using its frozen R06 period in milliseconds. Uses monotonic `ribbonTimeSec` so trajectories
+     * remain identical across 20fps/60fps/120fps with zero cycle wrap seams.
+     */
+    fun residentCyclePhase(ribbonTimeSec: Float, periodMs: Int, phaseOffsetRad: Float): Float {
+      val periodSec = (periodMs.coerceAtLeast(500)) / 1000.0
+      val cycles = ribbonTimeSec.toDouble() / periodSec
+      return ((cycles * 2.0 * PI) + phaseOffsetRad.toDouble()).toFloat()
+    }
 
     fun wrapAngleDeg(angle: Float): Float = ((angle % 360f) + 360f) % 360f
   }

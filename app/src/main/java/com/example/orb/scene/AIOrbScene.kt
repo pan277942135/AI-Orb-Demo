@@ -1,5 +1,6 @@
 package com.example.orb.scene
 
+import android.content.res.AssetManager
 import android.opengl.EGL14
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
@@ -15,7 +16,8 @@ import kotlin.math.sin
 import kotlin.math.tan
 
 /**
- * Live runtime & GPU hardware/software telemetry reported by [AIOrbScene].
+ * Live runtime & GPU hardware/software telemetry reported by [AIOrbScene],
+ * including V3 WebP 3D Volume decode, upload, and VRAM metrics.
  */
 data class AIOrbTelemetry(
   val fps: Int = 60,
@@ -30,20 +32,29 @@ data class AIOrbTelemetry(
   val glVersion: String = "OpenGL ES 3.0",
   val eglVersion: String = "EGL 1.4+",
   val isSoftwareRenderer: Boolean = false,
+  val volumeLoaded: Boolean = false,
+  val volumeDimensions: String = "256x256x32",
+  val webpDecodeMs: Float = 0f,
+  val texture3dUploadMs: Float = 0f,
+  val gpuVolumeMemoryMiB: Float = 0f,
+  val volumeStatus: String = "Pending V3 WebP load",
 ) {
   val fboFormatLabel: String get() = if (isHdrFbo) "RGBA16F (HDR)" else "RGBA8 (Linear-HDR 0.25x)"
   val renderingBackendLabel: String get() = if (isSoftwareRenderer) "SOFTWARE RENDERING" else "HARDWARE GPU"
 }
 
 /**
- * Unified OpenGL ES 3.0 scene renderer for AI Orb Active State V2.
+ * Unified OpenGL ES 3.0 scene renderer for AI Orb Active State V3
+ * (WebP-First 3D Volume Hybrid Rendering).
  *
- * 100% pure procedural GPU multi-pass pipeline — ZERO static reference image textures.
- * Supports all production diagnostic isolation modes ([RenderDebugMode]) strictly by
- * toggling/visualizing real production render passes.
+ * - Decodes Lossless RGBA WebP 3D fluid volume (256x256x32) + optical/detail maps into GLES 3.0
+ * - Renders a SINGLE unified internal 3D liquid volume inside the double-wall crystal glass shell
+ *   (duplicate V2 back-wall fluid pass retired at runtime!)
+ * - Preserves 100% of the Plan B 5-Resident outer organic ribbon system & depth split
  */
 class AIOrbScene(
   initialConfig: AIOrbConfig = AIOrbConfig.Default,
+  private val assetManager: AssetManager? = null,
   private val onTelemetryUpdated: (AIOrbTelemetry) -> Unit = {},
 ) : GLSurfaceView.Renderer {
 
@@ -52,12 +63,14 @@ class AIOrbScene(
   private val motionController = AIOrbMotionController()
   private val lighting = AIOrbLighting()
   private val background = AIOrbBackground()
-  private val innerFluid = AIOrbInnerFluid()
   private val core = AIOrbCore()
   private val orbitRibbons = AIOrbOrbitRibbons()
   private val energyHighlights = AIOrbEnergyHighlights()
   private val particles = AIOrbParticles()
   private val postProcessing = AIOrbPostProcessing()
+
+  /** V3 executes strictly one unified 3D volume fluid renderer (zero duplicate inner-bowl fluid pass). */
+  val isV3SingleVolumePipeline: Boolean = true
 
   private val projMatrix = FloatArray(16)
   private val viewMatrix = FloatArray(16)
@@ -110,8 +123,7 @@ class AIOrbScene(
     GLES30.glEnable(GLES30.GL_DEPTH_TEST)
 
     background.init()
-    innerFluid.init(cfg.quality.fluidSubdivisions)
-    core.init(cfg.quality.icosphereSubdivisions)
+    core.init(cfg.quality.icosphereSubdivisions, assetManager)
     orbitRibbons.init(cfg.quality.ribbonSegments)
     energyHighlights.init()
     particles.init()
@@ -134,6 +146,7 @@ class AIOrbScene(
     cpuWindowCount = 0
     cpuWindowCursor = 0
 
+    val volTel = core.volumeTelemetry
     onTelemetryUpdated(
       AIOrbTelemetry(
         fps = 60,
@@ -148,6 +161,12 @@ class AIOrbScene(
         glVersion = glVersion,
         eglVersion = eglVersion,
         isSoftwareRenderer = isSoftwareRenderer,
+        volumeLoaded = volTel.isLoaded,
+        volumeDimensions = volTel.dimensionsLabel,
+        webpDecodeMs = volTel.decodeTimeMs,
+        texture3dUploadMs = volTel.uploadTimeMs,
+        gpuVolumeMemoryMiB = volTel.gpuMemoryMiB,
+        volumeStatus = volTel.statusMessage,
       )
     )
   }
@@ -175,7 +194,6 @@ class AIOrbScene(
     val dt = rawDt.toFloat().coerceIn(0.0001f, 0.05f)
     val time = motion.simTimeSec.toFloat()
 
-    innerFluid.ensureQuality(cfg.quality.fluidSubdivisions)
     core.ensureQuality(cfg.quality.icosphereSubdivisions)
     orbitRibbons.ensureQuality(cfg.quality.ribbonSegments)
     postProcessing.resize(surfaceWidth, surfaceHeight, cfg.quality)
@@ -189,7 +207,7 @@ class AIOrbScene(
     currentYawDeg += (targetYawDeg - currentYawDeg) * follow
     currentPitchDeg += (targetPitchDeg - currentPitchDeg) * follow
 
-    // Calibrated reference composition (V14): strong ~54% hero orb presence + zero ribbon clipping
+    // Calibrated reference composition: strong ~52% hero orb presence + zero ribbon clipping
     val aspect = surfaceWidth.toFloat() / surfaceHeight.toFloat()
     val tanHalfY = tan(Math.toRadians(fovYDeg.toDouble() * 0.5)).toFloat()
     val tanHalfX = (tanHalfY * aspect).coerceAtLeast(0.10f)
@@ -242,13 +260,9 @@ class AIOrbScene(
     val drawRibbons = !hideOuter && mode != RenderDebugMode.OPTICS_ONLY
     val drawHighlights = !hideOuter && mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
     val drawParticles = !hideOuter && mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
-    val drawInnerFluid = mode != RenderDebugMode.RIBBONS_ONLY &&
-      mode != RenderDebugMode.OPTICS_ONLY &&
-      mode != RenderDebugMode.GLASS_ONLY &&
-      mode != RenderDebugMode.DEPTH_DEBUG
     val drawCore = mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.OPTICS_ONLY
 
-    // ==================== MULTI-PASS PRODUCTION GPU PIPELINE ====================
+    // ==================== V3 SINGLE-VOLUME MULTI-PASS GPU PIPELINE ====================
     postProcessing.beginScenePass()
 
     // Pass 1: Deep emerald-teal atmospheric space & multi-depth bokeh
@@ -259,9 +273,10 @@ class AIOrbScene(
       particles.drawPass(0, orbCenterViewZ, viewMatrix, projMatrix, motion, hdrScale, cfg)
     }
 
-    // Pass 3: Back-hemisphere 3D ribbons (refracted through the glass crystal sphere)
+    // Pass 3: Back-hemisphere & behind-glass-dome 3D organic Resident ribbons (refracted through glass core)
+    val scaledCoreRadius = (cfg.coreScale * cfg.coreShellScale).coerceAtLeast(0.4f)
     if (drawRibbons) {
-      orbitRibbons.drawPass(0, orbCenterViewZ, viewMatrix, projMatrix, cameraPos, motion, hdrScale, cfg)
+      orbitRibbons.drawPass(0, orbOriginView, scaledCoreRadius, viewMatrix, projMatrix, cameraPos, motion, hdrScale, cfg)
     }
 
     // Pass 4: Back-hemisphere travelling HDR starburst flares
@@ -269,17 +284,13 @@ class AIOrbScene(
       energyHighlights.drawPass(0, orbCenterViewZ, orbitRibbons, viewMatrix, projMatrix, motion, hdrScale, cfg)
     }
 
-    // Pass 5: Concave inner back-wall liquid bowl (locked to unified uCoreRotMat)
-    if (drawInnerFluid) {
-      innerFluid.draw(outerGlassModel, viewMatrix, projMatrix, motion, hdrScale, cfg)
-    }
-
-    // Pass 6: Capture background + back ribbons + concave inner bowl for optical lens refraction
+    // Pass 5 (V3): Capture background + back ribbons ONLY for clean crystal refraction
+    // (V2 duplicate concave inner-bowl fluid pass retired — ZERO dual fluid overlap!)
     if (drawCore) {
       postProcessing.captureRefractionSnapshot()
     }
 
-    // Pass 7: Outer blown crystal glass sphere + rotating vortex volume + bisected meniscus + Voronoi caustics
+    // Pass 6 (V3): Unified WebP 3D Volume Raymarch (`sampler3D uFluidVolume`) + Double-Wall Crystal Glass Shell
     if (drawCore) {
       core.draw(
         outerGlassModel = outerGlassModel,
@@ -297,12 +308,12 @@ class AIOrbScene(
       )
     }
 
-    // Pass 8: Front-hemisphere 3D ribbons (hardware depth-tested against outer glass sphere!)
+    // Pass 7: Front-of-glass-dome 3D organic Resident ribbons (hardware depth-tested against outer glass sphere!)
     if (drawRibbons) {
-      orbitRibbons.drawPass(1, orbCenterViewZ, viewMatrix, projMatrix, cameraPos, motion, hdrScale, cfg)
+      orbitRibbons.drawPass(1, orbOriginView, scaledCoreRadius, viewMatrix, projMatrix, cameraPos, motion, hdrScale, cfg)
     }
 
-    // Pass 9: Front-hemisphere jewel starbursts & foreground crystal water droplets
+    // Pass 8: Front-hemisphere jewel starbursts & foreground crystal water droplets
     if (drawHighlights) {
       energyHighlights.drawPass(1, orbCenterViewZ, orbitRibbons, viewMatrix, projMatrix, motion, hdrScale, cfg)
     }
@@ -310,10 +321,10 @@ class AIOrbScene(
       particles.drawPass(1, orbCenterViewZ, viewMatrix, projMatrix, motion, hdrScale, cfg)
     }
 
-    // Pass 10: High-threshold HDR Bloom + ACES Filmic + True sRGB 2.2 Composite
+    // Pass 9: High-threshold HDR Bloom + ACES Filmic + True sRGB 2.2 Composite
     postProcessing.executePostProcessToScreen(cfg)
 
-    // Record CPU render-thread duration & update rolling P50/P95 + FPS telemetry every 500ms
+    // Record CPU render-thread duration & update rolling P50/P95 + FPS + V3 Volume telemetry every 500ms
     val cpuMs = (System.nanoTime() - frameStartNanos) * 1e-6f
     cpuFrameMsWindow[cpuWindowCursor] = cpuMs
     cpuWindowCursor = (cpuWindowCursor + 1) % cpuFrameMsWindow.size
@@ -326,6 +337,7 @@ class AIOrbScene(
       val sorted = cpuFrameMsWindow.copyOf(cpuWindowCount).apply { sort() }
       val p50 = if (sorted.isNotEmpty()) sorted[sorted.size / 2] else 0f
       val p95 = if (sorted.isNotEmpty()) sorted[((sorted.size - 1) * 0.95f).toInt()] else 0f
+      val volTel = core.volumeTelemetry
 
       onTelemetryUpdated(
         AIOrbTelemetry(
@@ -341,6 +353,12 @@ class AIOrbScene(
           glVersion = glVersion,
           eglVersion = eglVersion,
           isSoftwareRenderer = isSoftwareRenderer,
+          volumeLoaded = volTel.isLoaded,
+          volumeDimensions = volTel.dimensionsLabel,
+          webpDecodeMs = volTel.decodeTimeMs,
+          texture3dUploadMs = volTel.uploadTimeMs,
+          gpuVolumeMemoryMiB = volTel.gpuMemoryMiB,
+          volumeStatus = volTel.statusMessage,
         )
       )
       fpsFrameCount = 0
@@ -350,7 +368,6 @@ class AIOrbScene(
 
   fun release() {
     background.release()
-    innerFluid.release()
     core.release()
     orbitRibbons.release()
     energyHighlights.release()
@@ -375,8 +392,38 @@ class AIOrbScene(
     }
 
     /**
-     * Authoritative render pass execution manifest for a given [RenderDebugMode],
-     * audited directly by unit tests for P0-1 provenance & pass-order integrity.
+     * V3 authoritative single-volume render pass manifest: verifies ZERO duplicate internal fluid
+     * rendering pass and clean WebP 3D Volume + Crystal Glass Shell execution order.
+     */
+    fun activeRenderPassesV3(mode: RenderDebugMode): List<String> {
+      if (mode == RenderDebugMode.REFERENCE_ONLY) {
+        return listOf("QA_STATIC_REFERENCE_VIEWER_ONLY (NO_GPU_COMPOSITE)")
+      }
+      val hideOuter = mode.isCoreIsolated
+      val drawRibbons = !hideOuter && mode != RenderDebugMode.OPTICS_ONLY
+      val drawHighlights = !hideOuter && mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
+      val drawParticles = !hideOuter && mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
+      val drawCore = mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.OPTICS_ONLY
+
+      return buildList {
+        add("PASS_1_BACKGROUND_LINEAR_TEAL_BOKEH")
+        if (drawParticles) add("PASS_2_BACK_DROPLETS_PARTICLES")
+        if (drawRibbons) add("PASS_3_BACK_RIBBONS_RESIDENT_AND_SECONDARY")
+        if (drawHighlights) add("PASS_4_BACK_STARBURST_HIGHLIGHTS")
+        if (drawCore) add("PASS_5_REFRACTION_FBO_BLIT_SNAPSHOT")
+        if (drawCore) add("PASS_6_V3_WEBP_3D_VOLUME_RAYMARCH_AND_CRYSTAL_GLASS_SHELL")
+        if (drawRibbons) add("PASS_7_FRONT_RIBBONS_DEPTH_TESTED")
+        if (drawHighlights) add("PASS_8A_FRONT_STARBURST_HIGHLIGHTS")
+        if (drawParticles) add("PASS_8B_FRONT_DROPLETS_PARTICLES")
+        add(
+          if (mode == RenderDebugMode.BLOOM_OFF) "PASS_9_ACES_SRGB_COMPOSITE_BLOOM_OFF"
+          else "PASS_9_HDR_BLOOM_ACES_SRGB_COMPOSITE"
+        )
+      }
+    }
+
+    /**
+     * Legacy V2 pass-order compatibility manifest preserved intact for V2 regression tests.
      */
     fun activeRenderPasses(mode: RenderDebugMode): List<String> {
       if (mode == RenderDebugMode.REFERENCE_ONLY) {
@@ -389,6 +436,7 @@ class AIOrbScene(
       val drawInnerFluid = mode != RenderDebugMode.RIBBONS_ONLY &&
         mode != RenderDebugMode.OPTICS_ONLY &&
         mode != RenderDebugMode.GLASS_ONLY &&
+        mode != RenderDebugMode.CORE_GLASS_ONLY &&
         mode != RenderDebugMode.DEPTH_DEBUG
       val drawCore = mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.OPTICS_ONLY
 
@@ -399,7 +447,7 @@ class AIOrbScene(
         if (drawHighlights) add("PASS_4_BACK_STARBURST_HIGHLIGHTS")
         if (drawInnerFluid) add("PASS_5_CONCAVE_INNER_FLUID_BOWL")
         if (drawCore) add("PASS_6_REFRACTION_FBO_BLIT_SNAPSHOT")
-        if (drawCore) add("PASS_7_OUTER_CRYSTAL_CORE_MENISCUS_VORONOI_CAUSTICS")
+        if (drawCore) add("PASS_7_OUTER_CRYSTAL_CORE_MENISCUS_DOMAIN_WARP_CAUSTICS")
         if (drawRibbons) add("PASS_8_FRONT_RIBBONS_DEPTH_TESTED")
         if (drawHighlights) add("PASS_9A_FRONT_STARBURST_HIGHLIGHTS")
         if (drawParticles) add("PASS_9B_FRONT_DROPLETS_PARTICLES")

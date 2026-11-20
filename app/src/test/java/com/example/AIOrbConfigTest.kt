@@ -14,8 +14,12 @@ class AIOrbConfigTest {
 
   @Test
   fun configExportsValidJsonWithAllParameters() {
+    assertEquals(0.80f, AIOrbConfig.Default.coreShellScale, 1e-5f)
+    assertEquals(5, AIOrbConfig.Default.ribbonCount)
+
     val config = AIOrbConfig(
       coreScale = 1.15f,
+      coreShellScale = 0.82f,
       ribbonCount = 9,
       bloom = 0.65f,
       quality = QualityTier.MEDIUM,
@@ -23,6 +27,7 @@ class AIOrbConfigTest {
     val json = config.toJson()
     assertTrue(json.contains("\"schema\": \"AI_ORB_ACTIVE_STATE_VISUAL_DEMO_V1\""))
     assertTrue(json.contains("\"coreScale\": 1.150"))
+    assertTrue(json.contains("\"coreShellScale\": 0.820"))
     assertTrue(json.contains("\"ribbonCount\": 9"))
     assertTrue(json.contains("\"bloom\": 0.650"))
     assertTrue(json.contains("\"quality\": \"MEDIUM\""))
@@ -40,9 +45,9 @@ class AIOrbConfigTest {
     vm.togglePause()
     assertTrue(vm.uiState.value.config.isPaused)
 
-    vm.updateConfig { it.copy(coreScale = 1.3f, ribbonCount = 5) }
+    vm.updateConfig { it.copy(coreScale = 1.3f, ribbonCount = 7) }
     assertEquals(1.3f, vm.uiState.value.config.coreScale, 1e-4f)
-    assertEquals(5, vm.uiState.value.config.ribbonCount)
+    assertEquals(7, vm.uiState.value.config.ribbonCount)
 
     vm.resetConfig()
     assertEquals(AIOrbConfig.Default, vm.uiState.value.config)

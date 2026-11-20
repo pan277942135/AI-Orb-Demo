@@ -13,18 +13,22 @@ import kotlin.math.sqrt
 
 private data class FlareSpec(
   val ribbonIndex: Int,
-  val baseU: Float,
-  val travelSpeed: Float,
+  val anchorU: Float,
+  val localDriftAmp: Float,
+  val driftFreq: Float,
   val pulseFreq: Float,
   val pulsePhase: Float,
   val baseSize: Float,
+  val intensityGain: Float,
   val isGold: Boolean,
 )
 
 /**
- * Renders 6 curated, jewel-like HDR pinpoint starburst highlights gliding along the outer
- * orbital ribbon arcs. Automatically attenuates any flare crossing directly over the center
- * of the crystal glass sphere so the water interior & caustics never wash out.
+ * Renders 6 curated, jewel-like HDR pinpoint starburst highlights anchored along the iconic
+ * high-curvature bends of the active 5 Resident ribbons (8:30 ice-cyan, 5:30 ice-cyan,
+ * 10:30 warm gold, 3:30 blazing orange-gold, 5:00 lower-right gold, 11:30 top-left crown).
+ * Each flare glides gently along its bend while breathing in sync with passing ribbon light,
+ * and attenuates automatically if any flare crosses over the glass sphere center.
  */
 class AIOrbEnergyHighlights {
   private var program: GlShaderProgram? = null
@@ -32,18 +36,25 @@ class AIOrbEnergyHighlights {
   private val viewPosTemp = FloatArray(4)
   private val worldPosTemp = FloatArray(4)
 
-  // Curated 6 jewel-like outer-arc sparkles (compact 0.22..0.32 scale — zero oversized white circles!)
+  // All 6 jewel flares strictly bound to active Resident indices 0..4 (0=C01, 2=A02, 3=A01)
   private val flares: List<FlareSpec> = listOf(
-    FlareSpec(0, baseU = 0.08f, travelSpeed = 0.072f, pulseFreq = 0.82f, pulsePhase = 0.3f, baseSize = 0.28f, isGold = false),
-    FlareSpec(0, baseU = 0.56f, travelSpeed = 0.072f, pulseFreq = 0.76f, pulsePhase = 2.0f, baseSize = 0.31f, isGold = true),
-    FlareSpec(2, baseU = 0.20f, travelSpeed = -0.084f, pulseFreq = 0.88f, pulsePhase = 0.9f, baseSize = 0.32f, isGold = true),
-    FlareSpec(2, baseU = 0.72f, travelSpeed = -0.084f, pulseFreq = 0.80f, pulsePhase = 3.5f, baseSize = 0.24f, isGold = true),
-    FlareSpec(3, baseU = 0.34f, travelSpeed = 0.095f, pulseFreq = 0.92f, pulsePhase = 2.5f, baseSize = 0.25f, isGold = false),
-    FlareSpec(5, baseU = 0.14f, travelSpeed = 0.068f, pulseFreq = 0.74f, pulsePhase = 4.2f, baseSize = 0.26f, isGold = true),
+    // 1. 8:30 Far-Left C01 Ice-Blue C-Arc Bend (Primary Cold Optical Anchor)
+    FlareSpec(0, anchorU = 0.40f, localDriftAmp = 0.042f, driftFreq = 0.92f, pulseFreq = 1.42f, pulsePhase = 0.35f, baseSize = 0.34f, intensityGain = 1.25f, isGold = false),
+    // 2. 5:30 Bottom-Right C01 Translucent Cyan Under-Arc Sparkle
+    FlareSpec(0, anchorU = 0.70f, localDriftAmp = 0.038f, driftFreq = 0.85f, pulseFreq = 1.26f, pulsePhase = 2.40f, baseSize = 0.25f, intensityGain = 1.05f, isGold = false),
+    // 3. 10:30 Upper-Left A02 Golden Shoulder Flare
+    FlareSpec(2, anchorU = 0.22f, localDriftAmp = 0.035f, driftFreq = 1.05f, pulseFreq = 1.65f, pulsePhase = 1.10f, baseSize = 0.34f, intensityGain = 1.22f, isGold = true),
+    // 4. 3:30 Far-Right A02 Iconic Blazing Amber-Gold Loop (Primary Warm Optical Anchor!)
+    FlareSpec(2, anchorU = 0.76f, localDriftAmp = 0.045f, driftFreq = 0.96f, pulseFreq = 1.54f, pulsePhase = 3.20f, baseSize = 0.40f, intensityGain = 1.38f, isGold = true),
+    // 5. 5:00 Lower-Right A02 Rim Crossing Warm Glint
+    FlareSpec(2, anchorU = 0.55f, localDriftAmp = 0.032f, driftFreq = 1.12f, pulseFreq = 1.38f, pulsePhase = 4.65f, baseSize = 0.26f, intensityGain = 0.98f, isGold = true),
+    // 6. 11:30 Upper-Left A01 Back Crown Warm Star Glint
+    FlareSpec(3, anchorU = 0.25f, localDriftAmp = 0.036f, driftFreq = 0.88f, pulseFreq = 1.18f, pulsePhase = 5.40f, baseSize = 0.25f, intensityGain = 1.00f, isGold = true),
   )
 
-  private val goldColor = floatArrayOf(1.38f, 0.72f, 0.10f)
-  private val cyanColor = floatArrayOf(0.18f, 0.88f, 1.24f)
+  // Saturated ACES + sRGB 2.2 calibrated linear HDR flare colors (zero muddy grey-beige!)
+  private val goldColor = floatArrayOf(1.85f, 0.76f, 0.04f)
+  private val cyanColor = floatArrayOf(0.14f, 1.05f, 1.65f)
 
   fun init() {
     release()
@@ -84,12 +95,14 @@ class AIOrbEnergyHighlights {
     val activeRibbons = config.ribbonCount.coerceIn(1, ribbons.maxRibbons)
     val tRibbon = motion.ribbonTimeSec
     val tOptics = motion.secondaryOpticsPhase
+    val scaledOrbRadius = (config.coreScale * config.coreShellScale).coerceAtLeast(0.4f)
 
     for (spec in flares) {
       if (spec.ribbonIndex >= activeRibbons) continue
 
-      val rawU = spec.baseU + tRibbon * spec.travelSpeed
-      val u = ((rawU % 1f) + 1f) % 1f
+      // Local graceful gliding along the high-curvature bend (stays visible on the iconic outer arcs!)
+      val localOffset = sin(tRibbon * spec.driftFreq + spec.pulsePhase) * spec.localDriftAmp
+      val u = (spec.anchorU + localOffset).coerceIn(0.03f, 0.97f)
 
       val worldPt = ribbons.evaluateWorldPoint(spec.ribbonIndex, u, motion, config)
       worldPosTemp[0] = worldPt.x
@@ -102,25 +115,22 @@ class AIOrbEnergyHighlights {
       if (clipPass == 0 && viewZ >= orbCenterViewZ) continue
       if (clipPass == 1 && viewZ < orbCenterViewZ) continue
 
-      // Attenuate any front flare passing right across the middle of the crystal sphere so interior clarity stays crisp!
+      // Unified center guard applied identically to BOTH front (clipPass == 1) and back (clipPass == 0)
+      // passes using real scaled core radius (coreScale * coreShellScale) so zero white blotches bleed through core!
       val xyRadiusFromOrbCenter = sqrt(viewPosTemp[0] * viewPosTemp[0] + viewPosTemp[1] * viewPosTemp[1])
-      val orbRadius = config.coreScale.coerceAtLeast(0.5f)
-      val centerGuard = if (clipPass == 1) {
-        val t = ((xyRadiusFromOrbCenter / orbRadius - 0.55f) / 0.45f).coerceIn(0f, 1f)
-        0.22f + 0.78f * (t * t * (3f - 2f * t))
-      } else {
-        1.0f
-      }
+      val centerGuard = computeCenterGuard(xyRadiusFromOrbCenter, scaledOrbRadius)
+      if (centerGuard <= 0.005f) continue
 
       val wave1 = 0.5f + 0.5f * sin(tOptics * spec.pulseFreq + spec.pulsePhase)
-      val wave2 = 0.5f + 0.5f * sin(tOptics * spec.pulseFreq * 0.61f + spec.pulsePhase * 1.85f)
-      val envelope = 0.42f + 0.68f * (wave1 * wave1 * 0.68f + wave2 * 0.32f)
-      val depthDim = if (clipPass == 0) 0.68f else 1.05f
-      val finalIntensity = envelope * config.energyIntensity * depthDim * centerGuard * (0.82f + 0.20f * config.overallIntensity)
+      val wave2 = 0.5f + 0.5f * sin(tOptics * spec.pulseFreq * 0.63f + spec.pulsePhase * 1.75f)
+      val envelope = 0.58f + 0.62f * (wave1 * wave1 * 0.65f + wave2 * 0.35f)
+      val depthDim = if (clipPass == 0) 0.74f else 1.00f
+      val finalIntensity =
+        envelope * spec.intensityGain * config.energyIntensity * depthDim * centerGuard * (0.86f + 0.18f * config.overallIntensity)
 
       val col = if (spec.isGold) goldColor else cyanColor
-      val size = spec.baseSize * (0.82f + 0.28f * envelope) * (0.45f + 0.55f * config.coreScale)
-      val spinAngle = (tOptics * 0.24f + spec.pulsePhase) % (2f * PI.toFloat())
+      val size = spec.baseSize * (0.84f + 0.24f * envelope) * (0.45f + 0.55f * config.coreScale)
+      val spinAngle = (tOptics * 0.22f + spec.pulsePhase) % (2f * PI.toFloat())
 
       prog.setVec3("uWorldCenter", worldPt.x, worldPt.y, worldPt.z)
       prog.setFloat("uSize", size)
@@ -140,5 +150,20 @@ class AIOrbEnergyHighlights {
     program = null
     quad?.release()
     quad = null
+  }
+
+  companion object {
+    /**
+     * Computes unified radial center attenuation shared identically by front (`clipPass == 1`)
+     * and back (`clipPass == 0`) highlight passes. Attenuates flares crossing the core interior
+     * to near-zero while preserving full gold & ice-blue sparkles along outer orbital arcs.
+     */
+    fun computeCenterGuard(xyRadiusFromCenter: Float, scaledOrbRadius: Float): Float {
+      val safeRadius = scaledOrbRadius.coerceAtLeast(0.4f)
+      val normR = xyRadiusFromCenter / safeRadius
+      val t = ((normR - 0.76f) / 0.38f).coerceIn(0f, 1f)
+      val smooth = t * t * (3f - 2f * t)
+      return 0.015f + 0.985f * smooth
+    }
   }
 }

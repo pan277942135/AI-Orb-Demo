@@ -24,6 +24,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.orb.config.RenderDebugMode
@@ -40,6 +43,7 @@ class MainActivity : ComponentActivity() {
       statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
       navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
     )
+    applyImmersiveFullscreen()
 
     setContent {
       MyApplicationTheme {
@@ -100,5 +104,20 @@ class MainActivity : ComponentActivity() {
         }
       }
     }
+  }
+
+  override fun onWindowFocusChanged(hasFocus: Boolean) {
+    super.onWindowFocusChanged(hasFocus)
+    if (hasFocus) {
+      applyImmersiveFullscreen()
+    }
+  }
+
+  private fun applyImmersiveFullscreen() {
+    WindowCompat.setDecorFitsSystemWindows(window, false)
+    val controller = WindowInsetsControllerCompat(window, window.decorView)
+    controller.systemBarsBehavior =
+      WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    controller.hide(WindowInsetsCompat.Type.systemBars())
   }
 }

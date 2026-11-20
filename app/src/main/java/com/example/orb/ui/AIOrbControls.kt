@@ -40,7 +40,7 @@ import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -165,23 +165,36 @@ fun AIOrbControlsOverlay(
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
           )
+          Text(
+            text = String.format(
+              Locale.US,
+              "V3 VOL %s (%s) · %.1f MiB · dec %.1fms · up %.1fms",
+              tel.volumeDimensions,
+              if (tel.volumeLoaded) "WEBP3D" else "FALLBACK",
+              tel.gpuVolumeMemoryMiB,
+              tel.webpDecodeMs,
+              tel.texture3dUploadMs,
+            ),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.secondary,
+          )
         }
       }
     }
 
-    // Subtle collapsed icon button in top-right corner
+    // Subtle low-presence Settings gear icon button in bottom-right corner
     AnimatedVisibility(
       visible = !uiState.isControlsExpanded,
       enter = fadeIn() + scaleIn(initialScale = 0.85f),
       exit = fadeOut() + scaleOut(targetScale = 0.85f),
-      modifier = Modifier.align(Alignment.TopEnd),
+      modifier = Modifier.align(Alignment.BottomEnd),
     ) {
       Surface(
         onClick = onToggleControls,
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.56f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)),
-        tonalElevation = 4.dp,
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.34f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.28f)),
+        tonalElevation = 2.dp,
         modifier = Modifier
           .minimumInteractiveComponentSize()
           .size(48.dp)
@@ -189,22 +202,22 @@ fun AIOrbControlsOverlay(
       ) {
         Box(contentAlignment = Alignment.Center) {
           Icon(
-            imageVector = Icons.Filled.Tune,
+            imageVector = Icons.Filled.Settings,
             contentDescription = stringResource(R.string.cd_open_controls),
-            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.86f),
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.62f),
             modifier = Modifier.size(20.dp),
           )
         }
       }
     }
 
-    // Expanded Debug Controls Panel
+    // Expanded Debug Controls Panel anchored at bottom-right
     AnimatedVisibility(
       visible = uiState.isControlsExpanded,
       enter = fadeIn(spring(stiffness = Spring.StiffnessMediumLow)) +
         scaleIn(initialScale = 0.94f, animationSpec = spring(stiffness = Spring.StiffnessMediumLow)),
       exit = fadeOut(androidx.compose.animation.core.tween(durationMillis = 70)),
-      modifier = Modifier.align(Alignment.TopEnd),
+      modifier = Modifier.align(Alignment.BottomEnd),
     ) {
       DebugControlPanel(
         uiState = uiState,
@@ -495,6 +508,13 @@ private fun DebugControlPanel(
           onValueChange = { v -> onUpdateConfig { it.copy(coreScale = v) } },
         )
         ParameterSlider(
+          label = stringResource(R.string.param_core_shell_scale),
+          value = cfg.coreShellScale,
+          range = 0.55f..1.15f,
+          testTag = "slider_core_shell_scale",
+          onValueChange = { v -> onUpdateConfig { it.copy(coreShellScale = v) } },
+        )
+        ParameterSlider(
           label = stringResource(R.string.param_core_transparency),
           value = cfg.coreTransparency,
           range = 0.35f..0.98f,
@@ -717,6 +737,23 @@ private fun DebugControlPanel(
             )
             Text(
               text = "EGL_VERSION: ${tel.eglVersion}",
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+              text = String.format(
+                Locale.US,
+                "V3 WebP 3D Vol: %s | %.2f MiB | Dec %.1fms | Up %.1fms",
+                tel.volumeDimensions,
+                tel.gpuVolumeMemoryMiB,
+                tel.webpDecodeMs,
+                tel.texture3dUploadMs,
+              ),
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+              text = "Asset Status: ${tel.volumeStatus}",
               style = MaterialTheme.typography.labelSmall,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

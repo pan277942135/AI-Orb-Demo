@@ -1,0 +1,269 @@
+{
+  "schemaVersion": "AI_ORB_V3_WEBP_VOLUME_MANIFEST_1_0",
+  "architecture": "WebP-First 3D Volume Hybrid Rendering (GLES 3.0)",
+  "generatorSeed": 20261120,
+  "referenceMaster": {
+    "path": "public/assets/aistudio/____________910d1531.png",
+    "sha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
+    "width": 1254,
+    "height": 1254,
+    "immutable": true
+  },
+  "volume": {
+    "id": "fluid_color_volume",
+    "uniformName": "uFluidVolume",
+    "textureUnit": 1,
+    "width": 256,
+    "height": 256,
+    "depth": 32,
+    "format": "LOSSLESS_RGBA_WEBP",
+    "colorSpace": "SRGB_RGB_LINEAR_ALPHA",
+    "premultipliedAlpha": false,
+    "yAxisConvention": "ROW_0_IS_TOP_PLUS_Y_SHADER_FLIPS_V",
+    "gpuTarget": "GL_TEXTURE_3D",
+    "gpuInternalFormat": "GL_SRGB8_ALPHA8",
+    "gpuMemoryBytes": 8388608,
+    "sliceCount": 32,
+    "slices": [
+      {
+        "zIndex": 0,
+        "path": "volume/fluid_color_z00.webp",
+        "bytes": 1492,
+        "sha256": "04fa1ef0392c945b5b3dec876d74be9a081564e905c2db574933e3eccc62afdd"
+      },
+      {
+        "zIndex": 1,
+        "path": "volume/fluid_color_z01.webp",
+        "bytes": 7378,
+        "sha256": "1856d2fe17f3e322ae39e7ab89bcb2eeec063127eb157919cf488f04f270a9da"
+      },
+      {
+        "zIndex": 2,
+        "path": "volume/fluid_color_z02.webp",
+        "bytes": 13542,
+        "sha256": "b4637a87b6dacb03fd14f4f4da4159ecf2c4b238bb1d2509086bdaf0d19ac691"
+      },
+      {
+        "zIndex": 3,
+        "path": "volume/fluid_color_z03.webp",
+        "bytes": 19262,
+        "sha256": "aac9b8219fec0f7f545bbf9db0b94d73d66af6f0a47ae5949f2fc9296b30f084"
+      },
+      {
+        "zIndex": 4,
+        "path": "volume/fluid_color_z04.webp",
+        "bytes": 23136,
+        "sha256": "364033bdaf6f35848cdee954a18506fd72cbf3e095353b833fc053ebd2380ad1"
+      },
+      {
+        "zIndex": 5,
+        "path": "volume/fluid_color_z05.webp",
+        "bytes": 25792,
+        "sha256": "aca5a64026e35d314d17cff36d8d0efa0cac43ec8c8471a9c84ebf62e73bd5a5"
+      },
+      {
+        "zIndex": 6,
+        "path": "volume/fluid_color_z06.webp",
+        "bytes": 27420,
+        "sha256": "0405279c9bda3d6d7159937a4c7f9f1dbcf66c93a96b27cc541c8f481e27750f"
+      },
+      {
+        "zIndex": 7,
+        "path": "volume/fluid_color_z07.webp",
+        "bytes": 30752,
+        "sha256": "279b0b5bab07a792fec7a803608b65db064a38203b41df0b2ec4712d0651767d"
+      },
+      {
+        "zIndex": 8,
+        "path": "volume/fluid_color_z08.webp",
+        "bytes": 33362,
+        "sha256": "cec472dadd88ca8fa814112f5fffbcc8a04af39a9d272c849d04cef9c6e55993"
+      },
+      {
+        "zIndex": 9,
+        "path": "volume/fluid_color_z09.webp",
+        "bytes": 34856,
+        "sha256": "bb918b0a3eeec9239eabb067f8687f5a5f03f7e65d2761ad4d21d008b3e2f955"
+      },
+      {
+        "zIndex": 10,
+        "path": "volume/fluid_color_z10.webp",
+        "bytes": 37416,
+        "sha256": "d2a586488c215c9f22bfa4856c93dc23004a85882fd3aab06047f5f05853da8a"
+      },
+      {
+        "zIndex": 11,
+        "path": "volume/fluid_color_z11.webp",
+        "bytes": 40158,
+        "sha256": "a7955cd42a4d1490488a34d99ab3e4dd50209a62de56c946c700de396b271e1b"
+      },
+      {
+        "zIndex": 12,
+        "path": "volume/fluid_color_z12.webp",
+        "bytes": 41752,
+        "sha256": "09ff1d4d245c6f62c2f2997bf7a6f0d8d505fe3ee74c97ed092c7d27685e7aba"
+      },
+      {
+        "zIndex": 13,
+        "path": "volume/fluid_color_z13.webp",
+        "bytes": 42474,
+        "sha256": "00ed90c726888af929970f6e71dfc4b9da3162293a82ab3e372adf16b6aac6a3"
+      },
+      {
+        "zIndex": 14,
+        "path": "volume/fluid_color_z14.webp",
+        "bytes": 41274,
+        "sha256": "deb71e3a44b186498525089ac4507116479ecadc864539e9b23d1b0f91c68c4b"
+      },
+      {
+        "zIndex": 15,
+        "path": "volume/fluid_color_z15.webp",
+        "bytes": 41950,
+        "sha256": "56196f7ff2cd624c9e7af910de88be59fbf62aaf53093a9f682aaf7484abb621"
+      },
+      {
+        "zIndex": 16,
+        "path": "volume/fluid_color_z16.webp",
+        "bytes": 43260,
+        "sha256": "8e5f93a3912234cba165b31a63a415d0face618b34358c5379323f221da39a2d"
+      },
+      {
+        "zIndex": 17,
+        "path": "volume/fluid_color_z17.webp",
+        "bytes": 42718,
+        "sha256": "d05a242805866c2e7b627217d41b5e9931eec8716b181e5dde1681eb720e29a5"
+      },
+      {
+        "zIndex": 18,
+        "path": "volume/fluid_color_z18.webp",
+        "bytes": 39258,
+        "sha256": "95310a4cff838ee222d84378d94ff6d0465da9f1ec88991f3a5f0d839ac4b5b9"
+      },
+      {
+        "zIndex": 19,
+        "path": "volume/fluid_color_z19.webp",
+        "bytes": 36160,
+        "sha256": "b9c949d6c26b314ac30fdb8042e6d6f82d448038564ca808c59de996edc6adb9"
+      },
+      {
+        "zIndex": 20,
+        "path": "volume/fluid_color_z20.webp",
+        "bytes": 36728,
+        "sha256": "f1cb851e70b4f451022a8dfee3370dc76bd0d0e8846c65130c4aaae85f5a66c1"
+      },
+      {
+        "zIndex": 21,
+        "path": "volume/fluid_color_z21.webp",
+        "bytes": 36176,
+        "sha256": "252e1dacdbafdbfd53b205982fe255c4ca63e494bd7f2dd2e02115e200dae8e0"
+      },
+      {
+        "zIndex": 22,
+        "path": "volume/fluid_color_z22.webp",
+        "bytes": 34500,
+        "sha256": "6a559d1b2e9b7229261edf0f081c2d5eb9de12aff9db821a827d3e02eecd5669"
+      },
+      {
+        "zIndex": 23,
+        "path": "volume/fluid_color_z23.webp",
+        "bytes": 32522,
+        "sha256": "7995eed1a32fee7650f386caffb157186c6ae499c600c5cbf1b04244d5f6660a"
+      },
+      {
+        "zIndex": 24,
+        "path": "volume/fluid_color_z24.webp",
+        "bytes": 31396,
+        "sha256": "e2141ffc377fffa5dfe7a8bc71257d14c935bf8de640662586db4f732d720814"
+      },
+      {
+        "zIndex": 25,
+        "path": "volume/fluid_color_z25.webp",
+        "bytes": 29506,
+        "sha256": "6c109ed0f44573a83b7f3159566694fbf9521a2bd3d3cde642c0601ac5c6589b"
+      },
+      {
+        "zIndex": 26,
+        "path": "volume/fluid_color_z26.webp",
+        "bytes": 26154,
+        "sha256": "cc0c908d33fbd0e925125d74cee579a5c65a7e5426fc1cdb5b94260798136191"
+      },
+      {
+        "zIndex": 27,
+        "path": "volume/fluid_color_z27.webp",
+        "bytes": 22410,
+        "sha256": "434ee8b662e71fab157673720fa4cba63b28588c4251be4fbe109c1100365772"
+      },
+      {
+        "zIndex": 28,
+        "path": "volume/fluid_color_z28.webp",
+        "bytes": 18420,
+        "sha256": "930b9ce726f9668b1aada42918aaf99e572f83a703245d4bbb2b02af50be7d73"
+      },
+      {
+        "zIndex": 29,
+        "path": "volume/fluid_color_z29.webp",
+        "bytes": 13722,
+        "sha256": "d5a050545d6520e1126dce17aa117fa3fab6760a2f4319b34f664becbf43161b"
+      },
+      {
+        "zIndex": 30,
+        "path": "volume/fluid_color_z30.webp",
+        "bytes": 8036,
+        "sha256": "338c41224f31d7670520cfc363f21050ad4cff7a8e911754b74d08bdf4096539"
+      },
+      {
+        "zIndex": 31,
+        "path": "volume/fluid_color_z31.webp",
+        "bytes": 1334,
+        "sha256": "ab4aa8df015d206d2afea7f1d68dab574ac0b5d26285e9f54d26df7a23251e09"
+      }
+    ]
+  },
+  "maps": [
+    {
+      "id": "emerald_distribution",
+      "path": "maps/emerald_distribution.webp",
+      "width": 256,
+      "height": 256,
+      "colorSpace": "LINEAR_DATA",
+      "gpuInternalFormat": "GL_RGBA8",
+      "channels": "R=emerald_curtain, G=silk_grain, B=meniscus_ripple, A=absorption_mod",
+      "uniformName": "uFluidDetailMap",
+      "textureUnit": 2,
+      "bytes": 157098,
+      "sha256": "d1cef9836298588c609cb8fe7e0746893b22ffc14ac39c1976ff01a09dcc2e33"
+    },
+    {
+      "id": "caustics",
+      "path": "optics/caustics.webp",
+      "width": 256,
+      "height": 256,
+      "colorSpace": "LINEAR_DATA",
+      "gpuInternalFormat": "GL_RGBA8",
+      "channels": "R=primary_curved_caustics, G=secondary_curved_caustics, B=fine_filaments, A=convergence_nodes",
+      "uniformName": "uCausticsMap",
+      "textureUnit": 3,
+      "bytes": 139152,
+      "sha256": "33a7293d84fbd5a39ace04193a27442f49ebc342c9714553ecb9aef7ee582eee"
+    },
+    {
+      "id": "glass_environment",
+      "path": "optics/glass_environment.webp",
+      "width": 512,
+      "height": 256,
+      "colorSpace": "SRGB",
+      "gpuInternalFormat": "GL_SRGB8_ALPHA8",
+      "channels": "RGB=equirectangular_crystal_studio_env, A=specular_weight",
+      "uniformName": "uGlassEnvMap",
+      "textureUnit": 4,
+      "bytes": 18046,
+      "sha256": "8b588b2d4ad78e6aa94997c0a54855fb432ce4c1b1093019b371442897b5ba3b"
+    }
+  ],
+  "summary": {
+    "totalWebpFiles": 35,
+    "totalDiskBytes": 1228612,
+    "totalGpuMemoryBytes": 9437184,
+    "totalGpuMemoryMiB": 9.0
+  }
+}

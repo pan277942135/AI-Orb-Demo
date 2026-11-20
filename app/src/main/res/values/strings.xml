@@ -26,6 +26,7 @@
     <string name="section_ribbons">3D Orbiting Ribbons</string>
     <string name="section_optics">Energy, Particles &amp; Optics</string>
     <string name="param_core_scale">Core Scale</string>
+    <string name="param_core_shell_scale">Core Shell Scale</string>
     <string name="param_core_transparency">Core Transparency</string>
     <string name="param_refraction">Refraction</string>
     <string name="param_fluid_speed">Fluid Speed</string>

@@ -200,14 +200,137 @@ object OrbGeometryBuilder {
   }
 
   /**
-   * Generates a real 3D swept Ribbon Mesh along a Catmull-Rom spline using
-   * parallel-transport frames plus gentle artist-controlled ribbon twist.
+   * Continuous, deterministic sculpted ribbon cross-section & twist profile along normalized arc-length s in [0, 1].
+   * Enables organic botanical leaf silhouettes, asymmetric edges, local 3D turnovers, and tapered vanishing ends
+   * with zero per-frame random jitter.
+   */
+  data class RibbonSurfaceProfile(
+    val widthControlPoints: FloatArray,
+    val leftAsymmetryPoints: FloatArray,
+    val rightAsymmetryPoints: FloatArray,
+    val twistProfileRad: FloatArray,
+    val camberFactor: Float = 0.18f,
+    val edgeWaveAmp: Float = 0.0f,
+    val edgeWaveFreq: Float = 2.0f,
+    val edgeWavePhase: Float = 0f,
+    val tipFlexWeight: Float = 0.0f,
+  ) {
+    companion object {
+      fun defaultFor(closed: Boolean, twistTurns: Float): RibbonSurfaceProfile =
+        if (closed) {
+          RibbonSurfaceProfile(
+            widthControlPoints = floatArrayOf(0.75f, 1.05f, 0.82f, 1.00f, 0.75f),
+            leftAsymmetryPoints = floatArrayOf(1f, 1f, 1f),
+            rightAsymmetryPoints = floatArrayOf(1f, 1f, 1f),
+            twistProfileRad = floatArrayOf(0f, (twistTurns * PI).toFloat(), (twistTurns * 2.0 * PI).toFloat()),
+          )
+        } else {
+          RibbonSurfaceProfile(
+            widthControlPoints = floatArrayOf(0f, 0.78f, 1.0f, 0.84f, 0f),
+            leftAsymmetryPoints = floatArrayOf(1f, 1.08f, 1f),
+            rightAsymmetryPoints = floatArrayOf(1f, 0.92f, 1f),
+            twistProfileRad = floatArrayOf(0f, (twistTurns * PI).toFloat(), (twistTurns * 2.0 * PI).toFloat()),
+            tipFlexWeight = 0.75f,
+          )
+        }
+    }
+  }
+
+  /**
+   * Evaluates a C1-smooth Catmull-Rom scalar profile at normalized arc-length [s] in [0, 1].
+   */
+  fun sampleScalarProfile(values: FloatArray, s: Float, closed: Boolean = false): Float {
+    val n = values.size
+    if (n == 0) return 1f
+    if (n == 1) return values[0]
+    val clamped = if (closed) ((s % 1f) + 1f) % 1f else s.coerceIn(0f, 1f)
+    val segCount = if (closed) n else (n - 1)
+    val scaled = clamped * segCount
+    val seg = scaled.toInt().coerceIn(0, segCount - 1)
+    val u = (scaled - seg).coerceIn(0f, 1f)
+
+    fun at(i: Int): Float = if (closed) values[((i % n) + n) % n] else values[i.coerceIn(0, n - 1)]
+
+    val p0 = at(seg - 1)
+    val p1 = at(seg)
+    val p2 = at(seg + 1)
+    val p3 = at(seg + 2)
+    val u2 = u * u
+    val u3 = u2 * u
+    return 0.5f * ((2f * p1) +
+      (-p0 + p2) * u +
+      (2f * p0 - 5f * p1 + 4f * p2 - p3) * u2 +
+      (-p0 + 3f * p1 - 3f * p2 + p3) * u3)
+  }
+
+  /**
+   * Pure-Kotlin evaluation of a sculpted ribbon cross-section (used by both GPU mesh generation and unit tests).
+   */
+  data class RibbonSampleMetrics(
+    val leftHalfWidth: Float,
+    val rightHalfWidth: Float,
+    val totalWidth: Float,
+    val twistRad: Float,
+    val flexWeight: Float,
+  )
+
+  fun evaluateRibbonProfileAt(
+    u: Float,
+    halfWidth: Float,
+    closed: Boolean,
+    taperEnds: Boolean,
+    profile: RibbonSurfaceProfile,
+  ): RibbonSampleMetrics {
+    val s = u.coerceIn(0f, 1f)
+    var baseW = sampleScalarProfile(profile.widthControlPoints, s, closed = closed).coerceAtLeast(0f)
+    if (taperEnds) {
+      val fadeIn = (s / 0.13f).coerceIn(0f, 1f)
+      val fadeOut = ((1f - s) / 0.17f).coerceIn(0f, 1f)
+      val sIn = fadeIn * fadeIn * (3f - 2f * fadeIn)
+      val sOut = fadeOut * fadeOut * (3f - 2f * fadeOut)
+      baseW *= sIn * sOut
+    }
+
+    val leftScale = sampleScalarProfile(profile.leftAsymmetryPoints, s, closed = closed).coerceIn(0.35f, 1.65f)
+    val rightScale = sampleScalarProfile(profile.rightAsymmetryPoints, s, closed = closed).coerceIn(0.35f, 1.65f)
+    val waveL = 1f + profile.edgeWaveAmp * sin(s * (2.0 * PI).toFloat() * profile.edgeWaveFreq + profile.edgeWavePhase)
+    val waveR = 1f + profile.edgeWaveAmp * cos(s * (2.0 * PI).toFloat() * (profile.edgeWaveFreq * 0.83f) - profile.edgeWavePhase * 1.2f)
+
+    val leftW = (halfWidth * baseW * leftScale * waveL).coerceAtLeast(0f)
+    val rightW = (halfWidth * baseW * rightScale * waveR).coerceAtLeast(0f)
+    val twist = sampleScalarProfile(profile.twistProfileRad, s, closed = false)
+
+    // Open kelp blades flex progressively stronger toward free drifting ends; closed water ribbons flex smoothly
+    val flex = if (!closed) {
+      val edgeDist = kotlin.math.abs(s * 2f - 1f) // 0 at mid-body, 1 at free tips
+      val tipBoost = edgeDist * edgeDist
+      0.34f + 0.66f * (profile.tipFlexWeight * tipBoost + (1f - profile.tipFlexWeight) * 0.35f)
+    } else {
+      0.55f + 0.45f * sin(s * (2.0 * PI).toFloat() + profile.edgeWavePhase)
+    }
+
+    return RibbonSampleMetrics(
+      leftHalfWidth = leftW,
+      rightHalfWidth = rightW,
+      totalWidth = leftW + rightW,
+      twistRad = twist,
+      flexWeight = flex.coerceIn(0.15f, 1.15f),
+    )
+  }
+
+  /**
+   * Generates a real sculpted 3D Ribbon Surface Mesh along a Catmull-Rom spline using:
+   * - Parallel-transport (Bishop) frames (zero gimbal flip through steep inflection points)
+   * - Continuous arc-length WidthProfile(s) & asymmetric left/right botanical contours
+   * - Smooth non-uniform local TwistProfile(s)
+   * - Per-vertex unit spine tangent & tip flexibility weight for GPU Rodrigues twist & aquatic sway
    *
-   * Vertex layout (stride 44 bytes = 11 floats):
-   *   loc 0: centerPos (vec3) - spine point for dynamic GPU width scaling & wave morphing
-   *   loc 1: crossDir  (vec3) - unit direction across ribbon width
-   *   loc 2: normal    (vec3) - surface normal
-   *   loc 3: uv        (vec2) - u in [0,1] along length, v in [-1,1] across width
+   * Vertex layout (stride 60 bytes = 15 floats):
+   *   loc 0: centerPos   (vec3) - spine point
+   *   loc 1: offset      (vec3) - asymmetric sculpted cross-section offset from spine
+   *   loc 2: normal      (vec3) - smooth curved surface normal
+   *   loc 3: uv          (vec2) - u in [0,1] along arc length, v in [-1,1] across width
+   *   loc 4: tangentFlex (vec4) - xyz = unit spine tangent T(s), w = flexibility weight
    */
   fun createRibbonMesh(
     controlPoints: List<Vec3>,
@@ -216,8 +339,10 @@ object OrbGeometryBuilder {
     halfWidth: Float,
     twistTurns: Float,
     taperEnds: Boolean,
-    crossSlices: Int = 5,
+    crossSlices: Int = 6,
+    surfaceProfile: RibbonSurfaceProfile? = null,
   ): GlMesh {
+    val profile = surfaceProfile ?: RibbonSurfaceProfile.defaultFor(closed, twistTurns)
     val spine = ArrayList<Vec3>(segments + 1)
     for (i in 0..segments) {
       val u = i.toFloat() / segments.toFloat()
@@ -231,7 +356,7 @@ object OrbGeometryBuilder {
       tangents.add((next - prev).normalized())
     }
 
-    // Parallel-transport (Bishop) frames to avoid gimbal flip along steep 3D curves
+    // Parallel-transport (Bishop) frames prevent gimbal flip along steep 3D curves
     val normals = ArrayList<Vec3>(segments + 1)
     val binormals = ArrayList<Vec3>(segments + 1)
     val t0 = tangents[0]
@@ -252,7 +377,6 @@ object OrbGeometryBuilder {
         val k = axis * (1f / axisLen)
         val cosA = prevT.dot(currT).coerceIn(-1f, 1f)
         val sinA = axisLen.coerceIn(0f, 1f)
-        // Rodrigues rotation of prevN around k
         (prevN * cosA + k.cross(prevN) * sinA + k * (k.dot(prevN) * (1f - cosA))).normalized()
       } else {
         prevN
@@ -262,7 +386,7 @@ object OrbGeometryBuilder {
       binormals.add(currT.cross(orthoN).normalized())
     }
 
-    // Smoothly close frame twist error if closed loop
+    // Smoothly absorb holonomy frame-closure angle on closed ribbons so there is zero twist seam
     var closureCorrection = 0f
     if (closed) {
       val nStart = normals[0]
@@ -275,42 +399,34 @@ object OrbGeometryBuilder {
 
     val vertsPerRing = crossSlices + 1
     val vertexCount = (segments + 1) * vertsPerRing
-    val floats = FloatArray(vertexCount * 11)
+    val floats = FloatArray(vertexCount * 15)
     var ptr = 0
 
     for (i in 0..segments) {
       val u = i.toFloat() / segments.toFloat()
       val center = spine[i]
+      val tangent = tangents[i]
       val baseN = normals[i]
       val baseB = binormals[i]
 
-      val twistAngle = (twistTurns * 2.0 * PI * u).toFloat() + closureCorrection * u
+      val metrics = evaluateRibbonProfileAt(u, halfWidth, closed, taperEnds, profile)
+      val twistAngle = metrics.twistRad + closureCorrection * u
       val ct = cos(twistAngle)
       val st = sin(twistAngle)
       val crossDir = (baseB * ct + baseN * st).normalized()
       val surfNormal = (baseN * ct - baseB * st).normalized()
-
-      // Smooth organic width modulation: pinched-and-flared botanical leaf profile for open silk ribbons
-      val taper = if (taperEnds) {
-        val fadeIn = (u / 0.16f).coerceIn(0f, 1f)
-        val fadeOut = ((1f - u) / 0.22f).coerceIn(0f, 1f)
-        val sIn = fadeIn * fadeIn * (3f - 2f * fadeIn)
-        val sOut = fadeOut * fadeOut * (3f - 2f * fadeOut)
-        val leafPinch = 0.64f + 0.36f * sin(u * PI.toFloat() * 3.0f + 0.45f)
-        sIn * sOut * leafPinch
-      } else {
-        0.74f + 0.26f * sin(u * 2f * PI.toFloat() * 2f + 0.7f)
-      }
-      val localHalfW = halfWidth * taper
+      val avgHalfW = 0.5f * (metrics.leftHalfWidth + metrics.rightHalfWidth)
 
       for (j in 0..crossSlices) {
         val vNorm = (j.toFloat() / crossSlices.toFloat()) * 2f - 1f // -1..1
-        // Slight curved glass camber across the ribbon cross-section for 3D specular richness
-        val camber = (1f - vNorm * vNorm) * localHalfW * 0.18f
-        val offset = crossDir * (vNorm * localHalfW) + surfNormal * camber
-        val curvedNormal = (surfNormal + crossDir * (vNorm * 0.35f)).normalized()
+        // Smooth C1 blend between asymmetric left & right half-widths across ribbon center (zero spine kink!)
+        val blendT = (vNorm * 0.5f + 0.5f).coerceIn(0f, 1f)
+        val smoothBlend = blendT * blendT * (3f - 2f * blendT)
+        val signedSpan = -metrics.leftHalfWidth * (1f - smoothBlend) + metrics.rightHalfWidth * smoothBlend
+        val camber = (1f - vNorm * vNorm) * avgHalfW * profile.camberFactor
+        val offset = crossDir * signedSpan + surfNormal * camber
+        val curvedNormal = (surfNormal + crossDir * (vNorm * 0.36f)).normalized()
 
-        // Store spine center + local scaled offset in crossDir so shader can cleanly multiply ribbonWidth
         floats[ptr++] = center.x
         floats[ptr++] = center.y
         floats[ptr++] = center.z
@@ -322,6 +438,10 @@ object OrbGeometryBuilder {
         floats[ptr++] = curvedNormal.z
         floats[ptr++] = u
         floats[ptr++] = vNorm
+        floats[ptr++] = tangent.x
+        floats[ptr++] = tangent.y
+        floats[ptr++] = tangent.z
+        floats[ptr++] = metrics.flexWeight
       }
     }
 
@@ -366,7 +486,7 @@ object OrbGeometryBuilder {
       GlBufferUtils.toIntBuffer(indices),
       GLES30.GL_STATIC_DRAW,
     )
-    val stride = 11 * 4
+    val stride = 15 * 4
     GLES30.glEnableVertexAttribArray(0)
     GLES30.glVertexAttribPointer(0, 3, GLES30.GL_FLOAT, false, stride, 0)
     GLES30.glEnableVertexAttribArray(1)
@@ -375,6 +495,8 @@ object OrbGeometryBuilder {
     GLES30.glVertexAttribPointer(2, 3, GLES30.GL_FLOAT, false, stride, 24)
     GLES30.glEnableVertexAttribArray(3)
     GLES30.glVertexAttribPointer(3, 2, GLES30.GL_FLOAT, false, stride, 36)
+    GLES30.glEnableVertexAttribArray(4)
+    GLES30.glVertexAttribPointer(4, 4, GLES30.GL_FLOAT, false, stride, 44)
     GLES30.glBindVertexArray(0)
 
     return GlMesh(vao[0], vbo[0], ebo[0], indices.size)

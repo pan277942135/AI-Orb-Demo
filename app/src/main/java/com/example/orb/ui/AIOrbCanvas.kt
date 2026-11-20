@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -19,7 +20,7 @@ import com.example.orb.scene.AIOrbScene
 import com.example.orb.scene.AIOrbTelemetry
 
 /**
- * Composable host for the OpenGL ES 3.0 AIOrbScene renderer.
+ * Composable host for the OpenGL ES 3.0 AIOrbScene renderer (V3 WebP 3D Volume Hybrid).
  */
 @Composable
 fun AIOrbCanvas(
@@ -28,8 +29,13 @@ fun AIOrbCanvas(
   modifier: Modifier = Modifier,
 ) {
   val lifecycleOwner = LocalLifecycleOwner.current
-  val renderer = remember {
-    AIOrbScene(initialConfig = config, onTelemetryUpdated = onTelemetryUpdated)
+  val appAssets = LocalContext.current.applicationContext.assets
+  val renderer = remember(appAssets) {
+    AIOrbScene(
+      initialConfig = config,
+      assetManager = appAssets,
+      onTelemetryUpdated = onTelemetryUpdated,
+    )
   }
 
   LaunchedEffect(config) {
