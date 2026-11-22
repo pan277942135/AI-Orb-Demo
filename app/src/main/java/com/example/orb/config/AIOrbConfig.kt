@@ -86,6 +86,11 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
     get() = this == CORE_ROTATION_ONLY || this == REFERENCE_LOCKED_FRAME
 }
 
+enum class OrbSceneMode {
+  ORB_ONLY,
+  TASK_PERIMETER_DEMO,
+}
+
 /**
  * Centralized, immutable configuration contract for AI Orb Active State V3.
  * UI-agnostic and portable across Android OpenGL ES 3.0 rendering pipelines.
@@ -112,6 +117,7 @@ data class AIOrbConfig(
   val isolateCoreDebug: Boolean = false,
   val showMotionOverlay: Boolean = false,
   val debugMode: RenderDebugMode = RenderDebugMode.FULL_RENDER,
+  val sceneMode: OrbSceneMode = OrbSceneMode.ORB_ONLY,
 ) {
   /** Effective core-rotation lock flag honoring both legacy switch and explicit RenderDebugMode. */
   val effectiveLockCoreRotation: Boolean
@@ -128,6 +134,7 @@ data class AIOrbConfig(
       appendLine("  \"schema\": \"AI_ORB_ACTIVE_STATE_VISUAL_DEMO_V1\",")
       appendLine("  \"version\": \"V3_WEBP_3D_VOLUME_HYBRID\",")
       appendLine("  \"state\": \"AI_ORB_ACTIVE\",")
+      appendLine("  \"sceneMode\": \"${sceneMode.name}\",")
       appendLine("  \"renderMode\": \"${debugMode.name}\",")
       appendLine("  \"coreScale\": ${f(coreScale)},")
       appendLine("  \"coreShellScale\": ${f(coreShellScale)},")

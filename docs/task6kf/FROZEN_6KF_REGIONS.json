@@ -1,0 +1,379 @@
+{
+  "schemaVersion": "AI_ORB_TASK_6KF_FROZEN_REGIONS_1_0",
+  "frozenOverview": {
+    "path": "public/assets/aistudio/AI_Orb_KF01-KF06_________________01802259.png",
+    "sha256": "01802259dc2ad6da30b7df23abc01597041342e171cfb34c29aee376b9055d0c",
+    "width": 3059,
+    "height": 4016,
+    "grid": "3x2"
+  },
+  "demoPhotoTexture": {
+    "path": "app/src/main/assets/task_demo/fishing_photo.webp",
+    "sourceKeyframe": "KF01",
+    "cropRectOverviewPx": {
+      "x": 188,
+      "y": 360,
+      "width": 692,
+      "height": 846
+    },
+    "outputWidth": 692,
+    "outputHeight": 846,
+    "format": "Lossless WebP (VP8L)",
+    "sizeBytes": 689142,
+    "sha256": "798f6299616087ea2075bcd2a870c6cc2709d08ba5da996dfae3dcabff0e3a0d",
+    "upscaled": false,
+    "resolutionNote": "Cropped once directly from KF01 inside the 3059x4016 frozen overview (692x846 native pixels, lower resolution than an original camera raw photo; zero AI redrawing or synthetic detail invention)."
+  },
+  "unifiedCanonicalLayout": {
+    "referenceAspect": 0.56488,
+    "topBarNorm": {
+      "backX": 0.075,
+      "titleY": 0.044
+    },
+    "photoNorm": {
+      "left": 0.12145,
+      "top": 0.08899,
+      "right": 0.87856,
+      "bottom": 0.6128,
+      "width": 0.75711,
+      "height": 0.52381,
+      "centerX": 0.5,
+      "centerY": 0.3509,
+      "aspectRatio": 0.81647,
+      "cornerRadiusNormOfPhotoW": 0.05571
+    },
+    "statusTextNorm": {
+      "centerX": 0.5,
+      "centerY": 0.6488
+    },
+    "orbNorm": {
+      "centerX": 0.5,
+      "centerY": 0.86663,
+      "diameterNormOfW": 0.2384,
+      "topAnchorY": 0.7993,
+      "gapToPhotoBottomNormH": 0.1865
+    },
+    "taskAnchorNorm": {
+      "orbAnchorTop": [
+        0.5,
+        0.7993
+      ],
+      "photoBottomCenter": [
+        0.5,
+        0.6128
+      ],
+      "photoTopCenter": [
+        0.5,
+        0.08899
+      ],
+      "kf01FrontRatio": 0.38,
+      "kf04SideAscendRatio": 0.6
+    },
+    "perimeterWaterLightParams": {
+      "mainWidthRatioRange": [
+        0.004,
+        0.012
+      ],
+      "localFlareRatioRange": [
+        0.02,
+        0.04
+      ],
+      "mainAlphaRange": [
+        0.12,
+        0.38
+      ],
+      "emeraldVeilAlphaRange": [
+        0.08,
+        0.24
+      ],
+      "goldFilamentAlphaRange": [
+        0.15,
+        0.5
+      ]
+    }
+  },
+  "perKeyframeDetected": [
+    {
+      "id": "KF01",
+      "stage": "ORB_RELEASE",
+      "label": "能量释放",
+      "row": 0,
+      "col": 0,
+      "x0": 60,
+      "y0": 186,
+      "x1": 1008,
+      "y1": 1865,
+      "width": 949,
+      "height": 1680,
+      "photoPx": {
+        "left": 116,
+        "top": 160,
+        "right": 832,
+        "bottom": 1034,
+        "width": 717,
+        "height": 875,
+        "cornerRadiusPx": 40
+      },
+      "photoNorm": {
+        "left": 0.12223,
+        "top": 0.09524,
+        "right": 0.87671,
+        "bottom": 0.61548,
+        "width": 0.75553,
+        "height": 0.52083,
+        "centerX": 0.49947,
+        "centerY": 0.35536,
+        "aspectRatio": 0.81943,
+        "cornerRadiusNormOfPhotoW": 0.05579
+      },
+      "orbPx": {
+        "centerX": 476.57,
+        "centerY": 1459.1,
+        "diameterPx": 230.72,
+        "topAnchorY": 1343.74
+      },
+      "orbNorm": {
+        "centerX": 0.50218,
+        "centerY": 0.86851,
+        "diameterNormOfW": 0.24312,
+        "topAnchorY": 0.79985,
+        "gapToPhotoBottomNormH": 0.18437
+      }
+    },
+    {
+      "id": "KF02",
+      "stage": "BOTTOM_CONTACT",
+      "label": "底边接触",
+      "row": 0,
+      "col": 1,
+      "x0": 1055,
+      "y0": 186,
+      "x1": 2003,
+      "y1": 1865,
+      "width": 949,
+      "height": 1680,
+      "photoPx": {
+        "left": 115,
+        "top": 147,
+        "right": 833,
+        "bottom": 1030,
+        "width": 719,
+        "height": 884,
+        "cornerRadiusPx": 40
+      },
+      "photoNorm": {
+        "left": 0.12118,
+        "top": 0.0875,
+        "right": 0.87777,
+        "bottom": 0.6131,
+        "width": 0.75764,
+        "height": 0.52619,
+        "centerX": 0.49947,
+        "centerY": 0.3503,
+        "aspectRatio": 0.81335,
+        "cornerRadiusNormOfPhotoW": 0.05563
+      },
+      "orbPx": {
+        "centerX": 476.5,
+        "centerY": 1448.48,
+        "diameterPx": 268.8,
+        "topAnchorY": 1314.08
+      },
+      "orbNorm": {
+        "centerX": 0.5021,
+        "centerY": 0.86219,
+        "diameterNormOfW": 0.28325,
+        "topAnchorY": 0.78219,
+        "gapToPhotoBottomNormH": 0.16909
+      }
+    },
+    {
+      "id": "KF03",
+      "stage": "BOTTOM_SPLIT",
+      "label": "左右分流",
+      "row": 0,
+      "col": 2,
+      "x0": 2050,
+      "y0": 186,
+      "x1": 2998,
+      "y1": 1865,
+      "width": 949,
+      "height": 1680,
+      "photoPx": {
+        "left": 115,
+        "top": 143,
+        "right": 833,
+        "bottom": 1032,
+        "width": 719,
+        "height": 890,
+        "cornerRadiusPx": 40
+      },
+      "photoNorm": {
+        "left": 0.12118,
+        "top": 0.08512,
+        "right": 0.87777,
+        "bottom": 0.61429,
+        "width": 0.75764,
+        "height": 0.52976,
+        "centerX": 0.49947,
+        "centerY": 0.3497,
+        "aspectRatio": 0.80787,
+        "cornerRadiusNormOfPhotoW": 0.05563
+      },
+      "orbPx": {
+        "centerX": 477.33,
+        "centerY": 1457.37,
+        "diameterPx": 229.6,
+        "topAnchorY": 1342.57
+      },
+      "orbNorm": {
+        "centerX": 0.50299,
+        "centerY": 0.86748,
+        "diameterNormOfW": 0.24194,
+        "topAnchorY": 0.79915,
+        "gapToPhotoBottomNormH": 0.18486
+      }
+    },
+    {
+      "id": "KF04",
+      "stage": "SIDE_ASCEND",
+      "label": "双侧攀升",
+      "row": 1,
+      "col": 0,
+      "x0": 60,
+      "y0": 2048,
+      "x1": 1008,
+      "y1": 3727,
+      "width": 949,
+      "height": 1680,
+      "photoPx": {
+        "left": 115,
+        "top": 146,
+        "right": 832,
+        "bottom": 1032,
+        "width": 718,
+        "height": 887,
+        "cornerRadiusPx": 40
+      },
+      "photoNorm": {
+        "left": 0.12118,
+        "top": 0.0869,
+        "right": 0.87671,
+        "bottom": 0.61429,
+        "width": 0.75659,
+        "height": 0.52798,
+        "centerX": 0.49895,
+        "centerY": 0.3506,
+        "aspectRatio": 0.80947,
+        "cornerRadiusNormOfPhotoW": 0.05571
+      },
+      "orbPx": {
+        "centerX": 478.76,
+        "centerY": 1456.64,
+        "diameterPx": 222.88,
+        "topAnchorY": 1345.2
+      },
+      "orbNorm": {
+        "centerX": 0.50448,
+        "centerY": 0.86705,
+        "diameterNormOfW": 0.23486,
+        "topAnchorY": 0.80072,
+        "gapToPhotoBottomNormH": 0.18643
+      }
+    },
+    {
+      "id": "KF05",
+      "stage": "TOP_JOIN",
+      "label": "顶部汇合",
+      "row": 1,
+      "col": 1,
+      "x0": 1055,
+      "y0": 2048,
+      "x1": 2003,
+      "y1": 3727,
+      "width": 949,
+      "height": 1680,
+      "photoPx": {
+        "left": 116,
+        "top": 152,
+        "right": 833,
+        "bottom": 1027,
+        "width": 718,
+        "height": 876,
+        "cornerRadiusPx": 40
+      },
+      "photoNorm": {
+        "left": 0.12223,
+        "top": 0.09048,
+        "right": 0.87777,
+        "bottom": 0.61131,
+        "width": 0.75659,
+        "height": 0.52143,
+        "centerX": 0.5,
+        "centerY": 0.35089,
+        "aspectRatio": 0.81963,
+        "cornerRadiusNormOfPhotoW": 0.05571
+      },
+      "orbPx": {
+        "centerX": 480.26,
+        "centerY": 1453.6,
+        "diameterPx": 212.8,
+        "topAnchorY": 1347.2
+      },
+      "orbNorm": {
+        "centerX": 0.50607,
+        "centerY": 0.86524,
+        "diameterNormOfW": 0.22424,
+        "topAnchorY": 0.8019,
+        "gapToPhotoBottomNormH": 0.19059
+      }
+    },
+    {
+      "id": "KF06",
+      "stage": "PERIMETER_LOOP",
+      "label": "持续循环",
+      "row": 1,
+      "col": 2,
+      "x0": 2050,
+      "y0": 2048,
+      "x1": 2998,
+      "y1": 3727,
+      "width": 949,
+      "height": 1680,
+      "photoPx": {
+        "left": 111,
+        "top": 155,
+        "right": 842,
+        "bottom": 1029,
+        "width": 732,
+        "height": 875,
+        "cornerRadiusPx": 41
+      },
+      "photoNorm": {
+        "left": 0.11697,
+        "top": 0.09226,
+        "right": 0.88725,
+        "bottom": 0.6125,
+        "width": 0.77134,
+        "height": 0.52083,
+        "centerX": 0.50211,
+        "centerY": 0.35238,
+        "aspectRatio": 0.83657,
+        "cornerRadiusNormOfPhotoW": 0.05601
+      },
+      "orbPx": {
+        "centerX": 481.59,
+        "centerY": 1455.24,
+        "diameterPx": 206.08,
+        "topAnchorY": 1352.2
+      },
+      "orbNorm": {
+        "centerX": 0.50747,
+        "centerY": 0.86621,
+        "diameterNormOfW": 0.21715,
+        "topAnchorY": 0.80488,
+        "gapToPhotoBottomNormH": 0.19238
+      }
+    }
+  ]
+}

@@ -45,4 +45,17 @@
     <string name="qa_render_mode_label">GPU Diagnostic Render Mode</string>
     <string name="qa_reference_only_badge">QA · REFERENCE_ONLY (STATIC MASTER)</string>
     <string name="cd_reference_master">High-fidelity static reference master image</string>
+    <string name="tab_ai_orb">AI Orb</string>
+    <string name="tab_task_perimeter">照片水光</string>
+    <string name="task_header_title">拍照识鱼</string>
+    <string name="task_status_understanding">正在理解照片</string>
+    <string name="cd_task_back">返回 AI Orb</string>
+    <string name="cd_task_controls_toggle">展开或收起任务能量调试控制</string>
+    <string name="cd_task_controls_close">收起任务能量调试控制</string>
+    <string name="cd_task_restart">重新播放六帧流程</string>
+    <string name="task_action_restart">重播</string>
+    <string name="task_action_pause">暂停</string>
+    <string name="task_action_play">播放</string>
+    <string name="task_controls_title">任务水光 · 6KF</string>
+    <string name="task_keyframe_jump_label">关键帧跳转 (GPU 实时渲染)</string>
 </resources>
