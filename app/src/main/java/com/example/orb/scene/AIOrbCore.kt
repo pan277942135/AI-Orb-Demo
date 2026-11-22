@@ -16,6 +16,17 @@ class AIOrbCore {
   val volumeTelemetry: OrbVolumeTelemetry
     get() = volumeRenderer.volumeTelemetry
 
+  val isVolumeReady: Boolean
+    get() = volumeRenderer.isVolumeReady
+
+  fun preloadAssetsAsync(assetManager: AssetManager?) {
+    volumeRenderer.preloadAssetsAsync(assetManager)
+  }
+
+  fun uploadReadyAssetsIfNeeded(assetManager: AssetManager?): Boolean {
+    return volumeRenderer.uploadReadyAssetsIfNeeded(assetManager)
+  }
+
   fun init(subdivisions: Int, assetManager: AssetManager? = null) {
     volumeRenderer.init(subdivisions, assetManager)
   }
@@ -37,6 +48,7 @@ class AIOrbCore {
     hdrScale: Float,
     lighting: AIOrbLighting,
     config: AIOrbConfig,
+    isSoftwareRenderer: Boolean = false,
   ) {
     volumeRenderer.draw(
       outerGlassModel = outerGlassModel,
@@ -51,6 +63,7 @@ class AIOrbCore {
       hdrScale = hdrScale,
       lighting = lighting,
       config = config,
+      isSoftwareRenderer = isSoftwareRenderer,
     )
   }
 

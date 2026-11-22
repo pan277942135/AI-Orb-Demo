@@ -5,7 +5,7 @@
 - **Frozen Master SHA-256:** `910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122` (verified unmodified)
 - **Deterministic Generator Seed:** `20261120`
 - **Total Production WebP Files:** `35` (`32` 3D volume slices + `3` 2D optical/detail maps)
-- **Total Compressed Asset Footprint on Disk:** `1199.8 KiB` (`1,228,612 bytes`)
+- **Total Compressed Asset Footprint on Disk:** `1510.5 KiB` (`1,546,702 bytes`)
 - **Total Uncompressed GPU VRAM Footprint:** `9.00 MiB` (`8.00 MiB` 3D Volume + `1.00 MiB` 2D Maps)
 
 ## 1. 3D Fluid Volume Texture (`uFluidVolume`, Texture Unit 1)
@@ -24,9 +24,9 @@
 
 | Asset | Dimensions | Encoding | Color Space | GPU Format | Unit / Uniform | Disk Size |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `maps/emerald_distribution.webp` | `256 × 256` | Lossless RGBA WebP (`VP8L`) | Linear Data | `GL_RGBA8` | Unit 2 · `uFluidDetailMap` | `153.4 KiB` |
-| `optics/caustics.webp` | `256 × 256` | Lossless RGBA WebP (`VP8L`) | Linear Data | `GL_RGBA8` | Unit 3 · `uCausticsMap` | `135.9 KiB` |
-| `optics/glass_environment.webp` | `512 × 256` | Lossless RGBA WebP (`VP8L`) | sRGB Equirectangular | `GL_SRGB8_ALPHA8` | Unit 4 · `uGlassEnvMap` | `17.6 KiB` |
+| `maps/emerald_distribution.webp` | `256 × 256` | Lossless RGBA WebP (`VP8L`) | Linear Data | `GL_RGBA8` | Unit 2 · `uFluidDetailMap` | `153.5 KiB` |
+| `optics/caustics.webp` | `256 × 256` | Lossless RGBA WebP (`VP8L`) | Linear Data | `GL_RGBA8` | Unit 3 · `uCausticsMap` | `126.3 KiB` |
+| `optics/glass_environment.webp` | `512 × 256` | Lossless RGBA WebP (`VP8L`) | sRGB Equirectangular | `GL_SRGB8_ALPHA8` | Unit 4 · `uGlassEnvMap` | `16.3 KiB` |
 
 ## 3. Integrity & Continuity Guarantees
 

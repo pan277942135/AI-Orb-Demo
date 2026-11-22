@@ -4,12 +4,29 @@ import android.content.res.AssetManager
 import android.opengl.GLES30
 import android.util.Log
 import com.example.orb.gl.GlShaderProgram
-import java.nio.ByteBuffer
+
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
+
+/**
+ * Explicit V3 WebP 3D Volume asset lifecycle state (P0-6).
+ * Strictly distinguishes production load success, background loading, explicit production asset failure
+ * ([V3_ASSET_ERROR] — never silently masked), and headless/test fallback without AssetManager.
+ */
+enum class OrbV3LoadState(val label: String) {
+  UNINITIALIZED("PENDING"),
+  LOADING("LOADING_WEBP"),
+  LOADED("WEBP3D_OK"),
+  V3_ASSET_ERROR("V3_ASSET_ERROR"),
+  DIAGNOSTIC_PROCEDURAL_FALLBACK("DIAGNOSTIC_FALLBACK"),
+}
 
 /**
  * Runtime diagnostics for V3 WebP decoding & OpenGL ES 3.0 3D Volume texture upload.
+ * Tracks per-texture sRGB/linear upload formats independently (P0-6).
  */
 data class OrbVolumeTelemetry(
+  val loadState: OrbV3LoadState = OrbV3LoadState.UNINITIALIZED,
   val isLoaded: Boolean = false,
   val volumeWidth: Int = 256,
   val volumeHeight: Int = 256,
@@ -19,22 +36,27 @@ data class OrbVolumeTelemetry(
   val gpuMemoryBytes: Long = 0L,
   val max3dTextureSize: Int = 0,
   val isSrgbVolume: Boolean = true,
+  val isSrgbFluidVolume: Boolean = true,
+  val isSrgbGlassEnv: Boolean = true,
+  val isSrgbCaustics: Boolean = false,
+  val isSrgbFluidDetail: Boolean = false,
   val statusMessage: String = "Pending V3 WebP load",
 ) {
   val gpuMemoryMiB: Float get() = gpuMemoryBytes / (1024f * 1024f)
   val dimensionsLabel: String get() = "${volumeWidth}x${volumeHeight}x${volumeDepth}"
+  val hasError: Boolean get() = loadState == OrbV3LoadState.V3_ASSET_ERROR
 }
 
 /**
  * Manages the OpenGL ES 3.0 `GL_TEXTURE_3D` fluid volume and associated 2D optical/detail
  * textures uploaded from Lossless RGBA WebP production assets.
  *
- * Texture Units Contract:
- * - Unit 0: `uRefractionTex` (FBO scene refraction snapshot, bound by caller)
- * - Unit 1: `uFluidVolume` (`GL_TEXTURE_3D`, 256x256x32 `GL_SRGB8_ALPHA8`, linear + clamp)
- * - Unit 2: `uFluidDetailMap` (`GL_TEXTURE_2D`, 256x256 `GL_RGBA8`, linear + repeat)
- * - Unit 3: `uCausticsMap` (`GL_TEXTURE_2D`, 256x256 `GL_RGBA8`, linear + repeat)
- * - Unit 4: `uGlassEnvMap` (`GL_TEXTURE_2D`, 512x256 `GL_SRGB8_ALPHA8`, linear + repeat-S/clamp-T)
+ * Texture Units & Independent Color-Space Contract (P0-6):
+ * - Unit 0: `uRefractionTex` (FBO scene refraction snapshot, linear HDR)
+ * - Unit 1: `uFluidVolume` (`GL_TEXTURE_3D`, 256x256x32 `GL_SRGB8_ALPHA8`, uniform `uFluidVolumeIsSrgb`)
+ * - Unit 2: `uFluidDetailMap` (`GL_TEXTURE_2D`, 256x256 `GL_RGBA8` linear data, uniform `uFluidDetailIsSrgb`)
+ * - Unit 3: `uCausticsMap` (`GL_TEXTURE_2D`, 256x256 `GL_RGBA8` linear data, uniform `uCausticsIsSrgb`)
+ * - Unit 4: `uGlassEnvMap` (`GL_TEXTURE_2D`, 512x256 `GL_SRGB8_ALPHA8`, uniform `uGlassEnvIsSrgb`)
  */
 class OrbVolumeTexture3D {
 
@@ -47,36 +69,150 @@ class OrbVolumeTexture3D {
   var glassEnvTexId: Int = 0
     private set
 
+  @Volatile
   var telemetry: OrbVolumeTelemetry = OrbVolumeTelemetry()
     private set
 
+  private val preloadStarted = AtomicBoolean(false)
+  private val decodedAssetsRef = AtomicReference<DecodedOrbV3Assets?>(null)
+  private val decodeFailureRef = AtomicReference<Throwable?>(null)
+
   val isReady: Boolean
-    get() = volumeTexId != 0 && fluidDetailTexId != 0 && causticsTexId != 0 && glassEnvTexId != 0
+    get() = telemetry.loadState == OrbV3LoadState.LOADED &&
+      volumeTexId != 0 &&
+      fluidDetailTexId != 0 &&
+      causticsTexId != 0 &&
+      glassEnvTexId != 0
 
   /**
-   * Decodes Lossless RGBA WebP assets from [assetManager] and uploads them to OpenGL ES 3.0.
-   * Must be invoked on the active EGL/GL thread (e.g., `onSurfaceCreated`).
+   * Starts decoding all 35 Lossless RGBA WebP assets on a background daemon thread so
+   * `GLSurfaceView.Renderer.onSurfaceCreated()` never blocks the GLThread or triggers Android's
+   * 1000ms `SurfaceSyncGroup` transaction timeout.
+   */
+  fun preloadAsync(assetManager: AssetManager?) {
+    if (assetManager == null) {
+      telemetry = OrbVolumeTelemetry(
+        loadState = OrbV3LoadState.DIAGNOSTIC_PROCEDURAL_FALLBACK,
+        isLoaded = false,
+        statusMessage = "Diagnostic procedural fallback (no AssetManager)",
+      )
+      return
+    }
+    if (decodedAssetsRef.get() != null || decodeFailureRef.get() != null) {
+      return
+    }
+    if (!preloadStarted.compareAndSet(false, true)) {
+      return
+    }
+    telemetry = telemetry.copy(
+      loadState = OrbV3LoadState.LOADING,
+      isLoaded = false,
+      statusMessage = "Decoding V3 WebP 3D Volume (background)...",
+    )
+    Thread(
+      {
+        try {
+          val decoded = OrbWebpAssetLoader.loadAll(assetManager)
+          decodedAssetsRef.set(decoded)
+        } catch (t: Throwable) {
+          Log.e(TAG, "V3_ASSET_ERROR: Background WebP decode failed", t)
+          decodeFailureRef.set(t)
+        }
+      },
+      "OrbV3WebpDecoder",
+    ).apply {
+      isDaemon = true
+      priority = Thread.NORM_PRIORITY
+      start()
+    }
+  }
+
+  /**
+   * Non-blocking GL-thread check: if background WebP decoding has completed (or failed),
+   * uploads the 3D/2D textures immediately (or transitions to [OrbV3LoadState.V3_ASSET_ERROR]).
+   * Returns `true` when telemetry/load state changed on this call.
+   */
+  fun uploadIfReady(assetManager: AssetManager? = null): Boolean {
+    if (isReady) return false
+
+    if (assetManager == null && !preloadStarted.get() && decodedAssetsRef.get() == null && decodeFailureRef.get() == null) {
+      if (telemetry.loadState != OrbV3LoadState.DIAGNOSTIC_PROCEDURAL_FALLBACK) {
+        telemetry = OrbVolumeTelemetry(
+          loadState = OrbV3LoadState.DIAGNOSTIC_PROCEDURAL_FALLBACK,
+          isLoaded = false,
+          statusMessage = "Diagnostic procedural fallback (no AssetManager)",
+        )
+        return true
+      }
+      return false
+    }
+
+    val failure = decodeFailureRef.get()
+    if (failure != null) {
+      if (telemetry.loadState != OrbV3LoadState.V3_ASSET_ERROR) {
+        release()
+        telemetry = OrbVolumeTelemetry(
+          loadState = OrbV3LoadState.V3_ASSET_ERROR,
+          isLoaded = false,
+          statusMessage = "V3_ASSET_ERROR: ${failure.message ?: failure.javaClass.simpleName}",
+        )
+        return true
+      }
+      return false
+    }
+
+    val decoded = decodedAssetsRef.get() ?: run {
+      if (assetManager != null) preloadAsync(assetManager)
+      return false
+    }
+
+    return try {
+      release()
+      uploadDecoded(decoded)
+      true
+    } catch (t: Throwable) {
+      Log.e(TAG, "V3_ASSET_ERROR: Failed to upload V3 WebP 3D Volume textures to GLES 3.0", t)
+      release()
+      decodeFailureRef.set(t)
+      telemetry = OrbVolumeTelemetry(
+        loadState = OrbV3LoadState.V3_ASSET_ERROR,
+        isLoaded = false,
+        statusMessage = "V3_ASSET_ERROR: ${t.message ?: t.javaClass.simpleName}",
+      )
+      true
+    }
+  }
+
+  /**
+   * Synchronous decode + GL upload entry point (preserved for deterministic tests and direct callers).
+   *
+   * When [assetManager] is provided (production runtime), any missing file, dimension mismatch,
+   * decode failure, or GL upload failure transitions explicitly to [OrbV3LoadState.V3_ASSET_ERROR].
    */
   fun loadAndUpload(assetManager: AssetManager?): OrbVolumeTelemetry {
     release()
 
     if (assetManager == null) {
       telemetry = OrbVolumeTelemetry(
+        loadState = OrbV3LoadState.DIAGNOSTIC_PROCEDURAL_FALLBACK,
         isLoaded = false,
-        statusMessage = "No AssetManager (procedural fallback)",
+        statusMessage = "Diagnostic procedural fallback (no AssetManager)",
       )
       return telemetry
     }
 
     return try {
-      val decoded = OrbWebpAssetLoader.loadAll(assetManager)
+      val decoded = decodedAssetsRef.get() ?: OrbWebpAssetLoader.loadAll(assetManager).also {
+        decodedAssetsRef.set(it)
+      }
       uploadDecoded(decoded)
     } catch (t: Throwable) {
-      Log.e(TAG, "Failed to load/upload V3 WebP 3D Volume textures", t)
+      Log.e(TAG, "V3_ASSET_ERROR: Failed to load/upload V3 WebP 3D Volume textures", t)
       release()
       telemetry = OrbVolumeTelemetry(
+        loadState = OrbV3LoadState.V3_ASSET_ERROR,
         isLoaded = false,
-        statusMessage = "Load error: ${t.message ?: t.javaClass.simpleName}",
+        statusMessage = "V3_ASSET_ERROR: ${t.message ?: t.javaClass.simpleName}",
       )
       telemetry
     }
@@ -97,7 +233,6 @@ class OrbVolumeTexture3D {
 
     GLES30.glPixelStorei(GLES30.GL_UNPACK_ALIGNMENT, 1)
 
-    // 1. Upload 256x256x32 GL_TEXTURE_3D (GL_SRGB8_ALPHA8 -> hardware exact sRGB RGB + linear Alpha)
     val handles = IntArray(4)
     GLES30.glGenTextures(4, handles, 0)
     volumeTexId = handles[0]
@@ -105,6 +240,7 @@ class OrbVolumeTexture3D {
     causticsTexId = handles[2]
     glassEnvTexId = handles[3]
 
+    // 1. Upload 256x256x32 GL_TEXTURE_3D (`GL_SRGB8_ALPHA8`, linear fallback tracked independently)
     var usedSrgbVolume = true
     GLES30.glBindTexture(GLES30.GL_TEXTURE_3D, volumeTexId)
     GLES30.glTexParameteri(GLES30.GL_TEXTURE_3D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR)
@@ -148,20 +284,21 @@ class OrbVolumeTexture3D {
     }
     GLES30.glBindTexture(GLES30.GL_TEXTURE_3D, 0)
 
-    // 2. Upload 2D Linear Data maps (`GL_RGBA8`, NO sRGB!) and Equirectangular Env (`GL_SRGB8_ALPHA8`)
-    uploadTexture2D(
+    // 2. Upload 2D Linear Data maps (`GL_RGBA8`) and Equirectangular Env (`GL_SRGB8_ALPHA8`),
+    // tracking each texture's actual uploaded color space independently!
+    val usedSrgbDetail = uploadTexture2D(
       texId = fluidDetailTexId,
       tex = decoded.emeraldDetailMap,
       wrapS = GLES30.GL_REPEAT,
       wrapT = GLES30.GL_REPEAT,
     )
-    uploadTexture2D(
+    val usedSrgbCaustics = uploadTexture2D(
       texId = causticsTexId,
       tex = decoded.causticsMap,
       wrapS = GLES30.GL_REPEAT,
       wrapT = GLES30.GL_REPEAT,
     )
-    uploadTexture2D(
+    val usedSrgbGlassEnv = uploadTexture2D(
       texId = glassEnvTexId,
       tex = decoded.glassEnvMap,
       wrapS = GLES30.GL_REPEAT,
@@ -170,6 +307,7 @@ class OrbVolumeTexture3D {
 
     val uploadMs = (System.nanoTime() - uploadStart) * 1e-6f
     telemetry = OrbVolumeTelemetry(
+      loadState = OrbV3LoadState.LOADED,
       isLoaded = true,
       volumeWidth = decoded.volumeWidth,
       volumeHeight = decoded.volumeHeight,
@@ -179,11 +317,16 @@ class OrbVolumeTexture3D {
       gpuMemoryBytes = decoded.totalGpuBytes,
       max3dTextureSize = max3d,
       isSrgbVolume = usedSrgbVolume,
+      isSrgbFluidVolume = usedSrgbVolume,
+      isSrgbGlassEnv = usedSrgbGlassEnv,
+      isSrgbCaustics = usedSrgbCaustics,
+      isSrgbFluidDetail = usedSrgbDetail,
       statusMessage = "WebP 3D Volume OK (${decoded.volumeWidth}x${decoded.volumeHeight}x${decoded.volumeDepth})",
     )
     Log.i(
       TAG,
       "Uploaded V3 WebP Volume ${telemetry.dimensionsLabel} (${String.format("%.2f", telemetry.gpuMemoryMiB)} MiB) " +
+        "sRGB=[vol=$usedSrgbVolume,env=$usedSrgbGlassEnv,cau=$usedSrgbCaustics,det=$usedSrgbDetail] " +
         "decode=${String.format("%.1f", telemetry.decodeTimeMs)}ms upload=${String.format("%.1f", telemetry.uploadTimeMs)}ms",
     )
     return telemetry
@@ -194,8 +337,9 @@ class OrbVolumeTexture3D {
     tex: DecodedTexture2D,
     wrapS: Int,
     wrapT: Int,
-  ) {
-    val internalFormat = if (tex.isSrgb) GLES30.GL_SRGB8_ALPHA8 else GLES30.GL_RGBA8
+  ): Boolean {
+    var usedSrgb = tex.isSrgb
+    val requestedFormat = if (tex.isSrgb) GLES30.GL_SRGB8_ALPHA8 else GLES30.GL_RGBA8
     GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texId)
     GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR)
     GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR)
@@ -205,7 +349,7 @@ class OrbVolumeTexture3D {
     GLES30.glTexImage2D(
       GLES30.GL_TEXTURE_2D,
       0,
-      internalFormat,
+      requestedFormat,
       tex.width,
       tex.height,
       0,
@@ -213,17 +357,38 @@ class OrbVolumeTexture3D {
       GLES30.GL_UNSIGNED_BYTE,
       tex.rgbaBuffer,
     )
-    val err = GLES30.glGetError()
+    var err = GLES30.glGetError()
+    if (err != GLES30.GL_NO_ERROR && tex.isSrgb) {
+      Log.w(TAG, "GL_SRGB8_ALPHA8 upload failed for ${tex.id} (0x${err.toString(16)}); retrying with GL_RGBA8")
+      usedSrgb = false
+      tex.rgbaBuffer.rewind()
+      GLES30.glTexImage2D(
+        GLES30.GL_TEXTURE_2D,
+        0,
+        GLES30.GL_RGBA8,
+        tex.width,
+        tex.height,
+        0,
+        GLES30.GL_RGBA,
+        GLES30.GL_UNSIGNED_BYTE,
+        tex.rgbaBuffer,
+      )
+      err = GLES30.glGetError()
+    }
     check(err == GLES30.GL_NO_ERROR) {
       "glTexImage2D failed for ${tex.id} with GL error 0x${err.toString(16)}"
     }
     GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
+    return usedSrgb
   }
 
   fun bindTo(program: GlShaderProgram) {
     if (!isReady) {
       program.setInt("uVolumeLoaded", 0)
-      program.setInt("uVolumeIsSrgb", 1)
+      program.setInt("uFluidVolumeIsSrgb", 1)
+      program.setInt("uGlassEnvIsSrgb", 1)
+      program.setInt("uCausticsIsSrgb", 0)
+      program.setInt("uFluidDetailIsSrgb", 0)
       return
     }
     GLES30.glActiveTexture(GLES30.GL_TEXTURE1)
@@ -243,7 +408,10 @@ class OrbVolumeTexture3D {
     program.setInt("uGlassEnvMap", 4)
 
     program.setInt("uVolumeLoaded", 1)
-    program.setInt("uVolumeIsSrgb", if (telemetry.isSrgbVolume) 1 else 0)
+    program.setInt("uFluidVolumeIsSrgb", if (telemetry.isSrgbFluidVolume) 1 else 0)
+    program.setInt("uGlassEnvIsSrgb", if (telemetry.isSrgbGlassEnv) 1 else 0)
+    program.setInt("uCausticsIsSrgb", if (telemetry.isSrgbCaustics) 1 else 0)
+    program.setInt("uFluidDetailIsSrgb", if (telemetry.isSrgbFluidDetail) 1 else 0)
   }
 
   fun unbind() {

@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import com.example.orb.config.AIOrbConfig
 import com.example.orb.config.RenderDebugMode
+import com.example.orb.v3.OrbV3LoadState
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicReference
 import javax.microedition.khronos.egl.EGLConfig
@@ -32,6 +33,7 @@ data class AIOrbTelemetry(
   val glVersion: String = "OpenGL ES 3.0",
   val eglVersion: String = "EGL 1.4+",
   val isSoftwareRenderer: Boolean = false,
+  val volumeLoadState: OrbV3LoadState = OrbV3LoadState.UNINITIALIZED,
   val volumeLoaded: Boolean = false,
   val volumeDimensions: String = "256x256x32",
   val webpDecodeMs: Float = 0f,
@@ -102,6 +104,15 @@ class AIOrbScene(
   private var glVersion: String = "Unknown"
   private var eglVersion: String = "Unknown"
   private var isSoftwareRenderer: Boolean = false
+  private var hasRenderedFirstFrame: Boolean = false
+
+  init {
+    // Kick off non-blocking background WebP decode before EGL/SurfaceView creation completes,
+    // eliminating >1000ms SurfaceSyncGroup transaction timeouts on startup.
+    if (assetManager != null) {
+      core.preloadAssetsAsync(assetManager)
+    }
+  }
 
   fun updateConfig(config: AIOrbConfig) {
     configRef.set(config)
@@ -145,6 +156,7 @@ class AIOrbScene(
     fpsFrameCount = 0
     cpuWindowCount = 0
     cpuWindowCursor = 0
+    hasRenderedFirstFrame = false
 
     val volTel = core.volumeTelemetry
     onTelemetryUpdated(
@@ -161,6 +173,7 @@ class AIOrbScene(
         glVersion = glVersion,
         eglVersion = eglVersion,
         isSoftwareRenderer = isSoftwareRenderer,
+        volumeLoadState = volTel.loadState,
         volumeLoaded = volTel.isLoaded,
         volumeDimensions = volTel.dimensionsLabel,
         webpDecodeMs = volTel.decodeTimeMs,
@@ -190,6 +203,29 @@ class AIOrbScene(
     lastFrameNanos = frameStartNanos
 
     val cfg = configRef.get()
+    val volumeJustUpdated = core.uploadReadyAssetsIfNeeded(assetManager)
+
+    // Fast first-frame handshake: complete initial eglSwapBuffers() in <15ms so Android's
+    // SurfaceSyncGroup(SurfaceView / VRI[MainActivity]) NEVER hits its 1000ms timeout while
+    // 35 Lossless RGBA WebP assets finish decoding in the background or SwiftShader warms up.
+    if (!hasRenderedFirstFrame && (!core.isVolumeReady || isSoftwareRenderer)) {
+      hasRenderedFirstFrame = true
+      postProcessing.resize(surfaceWidth, surfaceHeight, cfg.quality)
+      postProcessing.beginScenePass()
+      background.draw(
+        time = 0f,
+        width = postProcessing.renderWidth,
+        height = postProcessing.renderHeight,
+        parallaxX = 0f,
+        parallaxY = 0f,
+        hdrScale = postProcessing.hdrScale,
+        config = cfg,
+      )
+      postProcessing.executePostProcessToScreen(cfg)
+      return
+    }
+    hasRenderedFirstFrame = true
+
     val motion = motionController.step(rawDt, cfg)
     val dt = rawDt.toFloat().coerceIn(0.0001f, 0.05f)
     val time = motion.simTimeSec.toFloat()
@@ -207,28 +243,30 @@ class AIOrbScene(
     currentYawDeg += (targetYawDeg - currentYawDeg) * follow
     currentPitchDeg += (targetPitchDeg - currentPitchDeg) * follow
 
-    // Calibrated reference composition: strong ~52% hero orb presence + zero ribbon clipping
+    // Calibrated reference composition: heroic ~52% crystal orb presence with closely hugged ribbons
     val aspect = surfaceWidth.toFloat() / surfaceHeight.toFloat()
     val tanHalfY = tan(Math.toRadians(fovYDeg.toDouble() * 0.5)).toFloat()
     val tanHalfX = (tanHalfY * aspect).coerceAtLeast(0.10f)
-    val visualBoundRadius = 1.54f
+    val visualBoundRadius = 1.36f
     val baseCamDist = maxOf(
       visualBoundRadius / tanHalfY,
       visualBoundRadius / tanHalfX,
-      4.05f,
+      3.65f,
     )
 
-    // In Core-Rotation QA mode, lock camera completely still so observed internal rotation is 100% pure
+    // In Reference-Locked QA mode, lock camera strictly on front +Z axis with zero drag/auto-orbit!
+    // In Core-Rotation QA mode, lock auto-orbit while allowing inspection drag.
+    val lockRef = cfg.debugMode.locksReferenceFrame
     val lockCamera = cfg.effectiveLockCoreRotation
-    val autoYawRad = if (lockCamera) {
-      Math.toRadians(currentYawDeg.toDouble()).toFloat()
-    } else {
-      sin(time * 0.14f) * 0.026f + Math.toRadians(currentYawDeg.toDouble()).toFloat()
+    val autoYawRad = when {
+      lockRef -> 0f
+      lockCamera -> Math.toRadians(currentYawDeg.toDouble()).toFloat()
+      else -> sin(time * 0.14f) * 0.026f + Math.toRadians(currentYawDeg.toDouble()).toFloat()
     }
-    val autoPitchRad = if (lockCamera) {
-      Math.toRadians(currentPitchDeg.toDouble()).toFloat()
-    } else {
-      cos(time * 0.11f) * 0.020f + Math.toRadians(currentPitchDeg.toDouble()).toFloat()
+    val autoPitchRad = when {
+      lockRef -> 0f
+      lockCamera -> Math.toRadians(currentPitchDeg.toDouble()).toFloat()
+      else -> cos(time * 0.11f) * 0.020f + Math.toRadians(currentPitchDeg.toDouble()).toFloat()
     }
 
     val camX = baseCamDist * cos(autoPitchRad) * sin(autoYawRad)
@@ -305,6 +343,7 @@ class AIOrbScene(
         hdrScale = hdrScale,
         lighting = lighting,
         config = cfg,
+        isSoftwareRenderer = isSoftwareRenderer,
       )
     }
 
@@ -332,8 +371,12 @@ class AIOrbScene(
 
     fpsFrameCount++
     val elapsed = frameStartNanos - fpsWindowStartNanos
-    if (elapsed >= 500_000_000L) {
-      val fps = ((fpsFrameCount * 1_000_000_000.0) / elapsed).toInt().coerceIn(1, 120)
+    if (volumeJustUpdated || elapsed >= 500_000_000L) {
+      val fps = if (elapsed > 0L) {
+        ((fpsFrameCount * 1_000_000_000.0) / elapsed).toInt().coerceIn(1, 120)
+      } else {
+        60
+      }
       val sorted = cpuFrameMsWindow.copyOf(cpuWindowCount).apply { sort() }
       val p50 = if (sorted.isNotEmpty()) sorted[sorted.size / 2] else 0f
       val p95 = if (sorted.isNotEmpty()) sorted[((sorted.size - 1) * 0.95f).toInt()] else 0f
@@ -353,6 +396,7 @@ class AIOrbScene(
           glVersion = glVersion,
           eglVersion = eglVersion,
           isSoftwareRenderer = isSoftwareRenderer,
+          volumeLoadState = volTel.loadState,
           volumeLoaded = volTel.isLoaded,
           volumeDimensions = volTel.dimensionsLabel,
           webpDecodeMs = volTel.decodeTimeMs,

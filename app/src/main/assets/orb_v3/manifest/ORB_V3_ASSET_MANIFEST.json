@@ -7,7 +7,8 @@
     "sha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
     "width": 1254,
     "height": 1254,
-    "immutable": true
+    "immutable": true,
+    "referenceRegionsPath": "tools/orb-v3-generator/reference/REFERENCE_VISUAL_REGIONS.json"
   },
   "volume": {
     "id": "fluid_color_volume",
@@ -19,6 +20,7 @@
     "format": "LOSSLESS_RGBA_WEBP",
     "colorSpace": "SRGB_RGB_LINEAR_ALPHA",
     "premultipliedAlpha": false,
+    "meniscusSource": "GPU_SINGLE_SOURCE_CORE_GLASS_FRAG",
     "yAxisConvention": "ROW_0_IS_TOP_PLUS_Y_SHADER_FLIPS_V",
     "gpuTarget": "GL_TEXTURE_3D",
     "gpuInternalFormat": "GL_SRGB8_ALPHA8",
@@ -28,194 +30,194 @@
       {
         "zIndex": 0,
         "path": "volume/fluid_color_z00.webp",
-        "bytes": 1492,
-        "sha256": "04fa1ef0392c945b5b3dec876d74be9a081564e905c2db574933e3eccc62afdd"
+        "bytes": 1518,
+        "sha256": "8d053c246d15db07b8c0f45062b968575dffb81c026edadc42a2a8e75d12490b"
       },
       {
         "zIndex": 1,
         "path": "volume/fluid_color_z01.webp",
-        "bytes": 7378,
-        "sha256": "1856d2fe17f3e322ae39e7ab89bcb2eeec063127eb157919cf488f04f270a9da"
+        "bytes": 7088,
+        "sha256": "a0f92a82ec4edddfa33d8ca3288c0e23ae30f07adbfe6c97a1ec768bee1d7636"
       },
       {
         "zIndex": 2,
         "path": "volume/fluid_color_z02.webp",
-        "bytes": 13542,
-        "sha256": "b4637a87b6dacb03fd14f4f4da4159ecf2c4b238bb1d2509086bdaf0d19ac691"
+        "bytes": 13940,
+        "sha256": "0219b7cbcd5f3aa08c70e9ae0cd32456df12d552cbab17cb69405309707dff72"
       },
       {
         "zIndex": 3,
         "path": "volume/fluid_color_z03.webp",
-        "bytes": 19262,
-        "sha256": "aac9b8219fec0f7f545bbf9db0b94d73d66af6f0a47ae5949f2fc9296b30f084"
+        "bytes": 21354,
+        "sha256": "636d97e154440ad7f018ac0f778bcc1201c90fa115d50b6ca2e59a03dd71b16d"
       },
       {
         "zIndex": 4,
         "path": "volume/fluid_color_z04.webp",
-        "bytes": 23136,
-        "sha256": "364033bdaf6f35848cdee954a18506fd72cbf3e095353b833fc053ebd2380ad1"
+        "bytes": 27256,
+        "sha256": "0f56eacd508fa65e290318298fb0cbc713acf1c7bc26f9cf58e903716b6655be"
       },
       {
         "zIndex": 5,
         "path": "volume/fluid_color_z05.webp",
-        "bytes": 25792,
-        "sha256": "aca5a64026e35d314d17cff36d8d0efa0cac43ec8c8471a9c84ebf62e73bd5a5"
+        "bytes": 31518,
+        "sha256": "6eb66c0a73c619d4b9a09d134de64ea7c33f6f2a41e6364cbb473bca6921b054"
       },
       {
         "zIndex": 6,
         "path": "volume/fluid_color_z06.webp",
-        "bytes": 27420,
-        "sha256": "0405279c9bda3d6d7159937a4c7f9f1dbcf66c93a96b27cc541c8f481e27750f"
+        "bytes": 35694,
+        "sha256": "6cffd6d24c1f1dd207572cc569507083fc8553bc2f7bc9ae393c5d9dcb7b9050"
       },
       {
         "zIndex": 7,
         "path": "volume/fluid_color_z07.webp",
-        "bytes": 30752,
-        "sha256": "279b0b5bab07a792fec7a803608b65db064a38203b41df0b2ec4712d0651767d"
+        "bytes": 40326,
+        "sha256": "4b7a9235cec2cfe7869d7488809dcb11af9fa94e0780b2c2e465de0cf59a8ba8"
       },
       {
         "zIndex": 8,
         "path": "volume/fluid_color_z08.webp",
-        "bytes": 33362,
-        "sha256": "cec472dadd88ca8fa814112f5fffbcc8a04af39a9d272c849d04cef9c6e55993"
+        "bytes": 44754,
+        "sha256": "c662a09b3444f8be14e50f79ab4253304dc0e0e40d521241104cb17bd9b38034"
       },
       {
         "zIndex": 9,
         "path": "volume/fluid_color_z09.webp",
-        "bytes": 34856,
-        "sha256": "bb918b0a3eeec9239eabb067f8687f5a5f03f7e65d2761ad4d21d008b3e2f955"
+        "bytes": 46456,
+        "sha256": "e4a51886a0133b82e279663f559cc8ddbccd9bd76a520c2ae03c4e96bca99f27"
       },
       {
         "zIndex": 10,
         "path": "volume/fluid_color_z10.webp",
-        "bytes": 37416,
-        "sha256": "d2a586488c215c9f22bfa4856c93dc23004a85882fd3aab06047f5f05853da8a"
+        "bytes": 49708,
+        "sha256": "3aa95aa9240a25afe7daf06a61683871c5bc9af945224650ade3a0d936ecf0ce"
       },
       {
         "zIndex": 11,
         "path": "volume/fluid_color_z11.webp",
-        "bytes": 40158,
-        "sha256": "a7955cd42a4d1490488a34d99ab3e4dd50209a62de56c946c700de396b271e1b"
+        "bytes": 53982,
+        "sha256": "057554185c01225fcb1a6f928392de7c35fe5f17249d5ca565cbcdbc0a43e21c"
       },
       {
         "zIndex": 12,
         "path": "volume/fluid_color_z12.webp",
-        "bytes": 41752,
-        "sha256": "09ff1d4d245c6f62c2f2997bf7a6f0d8d505fe3ee74c97ed092c7d27685e7aba"
+        "bytes": 56374,
+        "sha256": "f654591706a0a52987dc129cf63dc35f0965cb5f9578dabc4307301f87c85964"
       },
       {
         "zIndex": 13,
         "path": "volume/fluid_color_z13.webp",
-        "bytes": 42474,
-        "sha256": "00ed90c726888af929970f6e71dfc4b9da3162293a82ab3e372adf16b6aac6a3"
+        "bytes": 57420,
+        "sha256": "e265d8a62182a6c72949ab5c5a16f881603ab928cb2bc8bffdb9044973a85d5a"
       },
       {
         "zIndex": 14,
         "path": "volume/fluid_color_z14.webp",
-        "bytes": 41274,
-        "sha256": "deb71e3a44b186498525089ac4507116479ecadc864539e9b23d1b0f91c68c4b"
+        "bytes": 57632,
+        "sha256": "06f305129638271dc864c27db33f6d8846edecc6d8ad72b9db09bf19242052ab"
       },
       {
         "zIndex": 15,
         "path": "volume/fluid_color_z15.webp",
-        "bytes": 41950,
-        "sha256": "56196f7ff2cd624c9e7af910de88be59fbf62aaf53093a9f682aaf7484abb621"
+        "bytes": 59314,
+        "sha256": "3a8b0722d3f60979df4d7e3f86b75f2f57c45b506c7fb29f34b0ea419805a11c"
       },
       {
         "zIndex": 16,
         "path": "volume/fluid_color_z16.webp",
-        "bytes": 43260,
-        "sha256": "8e5f93a3912234cba165b31a63a415d0face618b34358c5379323f221da39a2d"
+        "bytes": 61626,
+        "sha256": "24bce719a34765b05f6269a014a745c70e78d45447f3b4ed52dee4598ca36992"
       },
       {
         "zIndex": 17,
         "path": "volume/fluid_color_z17.webp",
-        "bytes": 42718,
-        "sha256": "d05a242805866c2e7b627217d41b5e9931eec8716b181e5dde1681eb720e29a5"
+        "bytes": 62226,
+        "sha256": "870587246dd4c2f2b5887918d015ffe3a75a9865a2089bfb52914d59371cfdca"
       },
       {
         "zIndex": 18,
         "path": "volume/fluid_color_z18.webp",
-        "bytes": 39258,
-        "sha256": "95310a4cff838ee222d84378d94ff6d0465da9f1ec88991f3a5f0d839ac4b5b9"
+        "bytes": 59830,
+        "sha256": "74ba651d7a25dd3e1f88444068e43b117fe54730f8e678e1fec0ad4d1ac6f1d7"
       },
       {
         "zIndex": 19,
         "path": "volume/fluid_color_z19.webp",
-        "bytes": 36160,
-        "sha256": "b9c949d6c26b314ac30fdb8042e6d6f82d448038564ca808c59de996edc6adb9"
+        "bytes": 56296,
+        "sha256": "6ceb612e48be0f01dc6dc5579484fc7f0bd60bbc8b80926e027779e32ae54991"
       },
       {
         "zIndex": 20,
         "path": "volume/fluid_color_z20.webp",
-        "bytes": 36728,
-        "sha256": "f1cb851e70b4f451022a8dfee3370dc76bd0d0e8846c65130c4aaae85f5a66c1"
+        "bytes": 56238,
+        "sha256": "c28314d773aabd1d89042da461b5f2cbb36a5541a6d6a0ac6c7a7d8fd531a00b"
       },
       {
         "zIndex": 21,
         "path": "volume/fluid_color_z21.webp",
-        "bytes": 36176,
-        "sha256": "252e1dacdbafdbfd53b205982fe255c4ca63e494bd7f2dd2e02115e200dae8e0"
+        "bytes": 54004,
+        "sha256": "630bbae9bf4c3bcf5bee4837f0336dd7378df6a4388e0decb6ed3a0645e483cd"
       },
       {
         "zIndex": 22,
         "path": "volume/fluid_color_z22.webp",
-        "bytes": 34500,
-        "sha256": "6a559d1b2e9b7229261edf0f081c2d5eb9de12aff9db821a827d3e02eecd5669"
+        "bytes": 50246,
+        "sha256": "a4cf7bb89c5ea55dbdb5a211ec57165ad3224c1059004a93eb9a09a5bece8a4e"
       },
       {
         "zIndex": 23,
         "path": "volume/fluid_color_z23.webp",
-        "bytes": 32522,
-        "sha256": "7995eed1a32fee7650f386caffb157186c6ae499c600c5cbf1b04244d5f6660a"
+        "bytes": 46488,
+        "sha256": "59a269f73f5e0d38058a7d4699f880d7dc8fc3cd995b65426b087b2779eade0e"
       },
       {
         "zIndex": 24,
         "path": "volume/fluid_color_z24.webp",
-        "bytes": 31396,
-        "sha256": "e2141ffc377fffa5dfe7a8bc71257d14c935bf8de640662586db4f732d720814"
+        "bytes": 43336,
+        "sha256": "c1d1d65d7f2def6cf9000bc4a7b8f10f7a521208582964e8565d751a5f5e6364"
       },
       {
         "zIndex": 25,
         "path": "volume/fluid_color_z25.webp",
-        "bytes": 29506,
-        "sha256": "6c109ed0f44573a83b7f3159566694fbf9521a2bd3d3cde642c0601ac5c6589b"
+        "bytes": 39536,
+        "sha256": "5034b912c1c2dc3a490b8bfcf6b7aaf4b87a1ff5e8cd5750d87662e0affdb090"
       },
       {
         "zIndex": 26,
         "path": "volume/fluid_color_z26.webp",
-        "bytes": 26154,
-        "sha256": "cc0c908d33fbd0e925125d74cee579a5c65a7e5426fc1cdb5b94260798136191"
+        "bytes": 33932,
+        "sha256": "76530b99d4d4cde0d925166eac07afd357853696dde606f7211e3a9ed6ef1073"
       },
       {
         "zIndex": 27,
         "path": "volume/fluid_color_z27.webp",
-        "bytes": 22410,
-        "sha256": "434ee8b662e71fab157673720fa4cba63b28588c4251be4fbe109c1100365772"
+        "bytes": 28068,
+        "sha256": "aa4ad97fca847ff6c7cc1febc823bd07de80310fd0fc317bb18209fee0ca0554"
       },
       {
         "zIndex": 28,
         "path": "volume/fluid_color_z28.webp",
-        "bytes": 18420,
-        "sha256": "930b9ce726f9668b1aada42918aaf99e572f83a703245d4bbb2b02af50be7d73"
+        "bytes": 22426,
+        "sha256": "224dbc4ee91c93cfc2bc416a50975c5f08127362c76b4565093c171b82bb78cd"
       },
       {
         "zIndex": 29,
         "path": "volume/fluid_color_z29.webp",
-        "bytes": 13722,
-        "sha256": "d5a050545d6520e1126dce17aa117fa3fab6760a2f4319b34f664becbf43161b"
+        "bytes": 15460,
+        "sha256": "f3dd9c5d8928f9366c2f35216870bf5085ca52c96d344b0517010a8483025239"
       },
       {
         "zIndex": 30,
         "path": "volume/fluid_color_z30.webp",
-        "bytes": 8036,
-        "sha256": "338c41224f31d7670520cfc363f21050ad4cff7a8e911754b74d08bdf4096539"
+        "bytes": 8284,
+        "sha256": "abc75356d4a199cbce40a7c1222520acd5e31d1dccf9fe99366cc467589108eb"
       },
       {
         "zIndex": 31,
         "path": "volume/fluid_color_z31.webp",
-        "bytes": 1334,
-        "sha256": "ab4aa8df015d206d2afea7f1d68dab574ac0b5d26285e9f54d26df7a23251e09"
+        "bytes": 1132,
+        "sha256": "295e4916a7d156565ec984cc2d8386c61e84dccc9ee8087f4a41e7f3ce35e7c6"
       }
     ]
   },
@@ -230,8 +232,8 @@
       "channels": "R=emerald_curtain, G=silk_grain, B=meniscus_ripple, A=absorption_mod",
       "uniformName": "uFluidDetailMap",
       "textureUnit": 2,
-      "bytes": 157098,
-      "sha256": "d1cef9836298588c609cb8fe7e0746893b22ffc14ac39c1976ff01a09dcc2e33"
+      "bytes": 157210,
+      "sha256": "722ed270e1979f558c288d912edd5754ed3db05cb3b026a3dfbbef6c6ebc2cba"
     },
     {
       "id": "caustics",
@@ -243,8 +245,8 @@
       "channels": "R=primary_curved_caustics, G=secondary_curved_caustics, B=fine_filaments, A=convergence_nodes",
       "uniformName": "uCausticsMap",
       "textureUnit": 3,
-      "bytes": 139152,
-      "sha256": "33a7293d84fbd5a39ace04193a27442f49ebc342c9714553ecb9aef7ee582eee"
+      "bytes": 129344,
+      "sha256": "fe87aa5612d64faf1d6081c97eabbbf1cefd37f54c7d2de5f78d06bb1833a9ab"
     },
     {
       "id": "glass_environment",
@@ -256,13 +258,13 @@
       "channels": "RGB=equirectangular_crystal_studio_env, A=specular_weight",
       "uniformName": "uGlassEnvMap",
       "textureUnit": 4,
-      "bytes": 18046,
-      "sha256": "8b588b2d4ad78e6aa94997c0a54855fb432ce4c1b1093019b371442897b5ba3b"
+      "bytes": 16686,
+      "sha256": "0f4e50d174d50474ce53bac6d4673d1ac6182c712b93819a823ac2615031ef3a"
     }
   ],
   "summary": {
     "totalWebpFiles": 35,
-    "totalDiskBytes": 1228612,
+    "totalDiskBytes": 1546702,
     "totalGpuMemoryBytes": 9437184,
     "totalGpuMemoryMiB": 9.0
   }

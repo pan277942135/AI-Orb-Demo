@@ -1,31 +1,30 @@
 #!/usr/bin/env python3
 """
-AI-Orb-Demo V3 — 2D Optical & Fluid Detail Maps Synthesizer (Lossless RGBA WebP)
+AI-Orb-Demo V3 — Reference-Driven 2D Optical & Fluid Detail Maps Synthesizer (Lossless RGBA WebP)
 
-Deterministically generates the 3 production 2D Lossless RGBA WebP maps consumed
-directly by CORE_GLASS_FRAG in OpenGL ES 3.0:
+Explicitly loads pixel-extracted master geometry & color metrics from:
+  tools/orb-v3-generator/reference/REFERENCE_VISUAL_REGIONS.json
+
+Generates the 3 production 2D Lossless RGBA WebP maps consumed directly by CORE_GLASS_FRAG:
   1. maps/emerald_distribution.webp (256x256, Linear Data GL_RGBA8)
-     - R: Seamless organic emerald silk curtain modulation
-     - G: High-frequency translucent fluid silk micro-grain
+     - R: Organic emerald silk fold micro-curtain modulation
+     - G: High-frequency translucent silk grain
      - B: Capillary meniscus organic ripple heightfield
-     - A: Beer-Lambert volumetric absorption modulation
+     - A: Beer-Lambert absorption contrast modulation
   2. optics/caustics.webp (256x256, Linear Data GL_RGBA8)
-     - Seamless tileable 2D domain-warped irregular curved-wave underwater caustics (ZERO Voronoi!)
-     - R: Primary curved caustic filaments
-     - G: Secondary irrational-angle curved filaments
-     - B: Fine shimmer filaments
-     - A: Bright optical convergence nodes
+     - Razor-sharp seamless domain-warped irregular underwater caustic filaments (ZERO Voronoi!)
+     - R/G/B: Multi-scale branching wave filaments
+     - A: Crisp optical convergence nodes
   3. optics/glass_environment.webp (512x256, sRGB Equirectangular GL_SRGB8_ALPHA8)
-     - Calibrated to sole frozen master public/assets/aistudio/____________910d1531.png:
-       * Deep dark-teal studio crystal surround (crystal-clear glass center)
-       * Tight sunlit golden flare at upper-left (10:45)
-       * Molten-gold rim arc (12:30 - 3:30)
-       * Crisp ice-cyan crescent rim (4:30 - 8:30)
-       * ZERO broad front-right round beige blob!
+     - Calibrated to extracted master background & E09 upper-left flare anchor:
+       * Deep dark abyssal crystal surround (ZERO milky haze in sphere interior!)
+       * Grazing rim-hugging sunlit golden crescent at 10:45-3:30 (NO circular white front headlight dot!)
+       * Crisp ice-cyan grazing crescent along 4:30-8:30
 """
 
 from __future__ import annotations
 
+import json
 import math
 import random
 import subprocess
@@ -36,6 +35,25 @@ from pathlib import Path
 SEED = 20261120
 ROOT = Path(__file__).resolve().parents[2]
 ASSETS_ROOT = ROOT / "app" / "src" / "main" / "assets" / "orb_v3"
+REGIONS_PATH = Path(__file__).resolve().parent / "reference" / "REFERENCE_VISUAL_REGIONS.json"
+
+
+def load_reference_regions() -> dict:
+    if not REGIONS_PATH.exists():
+        raise FileNotFoundError(
+            f"Missing G1 reference regions file: {REGIONS_PATH}. "
+            "Run tools/orb-v3-generator/extract_reference_regions.py first."
+        )
+    data = json.loads(REGIONS_PATH.read_text(encoding="utf-8"))
+    if data.get("schemaVersion") != "AI_ORB_V3_REFERENCE_VISUAL_REGIONS_1_0":
+        raise ValueError(f"Unexpected REFERENCE_VISUAL_REGIONS schema: {data.get('schemaVersion')}")
+    return data
+
+
+REF_DATA = load_reference_regions()
+FLARE_CENTROID = REF_DATA["interiorRegions"]["E09_upper_left_flare"]["centroidNorm"]
+FLARE_SRGB = REF_DATA["interiorRegions"]["E09_upper_left_flare"]["meanSrgb"]
+BG_CORNER_SRGB = REF_DATA["backgroundCornerMeanSrgb"]
 
 
 def clamp01(v: float) -> float:
@@ -118,22 +136,26 @@ def generate_emerald_distribution() -> tuple[str, int]:
     off = 0
     tau = 2.0 * math.pi
 
+    # Calibrate absorption contrast against master E05 vs E06 area balance
+    e05_area = float(REF_DATA["interiorRegions"]["E05_emerald"]["areaRatio"])
+    e06_area = float(REF_DATA["interiorRegions"]["E06_sapphire"]["areaRatio"])
+    contrast_bias = clamp01(e05_area / max(0.15, e05_area + e06_area))
+
     for y in range(h):
         v = (y + 0.5) / h
         for x in range(w):
             u = (x + 0.5) / w
-            # Domain-warped seamless coordinates
             wx = fbm_periodic_2d(g1, 12, g2, 24, u, v)
             wy = fbm_periodic_2d(g1, 12, g2, 24, u + 0.37, v + 0.61)
 
-            # R: Organic emerald silk curtain folds
-            curtain_raw = 0.5 + 0.5 * math.sin((u * 2.0 + wx * 0.42) * tau + math.cos((v * 2.0 + wy * 0.38) * tau))
-            curtain = smoothstep(0.12, 0.88, curtain_raw * 0.72 + (0.5 + 0.5 * wx) * 0.28)
+            # R: Sharper sculpted silk curtain folds
+            curtain_raw = 0.5 + 0.5 * math.sin((u * 2.0 + wx * 0.45) * tau + math.cos((v * 2.0 + wy * 0.40) * tau))
+            curtain = smoothstep(0.16, 0.86, curtain_raw * 0.74 + (0.5 + 0.5 * wx) * 0.26)
 
-            # G: Fine silk micro-grain
+            # G: Crisp translucent silk micro-grain
             grain = clamp01(0.5 + 0.5 * sample_periodic_2d(g3, 32, u + wx * 0.08, v + wy * 0.08))
 
-            # B: Capillary meniscus ripple heightfield
+            # B: Capillary meniscus organic ripple heightfield
             ripple = clamp01(
                 0.5
                 + 0.26 * math.sin((u * 3.0 + v * 1.0 + wx * 0.22) * tau)
@@ -141,8 +163,8 @@ def generate_emerald_distribution() -> tuple[str, int]:
                 + 0.08 * sample_periodic_2d(g2, 24, u * 2.0, v * 2.0)
             )
 
-            # A: Absorption modulation (always non-zero [0.35..1.0])
-            absorb = clamp01(0.38 + 0.62 * smoothstep(-0.55, 0.65, wx * 0.6 + wy * 0.4))
+            # A: High-contrast Beer-Lambert absorption modulation
+            absorb = clamp01((0.32 + 0.14 * contrast_bias) + 0.60 * smoothstep(-0.48, 0.58, wx * 0.6 + wy * 0.4))
 
             buf[off] = int(curtain * 255.0 + 0.5)
             buf[off + 1] = int(grain * 255.0 + 0.5)
@@ -170,37 +192,33 @@ def generate_caustics_map() -> tuple[str, int]:
         v = (y + 0.5) / h
         for x in range(w):
             u = (x + 0.5) / w
-            # 2-stage periodic domain warp (completely seamless on [0,1]^2, ZERO Voronoi cells!)
             wa = fbm_periodic_2d(g1, 10, g2, 20, u, v)
             wb = fbm_periodic_2d(g1, 10, g2, 20, u + 0.43, v + 0.29)
             wc = fbm_periodic_2d(g1, 10, g2, 20, u + wa * 0.16 + 0.19, v + wb * 0.16 + 0.67)
 
-            # Primary irregular curved wave network
-            p1x = (u * 3.0 + wa * 0.38 + wc * 0.14) * tau
-            p1y = (v * 3.0 + wb * 0.38 - wc * 0.12) * tau
-            w1 = sin(p1x + 0.85 * cos(p1y + wa * 1.9)) + cos(p1y - 0.80 * sin(p1x - wb * 1.7))
-            r1 = exp(-abs(w1) * 4.4)
+            # Razor-sharp curved branching filaments (zero Voronoi honeycomb!)
+            p1x = (u * 3.0 + wa * 0.40 + wc * 0.15) * tau
+            p1y = (v * 3.0 + wb * 0.40 - wc * 0.13) * tau
+            w1 = sin(p1x + 0.88 * cos(p1y + wa * 1.95)) + cos(p1y - 0.82 * sin(p1x - wb * 1.75))
+            r1 = exp(-abs(w1) * 5.2)
 
-            # Secondary rotated integer-periodic branching network (strictly tileable on torus!)
-            p2x = (u * 2.0 - v * 3.0 + wb * 0.42) * tau
-            p2y = (u * 3.0 + v * 2.0 - wa * 0.40) * tau
-            w2 = sin(p2x - 0.78 * sin(p2y + wc * 2.1)) + cos(p2y + 0.76 * cos(p2x - wa * 1.6))
-            r2 = exp(-abs(w2) * 5.0)
+            p2x = (u * 2.0 - v * 3.0 + wb * 0.44) * tau
+            p2y = (u * 3.0 + v * 2.0 - wa * 0.42) * tau
+            w2 = sin(p2x - 0.80 * sin(p2y + wc * 2.15)) + cos(p2y + 0.78 * cos(p2x - wa * 1.65))
+            r2 = exp(-abs(w2) * 5.8)
 
-            # Tertiary fine organic filaments
-            p3x = (u * 4.0 + v * 2.0 + wc * 0.35) * tau
-            p3y = (-u * 2.0 + v * 5.0 + wa * 0.32) * tau
-            w3 = sin(p3x + 0.70 * cos(p3y)) - cos(p3y + 0.70 * sin(p3x))
-            r3 = exp(-abs(w3) * 5.8)
+            p3x = (u * 4.0 + v * 2.0 + wc * 0.36) * tau
+            p3y = (-u * 2.0 + v * 5.0 + wa * 0.34) * tau
+            w3 = sin(p3x + 0.72 * cos(p3y)) - cos(p3y + 0.72 * sin(p3x))
+            r3 = exp(-abs(w3) * 6.5)
 
-            # Non-uniform organic intensity breakup + convergence sparkles
-            breakup = smoothstep(-0.35, 0.58, wa * 0.62 + wb * 0.52)
-            conv = clamp01((r1 * r2 * 2.8) ** 1.25)
+            breakup = smoothstep(-0.30, 0.56, wa * 0.62 + wb * 0.52)
+            conv = clamp01((r1 * r2 * 3.2) ** 1.30)
 
-            c_r = clamp01(r1 * (0.45 + 0.55 * breakup))
-            c_g = clamp01(r2 * (0.45 + 0.55 * breakup))
-            c_b = clamp01(r3 * (0.40 + 0.60 * breakup))
-            c_a = clamp01(0.08 + 0.92 * clamp01(conv * 0.85 + r1 * r2 * 0.35))
+            c_r = clamp01(r1 * (0.42 + 0.58 * breakup))
+            c_g = clamp01(r2 * (0.42 + 0.58 * breakup))
+            c_b = clamp01(r3 * (0.38 + 0.62 * breakup))
+            c_a = clamp01(0.04 + 0.96 * clamp01(conv * 0.88 + r1 * r2 * 0.35))
 
             buf[off] = int(c_r * 255.0 + 0.5)
             buf[off + 1] = int(c_g * 255.0 + 0.5)
@@ -216,14 +234,9 @@ def generate_caustics_map() -> tuple[str, int]:
 def generate_glass_environment() -> tuple[str, int]:
     """
     Equirectangular studio crystal reflection map (512x256, sRGB).
-    u in [0,1] -> azimuth phi in [-pi, +pi] (u=0.5 -> +Z front camera direction)
-    v in [0,1] -> elevation theta in [+pi/2 (top), -pi/2 (bottom)]
-    Calibrated strictly to ____________910d1531.png:
-      - Dark abyssal teal surround (ensures clear center with zero milky veil)
-      - Tight sunlit champagne-gold key window at 10:45 upper-left
-      - Crisp thin molten-gold rim band along right curvature (12:30 - 3:30)
-      - Crisp ice-cyan crescent along lower-left curvature (4:30 - 8:30)
-      - ZERO broad front-right round blob!
+    Eliminates the circular front-facing 10:45 headlight dot completely!
+    Places sunlit golden & ice-cyan reflections strictly along grazing curvature arcs
+    matching the master's blown-glass double rim.
     """
     w, h = 512, 256
     buf = bytearray(w * h * 4)
@@ -233,69 +246,72 @@ def generate_glass_environment() -> tuple[str, int]:
     cos = math.cos
     exp = math.exp
 
-    # Key light vector matching 10:45 upper-left flare in master PNG
-    kx, ky, kz = -0.52, 0.72, 0.46
-    klen = math.sqrt(kx * kx + ky * ky + kz * kz)
-    kx, ky, kz = kx / klen, ky / klen, kz / klen
+    # Grazing upper-left golden rim arc direction derived from E09_upper_left_flare centroid
+    # Pushed to grazing curvature (rz <= 0.05) so it reflects ONLY near the upper-left glass rim!
+    fx = float(FLARE_CENTROID[0])
+    fy = float(FLARE_CENTROID[1])
+    flen = math.sqrt(fx * fx + fy * fy + 0.12 * 0.12)
+    gx, gy, gz = fx / flen, fy / flen, -0.12 / flen
+
+    # Calibrate dark studio floor to master corner background (linearized)
+    bg_r = (BG_CORNER_SRGB[0] ** 2.2) * 0.35
+    bg_g = (BG_CORNER_SRGB[1] ** 2.2) * 0.35
+    bg_b = (BG_CORNER_SRGB[2] ** 2.2) * 0.35
+
+    flare_tint_r = clamp01(FLARE_SRGB[0]) ** 2.2
+    flare_tint_g = clamp01(FLARE_SRGB[1]) ** 2.2
+    flare_tint_b = clamp01(FLARE_SRGB[2]) ** 2.2
 
     for row in range(h):
         v = (row + 0.5) / h
-        theta = (0.5 - v) * pi  # +pi/2 at top, -pi/2 at bottom
+        theta = (0.5 - v) * pi
         ct = cos(theta)
         ry = sin(theta)
 
         for col in range(w):
             u = (col + 0.5) / w
-            phi = (u - 0.5) * 2.0 * pi  # 0 at +Z, +pi/2 at +X, -pi/2 at -X
+            phi = (u - 0.5) * 2.0 * pi
             rx = ct * sin(phi)
             rz = ct * cos(phi)
 
-            # Deep dark abyssal teal studio base (linear -> converted to sRGB at end)
-            lr = 0.0022
-            lg = 0.0155
-            lb = 0.0220
+            # Deep dark abyssal teal studio surround — crystal-clear glass center!
+            lr = 0.0014 + bg_r
+            lg = 0.0110 + bg_g
+            lb = 0.0165 + bg_b
 
-            # Subtle deep emerald zenith & cyan nadir ambient bounce
-            zenith = clamp01(ry)
-            nadir = clamp01(-ry)
-            lr += 0.003 * zenith + 0.004 * nadir
-            lg += 0.016 * zenith + 0.036 * nadir
-            lb += 0.018 * zenith + 0.048 * nadir
+            # Suppress front-center (+Z) reflections so sphere center never looks milky or dotted
+            grazing_only = 1.0 - smoothstep(0.28, 0.78, rz)
 
-            # 1. Focused sunlit champagne-gold key window at 10:45 (tight studio softbox, NO wash!)
-            dot_key = rx * kx + ry * ky + rz * kz
-            key_core = smoothstep(0.955, 0.996, dot_key)
-            key_halo = smoothstep(0.895, 0.985, dot_key) * 0.28
-            key_e = key_core * 1.10 + key_halo
-            lr += 1.00 * key_e
-            lg += 0.80 * key_e
-            lb += 0.42 * key_e
+            # 1. Rim-hugging sunlit golden crescent at upper-left (10:45) — elongated thin arc, NO circular dot!
+            dot_g = rx * gx + ry * gy + rz * gz
+            # Narrow ribbon cross-section along upper-left rim contour
+            arc_ribbon = exp(-((ry - 0.62 - 0.28 * (-rx)) * 11.5) ** 2) * smoothstep(0.62, 0.96, dot_g) * grazing_only
+            lr += flare_tint_r * arc_ribbon * 0.95
+            lg += flare_tint_g * arc_ribbon * 0.78
+            lb += flare_tint_b * arc_ribbon * 0.42
 
-            # 2. Razor-sharp molten-gold arc band along grazing right curvature (12:30 - 3:30)
-            # Only active at high +X grazing angles (rx > 0.55) so NEVER creates a front-right blob!
-            gold_arc = exp(-((ry - 0.22 * rx - 0.14) * 16.0) ** 2) * smoothstep(0.56, 0.94, rx) * smoothstep(-0.35, 0.45, -rz + 0.4)
-            lr += 0.98 * gold_arc * 0.72
-            lg += 0.58 * gold_arc * 0.72
-            lb += 0.14 * gold_arc * 0.72
+            # 2. Razor-sharp molten-gold rim band along right curvature (12:30 - 3:30)
+            gold_arc = exp(-((ry - 0.22 * rx - 0.14) * 16.5) ** 2) * smoothstep(0.54, 0.94, rx) * grazing_only
+            lr += 0.98 * gold_arc * 0.78
+            lg += 0.56 * gold_arc * 0.78
+            lb += 0.12 * gold_arc * 0.78
 
             # 3. Crisp ice-cyan crescent reflection along lower-left / bottom glass rim (4:30 - 8:30)
-            cyan_arc = exp(-((ry + 0.36 + 0.18 * rx) * 9.5) ** 2) * (1.0 - smoothstep(-0.85, 0.08, rx))
-            lr += 0.14 * cyan_arc * 0.68
-            lg += 0.82 * cyan_arc * 0.68
-            lb += 1.00 * cyan_arc * 0.68
+            cyan_arc = exp(-((ry + 0.38 + 0.18 * rx) * 10.0) ** 2) * (1.0 - smoothstep(-0.85, 0.12, rx)) * grazing_only
+            lr += 0.12 * cyan_arc * 0.72
+            lg += 0.84 * cyan_arc * 0.72
+            lb += 1.00 * cyan_arc * 0.72
 
-            # 4. Subtle cool studio overhead hairline glint
-            top_line = exp(-((ry - 0.78) * 18.0) ** 2) * smoothstep(-0.4, 0.3, -rx) * 0.18
-            lr += 0.35 * top_line
-            lg += 0.68 * top_line
+            # 4. Subtle cool overhead crystal crown hairline
+            top_line = exp(-((ry - 0.80) * 20.0) ** 2) * grazing_only * 0.16
+            lr += 0.30 * top_line
+            lg += 0.65 * top_line
             lb += 0.72 * top_line
 
-            # Convert linear radiance [0..1] to sRGB for GL_SRGB8_ALPHA8 precision!
             sr = clamp01(lr) ** (1.0 / 2.2)
             sg = clamp01(lg) ** (1.0 / 2.2)
             sb = clamp01(lb) ** (1.0 / 2.2)
-            # Alpha encodes specular intensity weight for diagnostics/blending
-            sa = clamp01(0.25 + 0.75 * max(sr, sg, sb))
+            sa = clamp01(0.22 + 0.78 * max(sr, sg, sb))
 
             buf[off] = int(sr * 255.0 + 0.5)
             buf[off + 1] = int(sg * 255.0 + 0.5)
@@ -310,6 +326,7 @@ def generate_glass_environment() -> tuple[str, int]:
 
 def main() -> int:
     t0 = time.time()
+    print(f"[generate_orb_maps] Loading reference regions from {REGIONS_PATH.name}...")
     r1 = generate_emerald_distribution()
     r2 = generate_caustics_map()
     r3 = generate_glass_environment()

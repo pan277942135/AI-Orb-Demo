@@ -77,6 +77,7 @@ import com.example.R
 import com.example.orb.config.AIOrbConfig
 import com.example.orb.config.QualityTier
 import com.example.orb.config.RenderDebugMode
+import com.example.orb.v3.OrbV3LoadState
 import java.util.Locale
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
@@ -170,13 +171,17 @@ fun AIOrbControlsOverlay(
               Locale.US,
               "V3 VOL %s (%s) · %.1f MiB · dec %.1fms · up %.1fms",
               tel.volumeDimensions,
-              if (tel.volumeLoaded) "WEBP3D" else "FALLBACK",
+              tel.volumeLoadState.label,
               tel.gpuVolumeMemoryMiB,
               tel.webpDecodeMs,
               tel.texture3dUploadMs,
             ),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.secondary,
+            color = if (tel.volumeLoadState == OrbV3LoadState.V3_ASSET_ERROR) {
+              MaterialTheme.colorScheme.error
+            } else {
+              MaterialTheme.colorScheme.secondary
+            },
           )
         }
       }
@@ -753,9 +758,13 @@ private fun DebugControlPanel(
               color = MaterialTheme.colorScheme.primary,
             )
             Text(
-              text = "Asset Status: ${tel.volumeStatus}",
+              text = "Asset Status [${tel.volumeLoadState.label}]: ${tel.volumeStatus}",
               style = MaterialTheme.typography.labelSmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              color = if (tel.volumeLoadState == OrbV3LoadState.V3_ASSET_ERROR) {
+                MaterialTheme.colorScheme.error
+              } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+              },
             )
           }
         }

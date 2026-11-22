@@ -29,6 +29,17 @@ class OrbFluidVolumeRenderer {
   val volumeTelemetry: OrbVolumeTelemetry
     get() = volumeTextures.telemetry
 
+  val isVolumeReady: Boolean
+    get() = volumeTextures.isReady
+
+  fun preloadAssetsAsync(assetManager: AssetManager?) {
+    volumeTextures.preloadAsync(assetManager)
+  }
+
+  fun uploadReadyAssetsIfNeeded(assetManager: AssetManager?): Boolean {
+    return volumeTextures.uploadIfReady(assetManager)
+  }
+
   fun init(subdivisions: Int, assetManager: AssetManager? = null) {
     release()
     program = GlShaderProgram(
@@ -37,7 +48,9 @@ class OrbFluidVolumeRenderer {
       "OrbFluidVolumeRenderer",
     )
     rebuildMesh(subdivisions)
-    volumeTextures.loadAndUpload(assetManager)
+    // Non-blocking: kicks off background decode if not already started and uploads immediately if ready.
+    volumeTextures.preloadAsync(assetManager)
+    volumeTextures.uploadIfReady(assetManager)
   }
 
   fun ensureQuality(subdivisions: Int) {
@@ -65,6 +78,7 @@ class OrbFluidVolumeRenderer {
     hdrScale: Float,
     lighting: AIOrbLighting,
     config: AIOrbConfig,
+    isSoftwareRenderer: Boolean = false,
   ) {
     val prog = program ?: return
     val sphere = mesh ?: return
@@ -74,8 +88,9 @@ class OrbFluidVolumeRenderer {
     GLES30.glDepthMask(true)
     GLES30.glEnable(GLES30.GL_CULL_FACE)
     GLES30.glCullFace(GLES30.GL_BACK)
-    GLES30.glEnable(GLES30.GL_BLEND)
-    GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA)
+    // P0-3: CORE_GLASS_FRAG owns complete background refraction & edge coverage compositing
+    // (`mix(originalBg, finalGlassCol, edgeAlpha)` with alpha = 1.0); disable duplicate GL_BLEND!
+    GLES30.glDisable(GLES30.GL_BLEND)
 
     prog.use()
     GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
@@ -83,6 +98,12 @@ class OrbFluidVolumeRenderer {
     prog.setInt("uRefractionTex", 0)
 
     volumeTextures.bindTo(prog)
+
+    val effectiveSteps = if (isSoftwareRenderer) {
+      minOf(config.quality.raymarchSteps, 20)
+    } else {
+      config.quality.raymarchSteps
+    }
 
     prog.setVec2("uViewportSize", fboWidth.toFloat(), fboHeight.toFloat())
     prog.setMat4("uModel", outerGlassModel)
@@ -99,7 +120,7 @@ class OrbFluidVolumeRenderer {
     prog.setFloat("uRefraction", config.refraction)
     prog.setFloat("uOverallIntensity", config.overallIntensity)
     prog.setFloat("uHdrScale", hdrScale)
-    prog.setInt("uRaymarchSteps", config.quality.raymarchSteps)
+    prog.setInt("uRaymarchSteps", effectiveSteps)
     prog.setInt("uDebugMode", config.debugMode.shaderModeId)
 
     lighting.applyTo(prog)

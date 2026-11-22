@@ -48,6 +48,7 @@ enum class QualityTier(
  */
 enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
   FULL_RENDER(0, "Full Render"),
+  REFERENCE_LOCKED_FRAME(0, "Ref Locked"),
   GPU_ONLY(0, "GPU Only"),
   REFERENCE_ONLY(0, "Reference Only"),
   CORE_ONLY(0, "Core Only"),
@@ -78,8 +79,11 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
       this == CAUSTICS_ONLY ||
       this == GLASS_ONLY
 
+  val locksReferenceFrame: Boolean
+    get() = this == REFERENCE_LOCKED_FRAME
+
   val locksCameraAndOuterShell: Boolean
-    get() = this == CORE_ROTATION_ONLY
+    get() = this == CORE_ROTATION_ONLY || this == REFERENCE_LOCKED_FRAME
 }
 
 /**

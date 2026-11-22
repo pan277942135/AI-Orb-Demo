@@ -133,23 +133,31 @@ class AIOrbOrbitRibbons {
     outMatrix: FloatArray,
   ) {
     val d = descriptors[index]
-    val cycle = AIOrbMotionController.residentCyclePhase(motion.ribbonTimeSec, d.periodMs, d.phase)
+    val isRefLocked = config.debugMode == RenderDebugMode.REFERENCE_LOCKED_FRAME
+    val cycle = if (isRefLocked) d.phase else AIOrbMotionController.residentCyclePhase(motion.ribbonTimeSec, d.periodMs, d.phase)
     Matrix.setIdentityM(outMatrix, 0)
 
-    val radialScale = (0.25f + 0.75f * config.coreScale) *
-      (1.0f + 0.018f * sin(cycle * 0.5f + d.phase * 0.7f))
+    val ribbonHugScale = 0.87f
+    val radialScale = if (isRefLocked) {
+      (0.25f + 0.75f * config.coreScale) * ribbonHugScale
+    } else {
+      (0.25f + 0.75f * config.coreScale) * ribbonHugScale *
+        (1.0f + 0.018f * sin(cycle * 0.5f + d.phase * 0.7f))
+    }
     Matrix.scaleM(outMatrix, 0, radialScale, radialScale, radialScale)
 
-    // Gentle multi-harmonic 3D spatial precession (bounded smoothly — NEVER spins like a planetary ring!)
-    val primarySway = sin(cycle * 0.5f) * d.spatialSwayDeg +
-      cos(cycle * 0.31f + d.phase) * (d.spatialSwayDeg * 0.35f)
-    val rollSway = cos(cycle * 0.5f + d.phase * 1.3f) * d.secondarySwayDeg
-    val pitchSway = sin(cycle * 0.38f - d.phase * 0.9f) * (d.secondarySwayDeg * 0.75f)
+    if (!isRefLocked) {
+      // Gentle multi-harmonic 3D spatial precession (bounded smoothly — NEVER spins like a planetary ring!)
+      val primarySway = sin(cycle * 0.5f) * d.spatialSwayDeg +
+        cos(cycle * 0.31f + d.phase) * (d.spatialSwayDeg * 0.35f)
+      val rollSway = cos(cycle * 0.5f + d.phase * 1.3f) * d.secondarySwayDeg
+      val pitchSway = sin(cycle * 0.38f - d.phase * 0.9f) * (d.secondarySwayDeg * 0.75f)
 
-    val axis = d.spatialSwayAxis
-    Matrix.rotateM(outMatrix, 0, primarySway, axis.x, axis.y, axis.z)
-    Matrix.rotateM(outMatrix, 0, rollSway, 0f, 0f, 1f)
-    Matrix.rotateM(outMatrix, 0, pitchSway, 1f, 0f, 0f)
+      val axis = d.spatialSwayAxis
+      Matrix.rotateM(outMatrix, 0, primarySway, axis.x, axis.y, axis.z)
+      Matrix.rotateM(outMatrix, 0, rollSway, 0f, 0f, 1f)
+      Matrix.rotateM(outMatrix, 0, pitchSway, 1f, 0f, 0f)
+    }
   }
 
   fun evaluateWorldPoint(index: Int, u: Float, motion: AIOrbMotionSnapshot, config: AIOrbConfig): Vec3 {
@@ -280,31 +288,35 @@ class AIOrbOrbitRibbons {
      *   curling tapered bottom tendril.
      */
     fun buildRibbonDescriptors(): List<RibbonDescriptor> {
-      // --- C01: Ice-Blue Crystal Liquid-Glass Water Band (FRONT, 4400ms) ---
-      // Smooth 10-point 3D loop: hugs top-left -> bold far-left 8:30 C-arc -> diagonal front slash
-      // -> iconic 5:30 lower-right translucent cyan under-arc -> returns gracefully behind right.
+      // --- C01: Ice-Blue Crystal Liquid-Glass Water Band (FRONT, 4400ms, OPEN sculpted arc — P0-4) ---
+      // Recalibrated to eliminate the bottom-right 5:00 V-kink and closed-ring rigidity:
+      // emerges gracefully behind upper-right crown -> sweeps top-left -> iconic far-left 8:30 C-arc
+      // -> crisp diagonal lower-front slash -> wide sweeping 5:30 translucent under-arc -> tapers cleanly
+      // behind lower-left with smooth monotonic curvature (ZERO sharp turnaround corner!).
       val c01Points = listOf(
-        Vec3(0.24f, 1.00f, -0.26f),   // u=0.00 upper-right crown hugging glass
-        Vec3(-0.40f, 1.04f, -0.02f),  // u=0.10 top-left crown overlapping A01/A02
-        Vec3(-0.96f, 0.72f, 0.24f),   // u=0.20 upper-left widening water arch
-        Vec3(-1.22f, 0.20f, 0.54f),   // u=0.30 far-left sculptural broad cyan glass C-arc
-        Vec3(-1.02f, -0.26f, 0.80f),  // u=0.40 8:30 iconic bright ice-cyan flare bend!
-        Vec3(-0.34f, -0.46f, 0.96f),  // u=0.50 razor-clean diagonal slash across lower-front of orb
-        Vec3(0.42f, -0.70f, 0.84f),   // u=0.60 lower-right front sweep dipping cleanly toward 5:00
-        Vec3(0.74f, -0.98f, 0.38f),   // u=0.70 5:30 iconic translucent cyan lower-right under-arc!
-        Vec3(0.96f, -0.56f, -0.20f),  // u=0.80 curving smoothly up behind lower-right
-        Vec3(0.94f, 0.24f, -0.46f),   // u=0.90 ascending behind right flank
+        Vec3(0.76f, 0.58f, -0.44f),   // u=0.00 tapered start emerging behind upper-right flank
+        Vec3(0.28f, 1.02f, -0.18f),   // u=0.10 upper-right cyan crown glass arc
+        Vec3(-0.36f, 1.04f, 0.06f),   // u=0.20 top-left crown overlapping A01/A02
+        Vec3(-0.96f, 0.72f, 0.28f),   // u=0.30 upper-left widening water arch
+        Vec3(-1.26f, 0.22f, 0.52f),   // u=0.40 far-left sculptural broad cyan glass C-arc
+        Vec3(-1.04f, -0.24f, 0.80f),  // u=0.50 8:30 iconic bright ice-cyan flare bend!
+        Vec3(-0.32f, -0.44f, 0.96f),  // u=0.60 razor-clean diagonal slash across lower-front of orb
+        Vec3(0.38f, -0.62f, 0.82f),   // u=0.70 lower-right front sweep gliding sleekly past 5:00
+        Vec3(0.66f, -0.80f, 0.46f),   // u=0.80 5:30 tightly hugged translucent cyan under-arc
+        Vec3(0.50f, -0.98f, 0.12f),   // u=0.88 broad rounded lower-right sweeping turn (NO kink!)
+        Vec3(-0.02f, -1.04f, -0.14f), // u=0.94 smooth continuous bottom curve hugging lower rim
+        Vec3(-0.56f, -0.94f, -0.30f), // u=1.00 delicate vanishing translucent tail behind lower-left
       )
       val c01Profile = RibbonSurfaceProfile(
-        widthControlPoints = floatArrayOf(0.60f, 0.84f, 1.12f, 1.38f, 1.18f, 0.82f, 0.86f, 0.96f, 0.64f, 0.56f),
-        leftAsymmetryPoints = floatArrayOf(0.94f, 1.06f, 1.18f, 1.22f, 1.10f, 0.96f, 0.94f, 1.08f, 0.96f, 0.92f),
-        rightAsymmetryPoints = floatArrayOf(1.06f, 0.94f, 0.86f, 0.84f, 0.94f, 1.06f, 1.08f, 0.94f, 1.04f, 1.08f),
-        twistProfileRad = floatArrayOf(0.20f, 0.52f, 0.30f, -0.14f, 0.16f, 0.62f, 1.22f, 1.88f, 1.16f, 0.20f),
+        widthControlPoints = floatArrayOf(0.14f, 0.68f, 0.90f, 1.14f, 1.40f, 1.20f, 0.84f, 0.88f, 0.98f, 0.86f, 0.56f, 0.10f),
+        leftAsymmetryPoints = floatArrayOf(0.96f, 0.94f, 1.06f, 1.18f, 1.22f, 1.10f, 0.96f, 0.94f, 1.06f, 1.04f, 1.02f, 0.96f),
+        rightAsymmetryPoints = floatArrayOf(1.04f, 1.06f, 0.94f, 0.86f, 0.84f, 0.94f, 1.06f, 1.08f, 0.96f, 0.96f, 0.98f, 1.04f),
+        twistProfileRad = floatArrayOf(0.10f, 0.28f, 0.52f, 0.28f, -0.14f, 0.18f, 0.64f, 1.14f, 1.48f, 1.72f, 1.90f, 2.04f),
         camberFactor = 0.26f,
         edgeWaveAmp = 0.045f,
         edgeWaveFreq = 2.0f,
         edgeWavePhase = 0.4f,
-        tipFlexWeight = 0.42f,
+        tipFlexWeight = 0.62f,
       )
 
       // --- G01: Warm Sunlit Olive-Emerald Aquatic Kelp Band (BACK, 6100ms, OPEN botanical frond) ---
@@ -418,7 +430,7 @@ class AIOrbOrbitRibbons {
           dominantLayer = DominantDepthLayer.FRONT,
           renderOrder = 2,
           style = 0,
-          closed = true,
+          closed = false,
           controlPoints = c01Points,
           halfWidth = 0.138f,
           surfaceProfile = c01Profile,
@@ -560,7 +572,7 @@ class AIOrbOrbitRibbons {
           dominantLayer = DominantDepthLayer.FRONT,
           renderOrder = 5,
           style = 0,
-          closed = true,
+          closed = false,
           controlPoints = offsetControlPoints(c01Points, 0.03f, -0.02f, 0.02f),
           halfWidth = 0.042f,
           surfaceProfile = c01Profile,

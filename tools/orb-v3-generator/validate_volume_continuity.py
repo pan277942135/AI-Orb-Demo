@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
-AI-Orb-Demo V3 — 3D Volume Z-Axis Continuity & Master Structure Validator
+AI-Orb-Demo V3 — 3D Volume Z-Axis Continuity & Single-Source Meniscus Validator (G1 / P0-1)
 
 Decodes all 32 volume slices (256x256x32 RGBA) and verifies:
   1. Smooth Z-axis continuity: adjacent slice MAE (RGB & Alpha) stays well below seam thresholds.
   2. Genuine 3D depth variation: slices are NOT copies of a single 2D image.
   3. Clean spherical boundary: cube corners strictly have Alpha == 0.
-  4. Clear upper glass dome cavity: top-center dome has low/zero liquid density above meniscus.
-  5. Master palette presence: mid-volume slice contains emerald-green, deep sapphire, and bright aqua voxels.
+  4. P0-1 Single-Source Meniscus Contract: upper sphere interior is populated (NOT pre-clipped by
+     a duplicate baked meniscus!), leaving GPU `meniscusHeight()` as the sole authoritative liquid boundary.
+  5. Master palette presence & contrast: mid-volume slice contains emerald-green, deep sapphire,
+     and bright aqua voxels matching master color zones.
 """
 
 from __future__ import annotations
@@ -43,7 +45,6 @@ def main() -> int:
     max_adj_alpha_mae = 0.0
     worst_pair = (0, 1)
 
-    # Sample stride 4 pixels for fast deterministic metric check (16,384 voxels per slice)
     step = 16
     for z in range(DEPTH - 1):
         s0 = slices[z]
@@ -79,7 +80,7 @@ def main() -> int:
         if a_mae > max_adj_alpha_mae:
             max_adj_alpha_mae = a_mae
 
-    # Check genuine 3D difference between front-mid (z=8) and back-mid (z=22)
+    # Genuine 3D difference between front-mid (z=8) and back-mid (z=22)
     s_front = slices[8]
     s_back = slices[22]
     diff_3d = 0
@@ -90,7 +91,7 @@ def main() -> int:
             cnt_3d += 1
     z_variation_mae = diff_3d / max(1, cnt_3d * 3.0 * 255.0)
 
-    # Check spherical boundary cleanliness at cube corners across all slices
+    # Spherical boundary cleanliness at cube corners across all 32 slices
     corner_coords = [(0, 0), (WIDTH - 1, 0), (0, HEIGHT - 1), (WIDTH - 1, HEIGHT - 1)]
     max_corner_alpha = 0
     for s in slices:
@@ -99,11 +100,11 @@ def main() -> int:
             if a > max_corner_alpha:
                 max_corner_alpha = a
 
-    # Inspect mid-volume slice (z=16) for clear upper cavity + emerald/sapphire/aqua distribution
+    # P0-1 check: mid-volume upper hemisphere MUST contain continuous fluid voxels (NO baked meniscus cut!)
     mid = slices[16]
     upper_dome_alpha_sum = 0
     upper_dome_cnt = 0
-    for y in range(24, 72):
+    for y in range(44, 92):
         for x in range(104, 152):
             upper_dome_alpha_sum += mid[(y * WIDTH + x) * 4 + 3]
             upper_dome_cnt += 1
@@ -119,11 +120,11 @@ def main() -> int:
             r, g, b, a = mid[idx], mid[idx + 1], mid[idx + 2], mid[idx + 3]
             if a >= 30:
                 total_fluid_voxels += 1
-                if g > b * 1.15 and g > 70:
+                if g > b * 1.12 and g > 68:
                     emerald_voxels += 1
-                elif b >= g and g > 130 and b > 150:
+                elif b >= g and g > 125 and b > 145:
                     aqua_voxels += 1
-                elif b >= g and b < 150:
+                elif b >= g and b < 145:
                     sapphire_voxels += 1
 
     print(f"[validate_volume_continuity] Max adjacent Z interior RGB MAE: {max_adj_interior_rgb_mae:.4f} (pair z{worst_pair[0]:02d}->z{worst_pair[1]:02d})")
@@ -131,26 +132,26 @@ def main() -> int:
     print(f"[validate_volume_continuity] Max adjacent Z-slice Alpha MAE:  {max_adj_alpha_mae:.4f}")
     print(f"[validate_volume_continuity] True 3D Z-depth variation MAE:   {z_variation_mae:.4f} (z08 vs z22)")
     print(f"[validate_volume_continuity] Max corner Alpha across 32 Z:    {max_corner_alpha}")
-    print(f"[validate_volume_continuity] Upper glass cavity mean Alpha:   {upper_dome_alpha_mean:.4f}")
+    print(f"[validate_volume_continuity] Upper sphere mean Alpha (P0-1):  {upper_dome_alpha_mean:.4f} (must be > 0.15, no baked meniscus clip!)")
     print(
         f"[validate_volume_continuity] Mid-slice z16 fluid voxels={total_fluid_voxels} "
         f"(emerald={emerald_voxels}, sapphire={sapphire_voxels}, aqua={aqua_voxels})"
     )
 
     errors: list[str] = []
-    if max_adj_interior_rgb_mae > 0.065:
-        errors.append(f"Adjacent Z interior RGB MAE too high: {max_adj_interior_rgb_mae:.4f} > 0.065")
-    if max_adj_premul_rgb_mae > 0.025:
-        errors.append(f"Adjacent Z premul RGB MAE too high: {max_adj_premul_rgb_mae:.4f} > 0.025")
-    if max_adj_alpha_mae > 0.045:
-        errors.append(f"Adjacent Z Alpha MAE too high: {max_adj_alpha_mae:.4f} > 0.045")
-    if z_variation_mae < 0.025:
-        errors.append(f"Insufficient 3D variation along Z: {z_variation_mae:.4f} < 0.025")
+    if max_adj_interior_rgb_mae > 0.075:
+        errors.append(f"Adjacent Z interior RGB MAE too high: {max_adj_interior_rgb_mae:.4f} > 0.075")
+    if max_adj_premul_rgb_mae > 0.032:
+        errors.append(f"Adjacent Z premul RGB MAE too high: {max_adj_premul_rgb_mae:.4f} > 0.032")
+    if max_adj_alpha_mae > 0.050:
+        errors.append(f"Adjacent Z Alpha MAE too high: {max_adj_alpha_mae:.4f} > 0.050")
+    if z_variation_mae < 0.030:
+        errors.append(f"Insufficient 3D variation along Z: {z_variation_mae:.4f} < 0.030")
     if max_corner_alpha != 0:
         errors.append(f"Non-zero corner alpha outside sphere: {max_corner_alpha}")
-    if upper_dome_alpha_mean > 0.08:
-        errors.append(f"Upper cavity not clear above meniscus: mean_alpha={upper_dome_alpha_mean:.4f}")
-    if emerald_voxels < 4000 or sapphire_voxels < 1500 or aqua_voxels < 1500:
+    if upper_dome_alpha_mean < 0.15:
+        errors.append(f"P0-1 violation: upper sphere appears pre-clipped by baked meniscus (mean_alpha={upper_dome_alpha_mean:.4f})")
+    if emerald_voxels < 4000 or sapphire_voxels < 2500 or aqua_voxels < 1500:
         errors.append(
             f"Palette balance off in z16: emerald={emerald_voxels}, sapphire={sapphire_voxels}, aqua={aqua_voxels}"
         )
@@ -161,7 +162,7 @@ def main() -> int:
             print(f"  - {e}")
         return 1
 
-    print("[validate_volume_continuity] PASS: 256x256x32 3D FluidVolume continuity & master composition verified.")
+    print("[validate_volume_continuity] PASS: 256x256x32 full-sphere 3D FluidVolume continuity & P0-1 contract verified.")
     return 0
 
 

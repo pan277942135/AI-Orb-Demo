@@ -127,6 +127,7 @@ def main() -> int:
             "width": 1254,
             "height": 1254,
             "immutable": True,
+            "referenceRegionsPath": "tools/orb-v3-generator/reference/REFERENCE_VISUAL_REGIONS.json",
         },
         "volume": {
             "id": "fluid_color_volume",
@@ -138,6 +139,7 @@ def main() -> int:
             "format": "LOSSLESS_RGBA_WEBP",
             "colorSpace": "SRGB_RGB_LINEAR_ALPHA",
             "premultipliedAlpha": False,
+            "meniscusSource": "GPU_SINGLE_SOURCE_CORE_GLASS_FRAG",
             "yAxisConvention": "ROW_0_IS_TOP_PLUS_Y_SHADER_FLIPS_V",
             "gpuTarget": "GL_TEXTURE_3D",
             "gpuInternalFormat": "GL_SRGB8_ALPHA8",

@@ -19,6 +19,8 @@ import com.example.orb.config.AIOrbConfig
 import com.example.orb.scene.AIOrbScene
 import com.example.orb.scene.AIOrbTelemetry
 
+import java.util.concurrent.atomic.AtomicReference
+
 /**
  * Composable host for the OpenGL ES 3.0 AIOrbScene renderer (V3 WebP 3D Volume Hybrid).
  */
@@ -42,20 +44,20 @@ fun AIOrbCanvas(
     renderer.updateConfig(config)
   }
 
-  var surfaceViewRef: GLSurfaceView? = remember { null }
+  val surfaceViewRef = remember { AtomicReference<GLSurfaceView?>(null) }
 
   DisposableEffect(lifecycleOwner) {
     val observer = LifecycleEventObserver { _, event ->
       when (event) {
-        Lifecycle.Event.ON_RESUME -> surfaceViewRef?.onResume()
-        Lifecycle.Event.ON_PAUSE -> surfaceViewRef?.onPause()
+        Lifecycle.Event.ON_RESUME -> surfaceViewRef.get()?.onResume()
+        Lifecycle.Event.ON_PAUSE -> surfaceViewRef.get()?.onPause()
         else -> Unit
       }
     }
     lifecycleOwner.lifecycle.addObserver(observer)
     onDispose {
       lifecycleOwner.lifecycle.removeObserver(observer)
-      surfaceViewRef?.queueEvent { renderer.release() }
+      surfaceViewRef.getAndSet(null)?.queueEvent { renderer.release() }
     }
   }
 
@@ -67,7 +69,7 @@ fun AIOrbCanvas(
         preserveEGLContextOnPause = true
         setRenderer(renderer)
         renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
-        surfaceViewRef = this
+        surfaceViewRef.set(this)
       }
     },
     modifier = modifier

@@ -43,7 +43,8 @@ class MainActivity : ComponentActivity() {
       statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
       navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
     )
-    applyImmersiveFullscreen()
+    WindowCompat.setDecorFitsSystemWindows(window, false)
+    window.decorView.post { applyImmersiveFullscreen() }
 
     setContent {
       MyApplicationTheme {
@@ -109,12 +110,11 @@ class MainActivity : ComponentActivity() {
   override fun onWindowFocusChanged(hasFocus: Boolean) {
     super.onWindowFocusChanged(hasFocus)
     if (hasFocus) {
-      applyImmersiveFullscreen()
+      window.decorView.post { applyImmersiveFullscreen() }
     }
   }
 
   private fun applyImmersiveFullscreen() {
-    WindowCompat.setDecorFitsSystemWindows(window, false)
     val controller = WindowInsetsControllerCompat(window, window.decorView)
     controller.systemBarsBehavior =
       WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE

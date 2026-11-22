@@ -143,6 +143,7 @@ data class AIOrbMotionSnapshot(
  */
 class AIOrbMotionController {
   private var simTimeSec: Double = 0.0
+  private var pendingTimeSec: Double = 0.0
   private var accumulatedCoreAngleDeg: Double = 0.0
   private var accumulatedFluidPhase: Double = 0.0
   private var accumulatedRibbonTime: Double = 0.0
@@ -151,27 +152,72 @@ class AIOrbMotionController {
 
   fun reset() {
     simTimeSec = 0.0
+    pendingTimeSec = 0.0
     accumulatedCoreAngleDeg = 0.0
     accumulatedFluidPhase = 0.0
     accumulatedRibbonTime = 0.0
   }
 
   /**
-   * Advances simulation state by [rawDeltaSec] (clamped to <= 0.05s to prevent frame-hitch teleports)
-   * and returns the unified [AIOrbMotionSnapshot].
+   * Advances simulation state using deterministic fixed sub-steps (`1/120s`) so slow or variable
+   * frames (up to 0.20s / 5 FPS) NEVER drop simulation time (P0-5), while extreme background/GC
+   * spikes (> 0.20s) clamp cleanly to `0.05s` to prevent visual teleports.
+   * In [com.example.orb.config.RenderDebugMode.REFERENCE_LOCKED_FRAME], returns a 100% deterministic
+   * zero-phase reference snapshot without mutating the simulation clock.
    */
   fun step(rawDeltaSec: Double, config: AIOrbConfig): AIOrbMotionSnapshot {
-    val dt = rawDeltaSec.coerceIn(0.0, 0.05)
+    val shellBaseScale = config.coreScale * config.coreShellScale
+
+    // Deterministic Reference Locked QA frame: zero phase, identity core rotation, fixed shell
+    if (config.debugMode.locksReferenceFrame) {
+      return AIOrbMotionSnapshot(
+        simTimeSec = 0.0,
+        outerGlassScaleX = shellBaseScale,
+        outerGlassScaleY = shellBaseScale,
+        outerGlassScaleZ = shellBaseScale,
+        outerGlassYawDeg = 0f,
+        outerGlassPitchDeg = 0f,
+        outerGlassRollDeg = 0f,
+        coreRotationAxis = CORE_ROTATION_AXIS,
+        coreRotationAngleDeg = 0f,
+        coreAngularVelocityDegPerSec = 0f,
+        coreRotationMat3 = buildAxisAngleMat3(CORE_ROTATION_AXIS, 0f),
+        fluidPhase = 0f,
+        meniscusPhase = 0f,
+        causticsPhase = 0f,
+        ribbonTimeSec = 0f,
+        secondaryOpticsPhase = 0f,
+      )
+    }
+
     val baseCoreSpeed = BASE_CORE_ROTATION_DEG_PER_SEC * config.fluidSpeed.toDouble()
 
-    if (!config.isPaused && dt > 0.0) {
-      // Midpoint integration of organic angular speed modulation keeps 60fps & 20fps trajectories identical
-      val midTime = simTimeSec + dt * 0.5
-      val speedMod = 1.0 + 0.14 * sin(midTime * 0.42) + 0.06 * cos(midTime * 0.71 + 0.8)
-      accumulatedCoreAngleDeg += baseCoreSpeed * speedMod * dt
-      accumulatedFluidPhase += dt * config.fluidSpeed.toDouble()
-      accumulatedRibbonTime += dt * config.ribbonSpeed.toDouble()
-      simTimeSec += dt
+    if (config.isPaused) {
+      // Clear any residual sub-frame pending time while paused so Resume has zero jump
+      pendingTimeSec = 0.0
+    } else if (rawDeltaSec > 0.0 && rawDeltaSec.isFinite()) {
+      // Preserve full wall-clock time on normal/slow frames (<= 0.20s, down to 5 FPS);
+      // clamp extreme background/GC hitch spikes (> 0.20s) to 0.05s so no teleport occurs.
+      val acceptedDt = if (rawDeltaSec > HITCH_SPIKE_THRESHOLD_SEC) {
+        HITCH_CLAMP_SEC
+      } else {
+        rawDeltaSec
+      }
+      pendingTimeSec += acceptedDt
+
+      // Integrate in bounded fixed sub-steps (<= 1/120s) so 10fps, 20fps, 60fps, and variable-fps
+      // trajectories remain mathematically identical without losing simulation time!
+      while (pendingTimeSec > 1e-9) {
+        val subDt = minOf(pendingTimeSec, FIXED_SUBSTEP_SEC)
+        val midTime = simTimeSec + subDt * 0.5
+        val speedMod = 1.0 + 0.14 * sin(midTime * 0.42) + 0.06 * cos(midTime * 0.71 + 0.8)
+        accumulatedCoreAngleDeg += baseCoreSpeed * speedMod * subDt
+        accumulatedFluidPhase += subDt * config.fluidSpeed.toDouble()
+        accumulatedRibbonTime += subDt * config.ribbonSpeed.toDouble()
+        simTimeSec += subDt
+        pendingTimeSec -= subDt
+      }
+      if (pendingTimeSec < 1e-9) pendingTimeSec = 0.0
     }
 
     val t = simTimeSec.toFloat()
@@ -186,7 +232,6 @@ class AIOrbMotionController {
     val sY: Float
     val sZ: Float
 
-    val shellBaseScale = config.coreScale * config.coreShellScale
     if (config.effectiveLockCoreRotation) {
       // Fixed outer shell & scale for isolated core-rotation QA verification
       outerYaw = 0f
@@ -232,12 +277,18 @@ class AIOrbMotionController {
   }
 
   companion object {
+    /** Fixed substep granularity (120 Hz) for frame-rate invariant P0-5 integration. */
+    const val FIXED_SUBSTEP_SEC = 1.0 / 120.0
+    /** Threshold above which a single delta is treated as a background/GC pause spike rather than a slow frame. */
+    const val HITCH_SPIKE_THRESHOLD_SEC = 0.20
+    /** Single-frame clamp applied to extreme hitch spikes (> 0.20s) to prevent visual teleports. */
+    const val HITCH_CLAMP_SEC = 0.05
     /**
      * Clearly perceptible internal water-core angular speed: ~26 deg/s (~13.8s per full 360 deg vortex turn).
      * Tilted 3D axis gives diagonal spatial motion across the orb face so rotation is immediately unmistakable.
      */
     const val BASE_CORE_ROTATION_DEG_PER_SEC = 26.0
-    val CORE_ROTATION_AXIS: Vec3 = Vec3(0.24f, 0.94f, -0.22f).normalized()
+    val CORE_ROTATION_AXIS: Vec3 = Vec3(0.14f, 0.98f, -0.14f).normalized()
 
     /**
      * Builds a column-major 3x3 Rodrigues rotation matrix around unit [axis] by [angleRad].
