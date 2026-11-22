@@ -51,6 +51,13 @@ class GlShaderProgram(vertexSrc: String, fragmentSrc: String, val label: String)
     if (loc >= 0) GLES30.glUniform1f(loc, value)
   }
 
+  fun setFloatArray(name: String, values: FloatArray) {
+    val loc = uniformLocation(name)
+    if (loc >= 0 && values.isNotEmpty()) {
+      GLES30.glUniform1fv(loc, values.size, values, 0)
+    }
+  }
+
   fun setInt(name: String, value: Int) {
     val loc = uniformLocation(name)
     if (loc >= 0) GLES30.glUniform1i(loc, value)

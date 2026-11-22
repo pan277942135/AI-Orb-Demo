@@ -111,21 +111,6 @@ vec3 advectFluidPos(vec3 sp, mat3 coreRot, float fluidPhase) {
     return swirled + curl;
 }
 
-// Sculpted, deep-concave, gently wavy 3D liquid meniscus evaluated in rotated Core Frame (P0-1 SOLE SOURCE!).
-// Dips low in the center (y ~ +0.02) and rises steeply along inner glass walls to form the Master PNG's crescent bowl.
-float meniscusHeight(vec2 coreXZ, float meniscusPhase) {
-    float c = cos(meniscusPhase * 0.28);
-    float s = sin(meniscusPhase * 0.28);
-    vec2 r = vec2(coreXZ.x * c - coreXZ.y * s, coreXZ.x * s + coreXZ.y * c);
-
-    float r2 = dot(coreXZ, coreXZ);
-    float bowl = 0.42 * r2 - 0.075 * coreXZ.x + 0.040 * coreXZ.y;
-    float swell = 0.044 * sin(r.x * 2.6 + meniscusPhase * 0.52 + r.y * 1.25);
-    float crossWave = 0.028 * cos(r.y * 3.3 - meniscusPhase * 0.44 - r.x * 1.7);
-    float capillary = 0.012 * sin((r.x * 1.45 - r.y * 1.15) * 4.8 + meniscusPhase * 0.80);
-    return 0.020 + bowl + swell + crossWave + capillary;
-}
-
 // 3D Flow Domain Warping irregular curved-wave underwater caustics (ZERO Voronoi / honeycomb grids!).
 // Uses 2-stage FBM flow warping + razor-sharp non-commensurate curved filaments + asymmetric lower-belly mask.
 float domainWarpCaustics(vec3 advectedPos, vec3 coreFramePos, vec2 meniscusSlope, float causticsPhase) {
@@ -336,6 +321,11 @@ uniform float uHdrScale;
 
 $GLSL_COMMON_MATH
 
+float legacyInnerMeniscus(vec2 coreXZ, float meniscusPhase) {
+    float r2 = dot(coreXZ, coreXZ);
+    return 0.20 + 0.24 * r2 + 0.03 * sin(coreXZ.x * 2.4 + meniscusPhase * 0.45);
+}
+
 void main() {
     // Unified Core Frame for meniscus & zoning; Advected Frame for swirling fluid folds
     vec3 corePos = toCoreFrame(vLocalPos, uCoreRotMat);
@@ -343,7 +333,7 @@ void main() {
     float swirl = fbm3(advPos * 1.75);
     float vortexArm = smoothstep(0.16, 0.84, 0.5 + 0.5 * sin(atan(advPos.z, advPos.x) * 3.0 + advPos.y * 2.4 + swirl * 2.8));
 
-    float mY = meniscusHeight(corePos.xz, uMeniscusPhase);
+    float mY = legacyInnerMeniscus(corePos.xz, uMeniscusPhase);
     float belowLiquid = invSmoothstep(mY - 0.09, mY + 0.07, corePos.y);
 
     // Deep midnight sapphire + dark ink-emerald abyss with interior emerald-jade folds
@@ -471,6 +461,7 @@ uniform float uFluidPhase;
 uniform float uMeniscusPhase;
 uniform float uCausticsPhase;
 uniform float uFluidIntensity;
+uniform float uDensityScale;
 uniform float uCoreTransparency;
 uniform float uRefraction;
 uniform float uOverallIntensity;
@@ -479,6 +470,8 @@ uniform int uRaymarchSteps;
 // 0=Full, 1=FluidDensity, 2=FluidFlow, 3=Meniscus, 4=CausticsOnly,
 // 5=GlassOnly, 6=DepthDebug, 7=FluidVolumeOnly, 8=VolumeDepth
 uniform int uDebugMode;
+// P0-1: 32-sample master crystal-cavity meniscus profile auto-generated from REFERENCE_VISUAL_REGIONS.json
+uniform float uReferenceMeniscusY[32];
 
 uniform vec3 uKeyLightDir;
 uniform vec3 uKeyLightColor;
@@ -490,13 +483,49 @@ uniform vec3 uEmeraldFillColor;
 
 $GLSL_COMMON_MATH
 
-// Exact central-difference 3D meniscus surface normal & slope in rotated Core Frame
+// P0-1: Overshoot-free clamped linear interpolation across the 32 master meniscus samples
+float referenceMeniscusHeight(float x) {
+    float t = clamp((x + 0.96875) / 1.9375, 0.0, 1.0) * 31.0;
+    int i0 = clamp(int(floor(t)), 0, 30);
+    int i1 = i0 + 1;
+    float frac = clamp(t - float(i0), 0.0, 1.0);
+    return mix(uReferenceMeniscusY[i0], uReferenceMeniscusY[i1], frac);
+}
+
+// P0-1: SOLE authoritative 3D Crystal Cavity & Liquid Interface SDF in rotated Core Frame.
+// phi > 0 lies inside the clear upper crystal cavity; phi < 0 lies inside the submerged 3D liquid volume.
+float cavityPhi(vec3 p, float phase) {
+    // 3-tap smooth filter over the 32 master samples eliminates jagged V-notch while honoring master profile
+    float baseProfileY = 0.25 * referenceMeniscusHeight(p.x - 0.08)
+                       + 0.50 * referenceMeniscusHeight(p.x)
+                       + 0.25 * referenceMeniscusHeight(p.x + 0.08);
+    float r2 = dot(p.xz, p.xz);
+    float domeDepthDip = 0.14 * p.z * p.z - 0.035 * p.z;
+    float sideWallClimb = 0.048 * r2 * r2;
+    float wave = 0.012 * sin(p.x * 2.4 + phase * 0.45 + p.z * 1.1)
+               + 0.008 * cos(p.z * 2.8 - phase * 0.36 - p.x * 1.5);
+    float surfaceY = baseProfileY + domeDepthDip + sideWallClimb + wave;
+    return p.y - surfaceY;
+}
+
+// P0-1: Exact 3D central-difference Cavity SDF normal & tangent slope in Core Frame
+vec3 cavityNormal(vec3 p, float phase, out vec2 slopeOut) {
+    float e = 0.008;
+    float gx = cavityPhi(p + vec3(e, 0.0, 0.0), phase) - cavityPhi(p - vec3(e, 0.0, 0.0), phase);
+    float gy = cavityPhi(p + vec3(0.0, e, 0.0), phase) - cavityPhi(p - vec3(0.0, e, 0.0), phase);
+    float gz = cavityPhi(p + vec3(0.0, 0.0, e), phase) - cavityPhi(p - vec3(0.0, 0.0, e), phase);
+    slopeOut = vec2(-gx, -gz) / max(abs(gy), 1e-4);
+    return normalize(vec3(gx, gy, gz));
+}
+
+// Compatibility wrappers strictly delegating to cavityPhi() / cavityNormal() (ZERO second formula!)
+float meniscusHeight(vec2 coreXZ, float meniscusPhase) {
+    return -cavityPhi(vec3(coreXZ.x, 0.0, coreXZ.y), meniscusPhase);
+}
+
 vec3 meniscusNormal(vec2 coreXZ, float meniscusPhase, out vec2 slopeOut) {
-    float e = 0.016;
-    float hx = meniscusHeight(coreXZ + vec2(e, 0.0), meniscusPhase) - meniscusHeight(coreXZ - vec2(e, 0.0), meniscusPhase);
-    float hz = meniscusHeight(coreXZ + vec2(0.0, e), meniscusPhase) - meniscusHeight(coreXZ - vec2(0.0, e), meniscusPhase);
-    slopeOut = vec2(hx, hz) / (2.0 * e);
-    return normalize(vec3(-hx, 2.0 * e, -hz));
+    float y = meniscusHeight(coreXZ, meniscusPhase);
+    return cavityNormal(vec3(coreXZ.x, y, coreXZ.y), meniscusPhase, slopeOut);
 }
 
 // Bounded divergence-free 3D curl offset for continuous living fluid motion inside the rotating volume
@@ -587,7 +616,7 @@ vec4 sampleFluidVolume3D(vec3 corePos, float fluidPhase, out vec3 flowDirOut) {
         boostedCol += vec3(0.016, 0.145, 0.215) * aquaChroma * silkCrest * detB.g * vol.a;
 
         // Carve crisp transparent voids between liquid curtains so interior stays crystal-clear, never milky smoke!
-        float carvedDensity = clamp(vol.a * (0.42 + 0.86 * silkValley + 0.38 * silkCrest), 0.0, 1.0);
+        float carvedDensity = clamp(vol.a * (0.45 + 0.72 * silkValley + 0.35 * silkCrest), 0.0, 1.0);
         return vec4(boostedCol, carvedDensity);
     }
 
@@ -672,6 +701,7 @@ void main() {
     float liquidPath = 0.0;
     float hitMeniscus = 0.0;
     float meniscusCrossingDir = 1.0;
+    float meniscusHitT = 0.0;
     vec3 meniscusHitPos = vec3(0.0);
     vec3 meniscusHitCorePos = vec3(0.0);
 
@@ -688,8 +718,8 @@ void main() {
 
     float prevT = 0.0;
     vec3 prevCore = toCoreFrame(rayOrg, invCoreRot);
-    float prevDiff = prevCore.y - meniscusHeight(prevCore.xz, uMeniscusPhase);
-    float densityScale = (2.65 - uCoreTransparency * 0.95) * (0.65 + 0.35 * uFluidIntensity);
+    float prevDiff = cavityPhi(prevCore, uMeniscusPhase);
+    float densityScale = clamp(uDensityScale, 1.20, 1.95) * (0.80 + 0.20 * uFluidIntensity);
 
     for (int i = 1; i <= 48; i++) {
         if (i > steps || accumAlpha > 0.96) break;
@@ -698,10 +728,9 @@ void main() {
         currT = clamp(currT, prevT + 1e-4, tExit);
         vec3 sp = rayOrg + rayDir * currT;
         vec3 coreSp = toCoreFrame(sp, invCoreRot);
-        float mH = meniscusHeight(coreSp.xz, uMeniscusPhase);
-        float currDiff = coreSp.y - mH;
+        float currDiff = cavityPhi(coreSp, uMeniscusPhase);
 
-        // Exact bracketed 3D Core-Frame meniscus intersection + 3-step binary bisection
+        // Exact bracketed 3D Core-Frame cavityPhi intersection + 5-step binary bisection (P0-1)
         bool crossedDown = (prevDiff > 0.0 && currDiff <= 0.0);
         bool crossedUp   = (prevDiff < 0.0 && currDiff >= 0.0);
         if (hitMeniscus < 0.5 && (crossedDown || crossedUp)) {
@@ -710,11 +739,11 @@ void main() {
             float tHi = currT;
             float dHi = currDiff;
 
-            for (int b = 0; b < 3; b++) {
+            for (int b = 0; b < 5; b++) {
                 float tMid = 0.5 * (tLo + tHi);
                 vec3 pMid = rayOrg + rayDir * tMid;
                 vec3 cMid = toCoreFrame(pMid, invCoreRot);
-                float dMid = cMid.y - meniscusHeight(cMid.xz, uMeniscusPhase);
+                float dMid = cavityPhi(cMid, uMeniscusPhase);
                 if ((dLo > 0.0 && dMid > 0.0) || (dLo < 0.0 && dMid < 0.0)) {
                     tLo = tMid;
                     dLo = dMid;
@@ -731,16 +760,17 @@ void main() {
 
             meniscusHitPos = rayOrg + rayDir * tHit;
             meniscusHitCorePos = toCoreFrame(meniscusHitPos, invCoreRot);
+            meniscusHitT = tHit;
             hitMeniscus = 1.0;
             meniscusCrossingDir = crossedDown ? 1.0 : -1.0;
         }
 
-        // Front-to-Back Beer-Lambert Volume Integration strictly below the rotating meniscus
+        // Front-to-Back Beer-Lambert Volume Integration strictly below cavityPhi == 0 (P0-1)
         float midT = 0.5 * (prevT + currT);
         vec3 midP = rayOrg + rayDir * midT;
         vec3 coreMidP = toCoreFrame(midP, invCoreRot);
-        float midM = meniscusHeight(coreMidP.xz, uMeniscusPhase);
-        float submerge = invSmoothstep(midM - 0.025, midM + 0.025, coreMidP.y);
+        float midPhi = cavityPhi(coreMidP, uMeniscusPhase);
+        float submerge = invSmoothstep(-0.015, 0.015, midPhi);
 
         if (submerge > 0.01) {
             float segDt = (currT - prevT) * submerge;
@@ -754,7 +784,7 @@ void main() {
                 float sigma = localDensity * densityScale * segDt;
                 float stepAlpha = 1.0 - exp(-sigma);
 
-                // High-contrast Beer-Lambert directional subsurface lighting (crisp liquid sheen, ZERO fog!)
+                // High-contrast Beer-Lambert directional subsurface lighting (crisp liquid folds, ZERO fog!)
                 float keyPhase = clamp(dot(normalize(coreMidP + vec3(1e-4)), keyDirCore) * 0.5 + 0.5, 0.0, 1.0);
                 float depthAtten = exp(-opticalDepth * 0.78);
                 float rimWallBoost = smoothstep(0.45, 0.92, length(midP.xz));
@@ -783,13 +813,13 @@ void main() {
     // -----------------------------------------------------------------------
     vec3 floorPos = rayOrg + rayDir * (tExit * 0.74);
     vec3 floorCorePos = toCoreFrame(floorPos, invCoreRot);
-    float floorMeniscusY = meniscusHeight(floorCorePos.xz, uMeniscusPhase);
-    float floorSubmerged = invSmoothstep(floorMeniscusY - 0.08, floorMeniscusY + 0.06, floorCorePos.y);
+    float floorPhi = cavityPhi(floorCorePos, uMeniscusPhase);
+    float floorSubmerged = invSmoothstep(-0.08, 0.06, floorPhi);
     vec2 causticSlope = vec2(0.0);
     if (hitMeniscus > 0.5) {
-        meniscusNormal(meniscusHitCorePos.xz, uMeniscusPhase, causticSlope);
+        cavityNormal(meniscusHitCorePos, uMeniscusPhase, causticSlope);
     } else {
-        meniscusNormal(floorCorePos.xz, uMeniscusPhase, causticSlope);
+        cavityNormal(floorCorePos, uMeniscusPhase, causticSlope);
     }
 
     vec3 advFloor = advectFluidPos(floorPos, invCoreRot, uFluidPhase);
@@ -830,12 +860,12 @@ void main() {
         fragColor = vec4(fCol * uHdrScale, 1.0);
         return;
     }
-    // Diagnostic Mode 3: Exact Bisected 3D Core-Frame Meniscus Normal
+    // Diagnostic Mode 3: Exact Bisected 3D Core-Frame Cavity SDF Normal
     if (uDebugMode == 3) {
         vec3 mVis = vec3(0.015, 0.04, 0.07);
         if (hitMeniscus > 0.5) {
             vec2 sl;
-            vec3 mnCore = meniscusNormal(meniscusHitCorePos.xz, uMeniscusPhase, sl) * meniscusCrossingDir;
+            vec3 mnCore = cavityNormal(meniscusHitCorePos, uMeniscusPhase, sl) * meniscusCrossingDir;
             vec3 mnLocal = normalize(uCoreRotMat * mnCore);
             mVis = mnLocal * 0.5 + 0.5;
         }
@@ -862,30 +892,30 @@ void main() {
                      + accumColor
                      + causticColor * (0.72 + 0.28 * (1.0 - accumAlpha * 0.35));
 
-    // Mirror-clear refractive 3D concave meniscus rim (dark TIR underside + razor-thin icy specular crest — ZERO flat turquoise shelf!)
-    if (hitMeniscus > 0.5) {
+    // P0-1: Subtle transparent crystal-water meniscus lip on front-wall top-entry crossings ONLY
+    // (gates out deep back-wall water table hits so upper crystal dome stays pure dark transparent glass!)
+    if (hitMeniscus > 0.5 && meniscusCrossingDir > 0.0) {
+        float frontContact = invSmoothstep(0.10, 0.72, meniscusHitT);
         vec2 mSlope;
-        vec3 mNCore = meniscusNormal(meniscusHitCorePos.xz, uMeniscusPhase, mSlope) * meniscusCrossingDir;
+        vec3 mNCore = cavityNormal(meniscusHitCorePos, uMeniscusPhase, mSlope) * meniscusCrossingDir;
         vec3 mN = normalize(uCoreRotMat * mNCore);
         vec3 localV = normalize(-rayDir);
         float mNdotV = clamp(dot(mN, localV), 0.0, 1.0);
-        float mFres = pow(1.0 - mNdotV, 5.4);
-        float mLipRim = exp(-pow((mNdotV - 0.16) / 0.10, 2.0));
+        float mFres = pow(1.0 - mNdotV, 5.4) * frontContact;
+        float mLipRim = exp(-pow((mNdotV - 0.16) / 0.10, 2.0)) * frontContact;
         vec3 mHalf = normalize(localV + normalize(vec3(-0.52, 0.78, 0.36)));
-        float mSpec = pow(max(dot(mN, mHalf), 0.0), 145.0);
-        // Dark deep-sapphire total-internal-reflection meniscus trough + razor-thin bright silver-cyan lip glint
-        interiorCol *= (1.0 - 0.54 * mFres);
-        interiorCol += vec3(0.015, 0.12, 0.22) * mLipRim * 0.42;
-        interiorCol += vec3(0.42, 1.15, 1.38) * (mFres * 0.28 + mSpec * 1.18) * uFluidIntensity;
+        float mSpec = pow(max(dot(mN, mHalf), 0.0), 145.0) * frontContact;
+        interiorCol *= (1.0 - 0.22 * mFres);
+        interiorCol += vec3(0.015, 0.12, 0.22) * mLipRim * 0.14;
+        interiorCol += vec3(0.42, 1.15, 1.38) * (mFres * 0.08 + mSpec * 0.40) * uFluidIntensity;
     }
 
-    // Mirror-clear deep oceanic blue-teal upper glass cavity above meniscus (ZERO dusty beige haze!)
-    float airCavity = invSmoothstep(0.02, 0.18, liquidPath);
-    float domeCyanSheen = smoothstep(0.08, 0.88, vLocalPos.y) * smoothstep(0.18, 0.78, NdotV);
-    vec3 clearCavityCol = refractedBack * vec3(0.46, 0.74, 0.94)
-                        + vec3(0.0025, 0.034, 0.068) * (0.45 + 0.85 * domeCyanSheen)
-                        + vec3(0.035, 0.22, 0.32) * pow(domeCyanSheen, 2.4) * 0.32;
-    interiorCol = mix(interiorCol, clearCavityCol, airCavity * 0.90);
+    // P0-4: Crystal-clear transparent upper dome cavity above cavityPhi == 0 (ZERO grey-white frosted haze!)
+    float airCavity = invSmoothstep(0.02, 0.16, liquidPath);
+    float domeCyanSheen = smoothstep(0.12, 0.88, vLocalPos.y) * smoothstep(0.22, 0.82, NdotV);
+    vec3 clearCavityCol = refractedBack * vec3(0.92, 0.99, 1.02)
+                        + vec3(0.001, 0.012, 0.021) * domeCyanSheen;
+    interiorCol = mix(interiorCol, clearCavityCol, airCavity * 0.92);
 
     // Diagnostic Mode 7: Pure 3D WebP Fluid Volume Only (in-shader composited over background!)
     if (uDebugMode == 7) {
@@ -896,10 +926,10 @@ void main() {
     }
 
     // -----------------------------------------------------------------------
-    // 3. THICK DOUBLE-WALL BLOWN CRYSTAL GLASS SHELL (MASTER PNG PARITY)
-    //    - Mirror-clear dark oceanic interior (ZERO dusty beige film, ZERO circular 10:30 white dot!)
-    //    - Iconic 10:30 curved golden-white starburst & branching golden sun-caustic rays inside upper-left dome
-    //    - Distinct thick glass wall groove + twin razor concentric outer & inner crystal specular rings
+    // 3. P0-4 THICK DOUBLE-WALL CRYSTAL GLASS SHELL (ZERO UPPER-DOME HAZE)
+    //    - Pure deep oceanic crystal transmission across upper hemisphere
+    //    - Localized curved 10:30 golden refraction flare + branching sun caustics
+    //    - Refined double-wall concentric rim weights + capped env reflection (<= 0.22)
     //    - Exact in-shader background coverage compositing outputting alpha = 1.0
     // -----------------------------------------------------------------------
     float fresnelOuter  = 0.012 + 0.988 * pow(1.0 - NdotV, 6.2);
@@ -921,41 +951,38 @@ void main() {
 
     vec3 rimPalette = mix(iceCyanRim, mix(fieryGoldRim, champagneRim, razorOuterRim * 0.68), warmRimWeight);
 
-    // Master PNG signature 10:30 curved golden crown refraction flare + branching golden caustic rays!
-    // Strictly follows the curved upper-left glass wall & inner crystal dome — ZERO flat white circle!
+    // Master PNG signature localized 10:30 curved golden crown refraction flare + branching golden caustic rays!
     vec2 vnDir = normalize(VN.xy + vec2(1e-5));
-    float upperLeftSector = smoothstep(0.56, 0.98, dot(vnDir, normalize(vec2(-0.54, 0.84))));
-    float rimFlareBand = smoothstep(0.18, 0.74, 1.0 - NdotV) * smoothstep(0.02, 0.18, NdotV);
-    float crownRimArc = upperLeftSector * pow(1.0 - NdotV, 2.1) * (0.55 + 0.85 * innerWallRing + 1.25 * razorOuterRim);
+    float upperLeftSector = smoothstep(0.74, 0.985, dot(vnDir, normalize(vec2(-0.62, 0.785))));
+    float crownRimArc = upperLeftSector * pow(1.0 - NdotV, 3.6) * (0.16 + 0.88 * innerWallRing + 1.18 * razorOuterRim);
 
     vec3 sunCore = toCoreFrame(vLocalPos, invCoreRot);
     vec3 sunAdv = advectFluidPos(vLocalPos, invCoreRot, uFluidPhase * 0.52);
     float sunCaustics = domainWarpCaustics(sunAdv * 1.22, vec3(sunCore.x, -0.45, sunCore.z), vec2(0.0), uCausticsPhase * 0.62)
-                      * upperLeftSector * smoothstep(0.12, 0.78, 1.0 - NdotV) * 0.78;
-    // Glossy upper-right curved specular arc (12:30-2:30 crystal meniscus reflection)
-    float upperRightArc = smoothstep(0.62, 0.96, dot(vnDir, normalize(vec2(0.45, 0.89))))
-                        * innerRimSharp * 0.85;
-    vec3 keyHighlight = vec3(1.88, 1.38, 0.58) * (crownRimArc * 1.18 + sunCaustics)
-                      + vec3(1.45, 1.68, 1.85) * upperRightArc;
+                      * upperLeftSector * smoothstep(0.24, 0.84, 1.0 - NdotV) * 0.62;
+    float upperRightArc = smoothstep(0.76, 0.98, dot(vnDir, normalize(vec2(0.45, 0.89))))
+                        * innerRimSharp * 0.44;
+    vec3 keyHighlight = vec3(1.88, 1.38, 0.58) * (crownRimArc * 1.02 + sunCaustics)
+                      + vec3(1.10, 1.48, 1.68) * upperRightArc;
 
     // Grazing-edge directional rim glints ONLY
     vec3 Lwarm = normalize(uWarmRimDir);
-    float grazingWarmRim = pow(max(dot(pN, normalize(V + Lwarm)), 0.0), 150.0) * max(dot(pN, Lwarm), 0.0) * grazingGate * 1.35;
+    float grazingWarmRim = pow(max(dot(pN, normalize(V + Lwarm)), 0.0), 150.0) * max(dot(pN, Lwarm), 0.0) * grazingGate * 1.15;
     vec3 Lcool = normalize(uCoolRimDir);
-    float grazingCoolRim = pow(max(dot(pN, normalize(V + Lcool)), 0.0), 125.0) * max(dot(pN, Lcool), 0.0) * grazingGate * 0.95;
+    float grazingCoolRim = pow(max(dot(pN, normalize(V + Lcool)), 0.0), 125.0) * max(dot(pN, Lcool), 0.0) * grazingGate * 0.80;
 
     // Diagnostic Mode 5: Outer Crystal Glass Shell Only (Refraction + Env + Double-Wall Fresnel)
     vec3 baseInterior = (uDebugMode == 5) ? refractedBack : interiorCol;
 
     // Deep dark refractive wall groove creates unmistakable thick blown-glass double-wall look!
-    vec3 col = baseInterior * (1.0 - glassGroove * 0.62);
-    float envBlend = clamp(fresnelOuter * (0.85 - uCoreTransparency * 0.44), 0.004, 0.42);
-    col = mix(col, envRefl, envBlend * 0.44);
+    vec3 col = baseInterior * (1.0 - glassGroove * 0.56);
+    float envBlend = clamp(fresnelOuter * (0.58 - uCoreTransparency * 0.38), 0.003, 0.22);
+    col = mix(col, envRefl, envBlend * 0.30);
 
-    // Crisp blown-glass double wall (blazing outer golden/cyan razor rim + sharp secondary inner crystal ring!)
-    col += rimPalette * (fresnelOuter * 0.68 + razorOuterRim * 1.55);
-    col += mix(iceCyanRim, champagneRim, warmRimWeight * 0.86) * (innerWallRing * 0.52 + innerRimSharp * 0.46);
-    col += iceCyanRim * coolRimWeight * (innerWallRing * 0.42 + innerRimSharp * 0.34);
+    // P0-4 Refined double-wall crystal rim (clear oceanic glass, zero frosted upper-dome milkiness!)
+    col += rimPalette * (fresnelOuter * 0.50 + razorOuterRim * 0.90);
+    col += mix(iceCyanRim, champagneRim, warmRimWeight * 0.82) * (innerWallRing * 0.35 + innerRimSharp * 0.28);
+    col += iceCyanRim * coolRimWeight * (innerWallRing * 0.28 + innerRimSharp * 0.22);
     col += keyHighlight + fieryGoldRim * grazingWarmRim + iceCyanRim * grazingCoolRim;
 
     col *= (0.90 + 0.16 * uOverallIntensity);

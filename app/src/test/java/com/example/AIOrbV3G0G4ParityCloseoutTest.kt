@@ -110,10 +110,12 @@ class AIOrbV3G0G4ParityCloseoutTest {
     assertFalse("P0-1 violation: generate_orb_volume.py must not contain baked below_meniscus clipping", executableVolGen.contains("below_meniscus"))
     assertTrue("Manifest must declare GPU single-source meniscus", manifestText.contains("GPU_SINGLE_SOURCE_CORE_GLASS_FRAG"))
 
-    // GPU shader must own meniscus intersection, normal, and integration boundary
+    // GPU shader must own cavity SDF intersection, normal, and integration boundary (V3.1 single-source)
+    assertTrue(frag.contains("cavityPhi("))
+    assertTrue(frag.contains("cavityNormal("))
     assertTrue(frag.contains("meniscusHeight("))
     assertTrue(frag.contains("meniscusNormal("))
-    assertTrue(frag.contains("float submerge = invSmoothstep(midM - 0.025, midM + 0.025, coreMidP.y);"))
+    assertTrue(frag.contains("float submerge = invSmoothstep(-0.015, 0.015, midPhi);"))
   }
 
   @Test

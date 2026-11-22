@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "AI_ORB_V3_1_VISUAL_QA_METRICS_1_0",
+  "honestyVerdict": "SOURCE_IMPLEMENTED / APK_DELIVERED / GPU_VISUAL_UNVERIFIED",
+  "gpuStatus": "BLOCKED_NEEDS_GPU_FRAME",
+  "sphere": {
+    "masterDiameterRatio": 0.5199,
+    "projectedDiameterRatio": 0.5209,
+    "relativeError": 0.0019
+  },
+  "E04_meniscus": {
+    "meanErrorR": 0.01773,
+    "maxErrorR": 0.05264
+  },
+  "sameClassifierInterior": {
+    "E03_upper_cavity": {
+      "masterAreaRatio": 0.0686,
+      "v31OfflineAreaRatio": 0.2711,
+      "relativeAreaError": 2.9519,
+      "masterCentroidNorm": [
+        0.1948,
+        0.4669
+      ],
+      "v31OfflineCentroidNorm": [
+        0.0028,
+        0.4687
+      ],
+      "centroidDistD": 0.096
+    },
+    "E05_emerald": {
+      "masterAreaRatio": 0.32351,
+      "v31OfflineAreaRatio": 0.29088,
+      "relativeAreaError": 0.1009,
+      "masterCentroidNorm": [
+        -0.1377,
+        -0.0928
+      ],
+      "v31OfflineCentroidNorm": [
+        -0.0103,
+        -0.1871
+      ],
+      "centroidDistD": 0.0793
+    },
+    "E06_sapphire": {
+      "masterAreaRatio": 0.25412,
+      "v31OfflineAreaRatio": 0.47167,
+      "relativeAreaError": 0.8561,
+      "masterCentroidNorm": [
+        0.1455,
+        0.1017
+      ],
+      "v31OfflineCentroidNorm": [
+        -0.0295,
+        0.2407
+      ],
+      "centroidDistD": 0.1117
+    },
+    "E07_aqua": {
+      "masterAreaRatio": 0.1588,
+      "v31OfflineAreaRatio": 0.10192,
+      "relativeAreaError": 0.3582,
+      "masterCentroidNorm": [
+        0.0189,
+        -0.1611
+      ],
+      "v31OfflineCentroidNorm": [
+        0.1694,
+        -0.5481
+      ],
+      "centroidDistD": 0.2076
+    }
+  },
+  "E10_goldResidents": {
+    "ribbonToMasterMeanR": 0.0902,
+    "masterToRibbonMeanR": 0.1977,
+    "chamferR": 0.1439,
+    "masterGoldSampleCount": 1112
+  },
+  "offlineFullFrameRgbMae": 0.1477
+}

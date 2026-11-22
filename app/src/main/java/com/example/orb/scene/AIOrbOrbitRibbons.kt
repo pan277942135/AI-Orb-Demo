@@ -343,54 +343,56 @@ class AIOrbOrbitRibbons {
         tipFlexWeight = 0.94f,
       )
 
-      // --- A02: Broad Sculptural Molten-Amber & Champagne-Gold Glass Band (FRONT, 2900ms) ---
+      // --- A02: Broad Sculptural Molten-Amber & Champagne-Gold Glass Band (FRONT, 2900ms, P0-3 open organic sweep) ---
+      // Emerges boldly at 10:30 crown -> weaves down left cheek & across lower front -> flares wide at 3:30-4:30 ->
+      // tapers openly behind upper-right rim (eliminates mechanical top loop-back / closed oval!).
       val a02Points = listOf(
-        Vec3(0.08f, 1.06f, -0.40f),   // u=0.00 tapered start behind top-center
-        Vec3(-0.54f, 1.04f, 0.10f),   // u=0.11 rising thick & bright over 11:00 crown
-        Vec3(-0.94f, 0.66f, 0.44f),   // u=0.22 10:30 blazing warm-gold shoulder flare!
-        Vec3(-0.98f, 0.08f, 0.68f),   // u=0.33 sweeping down left cheek intertwined with C01
-        Vec3(-0.36f, -0.40f, 0.90f),  // u=0.44 gliding diagonally across lower-front of orb
-        Vec3(0.38f, -0.66f, 0.88f),   // u=0.55 5:00 luminous golden rim crossing!
-        Vec3(1.02f, -0.58f, 0.64f),   // u=0.66 flaring into iconic broad lower-right golden loop
-        Vec3(1.24f, -0.14f, 0.42f),   // u=0.77 3:30 strongest blazing orange-gold outer curve!
-        Vec3(1.06f, 0.40f, 0.14f),    // u=0.88 sweeping warmly back along right shoulder
-        Vec3(0.56f, 0.84f, -0.24f),   // u=0.94 tapering gracefully behind upper-right rim
-        Vec3(0.02f, 0.96f, -0.48f),   // u=1.00 delicate vanishing golden tail
+        Vec3(-0.76f, 0.86f, 0.24f),   // u=0.00 tapered open entry at 10:30 sunlit golden shoulder
+        Vec3(-1.02f, 0.32f, 0.56f),   // u=0.125 sweeping down left cheek interlaced with C01
+        Vec3(-0.56f, -0.24f, 0.86f),  // u=0.250 gliding diagonally across lower-left front of orb
+        Vec3(0.10f, -0.50f, 0.90f),   // u=0.375 luminous lower-center golden crossing
+        Vec3(0.74f, -0.52f, 0.72f),   // u=0.500 5:00 radiant molten-amber rim bend
+        Vec3(1.18f, -0.24f, 0.44f),   // u=0.625 flaring into iconic broad lower-right golden sculpture
+        Vec3(1.26f, 0.20f, 0.16f),    // u=0.750 3:00 strongest warm amber-gold outer sculptural crest
+        Vec3(1.00f, 0.64f, -0.18f),   // u=0.875 sweeping warmly back behind upper-right flank
+        Vec3(0.64f, 0.90f, -0.46f),   // u=1.000 delicate open vanishing tail (no loop-back to 10:30!)
       )
       val a02Profile = RibbonSurfaceProfile(
-        widthControlPoints = floatArrayOf(0.14f, 0.92f, 1.18f, 0.92f, 0.84f, 1.06f, 1.36f, 1.42f, 1.04f, 0.58f, 0.08f),
-        leftAsymmetryPoints = floatArrayOf(0.95f, 1.12f, 1.06f, 0.92f, 0.94f, 1.04f, 1.16f, 1.10f, 0.96f, 0.94f, 1.00f),
-        rightAsymmetryPoints = floatArrayOf(1.05f, 0.88f, 0.94f, 1.08f, 1.06f, 0.96f, 0.86f, 0.92f, 1.04f, 1.06f, 1.00f),
-        twistProfileRad = floatArrayOf(0.0f, 0.36f, 0.72f, 0.48f, 0.18f, -0.24f, -0.52f, -0.22f, 0.28f, 0.62f, 0.85f),
+        widthControlPoints = floatArrayOf(0.16f, 0.96f, 0.92f, 0.86f, 1.12f, 1.40f, 1.32f, 0.78f, 0.10f),
+        leftAsymmetryPoints = floatArrayOf(0.96f, 1.10f, 0.94f, 0.92f, 1.06f, 1.18f, 1.12f, 0.96f, 1.00f),
+        rightAsymmetryPoints = floatArrayOf(1.04f, 0.90f, 1.06f, 1.08f, 0.94f, 0.84f, 0.90f, 1.04f, 1.00f),
+        twistProfileRad = floatArrayOf(0.18f, 0.64f, 0.38f, 0.08f, -0.32f, -0.54f, -0.18f, 0.34f, 0.72f),
         camberFactor = 0.22f,
-        edgeWaveAmp = 0.055f,
+        edgeWaveAmp = 0.048f,
         edgeWaveFreq = 2.6f,
         edgeWavePhase = 2.6f,
-        tipFlexWeight = 0.76f,
+        tipFlexWeight = 0.78f,
       )
 
-      // --- A01: Lush Translucent Golden Glass Crown & Outer-Right Veil Band (BACK, 3700ms) ---
+      // --- A01: Asymmetric Translucent Golden Glass Crown & Outer-Right Veil (BACK, 3700ms, P0-3 open crown wrap) ---
+      // Preserves sunlit 10:30-12:30 crown glow & broad 2:30-4:30 right outer flare while staying
+      // wide-open and asymmetric relative to A02 (never closes into a symmetric oval ring!).
       val a01Points = listOf(
-        Vec3(-1.04f, 0.18f, -0.26f),  // delicate start behind mid-left
-        Vec3(-0.92f, 0.78f, -0.06f),  // rising warmly behind 10:00 upper-left
-        Vec3(-0.46f, 1.14f, -0.10f),  // 11:30 double-layered sunlit top-left crown arch!
-        Vec3(0.22f, 1.12f, -0.32f),   // arching broadly behind top-right
-        Vec3(0.84f, 0.82f, -0.34f),   // weaving behind upper-right green kelp
-        Vec3(1.26f, 0.26f, -0.16f),   // wide outer-right atmospheric amber glass loop
-        Vec3(1.26f, -0.34f, -0.08f),  // sweeping brightly down outer-right flank behind A02
-        Vec3(0.88f, -0.82f, -0.32f),  // curving back behind lower-right
-        Vec3(0.22f, -1.04f, -0.52f),  // gossamer golden tail fading behind bottom
+        Vec3(-0.92f, 0.64f, -0.34f),  // u=0.00 delicate open start behind 10:00 upper-left
+        Vec3(-0.56f, 1.04f, -0.14f),  // u=0.125 rising warmly across 11:00 top-left golden crown
+        Vec3(0.02f, 1.04f, -0.24f),   // u=0.250 closely hugged 12:00 crown crest (organic radial dip)
+        Vec3(0.62f, 0.96f, -0.30f),   // u=0.375 arching softly behind upper-right kelp frond
+        Vec3(1.12f, 0.58f, -0.18f),   // u=0.500 opening outward on 2:00 right shoulder
+        Vec3(1.32f, 0.04f, -0.06f),   // u=0.625 widest outer-right amber glass sculptural flare
+        Vec3(1.18f, -0.48f, -0.14f),  // u=0.750 sweeping down outer-right flank behind A02
+        Vec3(0.80f, -0.82f, -0.36f),  // u=0.875 curving softly inward behind 5:00 rim
+        Vec3(0.36f, -0.92f, -0.52f),  // u=1.000 gossamer open golden tail fading behind lower-right
       )
       val a01Profile = RibbonSurfaceProfile(
-        widthControlPoints = floatArrayOf(0.12f, 0.88f, 1.24f, 0.86f, 0.96f, 1.26f, 1.08f, 0.64f, 0.08f),
-        leftAsymmetryPoints = floatArrayOf(1.00f, 1.08f, 1.12f, 0.94f, 0.92f, 1.10f, 1.06f, 0.96f, 1.00f),
-        rightAsymmetryPoints = floatArrayOf(1.00f, 0.92f, 0.88f, 1.06f, 1.08f, 0.90f, 0.94f, 1.04f, 1.00f),
-        twistProfileRad = floatArrayOf(-0.18f, 0.26f, 0.68f, 0.94f, 0.48f, 0.06f, -0.34f, -0.62f, -0.84f),
-        camberFactor = 0.18f,
-        edgeWaveAmp = 0.05f,
+        widthControlPoints = floatArrayOf(0.12f, 0.94f, 1.18f, 0.88f, 1.02f, 1.32f, 1.06f, 0.62f, 0.08f),
+        leftAsymmetryPoints = floatArrayOf(1.00f, 1.10f, 1.14f, 0.94f, 0.92f, 1.12f, 1.06f, 0.96f, 1.00f),
+        rightAsymmetryPoints = floatArrayOf(1.00f, 0.90f, 0.86f, 1.06f, 1.08f, 0.88f, 0.94f, 1.04f, 1.00f),
+        twistProfileRad = floatArrayOf(-0.20f, 0.28f, 0.66f, 0.88f, 0.44f, 0.04f, -0.36f, -0.64f, -0.82f),
+        camberFactor = 0.20f,
+        edgeWaveAmp = 0.045f,
         edgeWaveFreq = 2.2f,
         edgeWavePhase = 4.1f,
-        tipFlexWeight = 0.72f,
+        tipFlexWeight = 0.74f,
       )
 
       // --- G02: Iconic Broad Folded Foreground Warm Olive-Kelp Leaf (FRONT, 5300ms) ---

@@ -101,7 +101,7 @@ class AIOrbShaderContractTest {
     // Verify adaptive raymarch uniform and grazing-angle refract guard exist in CORE_GLASS_FRAG
     assertTrue(CoreFluidShaders.CORE_GLASS_FRAG.contains("uniform int uRaymarchSteps;"))
     assertTrue(CoreFluidShaders.CORE_GLASS_FRAG.contains("if (dot(refrWorld, refrWorld) < 1e-5)"))
-    assertTrue(CoreFluidShaders.CORE_GLASS_FRAG.contains("for (int b = 0; b < 3; b++)"))
+    assertTrue(CoreFluidShaders.CORE_GLASS_FRAG.contains("for (int b = 0; b < 5; b++)"))
   }
 
   @Test

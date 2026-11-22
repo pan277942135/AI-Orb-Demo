@@ -5,7 +5,7 @@
 - **Frozen Master SHA-256:** `910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122` (verified unmodified)
 - **Deterministic Generator Seed:** `20261120`
 - **Total Production WebP Files:** `35` (`32` 3D volume slices + `3` 2D optical/detail maps)
-- **Total Compressed Asset Footprint on Disk:** `1510.5 KiB` (`1,546,702 bytes`)
+- **Total Compressed Asset Footprint on Disk:** `1481.8 KiB` (`1,517,414 bytes`)
 - **Total Uncompressed GPU VRAM Footprint:** `9.00 MiB` (`8.00 MiB` 3D Volume + `1.00 MiB` 2D Maps)
 
 ## 1. 3D Fluid Volume Texture (`uFluidVolume`, Texture Unit 1)

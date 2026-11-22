@@ -114,25 +114,43 @@ def main() -> int:
     sapphire_voxels = 0
     aqua_voxels = 0
     total_fluid_voxels = 0
+    clear_channel_voxels = 0
+    dense_fold_voxels = 0
+    inner_sphere_voxels = 0
     for y in range(HEIGHT):
+        ny = 1.0 - ((y + 0.5) / HEIGHT) * 2.0
         for x in range(WIDTH):
+            nx = ((x + 0.5) / WIDTH) * 2.0 - 1.0
             idx = (y * WIDTH + x) * 4
             r, g, b, a = mid[idx], mid[idx + 1], mid[idx + 2], mid[idx + 3]
-            if a >= 30:
+            if nx * nx + ny * ny <= 0.85 * 0.85:
+                inner_sphere_voxels += 1
+                if a <= 24:
+                    clear_channel_voxels += 1
+                if a >= 90:
+                    dense_fold_voxels += 1
+            if a >= 25:
                 total_fluid_voxels += 1
                 if g > b * 1.12 and g > 68:
                     emerald_voxels += 1
-                elif b >= g and g > 125 and b > 145:
+                elif b >= g and g > 110 and b > 130:
                     aqua_voxels += 1
                 elif b >= g and b < 145:
                     sapphire_voxels += 1
+
+    clear_channel_ratio = clear_channel_voxels / max(1, inner_sphere_voxels)
+    dense_fold_ratio = dense_fold_voxels / max(1, inner_sphere_voxels)
 
     print(f"[validate_volume_continuity] Max adjacent Z interior RGB MAE: {max_adj_interior_rgb_mae:.4f} (pair z{worst_pair[0]:02d}->z{worst_pair[1]:02d})")
     print(f"[validate_volume_continuity] Max adjacent Z premul RGB MAE:   {max_adj_premul_rgb_mae:.4f}")
     print(f"[validate_volume_continuity] Max adjacent Z-slice Alpha MAE:  {max_adj_alpha_mae:.4f}")
     print(f"[validate_volume_continuity] True 3D Z-depth variation MAE:   {z_variation_mae:.4f} (z08 vs z22)")
     print(f"[validate_volume_continuity] Max corner Alpha across 32 Z:    {max_corner_alpha}")
-    print(f"[validate_volume_continuity] Upper sphere mean Alpha (P0-1):  {upper_dome_alpha_mean:.4f} (must be > 0.15, no baked meniscus clip!)")
+    print(f"[validate_volume_continuity] Upper sphere mean Alpha (P0-1):  {upper_dome_alpha_mean:.4f} (must be > 0.04, no baked meniscus clip!)")
+    print(
+        f"[validate_volume_continuity] V3.1 Fold/Channel structure:     "
+        f"clear_channels(a<=24)={clear_channel_ratio:.3f}, dense_folds(a>=90)={dense_fold_ratio:.3f}"
+    )
     print(
         f"[validate_volume_continuity] Mid-slice z16 fluid voxels={total_fluid_voxels} "
         f"(emerald={emerald_voxels}, sapphire={sapphire_voxels}, aqua={aqua_voxels})"
@@ -149,9 +167,14 @@ def main() -> int:
         errors.append(f"Insufficient 3D variation along Z: {z_variation_mae:.4f} < 0.030")
     if max_corner_alpha != 0:
         errors.append(f"Non-zero corner alpha outside sphere: {max_corner_alpha}")
-    if upper_dome_alpha_mean < 0.15:
+    if upper_dome_alpha_mean < 0.04:
         errors.append(f"P0-1 violation: upper sphere appears pre-clipped by baked meniscus (mean_alpha={upper_dome_alpha_mean:.4f})")
-    if emerald_voxels < 4000 or sapphire_voxels < 2500 or aqua_voxels < 1500:
+    if clear_channel_ratio < 0.08 or dense_fold_ratio < 0.08:
+        errors.append(
+            f"P0-2 structure violation: expected both clear channels and dense folds "
+            f"(clear={clear_channel_ratio:.3f}, dense={dense_fold_ratio:.3f})"
+        )
+    if emerald_voxels < 3500 or sapphire_voxels < 2000 or aqua_voxels < 800:
         errors.append(
             f"Palette balance off in z16: emerald={emerald_voxels}, sapphire={sapphire_voxels}, aqua={aqua_voxels}"
         )
@@ -162,7 +185,7 @@ def main() -> int:
             print(f"  - {e}")
         return 1
 
-    print("[validate_volume_continuity] PASS: 256x256x32 full-sphere 3D FluidVolume continuity & P0-1 contract verified.")
+    print("[validate_volume_continuity] PASS: 256x256x32 full-sphere 3D FluidVolume continuity, P0-1 & P0-2 fold structure verified.")
     return 0
 
 

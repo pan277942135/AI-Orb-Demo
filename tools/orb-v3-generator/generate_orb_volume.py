@@ -175,7 +175,7 @@ def render_slice(z_idx: int) -> tuple[int, str, int]:
     z_n = (z + 1.0) * 0.5
     # Front-hemisphere projection weight: master 2D regions anchor front/mid depth cleanly,
     # smoothly blending into continuous 3D helical sculpture in the rear hemisphere for 360° spin!
-    front_anchor = smoothstep(-0.45, 0.35, z)
+    front_anchor = smoothstep(-0.62, 0.42, z)
     rear_anchor = 1.0 - front_anchor
 
     # Calibrated deep-sapphire, emerald-jade, and aqua-cyan base hues anchored to master measurements
@@ -222,7 +222,7 @@ def render_slice(z_idx: int) -> tuple[int, str, int]:
                 continue
 
             r = sqrt(r2)
-            sphere_mask = 1.0 - smoothstep(0.86, 0.985, r)
+            sphere_mask = 1.0 - smoothstep(0.80, 0.985, r)
             x_n = (x + 1.0) * 0.5
 
             # 1. Continuous 3D domain-warped organic flow fields (zero Z seams)
@@ -256,7 +256,7 @@ def render_slice(z_idx: int) -> tuple[int, str, int]:
             ref_e07 = sample_ref_grid(REF_E07_GRID, sx_ref, sy_ref)
             ref_e08 = sample_ref_grid(REF_E08_GRID, sx_ref, sy_ref)
 
-            # 3. 3D Thin-Sheet Helical Fold SDF (creates crisp silk curtains & deep dark valleys in 3D!)
+            # 3. P0-2 Narrow 3D Liquid Fold Sculpture (clear transparent channels + crisp silk sheets!)
             az = atan2(wz, wx)
             r_xz = sqrt(wx * wx + wz * wz)
             axial_w = smoothstep(0.06, 0.36, r_xz)
@@ -265,77 +265,81 @@ def render_slice(z_idx: int) -> tuple[int, str, int]:
             helix_b = axial_w * cos(az * 3.0 - wy * 1.95 + n_warp * 2.15 + n_detail * 0.95) + (1.0 - axial_w) * n_warp
             fold_field = 0.58 * helix_a + 0.42 * helix_b
 
-            # Thin sculpted silk sheet ridge (high contrast narrow folds instead of blurry clouds!)
-            sheet_ridge = exp(-((fold_field - 0.18) ** 2) * 5.2)
-            sheet_lobe = smoothstep(-0.08, 0.68, fold_field + 0.28 * n_detail)
+            # V3.1 P0-2 calibrated narrow fold ridge parameters (recorded for auto-calibration audit)
+            fold_iso = 0.18
+            fold_sigma = 0.19
+            sheet_ridge = exp(-(((fold_field - fold_iso) / fold_sigma) ** 2))
+            sheet_lobe = smoothstep(-0.02, 0.68, fold_field + 0.24 * n_detail)
 
-            # Sculpted emerald curtains: anchored to master E05 (left 7-10 & right 1:30-4:30 flanks)
-            # in front hemisphere, seamlessly wrapped onto 3D helical curtains in rear hemisphere
-            em_front = clamp01(ref_e05 * 1.28 * (0.58 + 0.42 * sheet_lobe + 0.24 * sheet_ridge))
-            em_rear = clamp01((0.62 * sheet_lobe + 0.48 * sheet_ridge) * smoothstep(0.18, 0.88, r_xz + 0.25 * n_coarse))
+            # Sculpted emerald curtains: crisp 3D folds anchored faithfully to master E05 (left 8-10 & right 1:30-4:30)
+            em_front = clamp01(ref_e05 * 1.92 * (0.66 + 0.34 * sheet_lobe + 0.44 * sheet_ridge))
+            em_rear = clamp01((0.46 * sheet_lobe + 0.66 * sheet_ridge) * smoothstep(0.14, 0.88, r_xz + 0.24 * n_coarse))
             emerald_w = clamp01(mix(em_rear, em_front, front_anchor))
-            emerald_crest = clamp01(emerald_w * (0.45 * sheet_ridge + 0.55 * smoothstep(0.12, 0.78, 0.5 + 0.5 * n_silk)))
+            emerald_crest = clamp01(emerald_w * (0.62 * sheet_ridge + 0.38 * smoothstep(0.14, 0.80, 0.5 + 0.5 * n_silk)))
 
             # Deep abyssal sapphire contrast valleys (master E06 central core + dark inter-fold pockets)
-            sapph_front = clamp01(ref_e06 * 1.35 * (1.0 - 0.72 * emerald_w))
-            sapph_rear = clamp01(smoothstep(-0.35, 0.62, -fold_field - 0.20 * n_warp) * (1.0 - 0.70 * emerald_w))
+            sapph_front = clamp01(ref_e06 * 1.20 * (1.0 - 0.86 * emerald_w))
+            sapph_rear = clamp01(smoothstep(-0.22, 0.68, -fold_field - 0.22 * n_warp) * (1.0 - 0.80 * emerald_w))
             sapphire_w = clamp01(mix(sapph_rear, sapph_front, front_anchor))
-            deep_valley = clamp01(smoothstep(0.25, 0.85, sapphire_w) * (1.0 - 0.80 * emerald_w))
+            deep_valley = clamp01(smoothstep(0.24, 0.85, sapphire_w) * (1.0 - 0.86 * emerald_w))
 
-            # Focused luminous aqua-cyan lower belly (master E07 + E08 core, 5-7 o'clock!)
-            aqua_front = clamp01((ref_e07 * 1.15 + ref_e08 * 0.95) * (1.0 - 0.55 * emerald_w))
-            lower_3d = (1.0 - smoothstep(-0.85, 0.08, y)) * smoothstep(-0.35, 0.65, -y * 0.85 + 0.35 * helix_b)
-            aqua_rear = clamp01(lower_3d * (0.52 + 0.48 * smoothstep(-0.25, 0.62, n_detail)) * (1.0 - 0.62 * emerald_w))
+            # P0-2 Focused lower-belly aqua (5-7 o'clock) with decoupled E08 caustics (no uniform cyan fog!)
+            lower_gate = 1.0 - smoothstep(-0.04, 0.22, y)
+            aqua_front = clamp01((ref_e07 * 1.65 + ref_e08 * 0.34) * (1.0 - 0.38 * emerald_w) * (0.14 + 0.86 * lower_gate))
+            lower_3d = (1.0 - smoothstep(-0.85, 0.04, y)) * smoothstep(-0.25, 0.68, -y * 0.88 + 0.34 * helix_b)
+            aqua_rear = clamp01(lower_3d * (0.50 + 0.50 * smoothstep(-0.20, 0.64, n_detail)) * (1.0 - 0.62 * emerald_w))
             aqua_w = clamp01(mix(aqua_rear, aqua_front, front_anchor))
 
             # 4. High-Contrast Jewel Color Synthesis (un-premultiplied sRGB)
-            # Start from genuine deep dark abyssal sapphire so contrast pops like the master!
-            cr = mix(sapph_dark[0], sapph_mid[0], 0.35 + 0.65 * (1.0 - deep_valley))
-            cg = mix(sapph_dark[1], sapph_mid[1], 0.35 + 0.65 * (1.0 - deep_valley))
-            cb = mix(sapph_dark[2], sapph_mid[2], 0.35 + 0.65 * (1.0 - deep_valley))
+            cr = mix(sapph_dark[0], sapph_mid[0], 0.22 + 0.78 * (1.0 - deep_valley))
+            cg = mix(sapph_dark[1], sapph_mid[1], 0.22 + 0.78 * (1.0 - deep_valley))
+            cb = mix(sapph_dark[2], sapph_mid[2], 0.22 + 0.78 * (1.0 - deep_valley))
 
-            # Subtle oceanic teal swirl ribbons inside mid-sapphire
-            teal_vein = sheet_ridge * (1.0 - emerald_w * 0.7) * (1.0 - deep_valley * 0.6)
-            cr = mix(cr, 0.045, teal_vein * 0.45)
-            cg = mix(cg, 0.440, teal_vein * 0.45)
-            cb = mix(cb, 0.580, teal_vein * 0.45)
+            # Subtle oceanic teal fold ribbons inside mid-sapphire
+            teal_vein = sheet_ridge * (1.0 - emerald_w * 0.78) * (1.0 - deep_valley * 0.65)
+            cr = mix(cr, 0.040, teal_vein * 0.36)
+            cg = mix(cg, 0.420, teal_vein * 0.36)
+            cb = mix(cb, 0.560, teal_vein * 0.36)
 
-            # Layer focused lower-belly luminous aqua-cyan (NEVER muddy uniform fog!)
-            aq_bright = smoothstep(-0.10, 0.72, n_silk + 0.35 * ref_e08)
-            ar = mix(aqua_core[0] * 0.55, min(0.68, aqua_core[0] * 1.65), aq_bright)
-            ag = mix(aqua_core[1] * 0.78, min(0.97, aqua_core[1] * 1.12), aq_bright)
-            ab = mix(aqua_core[2] * 0.84, 1.00, aq_bright)
-            cr = mix(cr, ar, aqua_w * 0.92)
-            cg = mix(cg, ag, aqua_w * 0.92)
-            cb = mix(cb, ab, aqua_w * 0.92)
+            # Layer focused lower-belly crystal aqua-cyan (vivid in 5-7 basin, ZERO upper-dome fog!)
+            aq_bright = smoothstep(-0.18, 0.66, n_silk + 0.36 * ref_e08)
+            ar = mix(aqua_core[0] * 0.60, min(0.68, aqua_core[0] * 1.55), aq_bright)
+            ag = mix(aqua_core[1] * 0.90, 0.99, aq_bright)
+            ab = mix(aqua_core[2] * 0.94, 1.00, aq_bright)
+            cr = mix(cr, ar, aqua_w * 0.94)
+            cg = mix(cg, ag, aqua_w * 0.94)
+            cb = mix(cb, ab, aqua_w * 0.94)
 
-            # Layer sculpted lush emerald-jade silk curtains (deep moss -> vivid emerald -> sunlit chartreuse edge)
-            em_t = smoothstep(-0.32, 0.58, n_detail)
+            # Layer sculpted lush emerald-jade 3D fold sheets (deep moss -> vivid emerald -> sunlit chartreuse edge)
+            em_t = smoothstep(-0.28, 0.56, n_detail)
             er = mix(em_deep[0], em_vivid[0], em_t)
             eg = mix(em_deep[1], em_vivid[1], em_t)
             eb = mix(em_deep[2], em_vivid[2], em_t)
-            # Crisp sunlit chartreuse-emerald silk crest highlights
-            er = mix(er, 0.54, emerald_crest * 0.58)
-            eg = mix(eg, 0.84, emerald_crest * 0.58)
-            eb = mix(eb, 0.34, emerald_crest * 0.58)
+            er = mix(er, 0.52, emerald_crest * 0.58)
+            eg = mix(eg, 0.88, emerald_crest * 0.58)
+            eb = mix(eb, 0.26, emerald_crest * 0.58)
 
-            cr = mix(cr, er, emerald_w * 0.94)
-            cg = mix(cg, eg, emerald_w * 0.94)
-            cb = mix(cb, eb, emerald_w * 0.94)
+            cr = mix(cr, er, emerald_w * 0.96)
+            cg = mix(cg, eg, emerald_w * 0.96)
+            cb = mix(cb, eb, emerald_w * 0.96)
 
-            # 5. Structured Physical Optical Density (Linear Alpha, ZERO baked meniscus cut!)
-            # High-contrast density: crisp denser emerald sheets & deep dark sapphire pockets,
-            # clearer optical channels between folds so light & caustics transmit cleanly!
+            # 5. P0-2 Structured Low-Fog Optical Density (Linear Alpha, ZERO baked meniscus cut!)
+            # Bimodal high-contrast density: crisp dense 3D emerald folds & lower-belly aqua separated by
+            # genuinely clear low-density crystal water channels (base_density=0.035).
+            base_density = 0.035
+            emerald_fold_gain = 0.76
+            sapphire_absorption_gain = 0.20
+            aqua_density_gain = 0.46
+            sapph_pocket = sapphire_w * sapphire_w * sapphire_w  # sharpens dark valleys while leaving clear water channels!
+            em_fold = emerald_w * (0.42 + 0.72 * sheet_ridge)
             sheet_density = (
-                0.18
-                + 0.44 * emerald_w
-                + 0.24 * sapphire_w
-                + 0.26 * aqua_w
-                + 0.16 * sheet_ridge
+                base_density
+                + emerald_fold_gain * em_fold
+                + sapphire_absorption_gain * sapph_pocket
+                + aqua_density_gain * aqua_w
             )
-            silk_mod = 0.76 + 0.32 * smoothstep(-0.45, 0.65, n_silk)
-            # Gently denser inside inner fluid body, crisp fade toward inner glass wall
-            radial_core = 0.78 + 0.24 * (1.0 - r)
+            silk_mod = 0.74 + 0.36 * smoothstep(-0.36, 0.68, n_silk)
+            radial_core = 0.80 + 0.22 * (1.0 - r)
             density = clamp01(sheet_density * silk_mod * radial_core * sphere_mask)
 
             buf[off] = int(clamp01(cr) * 255.0 + 0.5)

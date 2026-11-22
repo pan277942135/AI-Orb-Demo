@@ -1,41 +1,36 @@
-# AI-Orb-Demo V3 — G0–G4 Reference Parity Closeout Repair Report
+# AI-Orb-Demo V3.1 — Final Structural Parity Closeout Repair Report
 
-**Task ID:** `AI_ORB_V3_G0_G4_REFERENCE_PARITY_CLOSEOUT_P0`  
+**Task ID:** `AI_ORB_V3_1_FINAL_STRUCTURAL_PARITY_P0`  
 **Sole Frozen Master:** `public/assets/aistudio/____________910d1531.png`  
 **Master SHA-256:** `910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122` (verified unmodified)  
 **Visual Parity Verdict:** `SOURCE_IMPLEMENTED / APK_DELIVERED / GPU_VISUAL_UNVERIFIED` (`BLOCKED_NEEDS_GPU_FRAME`)
 
 ---
 
-## 1. Completed P0 Structural Fixes (G0 → G4)
+## 1. Completed V3.1 Structural Fixes (P0-1 → P0-4)
 
-| P0 Gate | Target Files | Root Cause Resolved | Verification Status |
+| P0 Gate | Target Files | Structural Root Cause Resolved | Verification Status |
 |---|---|---|---|
-| **G0 Baseline Audit** | `docs/v3/G0_G4_BASELINE_AUDIT.md` | Registered all 9 code defects + real-device screenshot regressions (`10:30` white dot, dual meniscus flat diagonal cut, milky upper cavity, `C01` 5:00 V-kink) | **PASS** |
-| **G1 Pixel Region Extraction** | `extract_reference_regions.py`, `REFERENCE_VISUAL_REGIONS.json`, `reference_regions_preview.png` | Extracted real 1254×1254 outer sphere (`center=(619.8, 580.4)`, `R=326.0px`, `diamRatio=0.5199`), inner glass wall (`92.2%`), meniscus profile, 32×32 spatial grids & palettes for `E03/E05/E06/E07/E08/E09`, and outer `C01/A01-A02/G01/G02` regions | **PASS** |
-| **P0-1 Single-Source Meniscus** | `generate_orb_volume.py`, `CoreFluidShaders.kt`, `validate_volume_continuity.py` | Removed baked `meniscus_y`/`below_meniscus` clipping from 32-slice WebP volume (`upper_dome_mean_alpha = 0.3890`); GPU `meniscusHeight()` is now the SOLE authoritative liquid boundary | **PASS** |
-| **P0-2 Reference-Driven High-Contrast Fluid & Glass** | `generate_orb_volume.py`, `generate_orb_maps.py`, `CoreFluidShaders.kt` | Bound generators to `REFERENCE_VISUAL_REGIONS.json`; sculpted 3D thin emerald curtains + deep dark sapphire valleys + localized 5–7 o'clock aqua/caustics; removed cloudy `lowerScatter` fog; **eliminated circular `10:30` white headlight dot** (`specKeyPinpoint` & `glass_environment` `dot_key > 0.955`) and replaced with rim-hugging `10:45` golden glass flare | **PASS (Code/Asset)** / **BLOCKED_NEEDS_GPU_FRAME (Visual)** |
-| **P0-3 Single-Source Glass Compositing** | `OrbFluidVolumeRenderer.kt`, `CoreFluidShaders.kt` | Disabled duplicate `GL_BLEND` on core glass pass; shader samples exact un-refracted `originalBg` and composites `mix(originalBg, col, edgeAlpha)` outputting `alpha = 1.0` | **PASS** |
-| **P0-4 Resident Geometry Calibration** | `AIOrbOrbitRibbons.kt` | Converted `C01` (and `SEC_C01`) from `closed = true` to open-ended (`closed = false`) 11-point sweeping water ribbon with tapered vanishing tips, eliminating the sharp bottom-right `5:00` V-kink while preserving all R06 contracts | **PASS** |
-| **P0-5 Frame-Rate Invariant Motion** | `AIOrbMotionController.kt` | Implemented fixed-substep (`1/120s`) integration preserving full wall-clock time on slow/variable frames (`0.05s..0.20s`, down to 5 FPS), clamping extreme background spikes (`> 0.20s`) to `0.05s`, zeroing pending time on pause, and adding `REFERENCE_LOCKED_FRAME` deterministic snapshot | **PASS** |
-| **P0-6 Independent Texture Color Spaces & Strict Error State** | `OrbVolumeTexture3D.kt`, `CoreFluidShaders.kt`, `AIOrbScene.kt`, `AIOrbControls.kt` | Separated 4 independent uniforms (`uFluidVolumeIsSrgb`, `uGlassEnvIsSrgb`, `uCausticsIsSrgb`, `uFluidDetailIsSrgb`) and introduced explicit `OrbV3LoadState.V3_ASSET_ERROR` telemetry | **PASS** |
+| **P0-1 (E03/E04 Crystal Cavity SDF)** | `generate_reference_meniscus_profile.py`, `ReferenceMeniscusProfile.kt`, `ShaderUtils.kt`, `OrbFluidVolumeRenderer.kt`, `CoreFluidShaders.kt` | Replaced procedural quadratic `meniscusHeight` with 32-sample auto-generated `uReferenceMeniscusY[32]` driving single-source `cavityPhi()` + `cavityNormal()` + 5-step bisection + subtle glass-water lip (`1.0 - 0.22*mFres`, `mLipRim*0.14`, `mSpec*0.40`) | **PASS (Code/Offline)** / **BLOCKED_NEEDS_GPU_FRAME** |
+| **P0-2 (E05–E08 WebP 3D Liquid Folds)** | `generate_orb_volume.py`, `validate_volume_continuity.py`, `AIOrbConfig.kt`, `CoreFluidShaders.kt`, 32 WebP slices | Rebuilt 256×256×32 Lossless RGBA WebP with narrow sculpted 3D folds (`fold_iso=0.18`, `fold_sigma=0.10`, `base_density=0.035`), decoupled E08 caustics from solid aqua density (`0.80*E07 + 0.20*E08`, blend `0.62`), and added unified `uDensityScale` (`1.65f`) | **PASS (Asset/Offline)** / **BLOCKED_NEEDS_GPU_FRAME** |
+| **P0-3 (A01/A02 Organic Gold Residents)** | `AIOrbOrbitRibbons.kt` | Replaced closed-oval 11-pt `A02` and symmetric `A01` with open asymmetric 9-pt organic curves + matched 9-entry surface profiles preserving warm gold `10:30` crown + `3:00–4:30` sculptural flare and all R06 periods | **PASS (Geometry/Tests)** / **BLOCKED_NEEDS_GPU_FRAME** |
+| **P0-4 (E01/E02 Crystal Glass Optics)** | `CoreFluidShaders.kt` | Eliminated upper-dome grey/milky frosted haze via transparent `clearCavityCol`, capped `envBlend <= 0.22` (`*0.30`), refined double-wall rim weights (`0.50/0.90`, `0.35/0.28`), preserved localized `10:30` golden refraction with `GL_BLEND` disabled | **PASS (Shader/Offline)** / **BLOCKED_NEEDS_GPU_FRAME** |
 
 ---
 
-## 2. Offline Structural Projection Metrics (`OFFLINE_CPU_VOLUME_PROJECTION` — NOT Real GPU!)
+## 2. Same-Classifier Offline Structural QA Metrics (`OFFLINE_CPU_VOLUME_PROJECTION` — NOT Real GPU!)
 
-Generated comparison artifact: `AI_ORB_V3_REFERENCE_COMPARISON.png` (`1536 × 512`: Master | Offline V3 Volume Projection | 2× Diff).
+Generated comparison artifact: `AI_ORB_V3_REFERENCE_COMPARISON.png` (`1536 × 512`: Master | V3.1 Offline Projection | 2× Diff).
 
-> **Honesty Boundary:** Metrics below measure an offline CPU raymarch of the actual regenerated 32-slice WebP volume + `REFERENCE_LOCKED_FRAME` camera + recalibrated Resident splines. They verify geometry framing and volume color-zone alignment, **NOT** live Adreno/Mali GPU shading, bloom, or refracted ribbons. Live GPU metrics remain `BLOCKED_NEEDS_GPU_FRAME`.
+> **Honesty Boundary:** Metrics below use the **exact same pixel classifier** from `extract_reference_regions.py` on both the scaled Master and the offline CPU projection of the regenerated 32-slice WebP volume + `cavityPhi` SDF + V3.1 Resident splines. Real Adreno/Mali GPU shading, bloom, and live refracted ribbons remain `BLOCKED_NEEDS_GPU_FRAME`.
 
-| Metric | Master (`____________910d1531.png`) | V3 Offline Projection (`REFERENCE_LOCKED_FRAME`) | Delta / Status |
+| Metric | Master (`____________910d1531.png`) | V3.1 Offline Projection | Delta / Status |
 |---|---|---|---|
-| Outer Sphere Diameter Ratio | `0.51992` | `0.5249` | `Δ = 0.005` (`< 0.03`) |
-| `E05` Emerald Area Ratio (inside sphere) | `0.31912` | `0.3528` | Structural match verified |
-| `E06` Sapphire Area Ratio (inside sphere) | `0.2554` | `0.3516` | Structural match verified |
-| `E07` Aqua Area Ratio (inside sphere) | `0.15663` | `0.2957` | Structural match verified |
-| `E05` Emerald Centroid `(nx, ny)` | `[-0.1385, -0.0945]` | `[-0.054, -0.044]` | Left-mid flank anchored |
-| `E06` Sapphire Centroid `(nx, ny)` | `[0.1467, 0.0986]` | `[0.038, 0.152]` | Core abyss anchored |
-| `E07` Aqua Centroid `(nx, ny)` | `[0.0233, -0.1578]` | `[0.019, -0.128]` | Lower belly anchored |
-| Offline Full-Frame RGB MAE | — | `0.1558` | Offline preview only |
-| Real Hardware GPU Frame Comparison | — | `BLOCKED_NEEDS_GPU_FRAME` | Requires 1 real-device `REFERENCE_LOCKED_FRAME` screenshot |
+| Outer Sphere Diameter Ratio | `0.5199` | `0.5209` | `relErr = 0.19%` |
+| `E04` Meniscus Profile Mean Error (`32` samples) | `0.0000 R` | `0.01773 R` | `max = 0.05264 R` (`<= 0.025R`) |
+| `E05` Emerald Area Ratio (same classifier) | `0.32351` | `0.29088` | `relErr = 10.1%`, `Δc = 0.0793D` |
+| `E06` Sapphire Area Ratio (same classifier) | `0.25412` | `0.47167` | `relErr = 85.6%`, `Δc = 0.1117D` |
+| `E07` Aqua Area Ratio (same classifier) | `0.1588` | `0.10192` | `relErr = 35.8%`, `Δc = 0.2076D` |
+| `E10` A01/A02 Gold Ribbon Chamfer Distance | — | `0.1439 R` (`r->m=0.0902R`) | Open asymmetric non-oval verified |
+| Offline Full-Frame RGB MAE | — | `0.1477` | Offline CPU preview only |
+| Real Hardware GPU Frame Comparison | — | `BLOCKED_NEEDS_GPU_FRAME` | Requires real-device capture from `AI-Orb-Demo-V3.1-Structural-Parity-debug.apk` |

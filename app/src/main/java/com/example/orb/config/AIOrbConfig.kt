@@ -97,6 +97,7 @@ data class AIOrbConfig(
   val refraction: Float = 0.76f,
   val fluidSpeed: Float = 1.0f,
   val fluidIntensity: Float = 1.08f,
+  val densityScale: Float = 1.65f,
   val ribbonCount: Int = 5,
   val ribbonWidth: Float = 1.0f,
   val ribbonSpeed: Float = 1.0f,
@@ -134,6 +135,7 @@ data class AIOrbConfig(
       appendLine("  \"refraction\": ${f(refraction)},")
       appendLine("  \"fluidSpeed\": ${f(fluidSpeed)},")
       appendLine("  \"fluidIntensity\": ${f(fluidIntensity)},")
+      appendLine("  \"densityScale\": ${f(densityScale)},")
       appendLine("  \"ribbonCount\": $ribbonCount,")
       appendLine("  \"ribbonWidth\": ${f(ribbonWidth)},")
       appendLine("  \"ribbonSpeed\": ${f(ribbonSpeed)},")

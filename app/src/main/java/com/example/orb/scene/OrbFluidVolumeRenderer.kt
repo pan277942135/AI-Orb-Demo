@@ -9,6 +9,7 @@ import com.example.orb.gl.GlMesh
 import com.example.orb.gl.GlShaderProgram
 import com.example.orb.v3.OrbVolumeTelemetry
 import com.example.orb.v3.OrbVolumeTexture3D
+import com.example.orb.v3.ReferenceMeniscusProfile
 
 /**
  * AI-Orb-Demo V3 Unified 3D Fluid Volume + Crystal Glass Shell Renderer.
@@ -116,12 +117,14 @@ class OrbFluidVolumeRenderer {
     prog.setFloat("uMeniscusPhase", motion.meniscusPhase)
     prog.setFloat("uCausticsPhase", motion.causticsPhase)
     prog.setFloat("uFluidIntensity", config.fluidIntensity)
+    prog.setFloat("uDensityScale", config.densityScale)
     prog.setFloat("uCoreTransparency", config.coreTransparency)
     prog.setFloat("uRefraction", config.refraction)
     prog.setFloat("uOverallIntensity", config.overallIntensity)
     prog.setFloat("uHdrScale", hdrScale)
     prog.setInt("uRaymarchSteps", effectiveSteps)
     prog.setInt("uDebugMode", config.debugMode.shaderModeId)
+    prog.setFloatArray("uReferenceMeniscusY", ReferenceMeniscusProfile.HEIGHTS)
 
     lighting.applyTo(prog)
     sphere.draw()
