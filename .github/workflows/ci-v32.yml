@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout Exact HEAD
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Install WebP and GLES validation runtimes
         run: |
@@ -127,14 +129,14 @@ jobs:
 
       - name: EXACT_HEAD_FINGERPRINT
         env:
-          GITHUB_SHA: ${{ github.sha }}
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           GITHUB_RUN_ID: ${{ github.run_id }}
           GITHUB_REF: ${{ github.ref }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           HEAD_SHA=$(git rev-parse HEAD)
-          test "$HEAD_SHA" = "$GITHUB_SHA"
+          test "$HEAD_SHA" = "$EXPECTED_HEAD_SHA"
           APK_SHA=$(awk '{print $1}' AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk.sha256)
           CFG_SHA=$(sha256sum app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json | awk '{print $1}')
           cat > docs/v3/BUILD_FINGERPRINT.json <<EOF
