@@ -2,13 +2,14 @@ package com.example.orb.task
 
 /**
  * OpenGL ES 3.00 shaders for Tab 2 (`TASK_PERIMETER_DEMO`):
- *  1. `TASK_BG_VERT / TASK_BG_FRAG` — Luminous shallow-aqua studio background + animated pool caustics beneath Orb
+ *  1. `TASK_BG_VERT / TASK_BG_FRAG` — Luminous shallow-aqua studio background + focused pool caustics beneath Orb
  *  2. `PHOTO_QUAD_VERT / PHOTO_QUAD_FRAG` — Original fishing photo clipped by exact rounded-rect SDF + crisp white hairline
- *  3. `TASK_RIBBON_VERT / TASK_RIBBON_FRAG` — 4 independent Task Energy liquid ribbons (icy-blue main + 3 flanking wisps)
- *  4. `PERIMETER_RIBBON_VERT / PERIMETER_RIBBON_FRAG` — Unified arc-length L1/L2/L3 perimeter liquid waterlight
- *  5. `TASK_SPARKLE_VERT / TASK_SPARKLE_FRAG` — KF02 contact glow, KF05 top-join glint, and L4 sparse crystal droplets
+ *  3. `TASK_RIBBON_VERT / TASK_RIBBON_FRAG` — 4 independent Task Energy 3-layer liquid ribbons + screen-space refraction + G1 debug
+ *  4. `PERIMETER_RIBBON_VERT / PERIMETER_RIBBON_FRAG` — Unified arc-length L1/L2/L3 liquid waterlight + screen-space refraction + G1 debug
+ *  5. `TASK_SPARKLE_VERT / TASK_SPARKLE_FRAG` — KF02 contact glow, KF05 top-join glint, and L4 crystal droplets (GL_POINTS + quad fallback)
  *
- * Strictly enforces `#version 300 es`, `precision highp float`, and zero inverted `smoothstep` calls.
+ * Strictly enforces `#version 300 es`, `precision highp float`, `precision highp int` in BOTH vertex
+ * and fragment stages, and zero inverted `smoothstep` calls.
  */
 object TaskWaterLightShaders {
 
@@ -55,20 +56,20 @@ float noise2(vec2 p) {
 }
 
 // Gentle inverse-ACES pre-compensation so bright studio cyan survives ACES filmic tonemapping cleanly
+// while leaving enough luminous headroom for crisp translucent liquid waterlight highlights!
 vec3 studioSrgbToLinearPreComp(vec3 srgb) {
     vec3 lin = pow(clamp(srgb, vec3(0.0), vec3(0.98)), vec3(2.2));
-    // Boost upper studio tones gently below bloom threshold (1.32) so daylight aqua stays crisp & airy
-    return lin * 1.18;
+    return lin * 1.12;
 }
 
 void main() {
     float aspect = uResolution.x / max(uResolution.y, 1.0);
 
     // 1. Airy light-cyan aquatic studio backdrop matching FROZEN_6KF_VISUAL_SPEC
-    vec3 topIce     = vec3(0.84, 0.965, 0.985);
-    vec3 midAqua    = vec3(0.66, 0.895, 0.945);
-    vec3 lowCyan    = vec3(0.48, 0.835, 0.915);
-    vec3 deepCorner = vec3(0.42, 0.785, 0.885);
+    vec3 topIce     = vec3(0.81, 0.945, 0.975);
+    vec3 midAqua    = vec3(0.62, 0.875, 0.935);
+    vec3 lowCyan    = vec3(0.45, 0.815, 0.905);
+    vec3 deepCorner = vec3(0.38, 0.760, 0.875);
 
     float yGrad = clamp(vUv.y, 0.0, 1.0); // 0 = bottom, 1 = top
     vec3 baseSrgb = mix(lowCyan, midAqua, smoothstep(0.08, 0.56, yGrad));
@@ -76,34 +77,43 @@ void main() {
 
     // Soft side luminance framing (brighter mist near top-left & center-bottom, gentle teal edge vignette)
     float sideDist = abs(vUv.x - 0.5) * 2.0;
-    baseSrgb = mix(baseSrgb, deepCorner, smoothstep(0.58, 1.15, sideDist) * 0.24);
+    baseSrgb = mix(baseSrgb, deepCorner, smoothstep(0.56, 1.12, sideDist) * 0.26);
 
-    // Soft diagonal sun-shaft veil across upper-left and behind the photo
+    // Soft diagonal sun-shaft veil across upper-left
     float shaft = exp(-pow(((vUv.x - 0.36) * 0.8 + (vUv.y - 0.62) * 0.55) * 2.3, 2.0));
-    baseSrgb += vec3(0.08, 0.09, 0.08) * shaft;
+    baseSrgb += vec3(0.06, 0.075, 0.07) * shaft;
 
-    // 2. Animated water-surface caustic reflection pool directly beneath the shared AI Orb
-    vec2 poolDelta = vec2((vUv.x - uOrbCenterUv.x) * aspect, (vUv.y - (uOrbCenterUv.y - uOrbRadiusNormH * 0.38)) * 2.35);
-    float poolDist = length(poolDelta);
-    float poolMask = exp(-poolDist * poolDist * 7.5) * (1.0 - smoothstep(0.28, 0.55, vUv.y));
+    // 2. P1: Focused water-surface caustic reflection pool directly beneath the shared AI Orb.
+    // Concentrates below Orb center, attenuates smoothly laterally, stays strictly below photo & Task stream!
+    float poolCenterY = uOrbCenterUv.y - uOrbRadiusNormH * 0.44;
+    float dxPool = (vUv.x - uOrbCenterUv.x) * aspect;
+    float dyPool = (vUv.y - poolCenterY) * 2.65;
+    float poolDist = length(vec2(dxPool * 1.15, dyPool));
+    float lateralAtten = exp(-dxPool * dxPool * 8.5);
+    float belowTaskGate = 1.0 - smoothstep(
+        uOrbCenterUv.y + uOrbRadiusNormH * 0.15,
+        uOrbCenterUv.y + uOrbRadiusNormH * 0.95,
+        vUv.y
+    );
+    float poolMask = exp(-poolDist * poolDist * 8.2) * lateralAtten * belowTaskGate;
 
-    vec2 cUv1 = vec2(vUv.x * 7.5 * aspect + uTime * 0.22, vUv.y * 14.0 - uTime * 0.18);
-    vec2 cUv2 = vec2(vUv.x * 10.5 * aspect - uTime * 0.16, vUv.y * 19.0 + uTime * 0.21);
+    vec2 cUv1 = vec2(vUv.x * 8.5 * aspect + uTime * 0.24, vUv.y * 16.0 - uTime * 0.19);
+    vec2 cUv2 = vec2(vUv.x * 12.0 * aspect - uTime * 0.17, vUv.y * 22.0 + uTime * 0.23);
     float n1 = noise2(cUv1);
     float n2 = noise2(cUv2);
-    float causticNet = pow(clamp(1.0 - abs(n1 - n2) * 2.4, 0.0, 1.0), 3.2);
-    float rippleRing = 0.5 + 0.5 * sin(poolDist * 34.0 - uTime * 2.4 + n1 * 2.5);
-    float ringGlow = pow(rippleRing, 3.0) * exp(-poolDist * 4.2);
+    float causticNet = pow(clamp(1.0 - abs(n1 - n2) * 2.75, 0.0, 1.0), 3.6);
+    float rippleRing = 0.5 + 0.5 * sin(poolDist * 38.0 - uTime * 2.5 + n1 * 2.2);
+    float ringGlow = pow(rippleRing, 3.4) * exp(-poolDist * 4.8);
 
     vec3 col = studioSrgbToLinearPreComp(baseSrgb);
     // Crisp shimmering pool caustics + delicate warm-gold specular floor reflection directly under Orb
-    col += vec3(0.22, 0.68, 0.82) * causticNet * poolMask * 0.52;
-    col += vec3(0.32, 0.78, 0.88) * ringGlow * poolMask * 0.34;
-    float floorGold = exp(-pow(poolDist * 3.8, 2.0)) * (1.0 - smoothstep(0.18, 0.36, vUv.y));
-    col += vec3(0.42, 0.34, 0.14) * floorGold * 0.26;
+    col += vec3(0.18, 0.66, 0.84) * causticNet * poolMask * 0.56;
+    col += vec3(0.26, 0.76, 0.90) * ringGlow * poolMask * 0.34;
+    float floorGold = exp(-pow(poolDist * 4.2, 2.0)) * lateralAtten * belowTaskGate;
+    col += vec3(0.44, 0.34, 0.14) * floorGold * 0.26;
 
     // Keep strictly below Bloom bright-pass threshold (1.32) so studio background never hazes
-    col = min(col, vec3(1.18));
+    col = min(col, vec3(1.10));
     fragColor = vec4(col * uHdrScale, 1.0);
 }
 """
@@ -184,26 +194,34 @@ void main() {
 precision highp float;
 precision highp int;
 layout(location = 0) in vec2 aPosNdc;
-layout(location = 1) in vec2 aUv;       // x = s in [0, 1], y = cross u in [0, 1]
+layout(location = 1) in vec2 aUv;        // x = s in [0, 1], y = cross u in [0, 1]
 layout(location = 2) in float aAlpha;
 layout(location = 3) in float aTwist;
+layout(location = 4) in vec2 aNormalDir; // Unit lateral ribbon normal in GL UV orientation
 
+uniform int uStreamKind; // 0=MainIce, 1=LeftCyan, 2=RightFine, 3=EmeraldVeil
 uniform float uFlowTime;
 uniform float uStreamPhase;
 
 out vec2 vUv;
 out float vAlpha;
 out float vTwist;
+out vec2 vNormalDir;
 
 void main() {
     vUv = aUv;
     vAlpha = aAlpha;
     vTwist = aTwist;
+    vNormalDir = aNormalDir;
 
-    // Gentle living lateral aquatic sway zeroed at Orb base (s=0) and Photo Bottom Center (s=1)
-    float swayEnv = sin(aUv.x * 3.14159265);
-    float wave = sin(aUv.x * 7.5 - uFlowTime * 2.8 + uStreamPhase) * 0.011
-               + cos(aUv.x * 12.0 - uFlowTime * 4.1 - uStreamPhase) * 0.004;
+    // P0-2: Lateral sway is STRICTLY 0 at both anchors (s==0 Orb top & s==1 Photo bottom center) for main stream!
+    float s = aUv.x;
+    float swayEnv = sin(s * 3.14159265);
+    if (uStreamKind == 0 && (s <= 0.001 || s >= 0.999)) {
+        swayEnv = 0.0;
+    }
+    float wave = sin(s * 7.5 - uFlowTime * 2.8 + uStreamPhase) * 0.011
+               + cos(s * 12.0 - uFlowTime * 4.1 - uStreamPhase) * 0.004;
     vec2 displaced = aPosNdc + vec2(wave * swayEnv, 0.0);
     gl_Position = vec4(displaced, 0.0, 1.0);
 }
@@ -216,6 +234,7 @@ precision highp int;
 in vec2 vUv;
 in float vAlpha;
 in float vTwist;
+in vec2 vNormalDir;
 
 out vec4 fragColor;
 
@@ -224,32 +243,73 @@ uniform float uReveal;        // Effective front progress along this stream [0..
 uniform float uFlowTime;
 uniform float uFlowSpeed;
 uniform float uHdrScale;
+uniform sampler2D uTaskRefractionTex;
+uniform int uHasRefractionTex;
+uniform vec2 uFboSize;
+uniform float uRefractionPx;
+uniform float uRefractionStrength;
+uniform int uTaskVisualDebug; // 0=NORMAL, 1=GEOMETRY_MAGENTA, 2=ALPHA_HEATMAP
+
+vec3 alphaToHeatmap(float a) {
+    float t = clamp(a / 0.85, 0.0, 1.0);
+    vec3 c0 = vec3(0.05, 0.14, 0.65);
+    vec3 c1 = vec3(0.05, 0.78, 0.92);
+    vec3 c2 = vec3(0.96, 0.88, 0.14);
+    vec3 c3 = vec3(0.98, 0.16, 0.12);
+    if (t < 0.33) return mix(c0, c1, t / 0.33);
+    if (t < 0.66) return mix(c1, c2, (t - 0.33) / 0.33);
+    return mix(c2, c3, (t - 0.66) / 0.34);
+}
 
 void main() {
     float s = vUv.x;
     float u = vUv.y;
 
-    // Progressive smooth reveal from Orb top anchor upward to stream frontier
-    float tipSoft = 0.095;
-    float revealMask = 1.0 - smoothstep(uReveal - tipSoft, uReveal + 0.015, s);
+    // P0-2: Main stream stays visibly connected to Orb (s=0) & Photo Bottom Center (s=1) after KF02!
+    // Secondary streams retain natural tapered root/tip fade.
+    float revealMask;
+    float rootFade;
+    float endFade;
+    if (uStreamKind == 0) {
+        float settled = smoothstep(0.92, 0.995, uReveal);
+        float travelEndFade = 1.0 - smoothstep(0.86, 1.0, s);
+        float contactEndFade = 1.0 - 0.20 * smoothstep(0.92, 1.0, s);
+        endFade = mix(travelEndFade, contactEndFade, settled);
+        revealMask = (uReveal >= 0.995) ? 1.0 : (1.0 - smoothstep(uReveal - 0.095, uReveal + 0.015, s));
+        rootFade = 0.55 + 0.45 * smoothstep(0.0, 0.045, s);
+    } else {
+        revealMask = 1.0 - smoothstep(uReveal - 0.095, uReveal + 0.015, s);
+        rootFade = smoothstep(0.0, 0.09, s);
+        endFade = 1.0 - smoothstep(0.86, 1.0, s);
+    }
     if (revealMask < 0.004) discard;
 
-    // Smooth root fade at Orb exit and graceful taper at trailing/advancing tip
-    float rootFade = smoothstep(0.0, 0.09, s);
-    float endFade = 1.0 - smoothstep(0.86, 1.0, s);
+    // G1 GEOMETRY_MAGENTA: proves real geometry rasterization while keeping real reveal progress clipping!
+    if (uTaskVisualDebug == 1) {
+        fragColor = vec4(vec3(1.0, 0.0, 1.0) * uHdrScale, 1.0);
+        return;
+    }
 
-    // Cross-section optical refraction profile: translucent liquid core + crisp Fresnel bright edges!
+    // P0-3 Three-Layer Liquid Optical Cross-Section:
+    // (A) Translucent liquid body + crisp refractive dark glass rim (0.16) for bright-background readability
     float distEdge = abs(u - 0.5) * 2.0; // 0 = center, 1 = outer edge
     float edgeMask = 1.0 - smoothstep(0.76, 1.0, distEdge);
     float fresnelRim = pow(clamp(distEdge, 0.0, 1.0), 2.3) * edgeMask;
     float coreBody = (1.0 - distEdge * distEdge) * edgeMask;
+    float refractiveEdge = exp(-pow((distEdge - 0.84) / 0.11, 2.0)) * edgeMask;
 
-    // Continuous internal liquid flow bands & champagne-gold micro-filament
+    // (B) Undulating internal liquid specular crest
+    float crestCenter = 0.5 + 0.12 * sin(s * 9.0 - uFlowTime * 1.6);
+    float liquidCrest = exp(-pow((u - crestCenter) / 0.11, 2.0)) * edgeMask;
+
+    // (C) Fine internal optical filaments + subtle warm-gold reflection
     float flowCoord = s * 9.5 - uFlowTime * uFlowSpeed * 2.4;
     float liquidSilk = 0.5 + 0.5 * sin(flowCoord + sin(u * 6.283 + uFlowTime * 1.4) * 1.2);
     float fineRipple = 0.5 + 0.5 * sin(s * 22.0 - uFlowTime * uFlowSpeed * 4.2 + u * 5.0);
-    float goldWaveU = 0.5 + 0.24 * sin(s * 6.5 - uFlowTime * 2.1 + vTwist);
-    float goldThread = exp(-pow((u - goldWaveU) / 0.095, 2.0)) * (0.45 + 0.55 * fineRipple);
+    float fineFilament = exp(-pow((u - (0.5 - 0.18 * cos(s * 13.0 - uFlowTime * uFlowSpeed * 2.6))) / 0.075, 2.0))
+                       * (0.40 + 0.60 * fineRipple) * edgeMask;
+    float goldWaveU = 0.5 + 0.22 * sin(s * 6.5 - uFlowTime * 2.1 + vTwist);
+    float goldThread = exp(-pow((u - goldWaveU) / 0.085, 2.0)) * (0.45 + 0.55 * fineRipple) * edgeMask;
 
     // Luminous leading front crescent while stream is advancing (softens once uReveal >= 0.99)
     float advancing = 1.0 - smoothstep(0.92, 1.0, uReveal);
@@ -259,33 +319,64 @@ void main() {
     float alpha;
     if (uStreamKind == 3) {
         // Organic emerald-green aquatic kelp veil
-        vec3 deepEmerald = vec3(0.06, 0.56, 0.36);
-        vec3 jadeSheen   = vec3(0.32, 0.92, 0.64);
-        vec3 goldAccent  = vec3(1.45, 1.18, 0.58);
-        col = mix(deepEmerald, jadeSheen, 0.35 + 0.65 * liquidSilk);
-        col += vec3(0.28, 0.85, 0.72) * fresnelRim * 0.55;
-        col += goldAccent * goldThread * 0.22;
-        alpha = (coreBody * 0.32 + fresnelRim * 0.56 + goldThread * 0.18) * vAlpha;
+        vec3 deepEmerald = vec3(0.02, 0.44, 0.25);
+        vec3 jadeSheen   = vec3(0.22, 0.92, 0.58);
+        vec3 goldAccent  = vec3(1.48, 1.16, 0.52);
+        col = mix(deepEmerald, jadeSheen, 0.30 + 0.70 * liquidSilk);
+        col = mix(col, vec3(0.01, 0.20, 0.14), refractiveEdge * 0.16);
+        col += vec3(0.24, 0.88, 0.68) * (fresnelRim * 0.48 + liquidCrest * 0.28);
+        col += vec3(0.48, 1.02, 1.35) * fineFilament * 0.20;
+        col += goldAccent * goldThread * 0.24;
+        alpha = (coreBody * 0.34 + fresnelRim * 0.54 + liquidCrest * 0.22 + goldThread * 0.18) * vAlpha;
     } else if (uStreamKind == 0) {
-        // Wide translucent icy-blue main stream with refractive crystal edges + delicate gold silk
-        vec3 iceBody   = vec3(0.18, 0.78, 1.02);
-        vec3 crystalRim = vec3(0.76, 1.24, 1.44);
-        vec3 warmGold  = vec3(1.62, 1.28, 0.62);
-        col = mix(iceBody, crystalRim, 0.30 + 0.50 * liquidSilk + 0.45 * fresnelRim);
-        col += warmGold * (goldThread * 0.42 + frontTipGlow * 0.55);
-        alpha = (coreBody * 0.34 + fresnelRim * 0.68 + goldThread * 0.24 + frontTipGlow * 0.35) * vAlpha;
+        // Wide translucent icy-blue main S-stream: sapphire depth + refractive dark rim + luminous crest + gold silk
+        vec3 deepSapphire = vec3(0.06, 0.48, 0.88);
+        vec3 iceBody      = vec3(0.14, 0.72, 1.04);
+        vec3 crystalRim   = vec3(0.76, 1.28, 1.50);
+        vec3 warmGold     = vec3(1.64, 1.28, 0.58);
+        col = mix(deepSapphire, iceBody, 0.35 + 0.65 * liquidSilk);
+        col = mix(col, crystalRim, 0.38 * fresnelRim + 0.28 * fineFilament);
+        col = mix(col, vec3(0.02, 0.20, 0.42), refractiveEdge * 0.16);
+        col += vec3(0.48, 1.02, 1.35) * liquidCrest * 0.30;
+        col += warmGold * (goldThread * 0.40 + frontTipGlow * 0.55);
+        alpha = (coreBody * 0.36 + fresnelRim * 0.62 + liquidCrest * 0.26 + refractiveEdge * 0.16 + goldThread * 0.22 + frontTipGlow * 0.34) * vAlpha;
     } else {
         // Accompanying icy-cyan left curl & fine right stream (delicate translucent liquid)
-        vec3 cyanBody = vec3(0.20, 0.82, 1.05);
-        vec3 edgeGlint = vec3(0.78, 1.26, 1.42);
-        vec3 warmGold = vec3(1.50, 1.20, 0.56);
-        col = mix(cyanBody, edgeGlint, 0.35 + 0.50 * fineRipple + 0.40 * fresnelRim);
-        col += warmGold * (goldThread * 0.30 + frontTipGlow * 0.35);
-        alpha = (coreBody * 0.28 + fresnelRim * 0.60 + goldThread * 0.20) * vAlpha;
+        vec3 cyanDeep  = vec3(0.08, 0.54, 0.90);
+        vec3 edgeGlint = vec3(0.74, 1.26, 1.46);
+        vec3 warmGold  = vec3(1.52, 1.18, 0.52);
+        col = mix(cyanDeep, edgeGlint, 0.32 + 0.46 * fineRipple + 0.38 * fresnelRim);
+        col = mix(col, vec3(0.02, 0.22, 0.42), refractiveEdge * 0.16);
+        col += vec3(0.48, 1.02, 1.35) * liquidCrest * 0.30;
+        col += warmGold * (goldThread * 0.28 + frontTipGlow * 0.35);
+        alpha = (coreBody * 0.30 + fresnelRim * 0.56 + liquidCrest * 0.20 + goldThread * 0.18) * vAlpha;
     }
 
     alpha = clamp(alpha * revealMask * rootFade * endFade, 0.0, 0.82);
-    if (alpha < 0.004) discard;
+
+    // G1 ALPHA_HEATMAP: opaque visualization of real alpha after all reveal/fade/cap gating
+    if (uTaskVisualDebug == 2) {
+        fragColor = vec4(alphaToHeatmap(alpha) * uHdrScale, 1.0);
+        return;
+    }
+
+    if (alpha < 0.002) discard;
+
+    // P0-4: Screen-space liquid-film background refraction from separate refraction snapshot (ZERO feedback loop!)
+    if (uHasRefractionTex > 0 && uRefractionStrength > 0.001) {
+        vec2 safeFbo = max(uFboSize, vec2(1.0));
+        vec2 baseUv = clamp(gl_FragCoord.xy / safeFbo, vec2(0.002), vec2(0.998));
+        float crossLens = (u - 0.5) * 2.0;
+        vec2 nDir = normalize(vNormalDir + vec2(1e-5, 0.0));
+        vec2 refrUv = clamp(baseUv + nDir * (crossLens * uRefractionPx) / safeFbo, vec2(0.002), vec2(0.998));
+        float invHdr = 1.0 / max(uHdrScale, 1e-4);
+        vec3 baseBg = texture(uTaskRefractionTex, baseUv).rgb * invHdr;
+        vec3 refrBg = texture(uTaskRefractionTex, refrUv).rgb * invHdr;
+        vec3 refrDelta = (refrBg - baseBg) * uRefractionStrength;
+        // Fold pure differential refraction into straight-alpha blend with zero double-background washout or NaN
+        col = max(col + refrDelta / max(alpha, 0.08), vec3(0.0));
+    }
+
     fragColor = vec4(col * uHdrScale, alpha);
 }
 """
@@ -304,14 +395,17 @@ uniform float uPhotoWidthPx;
 
 out vec2 vArcU;
 out float vWave;
+out vec2 vNormalDir;
 
 void main() {
     vArcU = aArcU;
     float s = aArcU.x;
     float u = aArcU.y;
 
+    // True outward unit normal in OpenGL UV orientation (+X right, +Y up) for P0-4 liquid refraction
+    vNormalDir = normalize(aNormalNdc + vec2(1e-5, 0.0));
+
     // Continuous organic liquid undulation strictly OUTWARD (u == 0 inner edge stays locked on boundary!)
-    // Zero mechanical uniform-width breathing; multi-frequency traveling waves keep KF06 alive!
     float w1 = sin(s * 24.0 - uFlowTime * 2.35 + uSideSign * 0.85);
     float w2 = cos(s * 41.0 - uFlowTime * 3.40 - uSideSign * 1.40);
     float organicWave = 0.5 + 0.5 * (0.65 * w1 + 0.35 * w2);
@@ -319,15 +413,15 @@ void main() {
 
     float flutterPx = 0.0;
     if (uLayerKind == 0) {
-        flutterPx = u * uPhotoWidthPx * 0.0048 * (w1 * 0.65 + w2 * 0.35);
+        flutterPx = u * uPhotoWidthPx * 0.0036 * (w1 * 0.65 + w2 * 0.35);
     } else if (uLayerKind == 1) {
-        flutterPx = u * uPhotoWidthPx * 0.0085 * (w1 * 0.72 + w2 * 0.28);
+        flutterPx = u * uPhotoWidthPx * 0.0072 * (w1 * 0.72 + w2 * 0.28);
     } else {
-        flutterPx = u * uPhotoWidthPx * 0.0032 * w2;
+        flutterPx = u * uPhotoWidthPx * 0.0024 * w2;
     }
 
     // Never push inward past the photo boundary (clamp negative outward flutter tightly)
-    float safeOutPx = max(flutterPx, -u * 1.2);
+    float safeOutPx = max(flutterPx, -u * 1.0);
     vec2 finalNdc = aPosNdc + aNormalNdc * safeOutPx;
     gl_Position = vec4(finalNdc, 0.0, 1.0);
 }
@@ -339,74 +433,138 @@ precision highp int;
 
 in vec2 vArcU;
 in float vWave;
+in vec2 vNormalDir;
 
 out vec4 fragColor;
 
-uniform int uLayerKind;       // 0=L1 IceBlue, 1=L2 EmeraldVeil, 2=L3 GoldFilament
-uniform float uRevealProgress; // [0..1] along this side (0=bottom center, 1=top center)
+uniform int uLayerKind;         // 0=L1 IceBlue, 1=L2 EmeraldVeil, 2=L3 GoldFilament
+uniform float uRevealProgress;  // [0..1] along this side (0=bottom center, 1=top center)
 uniform float uFlowTime;
 uniform float uSideSign;
-uniform float uCoverageComplete;
+uniform float uCoverageComplete; // Strictly driven from real snapshot.coverageComplete (left>=0.999 && right>=0.999)
+uniform float uLayerAlphaScale;  // Bound from PerimeterWaterLightMaterial per layer
 uniform float uHdrScale;
+uniform sampler2D uTaskRefractionTex;
+uniform int uHasRefractionTex;
+uniform vec2 uFboSize;
+uniform float uRefractionPx;
+uniform float uRefractionStrength;
+uniform int uTaskVisualDebug;   // 0=NORMAL, 1=GEOMETRY_MAGENTA, 2=ALPHA_HEATMAP
+
+vec3 alphaToHeatmap(float a) {
+    float t = clamp(a / 0.52, 0.0, 1.0);
+    vec3 c0 = vec3(0.05, 0.14, 0.65);
+    vec3 c1 = vec3(0.05, 0.78, 0.92);
+    vec3 c2 = vec3(0.96, 0.88, 0.14);
+    vec3 c3 = vec3(0.98, 0.16, 0.12);
+    if (t < 0.33) return mix(c0, c1, t / 0.33);
+    if (t < 0.66) return mix(c1, c2, (t - 0.33) / 0.33);
+    return mix(c2, c3, (t - 0.66) / 0.34);
+}
 
 void main() {
     float s = vArcU.x;
     float u = vArcU.y;
 
-    if (uRevealProgress <= 0.001) discard;
+    if (uRevealProgress <= 0.001 && uCoverageComplete < 0.5) discard;
 
-    // Strict arc-length reveal gate: NEVER activates ahead of uRevealProgress!
-    float frontSoft = 0.028;
-    float revealMask = 1.0 - smoothstep(uRevealProgress - frontSoft, uRevealProgress + 0.006, s);
+    // P0-1: When real coverageComplete is true (left>=0.999 && right>=0.999), revealMask = 1.0 everywhere
+    // so KF06 has ZERO top-center endpoint clipping! During KF02-KF05 keep exact smooth progressive front.
+    float revealMask;
+    if (uCoverageComplete > 0.5) {
+        revealMask = 1.0;
+    } else {
+        float frontSoft = 0.028;
+        revealMask = 1.0 - smoothstep(uRevealProgress - frontSoft, uRevealProgress + 0.006, s);
+    }
     if (revealMask < 0.004) discard;
+
+    // G1 GEOMETRY_MAGENTA: opaque magenta proves real GPU perimeter geometry coverage with real reveal gating!
+    if (uTaskVisualDebug == 1) {
+        fragColor = vec4(vec3(1.0, 0.0, 1.0) * uHdrScale, 1.0);
+        return;
+    }
 
     // Advancing frontier local highlight (active during KF02-KF05, smoothly vanishes once coverage == 1.0)
     float isAdvancing = (1.0 - smoothstep(0.96, 1.0, uRevealProgress)) * (1.0 - uCoverageComplete * 0.9);
     float frontBoost = exp(-pow((s - uRevealProgress) / 0.024, 2.0)) * isAdvancing;
 
-    // Cross-section transparency: crisp liquid glass rim + airy translucent body (KF04 restrained standard!)
-    float innerSoft = smoothstep(0.0, 0.14, u);
-    float outerSoft = 1.0 - smoothstep(0.72, 1.0, u);
+    // Cross-section optical liquid film profile: inner meniscus dark rim + translucent body + outer refractive edge
+    float innerSoft = smoothstep(0.0, 0.12, u);
+    float outerSoft = 1.0 - smoothstep(0.74, 1.0, u);
     float bodyEnv = innerSoft * outerSoft;
-    float liquidEdge = exp(-pow((u - 0.18) / 0.12, 2.0)) + exp(-pow((u - 0.78) / 0.13, 2.0)) * 0.75;
+    float liquidEdge = exp(-pow((u - 0.16) / 0.11, 2.0)) + exp(-pow((u - 0.80) / 0.12, 2.0)) * 0.80;
+    float darkMeniscusRim = exp(-pow((u - 0.08) / 0.08, 2.0)) * 0.70 + exp(-pow((u - 0.86) / 0.09, 2.0)) * 0.55;
 
-    // Continuous non-uniform internal water ripples along arc length (decoupled from revealProgress!)
+    // Asynchronous non-uniform internal water ripples along arc length (independent of revealProgress!)
     float flowA = 0.5 + 0.5 * sin(s * 36.0 - uFlowTime * 3.1 + uSideSign * 0.5 + u * 3.8);
     float flowB = 0.5 + 0.5 * sin(s * 62.0 - uFlowTime * 4.6 - u * 4.5);
     float shimmer = 0.45 * flowA + 0.55 * flowB;
+    float crestU = 0.42 + 0.14 * sin(s * 18.0 - uFlowTime * 2.1 + uSideSign * 0.9);
+    float liquidCrest = exp(-pow((u - crestU) / 0.14, 2.0)) * bodyEnv;
 
     vec3 col;
     float alpha;
+    float alphaCap;
     if (uLayerKind == 0) {
-        // L1: Translucent icy-blue liquid body (alpha 0.12..0.38 restrained KF04 standard)
-        vec3 deepIce   = vec3(0.14, 0.76, 1.02);
-        vec3 brightIce = vec3(0.74, 1.24, 1.42);
-        vec3 frontGold = vec3(1.58, 1.26, 0.62);
-        col = mix(deepIce, brightIce, 0.25 + 0.50 * shimmer + 0.35 * liquidEdge);
-        col += frontGold * frontBoost * 0.65;
-        alpha = (0.14 + 0.22 * shimmer) * bodyEnv + 0.24 * liquidEdge + frontBoost * 0.32;
-        alpha = clamp(alpha, 0.0, 0.48);
+        // L1: High-contrast translucent sapphire-ice liquid film (strict frozen cap <= 0.38!)
+        // Deep sapphire-cyan core + dark meniscus rim + bright specular liquid crest ensures crisp daylight visibility!
+        vec3 deepSapphire = vec3(0.04, 0.44, 0.90);
+        vec3 brightIce    = vec3(0.68, 1.32, 1.62);
+        vec3 darkRefract  = vec3(0.01, 0.18, 0.38);
+        vec3 frontGold    = vec3(1.62, 1.26, 0.54);
+        col = mix(deepSapphire, brightIce, 0.24 + 0.42 * shimmer + 0.44 * liquidCrest);
+        col = mix(col, darkRefract, clamp(darkMeniscusRim * 0.28, 0.0, 0.32));
+        col += vec3(0.46, 1.06, 1.42) * liquidEdge * 0.34;
+        col += frontGold * frontBoost * 0.72;
+        alpha = (0.16 + 0.20 * shimmer) * bodyEnv + 0.22 * liquidEdge + 0.14 * liquidCrest + frontBoost * 0.28;
+        alphaCap = 0.38;
     } else if (uLayerKind == 1) {
-        // L2: Emerald-green aquatic kelp-like veil (alpha 0.08..0.24, organic intermittent plumes!)
-        float plumeGate = smoothstep(0.28, 0.82, 0.5 + 0.5 * sin(s * 14.0 - uFlowTime * 1.15 + uSideSign * 1.7));
-        vec3 emeraldDeep = vec3(0.05, 0.58, 0.34);
-        vec3 jadeLight   = vec3(0.30, 0.94, 0.60);
-        col = mix(emeraldDeep, jadeLight, 0.30 + 0.70 * flowA);
-        alpha = (0.09 + 0.15 * vWave) * bodyEnv * (0.45 + 0.55 * plumeGate);
-        alpha = clamp(alpha, 0.0, 0.28);
+        // L2: Rich emerald-green aquatic kelp veil (strict frozen cap <= 0.24, asynchronous slow plumes!)
+        float plumeGate = smoothstep(0.24, 0.82, 0.5 + 0.5 * sin(s * 14.0 - uFlowTime * 1.15 + uSideSign * 1.7));
+        vec3 emeraldDeep = vec3(0.015, 0.42, 0.22);
+        vec3 jadeLight   = vec3(0.18, 0.92, 0.52);
+        col = mix(emeraldDeep, jadeLight, 0.26 + 0.74 * flowA);
+        col = mix(col, vec3(0.008, 0.18, 0.12), clamp(darkMeniscusRim * 0.22, 0.0, 0.25));
+        alpha = (0.10 + 0.14 * vWave) * bodyEnv * (0.48 + 0.52 * plumeGate);
+        alphaCap = 0.24;
     } else {
-        // L3: Traveling champagne-gold refractive filament (alpha 0.15..0.50, sparse luminous streaks!)
-        float travelPacket = pow(clamp(0.5 + 0.5 * sin(s * 18.0 - uFlowTime * 2.55 + uSideSign * 1.2), 0.0, 1.0), 3.0);
-        float fineCore = exp(-pow((u - (0.48 + 0.16 * sin(s * 28.0 - uFlowTime * 2.2))) / 0.19, 2.0));
-        vec3 goldCore = vec3(1.68, 1.34, 0.68);
-        vec3 champagne = vec3(1.92, 1.66, 1.12);
-        col = mix(goldCore, champagne, flowB);
-        alpha = fineCore * (0.14 + 0.34 * travelPacket + 0.36 * frontBoost);
-        alpha = clamp(alpha, 0.0, 0.54);
+        // L3: Slender traveling champagne-gold refractive filament (strict frozen cap <= 0.50!)
+        float travelPacket = pow(clamp(0.5 + 0.5 * sin(s * 18.0 - uFlowTime * 2.55 + uSideSign * 1.2), 0.0, 1.0), 2.6);
+        float fineCore = exp(-pow((u - (0.48 + 0.16 * sin(s * 28.0 - uFlowTime * 2.2))) / 0.20, 2.0));
+        vec3 amberGold = vec3(1.56, 1.08, 0.30);
+        vec3 champagne = vec3(2.08, 1.72, 0.96);
+        col = mix(amberGold, champagne, 0.35 + 0.65 * flowB);
+        alpha = fineCore * (0.18 + 0.34 * travelPacket + 0.34 * frontBoost);
+        alphaCap = 0.50;
     }
 
-    alpha *= revealMask;
-    if (alpha < 0.004) discard;
+    // P0-6: Apply revealMask and PerimeterWaterLightMaterial scale, then strictly enforce frozen alphaCap!
+    alpha = clamp(alpha * revealMask * uLayerAlphaScale, 0.0, alphaCap);
+
+    // G1 ALPHA_HEATMAP: opaque visualization of real per-layer alpha after cap enforcement
+    if (uTaskVisualDebug == 2) {
+        fragColor = vec4(alphaToHeatmap(alpha) * uHdrScale, 1.0);
+        return;
+    }
+
+    if (alpha < 0.002) discard;
+
+    // P0-4: Screen-space liquid-film refraction sampling separate refraction snapshot (photo border + background!)
+    if (uHasRefractionTex > 0 && uRefractionStrength > 0.001) {
+        vec2 safeFbo = max(uFboSize, vec2(1.0));
+        vec2 baseUv = clamp(gl_FragCoord.xy / safeFbo, vec2(0.002), vec2(0.998));
+        // Refract inward near inner photo edge and outward near outer crest for genuine curved meniscus lens feel
+        float lensProfile = (u - 0.35) * 2.0;
+        vec2 nDir = normalize(vNormalDir + vec2(1e-5, 0.0));
+        vec2 refrUv = clamp(baseUv + nDir * (lensProfile * uRefractionPx) / safeFbo, vec2(0.002), vec2(0.998));
+        float invHdr = 1.0 / max(uHdrScale, 1e-4);
+        vec3 baseBg = texture(uTaskRefractionTex, baseUv).rgb * invHdr;
+        vec3 refrBg = texture(uTaskRefractionTex, refrUv).rgb * invHdr;
+        vec3 refrDelta = (refrBg - baseBg) * uRefractionStrength;
+        col = max(col + refrDelta / max(alpha, 0.08), vec3(0.0));
+    }
+
     fragColor = vec4(col * uHdrScale, alpha);
 }
 """
@@ -417,16 +575,21 @@ precision highp int;
 layout(location = 0) in vec2 aPosNdc;
 layout(location = 1) in float aSizePx;
 layout(location = 2) in float aAlpha;
-layout(location = 3) in float aKind; // 0=CrystalDroplet, 1=WarmGoldStarburst, 2=CyanRippleHalo
+layout(location = 3) in float aKind;   // 0=CrystalDroplet, 1=WarmGoldStarburst, 2=CyanRippleHalo
+layout(location = 4) in vec2 aQuadUv; // Used strictly when uUseQuad == 1
+
+uniform int uUseQuad;
 
 out float vAlpha;
 out float vKind;
+out vec2 vQuadUv;
 
 void main() {
     vAlpha = aAlpha;
     vKind = aKind;
+    vQuadUv = aQuadUv;
     gl_Position = vec4(aPosNdc, 0.0, 1.0);
-    gl_PointSize = aSizePx;
+    gl_PointSize = (uUseQuad == 0) ? aSizePx : 1.0;
 }
 """
 
@@ -436,41 +599,69 @@ precision highp int;
 
 in float vAlpha;
 in float vKind;
+in vec2 vQuadUv;
 
 out vec4 fragColor;
 
+uniform int uUseQuad;
 uniform float uHdrScale;
+uniform int uTaskVisualDebug; // 0=NORMAL, 1=GEOMETRY_MAGENTA, 2=ALPHA_HEATMAP
+
+vec3 alphaToHeatmap(float a) {
+    float t = clamp(a / 0.90, 0.0, 1.0);
+    vec3 c0 = vec3(0.05, 0.14, 0.65);
+    vec3 c1 = vec3(0.05, 0.78, 0.92);
+    vec3 c2 = vec3(0.96, 0.88, 0.14);
+    vec3 c3 = vec3(0.98, 0.16, 0.12);
+    if (t < 0.33) return mix(c0, c1, t / 0.33);
+    if (t < 0.66) return mix(c1, c2, (t - 0.33) / 0.33);
+    return mix(c2, c3, (t - 0.66) / 0.34);
+}
 
 void main() {
     if (vAlpha < 0.005) discard;
-    vec2 p = gl_PointCoord * 2.0 - 1.0;
+    vec2 uv = (uUseQuad == 1) ? vQuadUv : gl_PointCoord;
+    vec2 p = uv * 2.0 - 1.0;
     float r = length(p);
     if (r > 1.0) discard;
+
+    if (uTaskVisualDebug == 1) {
+        fragColor = vec4(vec3(1.0, 0.0, 1.0) * uHdrScale, 1.0);
+        return;
+    }
 
     vec3 col;
     float alpha;
     if (vKind < 0.5) {
-        // L4: Translucent crystal water droplet (refractive rim + tiny top-left glint)
-        float rim = exp(-pow((r - 0.72) / 0.16, 2.0));
-        float body = (1.0 - smoothstep(0.0, 0.85, r)) * 0.24;
-        float glint = exp(-pow(length(p - vec2(-0.26, -0.28)) / 0.22, 2.0));
-        col = vec3(0.42, 0.96, 1.18) * (body + rim * 0.72) + vec3(1.55, 1.65, 1.72) * glint * 0.85;
-        alpha = clamp((body + rim * 0.65 + glint * 0.78) * vAlpha, 0.0, 0.82);
+        // L4: Translucent crystal water droplet (dark refractive rim + clear body + pinpoint top-left glint)
+        float rim = exp(-pow((r - 0.72) / 0.15, 2.0));
+        float darkOutline = exp(-pow((r - 0.84) / 0.10, 2.0));
+        float body = (1.0 - smoothstep(0.0, 0.85, r)) * 0.22;
+        float glint = exp(-pow(length(p - vec2(-0.26, -0.28)) / 0.20, 2.0));
+        col = vec3(0.16, 0.74, 1.06) * (body + rim * 0.78)
+            + vec3(1.62, 1.72, 1.80) * glint * 0.88;
+        col = mix(col, vec3(0.02, 0.22, 0.40), darkOutline * 0.30);
+        alpha = clamp((body + rim * 0.68 + glint * 0.82) * vAlpha, 0.0, 0.82);
     } else if (vKind < 1.5) {
-        // KF02 Contact / KF05 Top-Join localized warm champagne-gold optical starburst
-        float core = exp(-r * r * 11.0);
-        float halo = exp(-r * r * 3.2) * 0.42;
-        float crossH = exp(-abs(p.y) * 14.0) * exp(-abs(p.x) * 3.0);
-        float crossV = exp(-abs(p.x) * 14.0) * exp(-abs(p.y) * 3.0);
-        float rays = (crossH + crossV) * 0.58;
-        col = vec3(1.92, 1.54, 0.82) * (core + rays) + vec3(1.42, 0.98, 0.36) * halo;
-        alpha = clamp((core + halo + rays * 0.72) * vAlpha, 0.0, 0.92);
+        // P0-7: Compact KF02 Contact / KF05 Top-Join localized warm champagne-gold optical focus
+        float core = exp(-r * r * 14.0);
+        float halo = exp(-r * r * 4.2) * 0.38;
+        float crossH = exp(-abs(p.y) * 16.0) * exp(-abs(p.x) * 3.4);
+        float crossV = exp(-abs(p.x) * 16.0) * exp(-abs(p.y) * 3.4);
+        float rays = (crossH + crossV) * 0.62;
+        col = vec3(1.98, 1.56, 0.78) * (core + rays) + vec3(1.48, 0.98, 0.32) * halo;
+        alpha = clamp((core + halo + rays * 0.74) * vAlpha, 0.0, 0.92);
     } else {
-        // Delicate cyan aquatic contact ripple ring
-        float ring = exp(-pow((r - 0.64) / 0.18, 2.0));
-        float mist = exp(-r * r * 3.6) * 0.32;
-        col = vec3(0.28, 0.96, 1.24) * (ring + mist);
-        alpha = clamp((ring * 0.56 + mist) * vAlpha, 0.0, 0.55);
+        // Compact cyan aquatic contact ripple ring
+        float ring = exp(-pow((r - 0.66) / 0.16, 2.0));
+        float mist = exp(-r * r * 4.2) * 0.28;
+        col = vec3(0.16, 0.84, 1.24) * (ring + mist);
+        alpha = clamp((ring * 0.58 + mist) * vAlpha, 0.0, 0.55);
+    }
+
+    if (uTaskVisualDebug == 2) {
+        fragColor = vec4(alphaToHeatmap(alpha) * uHdrScale, 1.0);
+        return;
     }
 
     if (alpha < 0.005) discard;

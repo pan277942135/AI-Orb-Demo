@@ -82,6 +82,8 @@ class OrbFluidVolumeRenderer {
     config: AIOrbConfig,
     isSoftwareRenderer: Boolean = false,
     fidelity: MasterFidelityV32 = MasterFidelityV32.Default,
+    taskInteriorTransmission: Float = 1.0f,
+    taskAbsorptionGain: Float = 1.0f,
   ) {
     val prog = program ?: return
     val sphere = mesh ?: return
@@ -159,6 +161,8 @@ class OrbFluidVolumeRenderer {
       cau.causticIntensity,
     )
     prog.setVec3("uBeerLambert", sap.beerLambertR, sap.beerLambertG, sap.beerLambertB)
+    prog.setFloat("uTaskInteriorTransmission", taskInteriorTransmission)
+    prog.setFloat("uTaskAbsorptionGain", taskAbsorptionGain)
 
     lighting.applyTo(prog)
     sphere.draw()

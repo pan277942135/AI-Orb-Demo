@@ -488,6 +488,7 @@ void main() {
   // -------------------------------------------------------------------------
   const val POST_QUAD_VERT = """#version 300 es
 precision highp float;
+precision highp int;
 layout(location = 0) in vec2 aPos;
 layout(location = 1) in vec2 aUv;
 out vec2 vUv;
@@ -538,6 +539,7 @@ void main() {
 
   const val COMPOSITE_FRAG = """#version 300 es
 precision highp float;
+precision highp int;
 in vec2 vUv;
 out vec4 fragColor;
 
@@ -547,6 +549,7 @@ uniform float uBloomStrength;
 uniform float uOverallIntensity;
 uniform float uChromaticAmount;
 uniform float uHdrScale;
+uniform int uPreTonemapBypass;
 
 $GLSL_INV_SMOOTHSTEP
 
@@ -563,6 +566,13 @@ void main() {
     vec2 centered = vUv - 0.5;
     float dist2 = dot(centered, centered);
     float invHdr = 1.0 / max(uHdrScale, 1e-4);
+
+    if (uPreTonemapBypass == 1) {
+        vec3 rawScene = texture(uSceneTex, vUv).rgb * invHdr;
+        vec3 rawSrgb = pow(clamp(rawScene, vec3(0.0), vec3(1.0)), vec3(1.0 / 2.2));
+        fragColor = vec4(rawSrgb, 1.0);
+        return;
+    }
 
     vec2 caShift = centered * dist2 * uChromaticAmount;
     vec3 sceneCol;

@@ -51,6 +51,8 @@ class AIOrbCore {
     config: AIOrbConfig,
     isSoftwareRenderer: Boolean = false,
     fidelity: MasterFidelityV32 = MasterFidelityV32.Default,
+    taskInteriorTransmission: Float = 1.0f,
+    taskAbsorptionGain: Float = 1.0f,
   ) {
     volumeRenderer.draw(
       outerGlassModel = outerGlassModel,
@@ -67,6 +69,8 @@ class AIOrbCore {
       config = config,
       isSoftwareRenderer = isSoftwareRenderer,
       fidelity = fidelity,
+      taskInteriorTransmission = taskInteriorTransmission,
+      taskAbsorptionGain = taskAbsorptionGain,
     )
   }
 

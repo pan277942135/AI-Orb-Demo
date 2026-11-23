@@ -35,6 +35,8 @@ class AIOrbPostProcessing {
   val renderWidth: Int get() = sceneFbo?.width ?: surfaceWidth.coerceAtLeast(2)
   val renderHeight: Int get() = sceneFbo?.height ?: surfaceHeight.coerceAtLeast(2)
   val refractionTextureId: Int get() = refractionFbo?.colorTexId ?: 0
+  var isSceneFboComplete: Boolean = false
+    private set
 
   /**
    * Linear HDR encoding scale applied by all scene fragment shaders.
@@ -90,6 +92,11 @@ class AIOrbPostProcessing {
     refractionFbo = refract
     bloomPingFbo = ping
     bloomPongFbo = pong
+
+    GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mainScene.fboId)
+    isSceneFboComplete =
+      GLES30.glCheckFramebufferStatus(GLES30.GL_FRAMEBUFFER) == GLES30.GL_FRAMEBUFFER_COMPLETE
+    GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
   }
 
   fun beginScenePass() {
@@ -115,7 +122,11 @@ class AIOrbPostProcessing {
     src.bind()
   }
 
-  fun executePostProcessToScreen(config: AIOrbConfig) {
+  fun executePostProcessToScreen(
+    config: AIOrbConfig,
+    preTonemapBypass: Boolean = false,
+    forceBloomOff: Boolean = false,
+  ) {
     val src = sceneFbo ?: return
     val ping = bloomPingFbo ?: return
     val pong = bloomPongFbo ?: return
@@ -130,7 +141,8 @@ class AIOrbPostProcessing {
     GLES30.glDisable(GLES30.GL_BLEND)
     GLES30.glDisable(GLES30.GL_CULL_FACE)
 
-    val bloomDisabled = config.debugMode == com.example.orb.config.RenderDebugMode.BLOOM_OFF ||
+    val bloomDisabled = forceBloomOff || preTonemapBypass ||
+      config.debugMode == com.example.orb.config.RenderDebugMode.BLOOM_OFF ||
       config.debugMode == com.example.orb.config.RenderDebugMode.DEPTH_DEBUG ||
       config.debugMode == com.example.orb.config.RenderDebugMode.FLUID_FLOW ||
       config.debugMode == com.example.orb.config.RenderDebugMode.MENISCUS_DEBUG
@@ -182,6 +194,7 @@ class AIOrbPostProcessing {
     compProg.setFloat("uOverallIntensity", config.overallIntensity)
     compProg.setFloat("uChromaticAmount", if (bloomDisabled) 0f else 0.0038f * (0.45f + 0.55f * config.refraction))
     compProg.setFloat("uHdrScale", scale)
+    compProg.setInt("uPreTonemapBypass", if (preTonemapBypass) 1 else 0)
     mesh.draw()
 
     GLES30.glActiveTexture(GLES30.GL_TEXTURE1)
@@ -196,6 +209,7 @@ class AIOrbPostProcessing {
     refractionFbo?.release(); refractionFbo = null
     bloomPingFbo?.release(); bloomPingFbo = null
     bloomPongFbo?.release(); bloomPongFbo = null
+    isSceneFboComplete = false
   }
 
   fun release() {

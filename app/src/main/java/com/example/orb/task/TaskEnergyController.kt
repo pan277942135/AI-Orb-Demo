@@ -175,7 +175,7 @@ class TaskEnergyController {
       TaskEnergyStage.ORB_RELEASE -> 460L          // ~38% Orb -> Photo Bottom Center (strictly no contact)
       TaskEnergyStage.BOTTOM_CONTACT -> 1140L      // Peak bottom-center contact glow, minimal center reveal
       TaskEnergyStage.BOTTOM_SPLIT -> 2280L        // Advancing near bottom corners, strictly not on vertical sides
-      TaskEnergyStage.SIDE_ASCEND -> 3580L         // ~60% vertical side climb, bottom complete, top strictly unlit
+      TaskEnergyStage.SIDE_ASCEND -> solveElapsedMsForProgress(perimeter.kf04SideAscendFrac, perimeter)
       TaskEnergyStage.TOP_JOIN -> 5120L            // Converged at top center with warm champagne-gold peak glint
       TaskEnergyStage.PERIMETER_LOOP -> 7200L      // Steady-state continuous flowing 4-side loop, softened top glint
     }
@@ -186,6 +186,30 @@ class TaskEnergyController {
     // Backfill all events that naturally occurred up to this exact progress
     syncEventsForProgress(perimeter)
     return snapshot()
+  }
+
+  /**
+   * Solves the exact elapsed time in milliseconds within `[T_ASCEND_START_MS, T_TOP_JOIN_START_MS]`
+   * whose analytical perimeter progress equals [targetProgress] (e.g., `perimeter.kf04SideAscendFrac`
+   * = exact 60% of vertical side height) via deterministic binary search for ANY aspect ratio.
+   */
+  fun solveElapsedMsForProgress(targetProgress: Float, perimeter: PerimeterPathGeometry): Long {
+    val startFrac = perimeter.bottomCornerStartFrac * 0.98f
+    val endFrac = perimeter.topCornerStartFrac * 0.985f
+    val clampedTarget = targetProgress.coerceIn(startFrac, endFrac)
+    var lo = T_ASCEND_START_MS
+    var hi = T_TOP_JOIN_START_MS
+    repeat(28) {
+      val mid = 0.5 * (lo + hi)
+      val u = ((mid - T_ASCEND_START_MS) / (T_TOP_JOIN_START_MS - T_ASCEND_START_MS)).toFloat().coerceIn(0f, 1f)
+      val prog = startFrac + smoothEaseInOut(u) * (endFrac - startFrac)
+      if (prog < clampedTarget) {
+        lo = mid
+      } else {
+        hi = mid
+      }
+    }
+    return ((lo + hi) * 0.5).toLong()
   }
 
   fun snapshot(): TaskEnergySnapshot = TaskEnergySnapshot(

@@ -5,8 +5,22 @@ import com.example.orb.gl.GlBufferUtils
 import com.example.orb.gl.GlShaderProgram
 
 /**
+ * Snapshot of real GPU draw metrics for [TaskEnergyRibbonRenderer].
+ */
+data class TaskRibbonDrawStats(
+  val vertexCount: Int = 0,
+  val drawCalls: Int = 0,
+  val shaderLinked: Boolean = false,
+  val vaoIds: List<Int> = emptyList(),
+  val vboIds: List<Int> = emptyList(),
+)
+
+/**
  * GPU renderer for the 4 independent Task Energy liquid ribbons released from the Orb
  * toward Photo Bottom Center (strictly separate from the 5 frozen Resident ribbons!).
+ *
+ * Supports P0-4 screen-space liquid refraction via a separate refraction snapshot texture
+ * and G1 GPU visibility diagnostic modes (`GEOMETRY_MAGENTA`, `ALPHA_HEATMAP`, layer isolation).
  */
 class TaskEnergyRibbonRenderer {
 
@@ -20,6 +34,8 @@ class TaskEnergyRibbonRenderer {
   private var program: GlShaderProgram? = null
   private val streams: List<StreamGpuMesh> = TaskEnergyGeometry.buildDefaultStreams().map { StreamGpuMesh(it) }
   private var cachedLayout: TaskSceneLayoutSnapshot? = null
+  var lastDrawStats: TaskRibbonDrawStats = TaskRibbonDrawStats()
+    private set
 
   fun init() {
     release()
@@ -42,9 +58,22 @@ class TaskEnergyRibbonRenderer {
     layout: TaskSceneLayoutSnapshot,
     snapshot: TaskEnergySnapshot,
     hdrScale: Float,
+    refractionTexId: Int = 0,
+    fboWidth: Int = layout.surfaceWidthPx,
+    fboHeight: Int = layout.surfaceHeightPx,
+    debugOptions: TaskRenderDebugOptions = TaskRenderDebugOptions.Default,
   ) {
-    val prog = program ?: return
-    if (snapshot.releaseProgress <= 0.002f) return
+    val prog = program
+    if (prog == null || snapshot.releaseProgress <= 0.002f || !debugOptions.isTaskEnergyEnabled) {
+      lastDrawStats = TaskRibbonDrawStats(
+        vertexCount = 0,
+        drawCalls = 0,
+        shaderLinked = prog != null,
+        vaoIds = streams.map { it.vao },
+        vboIds = streams.map { it.vbo },
+      )
+      return
+    }
     rebuildGeometryIfNeeded(layout)
 
     GLES30.glDisable(GLES30.GL_DEPTH_TEST)
@@ -54,12 +83,30 @@ class TaskEnergyRibbonRenderer {
     GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA)
 
     prog.use()
+    val hasRefraction = refractionTexId != 0
+    if (hasRefraction) {
+      GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
+      GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, refractionTexId)
+      prog.setInt("uTaskRefractionTex", 0)
+    }
+    prog.setInt("uHasRefractionTex", if (hasRefraction) 1 else 0)
+    prog.setVec2("uFboSize", fboWidth.coerceAtLeast(1).toFloat(), fboHeight.coerceAtLeast(1).toFloat())
+    prog.setFloat("uRefractionPx", DEFAULT_REFRACTION_PX)
+    prog.setFloat("uRefractionStrength", DEFAULT_REFRACTION_STRENGTH)
+    prog.setInt("uTaskVisualDebug", debugOptions.mode.shaderDebugId)
     prog.setFloat("uFlowTime", snapshot.flowTimeSec)
     prog.setFloat("uHdrScale", hdrScale)
+
+    var drawnVerts = 0
+    var drawnCalls = 0
 
     // Draw secondary wisps first, then main icy-blue S-stream on top
     for ((idx, item) in streams.sortedBy { it.spec.depthOffset }.withIndex()) {
       if (item.vertexCount <= 0 || item.vao == 0) continue
+      val isMain = item.spec.kind == TaskStreamKind.MAIN_ICE_STREAM
+      if (isMain && !debugOptions.showMainStream) continue
+      if (!isMain && !debugOptions.showSecondaryStreams) continue
+
       // Each accompanying stream reveals smoothly with its own natural reach while main hits 1.0 at KF02
       val effectiveReveal = (snapshot.releaseProgress * item.spec.reachFraction).coerceIn(0f, 1f)
       prog.setInt("uStreamKind", item.spec.kind.shaderStyleId)
@@ -69,8 +116,22 @@ class TaskEnergyRibbonRenderer {
 
       GLES30.glBindVertexArray(item.vao)
       GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, item.vertexCount)
+      drawnVerts += item.vertexCount
+      drawnCalls++
     }
     GLES30.glBindVertexArray(0)
+    if (hasRefraction) {
+      GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
+      GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
+    }
+
+    lastDrawStats = TaskRibbonDrawStats(
+      vertexCount = drawnVerts,
+      drawCalls = drawnCalls,
+      shaderLinked = true,
+      vaoIds = streams.map { it.vao },
+      vboIds = streams.map { it.vbo },
+    )
   }
 
   private fun rebuildGeometryIfNeeded(layout: TaskSceneLayoutSnapshot) {
@@ -99,6 +160,8 @@ class TaskEnergyRibbonRenderer {
       GLES30.glVertexAttribPointer(2, 1, GLES30.GL_FLOAT, false, strideBytes, 16)
       GLES30.glEnableVertexAttribArray(3)
       GLES30.glVertexAttribPointer(3, 1, GLES30.GL_FLOAT, false, strideBytes, 20)
+      GLES30.glEnableVertexAttribArray(4)
+      GLES30.glVertexAttribPointer(4, 2, GLES30.GL_FLOAT, false, strideBytes, 24)
     }
     GLES30.glBindVertexArray(0)
   }
@@ -116,5 +179,11 @@ class TaskEnergyRibbonRenderer {
       s.vertexCount = 0
     }
     cachedLayout = null
+    lastDrawStats = TaskRibbonDrawStats()
+  }
+
+  companion object {
+    const val DEFAULT_REFRACTION_PX = 1.0f
+    const val DEFAULT_REFRACTION_STRENGTH = 0.35f
   }
 }

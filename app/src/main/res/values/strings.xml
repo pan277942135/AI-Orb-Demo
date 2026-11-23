@@ -61,4 +61,9 @@
     <string name="qa_export_v32_evidence">Export V3.2 Fidelity Evidence</string>
     <string name="qa_export_v32_capturing">Capturing %1$d/%2$d…</string>
     <string name="cd_export_v32_evidence">Capture 6 real GPU frames and runtime JSON reports</string>
+    <string name="task_debug_mode_label">GPU 可见性诊断模式 (不改变进度)</string>
+    <string name="task_layer_isolation_label">分层隔离开关 (Main / Sec / L1–L4)</string>
+    <string name="qa_export_task6kf_evidence">导出 6KF V4 GPU 证据包</string>
+    <string name="qa_export_task6kf_capturing">采集中 %1$d/%2$d…</string>
+    <string name="cd_export_task6kf_v4_evidence">在 GL 线程导出 16 张零 UI 6KF 诊断与实机图及运行 JSON</string>
 </resources>

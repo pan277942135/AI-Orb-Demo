@@ -46,6 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.orb.config.RenderDebugMode
 import com.example.orb.scene.AIOrbScene
+import com.example.orb.task.TaskGpuEvidenceCapture
 import com.example.orb.task.TaskSceneLayoutSnapshot
 import com.example.orb.ui.AIOrbCanvas
 import com.example.orb.ui.AIOrbControlsOverlay
@@ -172,6 +173,8 @@ class MainActivity : ComponentActivity() {
           if (isTaskTab) {
             TaskRecognitionDemoScreen(
               evidence = uiState.taskEvidence,
+              debugOptions = uiState.taskDebugOptions,
+              captureProgress = uiState.taskCaptureProgress,
               isControlsExpanded = uiState.isTaskControlsExpanded,
               onBackToOrb = { viewModel.selectTab(DemoTab.AI_ORB) },
               onToggleControls = viewModel::toggleTaskControls,
@@ -179,6 +182,16 @@ class MainActivity : ComponentActivity() {
               onTogglePlayPause = { sharedScene?.toggleTaskPaused() },
               onRestart = { sharedScene?.restartTask() },
               onJumpKeyframe = { stage -> sharedScene?.jumpToTaskKeyframe(stage) },
+              onUpdateDebugOptions = { opts ->
+                viewModel.updateTaskDebugOptions(opts)
+                sharedScene?.updateTaskDebugOptions(opts)
+              },
+              onExport6KfEvidence = {
+                val outDir = TaskGpuEvidenceCapture.resolveEvidenceDir(applicationContext)
+                sharedScene?.requestTask6KfEvidenceExport(outDir) { progress ->
+                  viewModel.reportTaskCaptureProgress(progress)
+                }
+              },
               onPhotoWindowBoundsChanged = { l, t, r, b, cr ->
                 photoMetrics = PhotoWindowMetrics(l, t, r, b, cr)
               },

@@ -25,7 +25,7 @@ data class TaskStreamSpec(
   val flowSpeed: Float,              // Independent material flow velocity
   val alphaScale: Float,
   val depthOffset: Float,            // Subtle z-layer ordering
-  val reachFraction: Float,          // 1.0 for main stream reaching contact; 0.72..0.88 for accompanying wisps
+  val reachFraction: Float,          // 1.0 for main stream reaching contact; 0.72..0.96 for accompanying wisps
 )
 
 /**
@@ -34,30 +34,32 @@ data class TaskStreamSpec(
  *
  * Each stream has independent control points, width profile, twist, flow speed, alpha,
  * and breathing separation from the main stream (ZERO bundled neon laser rope!).
+ *
+ * Vertex layout (8 floats per vertex):
+ *   posNdc(2) | uv(2: s, u) | alpha(1) | twist(1) | normalDirGl(2: unit lateral normal in GL UV space)
  */
 object TaskEnergyGeometry {
 
   const val SEGMENTS_PER_STREAM = 56
-  // Vertex stride: posNdc(2) + uv(2: s, u) + alpha(1) + twist(1) = 6 floats
-  const val FLOATS_PER_VERTEX = 6
+  const val FLOATS_PER_VERTEX = 8
 
   fun buildDefaultStreams(): List<TaskStreamSpec> = listOf(
-    // 1. Main S-curved translucent icy-blue water stream (Orb Top -> Photo Bottom Center)
+    // 1. Main S-curved translucent icy-blue water stream (exact Orb Top [0,0] -> exact Photo Bottom Center [0,1])
     TaskStreamSpec(
       id = "TASK_MAIN_ICE",
       kind = TaskStreamKind.MAIN_ICE_STREAM,
       controlPointsNorm = listOf(
-        Vec2(0.00f, -0.02f),
+        Vec2(0.00f, 0.00f),
         Vec2(-0.11f, 0.24f),
         Vec2(0.14f, 0.54f),
         Vec2(-0.07f, 0.80f),
-        Vec2(0.00f, 1.01f),
+        Vec2(0.00f, 1.00f),
       ),
       baseHalfWidthPxRatio = 0.088f,
-      widthProfile = floatArrayOf(0.86f, 1.18f, 0.96f, 1.08f, 0.62f),
+      widthProfile = floatArrayOf(0.86f, 1.18f, 0.96f, 1.08f, 0.72f),
       twistCycles = 1.35f,
       flowSpeed = 1.15f,
-      alphaScale = 0.62f,
+      alphaScale = 0.78f,
       depthOffset = 0.0f,
       reachFraction = 1.0f,
     ),
@@ -76,7 +78,7 @@ object TaskEnergyGeometry {
       widthProfile = floatArrayOf(0.55f, 1.05f, 1.12f, 0.72f, 0.14f),
       twistCycles = 1.10f,
       flowSpeed = 0.92f,
-      alphaScale = 0.44f,
+      alphaScale = 0.50f,
       depthOffset = -0.02f,
       reachFraction = 0.80f,
     ),
@@ -95,7 +97,7 @@ object TaskEnergyGeometry {
       widthProfile = floatArrayOf(0.48f, 0.92f, 1.00f, 0.68f, 0.22f),
       twistCycles = 1.65f,
       flowSpeed = 1.32f,
-      alphaScale = 0.48f,
+      alphaScale = 0.52f,
       depthOffset = 0.01f,
       reachFraction = 0.96f,
     ),
@@ -114,7 +116,7 @@ object TaskEnergyGeometry {
       widthProfile = floatArrayOf(0.50f, 1.18f, 1.24f, 0.78f, 0.12f),
       twistCycles = 0.95f,
       flowSpeed = 0.78f,
-      alphaScale = 0.42f,
+      alphaScale = 0.48f,
       depthOffset = -0.01f,
       reachFraction = 0.78f,
     ),
@@ -124,9 +126,10 @@ object TaskEnergyGeometry {
   fun sampleCatmullRom2D(pts: List<Vec2>, t: Float): Vec2 {
     val n = pts.size
     if (n < 2) return pts.firstOrNull() ?: Vec2(0f, 0f)
-    val clamped = t.coerceIn(0f, 0.9999f)
+    if (t <= 0f) return pts.first()
+    if (t >= 1f) return pts.last()
     val segCount = n - 1
-    val scaled = clamped * segCount
+    val scaled = t * segCount
     val seg = scaled.toInt().coerceIn(0, segCount - 1)
     val u = scaled - seg
 
@@ -144,6 +147,23 @@ object TaskEnergyGeometry {
     return Vec2(
       interp(p0.x, p1.x, p2.x, p3.x),
       interp(p0.y, p1.y, p2.y, p3.y),
+    )
+  }
+
+  /** Evaluates centerline position in GLSurfaceView local physical pixels for [spec] at `s in [0, 1]`. */
+  fun evaluateCenterlinePx(
+    spec: TaskStreamSpec,
+    layout: TaskSceneLayoutSnapshot,
+    s: Float,
+  ): Vec2 {
+    val orbDiam = layout.orbTransform.orbDiameterPx.coerceAtLeast(48f)
+    val startPx = layout.orbAnchorTopPx
+    val endPx = layout.photoBottomCenterPx
+    val spanY = (startPx.y - endPx.y).coerceAtLeast(32f)
+    val normPt = sampleCatmullRom2D(spec.controlPointsNorm, s.coerceIn(0f, 1f))
+    return Vec2(
+      x = startPx.x + normPt.x * orbDiam,
+      y = startPx.y - normPt.y * spanY,
     )
   }
 
@@ -194,15 +214,17 @@ object TaskEnergyGeometry {
         safeSegs -> (centerPx[safeSegs] - centerPx[safeSegs - 1]).normalized()
         else -> (centerPx[i + 1] - centerPx[i - 1]).normalized()
       }
-      // Perpendicular ribbon normal in screen pixel coordinates
-      val perp = Vec2(-tangent.y, tangent.x)
+      // Perpendicular ribbon normal in screen pixel coordinates (+X right, +Y down)
+      val perp = Vec2(-tangent.y, tangent.x).normalized()
+      // Convert unit lateral normal to OpenGL UV direction (+X right, +Y up) for P0-4 screen-space refraction
+      val normalDirGl = Vec2(perp.x, -perp.y).normalized()
       val twistAngle = s * spec.twistCycles * PI.toFloat()
       // 2.5D foreshortening factor creates natural organic liquid ribbon turn-overs (never collapses to 0!)
       val twistWidthScale = 0.58f + 0.42f * kotlin.math.abs(cos(twistAngle))
       val halfW = halfBaseW * sampleFloatProfile(spec.widthProfile, s) * twistWidthScale
       val twistSignal = sin(twistAngle)
 
-      // Left edge (u = -1) and Right edge (u = +1)
+      // Left edge (u = 0) and Right edge (u = 1)
       val leftPx = p - perp * halfW
       val rightPx = p + perp * halfW
 
@@ -213,6 +235,8 @@ object TaskEnergyGeometry {
       verts[cursor++] = 0f
       verts[cursor++] = spec.alphaScale
       verts[cursor++] = twistSignal
+      verts[cursor++] = normalDirGl.x
+      verts[cursor++] = normalDirGl.y
 
       // Emit right vertex
       verts[cursor++] = (rightPx.x / sw) * 2f - 1f
@@ -221,6 +245,8 @@ object TaskEnergyGeometry {
       verts[cursor++] = 1f
       verts[cursor++] = spec.alphaScale
       verts[cursor++] = twistSignal
+      verts[cursor++] = normalDirGl.x
+      verts[cursor++] = normalDirGl.y
     }
     return verts
   }

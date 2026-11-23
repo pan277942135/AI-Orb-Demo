@@ -30,9 +30,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -42,6 +45,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -66,11 +70,15 @@ import com.example.R
 import com.example.orb.task.PhotoFrameGeometry
 import com.example.orb.task.TaskEnergyEvidence
 import com.example.orb.task.TaskEnergyStage
+import com.example.orb.task.TaskGpuCaptureProgress
+import com.example.orb.task.TaskGpuCaptureState
+import com.example.orb.task.TaskRenderDebugOptions
+import com.example.orb.task.TaskVisualDebugMode
 import java.util.Locale
 
 private val AquaticInkPrimary = Color(0xFF0B4657)
 private val AquaticInkSecondary = Color(0xFF155D70)
-private val FrostedDaylightSurface = Color(0xD6F2FCFF)
+private val FrostedDaylightSurface = Color(0xE0F2FCFF)
 private val FrostedDaylightBorder = Color(0x888ED7E6)
 private val AccentAquaticTeal = Color(0xFF0A8FA8)
 
@@ -80,12 +88,15 @@ private val AccentAquaticTeal = Color(0xFF0A8FA8)
  *  - Transparent aspect-locked photo frame measuring REAL window pixels -> drives the single
  *    GPU `PhotoTextureRenderer`, `TaskEnergyRibbonRenderer`, and `PerimeterWaterLightRenderer`
  *  - Centered `正在理解照片` status caption cleanly positioned between photo bottom and shared Orb
- *  - Default-collapsed bottom-right floating control pill (Play/Pause, Restart, Stage+ms, KF01–KF06)
+ *  - Default-collapsed bottom-right floating control pill (Play/Pause, Restart, Stage+ms, KF01–KF06,
+ *    V4 G1 GPU Diagnostic Modes, Layer Isolation toggles, real GPU draw telemetry, and Evidence Export)
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TaskRecognitionDemoScreen(
   evidence: TaskEnergyEvidence,
+  debugOptions: TaskRenderDebugOptions,
+  captureProgress: TaskGpuCaptureProgress,
   isControlsExpanded: Boolean,
   onBackToOrb: () -> Unit,
   onToggleControls: () -> Unit,
@@ -93,11 +104,14 @@ fun TaskRecognitionDemoScreen(
   onTogglePlayPause: () -> Unit,
   onRestart: () -> Unit,
   onJumpKeyframe: (TaskEnergyStage) -> Unit,
+  onUpdateDebugOptions: (TaskRenderDebugOptions) -> Unit,
+  onExport6KfEvidence: () -> Unit,
   onPhotoWindowBoundsChanged: (Float, Float, Float, Float, Float) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   val density = LocalDensity.current
   val snapshot = evidence.taskSnapshot
+  val drawStats = evidence.drawTelemetry
 
   BackHandler(enabled = true) {
     if (isControlsExpanded) {
@@ -205,7 +219,7 @@ fun TaskRecognitionDemoScreen(
       )
     }
 
-    // Default-collapsed bottom-right floating 6KF Playback & Keyframe Control Pill
+    // Default-collapsed bottom-right floating 6KF Playback & V4 GPU Diagnostic Panel
     Box(
       modifier = Modifier
         .align(Alignment.BottomEnd)
@@ -256,11 +270,14 @@ fun TaskRecognitionDemoScreen(
           border = BorderStroke(1.dp, FrostedDaylightBorder),
           shadowElevation = 6.dp,
           modifier = Modifier
-            .widthIn(min = 272.dp, max = 336.dp)
+            .widthIn(min = 280.dp, max = 344.dp)
+            .heightIn(max = maxAvailHeight * 0.72f)
             .testTag("task_controls_panel"),
         ) {
           Column(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            modifier = Modifier
+              .verticalScroll(rememberScrollState())
+              .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
           ) {
             // Header row: Stage + Elapsed ms + Close
@@ -287,6 +304,19 @@ fun TaskRecognitionDemoScreen(
                   style = MaterialTheme.typography.labelSmall,
                   color = AquaticInkSecondary,
                   modifier = Modifier.testTag("task_elapsed_label"),
+                )
+                Text(
+                  text = String.format(
+                    Locale.US,
+                    "GPU Vtx %d · Draws %d · FBO %s · GL 0x%x",
+                    drawStats.totalVertexCount,
+                    drawStats.totalDrawCalls,
+                    if (drawStats.fboComplete) "OK" else "WAIT",
+                    drawStats.glErrorCode,
+                  ),
+                  style = MaterialTheme.typography.labelSmall,
+                  color = AquaticInkSecondary,
+                  modifier = Modifier.testTag("task_gpu_telemetry_label"),
                 )
               }
               IconButton(
@@ -398,9 +428,153 @@ fun TaskRecognitionDemoScreen(
                 )
               }
             }
+
+            HorizontalDivider(color = FrostedDaylightBorder)
+
+            // G1 GPU Visibility Diagnostic Modes (never mutates TaskEnergyController!)
+            Text(
+              text = stringResource(R.string.task_debug_mode_label),
+              style = MaterialTheme.typography.labelSmall,
+              color = AquaticInkSecondary,
+            )
+
+            FlowRow(
+              horizontalArrangement = Arrangement.spacedBy(6.dp),
+              verticalArrangement = Arrangement.spacedBy(6.dp),
+              modifier = Modifier.fillMaxWidth(),
+            ) {
+              TaskVisualDebugMode.entries.forEach { mode ->
+                val selected = debugOptions.mode == mode
+                FilterChip(
+                  selected = selected,
+                  onClick = { onUpdateDebugOptions(debugOptions.copy(mode = mode)) },
+                  label = { Text(text = mode.shortLabel, style = MaterialTheme.typography.labelSmall) },
+                  colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = AccentAquaticTeal,
+                    selectedLabelColor = Color.White,
+                    containerColor = Color.White.copy(alpha = 0.65f),
+                    labelColor = AquaticInkPrimary,
+                  ),
+                  border = FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = selected,
+                    borderColor = FrostedDaylightBorder,
+                    selectedBorderColor = AccentAquaticTeal,
+                  ),
+                  modifier = Modifier
+                    .heightIn(min = 48.dp)
+                    .testTag("task_debug_mode_${mode.name.lowercase(Locale.US)}"),
+                )
+              }
+            }
+
+            // Layer Isolation Toggles (Main, Sec, L1, L2, L3, L4)
+            Text(
+              text = stringResource(R.string.task_layer_isolation_label),
+              style = MaterialTheme.typography.labelSmall,
+              color = AquaticInkSecondary,
+            )
+
+            FlowRow(
+              horizontalArrangement = Arrangement.spacedBy(6.dp),
+              verticalArrangement = Arrangement.spacedBy(6.dp),
+              modifier = Modifier.fillMaxWidth(),
+            ) {
+              TaskLayerToggleChip("Main", debugOptions.showMainStream, "task_layer_main") {
+                onUpdateDebugOptions(debugOptions.copy(showMainStream = !debugOptions.showMainStream))
+              }
+              TaskLayerToggleChip("Sec", debugOptions.showSecondaryStreams, "task_layer_sec") {
+                onUpdateDebugOptions(debugOptions.copy(showSecondaryStreams = !debugOptions.showSecondaryStreams))
+              }
+              TaskLayerToggleChip("L1", debugOptions.showL1, "task_layer_l1") {
+                onUpdateDebugOptions(debugOptions.copy(showL1 = !debugOptions.showL1))
+              }
+              TaskLayerToggleChip("L2", debugOptions.showL2, "task_layer_l2") {
+                onUpdateDebugOptions(debugOptions.copy(showL2 = !debugOptions.showL2))
+              }
+              TaskLayerToggleChip("L3", debugOptions.showL3, "task_layer_l3") {
+                onUpdateDebugOptions(debugOptions.copy(showL3 = !debugOptions.showL3))
+              }
+              TaskLayerToggleChip("L4", debugOptions.showL4, "task_layer_l4") {
+                onUpdateDebugOptions(debugOptions.copy(showL4 = !debugOptions.showL4))
+              }
+            }
+
+            // One-click Zero-UI GL-Thread 6KF V4 Evidence Export
+            val isCapturing = captureProgress.state == TaskGpuCaptureState.CAPTURING
+            FilledTonalButton(
+              onClick = onExport6KfEvidence,
+              enabled = !isCapturing,
+              colors = ButtonDefaults.filledTonalButtonColors(
+                containerColor = AccentAquaticTeal.copy(alpha = 0.18f),
+                contentColor = AquaticInkPrimary,
+              ),
+              contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
+              modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .testTag("task_export_v4_evidence_button"),
+            ) {
+              Icon(
+                imageVector = Icons.Filled.CameraAlt,
+                contentDescription = stringResource(R.string.cd_export_task6kf_v4_evidence),
+                modifier = Modifier.size(18.dp),
+              )
+              Spacer(modifier = Modifier.width(6.dp))
+              Text(
+                text = if (isCapturing) {
+                  stringResource(
+                    R.string.qa_export_task6kf_capturing,
+                    captureProgress.completedSteps,
+                    captureProgress.totalSteps,
+                  )
+                } else {
+                  stringResource(R.string.qa_export_task6kf_evidence)
+                },
+                style = MaterialTheme.typography.labelLarge,
+              )
+            }
+
+            if (captureProgress.statusMessage.isNotBlank()) {
+              Text(
+                text = captureProgress.statusMessage,
+                style = MaterialTheme.typography.labelSmall,
+                color = AquaticInkSecondary,
+                modifier = Modifier.testTag("task_export_v4_status"),
+              )
+            }
           }
         }
       }
     }
   }
+}
+
+@Composable
+private fun TaskLayerToggleChip(
+  label: String,
+  selected: Boolean,
+  tag: String,
+  onClick: () -> Unit,
+) {
+  FilterChip(
+    selected = selected,
+    onClick = onClick,
+    label = { Text(text = label, style = MaterialTheme.typography.labelSmall) },
+    colors = FilterChipDefaults.filterChipColors(
+      selectedContainerColor = AccentAquaticTeal,
+      selectedLabelColor = Color.White,
+      containerColor = Color.White.copy(alpha = 0.65f),
+      labelColor = AquaticInkPrimary,
+    ),
+    border = FilterChipDefaults.filterChipBorder(
+      enabled = true,
+      selected = selected,
+      borderColor = FrostedDaylightBorder,
+      selectedBorderColor = AccentAquaticTeal,
+    ),
+    modifier = Modifier
+      .heightIn(min = 48.dp)
+      .testTag(tag),
+  )
 }

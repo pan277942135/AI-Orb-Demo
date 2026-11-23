@@ -481,6 +481,9 @@ uniform vec4 uLensParams;  // x=wallThickness, y=cavityTintGain, z=cavityRimRefr
 uniform vec4 uFoldOptics;  // x=foldNormalPerturbation, y=foldSpecularGain, z=foldRefraction, w=volumeExposure
 uniform vec4 uGlassOptics; // x=iorGlass, y=crownGoldStrength, z=upperHazeSuppress, w=causticIntensity
 uniform vec3 uBeerLambert; // (R, G, B) fitted optical absorption coefficients
+// P1 Tab 2 bright-background optics modulation (strictly 1.0 / 1.0 on Tab 1 ORB_ONLY -> zero Tab 1 regression!)
+uniform float uTaskInteriorTransmission;
+uniform float uTaskAbsorptionGain;
 
 uniform vec3 uKeyLightDir;
 uniform vec3 uKeyLightColor;
@@ -1005,9 +1008,11 @@ void main() {
     }
 
     // Beer-Lambert optical transmission of refracted background through submerged liquid volume
-    vec3 waterTransmittance = exp(-liquidPath * uBeerLambert * (1.24 - uCoreTransparency * 0.42));
+    float taskTrans = (uTaskInteriorTransmission > 0.01) ? uTaskInteriorTransmission : 1.0;
+    float taskAbsorb = (uTaskAbsorptionGain > 0.01) ? uTaskAbsorptionGain : 1.0;
+    vec3 waterTransmittance = exp(-liquidPath * uBeerLambert * (1.24 - uCoreTransparency * 0.42) * taskAbsorb);
     float bgWeight = (1.0 - accumAlpha * 0.86);
-    vec3 interiorCol = refractedBack * waterTransmittance * bgWeight
+    vec3 interiorCol = refractedBack * waterTransmittance * bgWeight * taskTrans
                      + accumColor
                      + causticColor * (0.72 + 0.28 * (1.0 - accumAlpha * 0.35)) * clamp(uGlassOptics.w / 0.56, 0.45, 1.45);
 
@@ -1032,7 +1037,8 @@ void main() {
     // P0-4 & V3.2 Candidate B: Crystal-clear transparent upper dome & embedded crystal lens pocket (ZERO frosted haze!)
     float airCavity = invSmoothstep(0.02, 0.16, liquidPath);
     float domeCyanSheen = smoothstep(0.12, 0.88, vLocalPos.y) * smoothstep(0.22, 0.82, NdotV);
-    vec3 clearCavityCol = refractedBack * vec3(0.92, 0.99, 1.02)
+    float cavityBgScale = mix(1.0, taskTrans, 0.72);
+    vec3 clearCavityCol = refractedBack * vec3(0.92, 0.99, 1.02) * cavityBgScale
                         + vec3(0.001, 0.012, 0.021) * domeCyanSheen;
     interiorCol = mix(interiorCol, clearCavityCol, airCavity * 0.92);
 
@@ -1043,7 +1049,7 @@ void main() {
         float lensNdotV = clamp(abs(dot(lensNCore, rayDirCore)), 0.0, 1.0);
         float lensWallRing = exp(-pow((lensNdotV - 0.24) / 0.14, 2.0)) * smoothstep(0.015, 0.14, lensThickness);
         float lensClearBg = lensPocketMask * (0.42 + 0.32 * airCavity);
-        vec3 lensCrystalTrans = refractedBack * vec3(0.88, 0.98, 1.06)
+        vec3 lensCrystalTrans = refractedBack * vec3(0.88, 0.98, 1.06) * cavityBgScale
                               + vec3(0.004, 0.036, 0.068) * uLensParams.y * lensPocketMask;
         interiorCol = mix(interiorCol, lensCrystalTrans, clamp(lensClearBg * 0.58, 0.0, 0.68));
         // Curved aqua-crystal wall refraction + warm golden penetration on the 10:30 upper-left lens wall

@@ -7,6 +7,8 @@ import com.example.orb.config.QualityTier
 import com.example.orb.config.RenderDebugMode
 import com.example.orb.scene.AIOrbTelemetry
 import com.example.orb.task.TaskEnergyEvidence
+import com.example.orb.task.TaskGpuCaptureProgress
+import com.example.orb.task.TaskRenderDebugOptions
 import com.example.orb.v3.GpuCaptureProgress
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,8 +22,10 @@ data class AIOrbUiState(
   val isTaskControlsExpanded: Boolean = false,
   val telemetry: AIOrbTelemetry = AIOrbTelemetry(),
   val taskEvidence: TaskEnergyEvidence = TaskEnergyEvidence(),
+  val taskDebugOptions: TaskRenderDebugOptions = TaskRenderDebugOptions.Default,
   val showExportDialog: Boolean = false,
   val gpuCaptureProgress: GpuCaptureProgress = GpuCaptureProgress(),
+  val taskCaptureProgress: TaskGpuCaptureProgress = TaskGpuCaptureProgress(),
 ) {
   val fps: Int get() = telemetry.fps
 }
@@ -121,6 +125,18 @@ class AIOrbViewModel : ViewModel() {
   fun reportGpuCaptureProgress(progress: GpuCaptureProgress) {
     _uiState.update { current ->
       if (current.gpuCaptureProgress == progress) current else current.copy(gpuCaptureProgress = progress)
+    }
+  }
+
+  fun updateTaskDebugOptions(options: TaskRenderDebugOptions) {
+    _uiState.update { current ->
+      if (current.taskDebugOptions == options) current else current.copy(taskDebugOptions = options)
+    }
+  }
+
+  fun reportTaskCaptureProgress(progress: TaskGpuCaptureProgress) {
+    _uiState.update { current ->
+      if (current.taskCaptureProgress == progress) current else current.copy(taskCaptureProgress = progress)
     }
   }
 }

@@ -18,7 +18,12 @@ import com.example.orb.task.TaskEnergyEvidence
 import com.example.orb.task.TaskEnergyRibbonRenderer
 import com.example.orb.task.TaskEnergySnapshot
 import com.example.orb.task.TaskEnergyStage
+import com.example.orb.task.TaskGpuCaptureProgress
+import com.example.orb.task.TaskGpuDrawTelemetry
+import com.example.orb.task.TaskGpuEvidenceCapture
+import com.example.orb.task.TaskRenderDebugOptions
 import com.example.orb.task.TaskSceneLayoutSnapshot
+import com.example.orb.task.TaskVisualDebugMode
 import com.example.orb.v3.GpuCaptureProgress
 import com.example.orb.v3.MasterFidelityV32
 import com.example.orb.v3.OrbGpuReferenceCapture
@@ -102,6 +107,9 @@ class AIOrbScene(
   private val taskEnergyRenderer = TaskEnergyRibbonRenderer()
   private val perimeterRenderer = PerimeterWaterLightRenderer()
   private val taskEnergyController = TaskEnergyController()
+  private val taskGpuEvidenceCapture = TaskGpuEvidenceCapture()
+  private val taskDebugOptionsRef = AtomicReference(TaskRenderDebugOptions.Default)
+  private val lastTaskDrawTelemetryRef = AtomicReference(TaskGpuDrawTelemetry())
   private val taskLock = Any()
   private val taskLayoutRef = AtomicReference<TaskSceneLayoutSnapshot?>(null)
   private var cachedPerimeterPhoto: PhotoFrameGeometry? = null
@@ -191,6 +199,28 @@ class AIOrbScene(
     return gpuReferenceCapture.requestCapture(outputDir, onProgress)
   }
 
+  /**
+   * Triggers the Tab 2 V4 one-click 16-frame production GLES 3.0 evidence capture
+   * directly on the active GL thread (zero Compose UI/status bar).
+   */
+  fun requestTask6KfEvidenceExport(
+    outputDir: File,
+    onProgress: (TaskGpuCaptureProgress) -> Unit,
+  ): Boolean {
+    return taskGpuEvidenceCapture.requestCapture(outputDir, onProgress)
+  }
+
+  /**
+   * Updates Tab 2 GPU visibility diagnostic options ONLY.
+   * Strictly NEVER mutates `taskEnergyController` elapsed time, progress, or emitted events.
+   */
+  fun updateTaskDebugOptions(options: TaskRenderDebugOptions) {
+    taskDebugOptionsRef.set(options)
+    emitTaskEvidenceNow()
+  }
+
+  fun currentTaskDebugOptions(): TaskRenderDebugOptions = taskDebugOptionsRef.get()
+
   fun updateTaskLayout(snapshot: TaskSceneLayoutSnapshot) {
     if (snapshot.isValid()) {
       taskLayoutRef.set(snapshot)
@@ -253,6 +283,8 @@ class AIOrbScene(
       emittedEvents = evs,
       layoutSnapshot = layout,
       photoTextureLoaded = photoTextureRenderer.isPhotoTextureLoaded,
+      debugOptions = taskDebugOptionsRef.get(),
+      drawTelemetry = lastTaskDrawTelemetryRef.get(),
     )
   }
 
@@ -690,9 +722,16 @@ class AIOrbScene(
     ensureTaskRenderersInitialized()
     val layout = resolveTaskLayout()
     val perimeterTable = resolvePerimeterTable(layout.photoFrame)
+
+    val captureStep = taskGpuEvidenceCapture.currentStepOrNull()
+    val effectiveTaskDebug = captureStep?.debugOptions ?: taskDebugOptionsRef.get()
     val taskSnap = synchronized(taskLock) {
       taskEnergyController.ensureStarted()
-      taskEnergyController.step(simDeltaSec, perimeterTable.geometry)
+      if (captureStep != null) {
+        taskEnergyController.jumpToKeyframe(captureStep.stage, perimeterTable.geometry)
+      } else {
+        taskEnergyController.step(simDeltaSec, perimeterTable.geometry)
+      }
     }
 
     val scaledCoreRadius = (taskOrbCfg.coreScale * taskOrbCfg.coreShellScale).coerceAtLeast(0.4f)
@@ -724,7 +763,7 @@ class AIOrbScene(
     // ==================== TAB 2 SHARED-ORB + TASK ENERGY + PERIMETER PIPELINE ====================
     postProcessing.beginScenePass()
 
-    // Pass 1: Light-cyan daylight aquatic studio backdrop + animated pool caustics beneath Orb
+    // Pass 1: Light-cyan daylight aquatic studio backdrop + focused pool caustics beneath Orb
     photoTextureRenderer.drawBackground(time, rw, rh, layout, hdrScale)
 
     // Pass 2: Single rounded fishing photo (`fishing_photo.webp`) aligned to exact live Compose frame
@@ -735,10 +774,11 @@ class AIOrbScene(
     orbitRibbons.drawPass(0, orbOriginView, scaledCoreRadius, taskViewMatrix, taskProjMatrix, taskCameraPos, motion, hdrScale, taskOrbCfg)
     energyHighlights.drawPass(0, orbCenterViewZ, orbitRibbons, taskViewMatrix, taskProjMatrix, motion, hdrScale, taskOrbCfg)
 
-    // Pass 6: Capture daylight cyan studio backdrop + back ribbons for real-time crystal refraction!
+    // Pass 6: Capture daylight cyan studio backdrop + photo + back ribbons for real-time crystal refraction!
     postProcessing.captureRefractionSnapshot()
 
-    // Pass 7: SHARED V3 WebP 3D Volume Raymarch + Double-Wall Crystal Glass Shell (identical Orb!)
+    // Pass 7: SHARED V3 WebP 3D Volume Raymarch + Double-Wall Crystal Glass Shell
+    // P1: Bright-background optics (0.75 / 1.12) keep sapphire core & emerald folds rich on daylight cyan!
     core.draw(
       outerGlassModel = outerGlassModel,
       invOuterGlassModel = invOuterGlassModel,
@@ -754,6 +794,8 @@ class AIOrbScene(
       config = taskOrbCfg,
       isSoftwareRenderer = isSoftwareRenderer,
       fidelity = masterFidelity,
+      taskInteriorTransmission = TAB2_ORB_INTERIOR_TRANSMISSION,
+      taskAbsorptionGain = TAB2_ORB_ABSORPTION_GAIN,
     )
 
     // Pass 8-9: SHARED V3 AI Orb front-of-glass-dome 5 Residents, starbursts & crystal droplets
@@ -761,14 +803,94 @@ class AIOrbScene(
     energyHighlights.drawPass(1, orbCenterViewZ, orbitRibbons, taskViewMatrix, taskProjMatrix, motion, hdrScale, taskOrbCfg)
     particles.drawPass(1, orbCenterViewZ, taskViewMatrix, taskProjMatrix, motion, hdrScale, taskOrbCfg)
 
+    // P0-4: Capture separate refraction snapshot (daylight bg + photo + shared Orb) BEFORE Task/Perimeter!
+    // Strictly reads from refractionFbo (never active sceneFbo -> zero feedback loop!).
+    postProcessing.captureRefractionSnapshot()
+
     // Pass 10: 4 independent Task Energy liquid streams released from Orb Top -> Photo Bottom Center
-    taskEnergyRenderer.draw(layout, taskSnap, hdrScale)
+    taskEnergyRenderer.draw(
+      layout = layout,
+      snapshot = taskSnap,
+      hdrScale = hdrScale,
+      refractionTexId = postProcessing.refractionTextureId,
+      fboWidth = rw,
+      fboHeight = rh,
+      debugOptions = effectiveTaskDebug,
+    )
 
     // Pass 11: Unified-path bidirectional Perimeter WaterLight (L1–L4 + KF02/KF05 localized glints)
-    perimeterRenderer.draw(layout, perimeterTable, taskSnap, hdrScale)
+    perimeterRenderer.draw(
+      layout = layout,
+      table = perimeterTable,
+      snapshot = taskSnap,
+      hdrScale = hdrScale,
+      refractionTexId = postProcessing.refractionTextureId,
+      fboWidth = rw,
+      fboHeight = rh,
+      debugOptions = effectiveTaskDebug,
+    )
 
     // Pass 12: Shared HDR Bloom (>1.32f threshold preserves crisp photo & cyan bg) + ACES + sRGB
-    postProcessing.executePostProcessToScreen(taskOrbCfg)
+    // (or PRE_TONEMAP diagnostic direct linear Scene FBO inspection)
+    val preTonemap = effectiveTaskDebug.mode == TaskVisualDebugMode.PRE_TONEMAP
+    val forceBloomOff = effectiveTaskDebug.disableBloom ||
+      effectiveTaskDebug.mode == TaskVisualDebugMode.GEOMETRY_MAGENTA ||
+      effectiveTaskDebug.mode == TaskVisualDebugMode.ALPHA_HEATMAP
+    postProcessing.executePostProcessToScreen(
+      config = taskOrbCfg,
+      preTonemapBypass = preTonemap,
+      forceBloomOff = forceBloomOff,
+    )
+
+    // Record real GL draw telemetry for G1 verification
+    val glErr = GLES30.glGetError()
+    val tStats = taskEnergyRenderer.lastDrawStats
+    val pStats = perimeterRenderer.lastDrawStats
+    lastTaskDrawTelemetryRef.set(
+      TaskGpuDrawTelemetry(
+        taskRibbonVertexCount = tStats.vertexCount,
+        taskRibbonDrawCalls = tStats.drawCalls,
+        taskRibbonShaderLinked = tStats.shaderLinked,
+        taskRibbonVaoIds = tStats.vaoIds,
+        taskRibbonVboIds = tStats.vboIds,
+        perimeterVertexCount = pStats.vertexCount,
+        perimeterDrawCalls = pStats.drawCalls,
+        perimeterShaderLinked = pStats.shaderLinked,
+        perimeterVaoIds = pStats.vaoIds,
+        perimeterVboIds = pStats.vboIds,
+        sparkleCount = pStats.sparkleCount,
+        sparkleDrawCalls = pStats.sparkleDrawCalls,
+        sparkleUsedQuadFallback = pStats.usedQuadFallback,
+        maxAliasedPointSizePx = pStats.maxAliasedPointSizePx,
+        fboComplete = postProcessing.isSceneFboComplete,
+        fboWidth = rw,
+        fboHeight = rh,
+        glErrorCode = glErr,
+      )
+    )
+
+    // Capture zero-UI GL frame if user triggered V4 6KF GPU evidence export
+    if (captureStep != null) {
+      val volTel = core.volumeTelemetry
+      val captureTel = AIOrbTelemetry(
+        fps = 60,
+        isHdrFbo = postProcessing.hdrScale > 0.5f,
+        glVendor = glVendor,
+        glRenderer = glRenderer,
+        glVersion = glVersion,
+        eglVersion = eglVersion,
+        isSoftwareRenderer = isSoftwareRenderer,
+        volumeLoadState = volTel.loadState,
+        volumeLoaded = volTel.isLoaded,
+        volumeDimensions = volTel.dimensionsLabel,
+      )
+      taskGpuEvidenceCapture.captureCurrentGlFrameIfActive(
+        surfaceWidth = surfaceWidth,
+        surfaceHeight = surfaceHeight,
+        evidence = currentTaskEvidence(),
+        telemetry = captureTel,
+      )
+    }
 
     // Publish throttled Task Energy state/evidence to Compose HUD (~10Hz or instant on stage transition)
     val stageChanged = taskSnap.stage != lastReportedTaskStage || taskSnap.isPaused != lastReportedTaskPaused
@@ -834,6 +956,7 @@ class AIOrbScene(
 
   fun release() {
     gpuReferenceCapture.release()
+    taskGpuEvidenceCapture.release()
     background.release()
     core.release()
     orbitRibbons.release()
@@ -847,6 +970,9 @@ class AIOrbScene(
   }
 
   companion object {
+    // P1: Bright-background optics for Tab 2 ONLY (Tab 1 stays strictly 1.0f / 1.0f)
+    const val TAB2_ORB_INTERIOR_TRANSMISSION = 0.75f
+    const val TAB2_ORB_ABSORPTION_GAIN = 1.12f
     /**
      * Distinguishes Software Rendering (SwiftShader, llvmpipe, softpipe, Android Emulator software)
      * from Hardware GPU execution (Adreno, Mali, Immortalis, PowerVR, NVIDIA, AMD, Intel, Apple).
