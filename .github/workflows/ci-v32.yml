@@ -338,6 +338,17 @@ jobs:
           fi
           cp "$AVD_CONFIG" p0_3_evidence/api36_avd/avd_config.ini
           "$ANDROID_SDK_ROOT/emulator/emulator" -version > p0_3_evidence/api36_avd/logs/emulator_version.txt 2>&1
+          {
+            echo "before=$(stat -c '%A %U:%G' /dev/kvm 2>/dev/null || echo MISSING)"
+            echo "runnerGroups=$(id -nG)"
+          } > p0_3_evidence/api36_avd/logs/kvm_device_permissions.txt
+          if [ -c /dev/kvm ]; then
+            sudo chmod a+rw /dev/kvm
+          fi
+          {
+            echo "after=$(stat -c '%A %U:%G' /dev/kvm 2>/dev/null || echo MISSING)"
+            echo "runnerGroups=$(id -nG)"
+          } >> p0_3_evidence/api36_avd/logs/kvm_device_permissions.txt
           set +e
           timeout 30s "$ANDROID_SDK_ROOT/emulator/emulator" -accel-check > p0_3_evidence/api36_avd/logs/kvm_accel_check.txt 2>&1
           ACCEL_RC=$?
@@ -361,6 +372,7 @@ jobs:
             "systemImage": "system-images;android-36;google_apis;x86_64",
             "cpuArchitecture": "x86_64",
             "emulatorVersion": "$(head -n 1 p0_3_evidence/api36_avd/logs/emulator_version.txt)",
+            "kvmDevicePresent": $([ -c /dev/kvm ] && echo true || echo false),
             "kvmCheckExitCode": ${ACCEL_RC},
             "kvmAcceleration": "${KVM_STATUS}",
             "renderBackendRequested": "SOFTWARE_RENDERER (SwiftShader)",
