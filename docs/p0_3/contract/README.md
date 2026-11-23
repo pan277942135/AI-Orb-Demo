@@ -1,7 +1,7 @@
 # AI Orb Demo — P0-3 Machine-Readable Acceptance Contract V1.0
 
-**Status:** FROZEN
-**Execution readiness:** PREFLIGHT_REQUIRED
+**Status:** FROZEN  
+**Execution readiness:** PREFLIGHT_REQUIRED  
 **Baseline HEAD:** `e33cbc9c28d6a203e6b81c249eff6bf853f4cd8d`
 
 ## Contents
