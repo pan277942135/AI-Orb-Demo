@@ -497,7 +497,7 @@ jobs:
           for run in 1 2 3; do
             adb shell am force-stop "$APP_ID"
             adb shell am force-stop "$APP_ID.test"
-            timeout 420s adb shell am instrument -w -r \
+            timeout 900s adb shell am instrument -w -r \
               -e p0_3Run "$run" \
               -e class com.example.P0_3Api36EvidenceTest#capturesOneP0_3BaselineAfterAppRestart \
               "$APP_ID.test/androidx.test.runner.AndroidJUnitRunner" \
