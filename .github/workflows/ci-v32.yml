@@ -463,7 +463,7 @@ jobs:
           test -s p0_3_evidence/api36_avd/logs/package_paths.txt
           adb shell dumpsys package "$APP_ID" > p0_3_evidence/api36_avd/logs/package_dump.txt
           adb shell am start -W -n "$APP_ID/com.example.MainActivity" > p0_3_evidence/api36_avd/logs/activity_start.txt
-          rg -q 'Status: ok' p0_3_evidence/api36_avd/logs/activity_start.txt
+          grep -q 'Status: ok' p0_3_evidence/api36_avd/logs/activity_start.txt
           APP_PID=""
           for i in $(seq 1 60); do
             APP_PID=$(adb shell pidof "$APP_ID" | tr -d '\r' || true)
@@ -528,7 +528,7 @@ jobs:
           adb pull /sdcard/screenrecord.log p0_3_evidence/api36_avd/logs/screenrecord.log || true
           ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 p0_3_evidence/MOTION_20S.mp4 > p0_3_evidence/motion_duration_seconds.txt
           adb logcat -b all -d > p0_3_evidence/api36_avd/logs/logcat.txt
-          { rg -ni 'GL error|GL_INVALID|GL_OUT_OF_MEMORY|shader compile failed|V3_ASSET_ERROR|FATAL EXCEPTION|ANR in' p0_3_evidence/api36_avd/logs/logcat.txt || true; } > p0_3_evidence/api36_avd/logs/gl_errors.txt
+          { grep -Eni 'GL error|GL_INVALID|GL_OUT_OF_MEMORY|shader compile failed|V3_ASSET_ERROR|FATAL EXCEPTION|ANR in' p0_3_evidence/api36_avd/logs/logcat.txt || true; } > p0_3_evidence/api36_avd/logs/gl_errors.txt
           adb shell dumpsys activity > p0_3_evidence/api36_avd/logs/activity_dump.txt
           adb shell dumpsys meminfo "$APP_ID" > p0_3_evidence/api36_avd/logs/meminfo.txt
           adb shell dumpsys gfxinfo "$APP_ID" > p0_3_evidence/api36_avd/logs/gfxinfo_after_motion.txt
