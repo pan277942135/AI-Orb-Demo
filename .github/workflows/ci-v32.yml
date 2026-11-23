@@ -200,16 +200,16 @@ jobs:
           if delivery_start >= 0 and delivery_end > delivery_start:
               delivery = f"""## Exact-head delivery
 
-- Final source HEAD: `{head}`.
-- Existing PR: #1; branch remains `codex/ai-orb-v32-final-closure-optical-fusion-v3`; no new PR or merge.
-- Workflow: [exact-HEAD CI run]({run_url}) — all required steps passed.
-- APK: `AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk`
-- APK SHA-256: `{apk_sha}`
-- APK size: `{apk_bytes}` bytes
-- Android unit tests: 107 passed; AndroidTest compilation, lint, APK build, and embedded asset SHA verification passed.
-- Hardware GPU capture and device visual acceptance: `PENDING_USER_DEVICE_QA`.
+          - Final source HEAD: `{head}`.
+          - Existing PR: #1; branch remains `codex/ai-orb-v32-final-closure-optical-fusion-v3`; no new PR or merge.
+          - Workflow: [exact-HEAD CI run]({run_url}) — all required steps passed.
+          - APK: `AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk`
+          - APK SHA-256: `{apk_sha}`
+          - APK size: `{apk_bytes}` bytes
+          - Android unit tests: 107 passed; AndroidTest compilation, lint, APK build, and embedded asset SHA verification passed.
+          - Hardware GPU capture and device visual acceptance: `PENDING_USER_DEVICE_QA`.
 
-"""
+          """
               matrix = matrix[:delivery_start] + delivery + matrix[delivery_end:]
           matrix_path.write_text(matrix)
 
