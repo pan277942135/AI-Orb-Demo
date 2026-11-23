@@ -782,7 +782,7 @@ class AIOrbScene(
         timing = timingSnap,
         coreAngleDeg = AIOrbMotionController.wrapAngleDeg(motion.coreRotationAngleDeg),
         coreAngularVelDegPerSec = motion.coreAngularVelocityDegPerSec,
-        mode = effectiveOrbCfg.debugMode,
+        mode = cfg.debugMode,
       )
       gpuReferenceCapture.captureCurrentGlFrameIfActive(
         surfaceWidth = surfaceWidth,
