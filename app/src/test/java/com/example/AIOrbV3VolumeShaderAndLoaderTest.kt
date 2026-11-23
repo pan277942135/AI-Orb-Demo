@@ -158,6 +158,12 @@ class AIOrbV3VolumeShaderAndLoaderTest {
     val loader = java.io.File("app/src/main/java/com/example/orb/v3/OrbVolumeTexture3D.kt").readText()
     assertTrue("Production readiness must require actual GLES texture objects", loader.contains("it > 0 && GLES30.glIsTexture(it)"))
     assertTrue(loader.contains("telemetry.gpuTextureObjectsValid"))
+    val shaderUtils = java.io.File("app/src/main/java/com/example/orb/gl/ShaderUtils.kt").readText()
+    assertTrue("Runtime telemetry must read back the linked GL uniform state", shaderUtils.contains("GLES30.glGetUniformiv(programId, loc, value, 0)"))
+    assertTrue(shaderUtils.contains("GLES30.glGetUniformfv(programId, loc, value, 0)"))
+    val capture = java.io.File("app/src/main/java/com/example/orb/v3/OrbGpuReferenceCapture.kt").readText()
+    assertTrue(capture.contains("Production shader read back uVolumeLoaded="))
+    assertTrue(capture.contains("Production Density / Transparency / Raymarch uniforms did not match"))
 
     assertTrue(AIOrbConfig.Default.toJson().contains("\"version\": \"V3_WEBP_3D_VOLUME_HYBRID\""))
   }

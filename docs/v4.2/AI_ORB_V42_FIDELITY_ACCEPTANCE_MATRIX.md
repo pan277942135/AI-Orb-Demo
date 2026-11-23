@@ -20,7 +20,7 @@
 | `285147.mp4` source | BLOCKED | Not available in this execution workspace or attachment set; user-reported F01–F07 remain unverified observations. |
 | YuJian reference | PASS | PR #344 HEAD `c609c3eda8f61b1948541959c7a71d1cebd518df` inspected. No YuJian source or assets copied. |
 | Production code path | PASS (source audit) | Tab 1 reaches `OrbFluidVolumeRenderer.draw()` and `CORE_GLASS_FRAG`; no active legacy inner-fluid renderer found. |
-| Full-render fallback gate | PASS (source change) | Formal Tab 1 frames wait for four successful uploads and `glIsTexture` validation; explicit diagnostics retain fallback. Device runtime still pending. |
+| Full-render fallback gate | PASS (source change) | Formal Tab 1 frames wait for four successful uploads and `glIsTexture` validation; evidence capture reads back the production GL uniforms and rejects mismatches/errors. Explicit diagnostics retain fallback. Device runtime still pending. |
 
 ## Offline, asset, and shader checks
 

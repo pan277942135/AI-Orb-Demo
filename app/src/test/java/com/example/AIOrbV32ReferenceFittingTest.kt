@@ -394,6 +394,7 @@ class AIOrbV32ReferenceFittingTest {
     assertTrue(telJson.has("volumeInternalFormat"))
     assertTrue(telJson.has("foldActiveRatio"))
     assertTrue(telJson.has("glErrorPass"))
+    assertTrue(telJson.has("uniformStateValid"))
 
     val fpJson = JSONObject(OrbGpuReferenceCapture.buildFingerprintJson(fidelity, tel))
     assertEquals(MasterFidelityV32.EXPECTED_MASTER_SHA256, fpJson.getString("referenceMasterSha256"))
