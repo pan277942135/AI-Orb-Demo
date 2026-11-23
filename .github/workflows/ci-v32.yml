@@ -393,7 +393,6 @@ jobs:
             exit 1
           fi
           adb devices -l > p0_3_evidence/api36_avd/adb_devices.txt
-          cp p0_3_evidence/api36_avd/logs/emulator_start.log p0_3_evidence/api36_avd/emulator_start.log
           adb shell getprop > p0_3_evidence/api36_avd/system_properties.txt
           adb shell getprop ro.build.version.sdk > p0_3_evidence/android_api.txt
           adb shell getprop ro.product.model > p0_3_evidence/avd_model.txt
