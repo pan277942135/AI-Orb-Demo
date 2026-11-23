@@ -100,6 +100,10 @@ class AIOrbV3VolumeShaderAndLoaderTest {
     assertTrue(frag.contains("texture(uFluidDetailMap,"))
     assertTrue(frag.contains("texture(uCausticsMap,"))
     assertTrue(frag.contains("texture(uGlassEnvMap,"))
+    assertTrue(frag.contains("traceBackgroundUv("))
+    assertTrue(frag.contains("refract(rayDir, -normalize(innerExit)"))
+    assertFalse("sRGB texture-unit output must not be gamma-expanded again", frag.contains("if (uCausticsIsSrgb > 0)"))
+    assertFalse(frag.contains("uFluidDetailIsSrgb"))
 
     // True independent 3D Core Rotation + bounded 3D curl + Beer-Lambert Front-to-Back accumulation
     assertTrue(frag.contains("mat3 invCoreRot = transpose(uCoreRotMat);"))
@@ -112,6 +116,7 @@ class AIOrbV3VolumeShaderAndLoaderTest {
     // V3 Diagnostic isolation shader branches
     assertTrue(frag.contains("if (uDebugMode == 7)")) // FLUID_VOLUME_ONLY
     assertTrue(frag.contains("if (uDebugMode == 8)")) // VOLUME_DEPTH
+    assertTrue(frag.contains("if (uDebugMode == 10)")) // FOLD_NORMAL
     assertTrue(frag.contains("(uDebugMode == 5)"))    // CORE_GLASS_ONLY / GLASS_ONLY
 
     // Confirm V2 broad front-right specular blob (`specWarm`) was permanently eliminated
@@ -145,6 +150,14 @@ class AIOrbV3VolumeShaderAndLoaderTest {
     val v3VolOnly = AIOrbScene.activeRenderPassesV3(RenderDebugMode.FLUID_VOLUME_ONLY)
     assertTrue(v3VolOnly.none { it.contains("RIBBON") })
     assertTrue(v3VolOnly.contains("PASS_6_V3_WEBP_3D_VOLUME_RAYMARCH_AND_CRYSTAL_GLASS_SHELL"))
+
+    val source = java.io.File("app/src/main/java/com/example/orb/scene/AIOrbScene.kt").readText()
+    assertTrue("Production FULL_RENDER must wait for all 4 uploaded volume textures", source.contains("productionFrameMode && !core.isVolumeReady"))
+    assertTrue("GPU evidence must wait for installed APK SHA", source.contains("GPU_CAPTURE_BLOCKED_APK_FINGERPRINT_PENDING"))
+    assertTrue("Context loss must invalidate the cached volume state", source.contains("core.markGlContextLost()"))
+    val loader = java.io.File("app/src/main/java/com/example/orb/v3/OrbVolumeTexture3D.kt").readText()
+    assertTrue("Production readiness must require actual GLES texture objects", loader.contains("it > 0 && GLES30.glIsTexture(it)"))
+    assertTrue(loader.contains("telemetry.gpuTextureObjectsValid"))
 
     assertTrue(AIOrbConfig.Default.toJson().contains("\"version\": \"V3_WEBP_3D_VOLUME_HYBRID\""))
   }

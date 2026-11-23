@@ -12,6 +12,28 @@ import com.example.orb.v3.OrbVolumeTelemetry
 import com.example.orb.v3.OrbVolumeTexture3D
 import com.example.orb.v3.ReferenceMeniscusProfile
 
+data class OrbCoreRuntimeShaderState(
+  val programId: Int = 0,
+  val shaderSourceSha256: String = "UNAVAILABLE",
+  val uVolumeLoaded: Int = -1,
+  val gpuTextureObjectsValid: Boolean = false,
+  val volumeTextureId: Int = 0,
+  val detailTextureId: Int = 0,
+  val causticsTextureId: Int = 0,
+  val glassEnvTextureId: Int = 0,
+  val volumeInternalFormat: String = "UNAVAILABLE",
+  val volumeIsSrgb: Boolean = false,
+  val raymarchSteps: Int = -1,
+  val densityScale: Float = Float.NaN,
+  val coreTransparency: Float = Float.NaN,
+  val uniformStateValid: Boolean = false,
+  val foldActiveRatio: Float? = null,
+  val foldActiveRatioStatus: String = "NOT_MEASURED",
+  val renderResolution: String = "0x0",
+  val glError: String = "GL_NO_ERROR",
+  val glErrorPass: String = "NONE",
+)
+
 /**
  * AI-Orb-Demo V3 Unified 3D Fluid Volume + Crystal Glass Shell Renderer.
  *
@@ -27,6 +49,9 @@ class OrbFluidVolumeRenderer {
   private var mesh: GlMesh? = null
   private var currentSubdivisions: Int = -1
   private val volumeTextures = OrbVolumeTexture3D()
+  @Volatile private var lastRuntimeShaderState: OrbCoreRuntimeShaderState = OrbCoreRuntimeShaderState()
+
+  val runtimeShaderState: OrbCoreRuntimeShaderState get() = lastRuntimeShaderState
 
   val volumeTelemetry: OrbVolumeTelemetry
     get() = volumeTextures.telemetry
@@ -87,6 +112,7 @@ class OrbFluidVolumeRenderer {
   ) {
     val prog = program ?: return
     val sphere = mesh ?: return
+    while (GLES30.glGetError() != GLES30.GL_NO_ERROR) { /* isolate errors to the core pass */ }
 
     GLES30.glEnable(GLES30.GL_DEPTH_TEST)
     GLES30.glDepthFunc(GLES30.GL_LEQUAL)
@@ -180,10 +206,46 @@ class OrbFluidVolumeRenderer {
 
     lighting.applyTo(prog)
     sphere.draw()
-
     volumeTextures.unbind()
     GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
     GLES30.glDisable(GLES30.GL_CULL_FACE)
+
+    val actualVolumeLoaded = prog.getIntUniform("uVolumeLoaded") ?: -1
+    val actualSteps = prog.getIntUniform("uRaymarchSteps") ?: -1
+    val actualDensity = prog.getFloatUniform("uDensityScale") ?: Float.NaN
+    val actualTransparency = prog.getFloatUniform("uCoreTransparency") ?: Float.NaN
+    val expectedVolumeLoaded = if (volumeTextures.isReady) 1 else 0
+    val uniformStateValid = actualVolumeLoaded == expectedVolumeLoaded &&
+      actualSteps == effectiveSteps &&
+      actualDensity.isFinite() && kotlin.math.abs(actualDensity - effectiveDensity) <= 1e-5f &&
+      actualTransparency.isFinite() && kotlin.math.abs(actualTransparency - config.coreTransparency) <= 1e-5f
+    val errors = ArrayList<Int>(2)
+    var glError = GLES30.glGetError()
+    while (glError != GLES30.GL_NO_ERROR) {
+      errors += glError
+      glError = GLES30.glGetError()
+    }
+
+    lastRuntimeShaderState = OrbCoreRuntimeShaderState(
+      programId = prog.programId,
+      shaderSourceSha256 = CORE_SHADER_SOURCE_SHA256,
+      uVolumeLoaded = actualVolumeLoaded,
+      gpuTextureObjectsValid = volumeTextures.telemetry.gpuTextureObjectsValid && volumeTextures.isReady,
+      volumeTextureId = volumeTextures.volumeTexId,
+      detailTextureId = volumeTextures.fluidDetailTexId,
+      causticsTextureId = volumeTextures.causticsTexId,
+      glassEnvTextureId = volumeTextures.glassEnvTexId,
+      volumeInternalFormat = if (!volumeTextures.isReady) "UNAVAILABLE" else if (volumeTextures.telemetry.isSrgbFluidVolume) "GL_SRGB8_ALPHA8" else "GL_RGBA8",
+      volumeIsSrgb = volumeTextures.isReady && volumeTextures.telemetry.isSrgbFluidVolume,
+      raymarchSteps = actualSteps,
+      densityScale = actualDensity,
+      coreTransparency = actualTransparency,
+      uniformStateValid = uniformStateValid,
+      renderResolution = "${fboWidth}x${fboHeight}",
+      glError = if (errors.isEmpty()) "GL_NO_ERROR" else errors.joinToString(",") { "0x${it.toString(16)}" },
+      glErrorPass = if (errors.isEmpty()) "NONE" else "PASS_6_CORE_VOLUME_GLASS",
+    )
+
   }
 
   fun release() {
@@ -193,5 +255,16 @@ class OrbFluidVolumeRenderer {
     mesh?.release()
     mesh = null
     currentSubdivisions = -1
+    lastRuntimeShaderState = OrbCoreRuntimeShaderState()
+  }
+
+  fun markGlContextLost() {
+    volumeTextures.markGlContextLost()
+  }
+
+  companion object {
+    private val CORE_SHADER_SOURCE_SHA256 = MasterFidelityV32.sha256Hex(
+      (CoreFluidShaders.CORE_GLASS_VERT + "\n" + CoreFluidShaders.CORE_GLASS_FRAG).toByteArray(Charsets.UTF_8),
+    )
   }
 }

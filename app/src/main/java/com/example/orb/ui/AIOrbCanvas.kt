@@ -23,6 +23,8 @@ import com.example.orb.config.AIOrbConfig
 import com.example.orb.scene.AIOrbScene
 import com.example.orb.scene.AIOrbTelemetry
 import com.example.orb.task.TaskEnergyEvidence
+import java.io.FileInputStream
+import java.security.MessageDigest
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -41,7 +43,8 @@ fun AIOrbCanvas(
   enableOrbitDrag: Boolean = true,
 ) {
   val lifecycleOwner = LocalLifecycleOwner.current
-  val appAssets = LocalContext.current.applicationContext.assets
+  val appContext = LocalContext.current.applicationContext
+  val appAssets = appContext.assets
   val latestTelemetryCb by rememberUpdatedState(onTelemetryUpdated)
   val latestTaskEvidenceCb by rememberUpdatedState(onTaskEvidenceUpdated)
   val latestEnableDrag by rememberUpdatedState(enableOrbitDrag)
@@ -57,6 +60,23 @@ fun AIOrbCanvas(
 
   LaunchedEffect(renderer) {
     onSceneReady(renderer)
+  }
+
+  LaunchedEffect(renderer, appContext) {
+    Thread({
+      runCatching {
+        val digest = MessageDigest.getInstance("SHA-256")
+        FileInputStream(appContext.applicationInfo.sourceDir).use { input ->
+          val buffer = ByteArray(64 * 1024)
+          while (true) {
+            val count = input.read(buffer)
+            if (count < 0) break
+            digest.update(buffer, 0, count)
+          }
+        }
+        digest.digest().joinToString("") { "%02x".format(it.toInt() and 0xff) }
+      }.onSuccess(renderer::updateApkSha256)
+    }, "AIOrbApkFingerprint").apply { isDaemon = true; start() }
   }
 
   LaunchedEffect(config) {

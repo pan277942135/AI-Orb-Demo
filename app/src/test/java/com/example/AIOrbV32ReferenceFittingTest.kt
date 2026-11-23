@@ -194,7 +194,7 @@ class AIOrbV32ReferenceFittingTest {
     assertTrue(shader.contains("float sigma = localDensity * densityScale * segDt"))
     assertTrue("Refraction must use Master air/glass IOR", shader.contains("refract(-V, safeN, etaAirGlass)"))
     assertTrue("The glass/water wall must use Master glass/water IOR", shader.contains("uGlassOptics.x / max(uInterfaceIor.y, 1.0001)"))
-    assertTrue("Fold normals must use the deformed texture coordinate", shader.contains("estimateFluidFoldNormal(deformedSamplePos, radialCore)"))
+    assertTrue("Fold normals must use the deformed texture coordinate", shader.contains("estimateFluidFoldNormal(deformedSamplePos, radialCore, densityGradientMagnitude)"))
     assertTrue("Fold refraction must resample the same deformed volume field", shader.contains("deformedSamplePos - foldN * (0.022 * uFoldOptics.z)"))
     assertTrue("Caustics must integrate multiple actual ray depths", shader.contains("causticA * 0.24 + causticB * 0.46 + causticC * 0.30"))
     assertTrue("Glass wall thickness must be sent from the Master", renderer.contains("glass.glassWallThickness"))
@@ -265,7 +265,10 @@ class AIOrbV32ReferenceFittingTest {
 
     // Active-surface analytical 3D fluid fold normal lighting & V3.2 fitted uniforms
     assertTrue(coreFrag.contains("vec3 estimateFluidFoldNormal("))
-    assertTrue(coreFrag.contains("if (localDensity > 0.14 && uFoldOptics.x > 0.01)"))
+    assertTrue(coreFrag.contains("if (localDensity > 0.035 && uFoldOptics.x > 0.01)"))
+    assertTrue(coreFrag.contains("(axp - axm) / (4.0 * eps.x)"))
+    assertTrue(coreFrag.contains("-(ayp - aym) / (4.0 * eps.y)"))
+    assertTrue(coreFrag.contains("(azp - azm) / (4.0 * eps.z)"))
     assertTrue(coreFrag.contains("uniform vec3 uLensCenter;"))
     assertTrue(coreFrag.contains("uniform vec3 uLensRadii;"))
     assertTrue(coreFrag.contains("uniform vec4 uLensParams;"))
@@ -343,7 +346,7 @@ class AIOrbV32ReferenceFittingTest {
     val pngTopDown = OrbGpuReferenceCapture.flipRgbaVertically(glBottomUp, width, height)
     assertArrayEquals(row2 + row1 + row0, pngTopDown)
 
-    // Verify all 6 required GPU PNG files and 3 required JSON evidence files
+    // Verify six core layers, six optical diagnostics, and 3 JSON evidence files.
     val pngNames = OrbGpuReferenceCapture.CAPTURE_STEPS.map { it.fileName }
     assertEquals(
       listOf(
@@ -353,6 +356,12 @@ class AIOrbV32ReferenceFittingTest {
         "RIBBONS_ONLY_GPU.png",
         "GLASS_ONLY_GPU.png",
         "FULL_RENDER_GPU.png",
+        "CAUSTICS_ONLY_GPU.png",
+        "BLOOM_OFF_GPU.png",
+        "FOLD_NORMAL_GPU.png",
+        "VOLUME_DEPTH_GPU.png",
+        "PRE_TONEMAP_GPU.png",
+        "POST_TONEMAP_GPU.png",
       ),
       pngNames,
     )
@@ -378,10 +387,24 @@ class AIOrbV32ReferenceFittingTest {
     val telJson = JSONObject(OrbGpuReferenceCapture.buildGpuTelemetryJson(tel, 1080, 2400))
     assertEquals("TestVendor", telJson.getString("glVendor"))
     assertEquals("TestGPU", telJson.getString("glRenderer"))
+    assertTrue(telJson.has("buildSha"))
+    assertTrue(telJson.has("shaderSourceSha256"))
+    assertTrue(telJson.has("uVolumeLoaded"))
+    assertTrue(telJson.has("gpuTextureObjectsValid"))
+    assertTrue(telJson.has("volumeInternalFormat"))
+    assertTrue(telJson.has("foldActiveRatio"))
+    assertTrue(telJson.has("glErrorPass"))
 
     val fpJson = JSONObject(OrbGpuReferenceCapture.buildFingerprintJson(fidelity, tel))
     assertEquals(MasterFidelityV32.EXPECTED_MASTER_SHA256, fpJson.getString("referenceMasterSha256"))
-    assertEquals(6, fpJson.getJSONArray("capturedPngFiles").length())
+    assertEquals(OrbGpuReferenceCapture.CAPTURE_STEPS.size, fpJson.getJSONArray("capturedPngFiles").length())
+    val runtimeJson = JSONObject(OrbGpuReferenceCapture.buildRuntimeRenderConfigJson(
+      AIOrbConfig.Default, fidelity, 1080, 2400,
+    ))
+    assertEquals(
+      "FOLD_NORMAL",
+      runtimeJson.getJSONObject("captureStepModes").getString("FOLD_NORMAL_GPU.png"),
+    )
   }
 
   @Test

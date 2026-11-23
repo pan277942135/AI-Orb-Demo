@@ -63,6 +63,24 @@ class GlShaderProgram(vertexSrc: String, fragmentSrc: String, val label: String)
     if (loc >= 0) GLES30.glUniform1i(loc, value)
   }
 
+  /** Reads the currently stored integer uniform from this linked program. */
+  fun getIntUniform(name: String): Int? {
+    val loc = uniformLocation(name)
+    if (loc < 0) return null
+    val value = IntArray(1)
+    GLES30.glGetUniformiv(programId, loc, value, 0)
+    return value[0]
+  }
+
+  /** Reads the currently stored float uniform from this linked program. */
+  fun getFloatUniform(name: String): Float? {
+    val loc = uniformLocation(name)
+    if (loc < 0) return null
+    val value = FloatArray(1)
+    GLES30.glGetUniformfv(programId, loc, value, 0)
+    return value[0]
+  }
+
   fun setVec2(name: String, x: Float, y: Float) {
     val loc = uniformLocation(name)
     if (loc >= 0) GLES30.glUniform2f(loc, x, y)

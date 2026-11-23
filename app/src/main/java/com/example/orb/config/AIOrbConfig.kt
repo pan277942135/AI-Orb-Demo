@@ -66,6 +66,9 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
   OPTICS_ONLY(0, "Optics Only"),
   DEPTH_DEBUG(6, "Depth Debug"),
   BLOOM_OFF(0, "Bloom Off"),
+  FOLD_NORMAL(10, "Fold Normal"),
+  PRE_TONEMAP(0, "Pre Tonemap"),
+  POST_TONEMAP(0, "Post Tonemap"),
   ;
 
   val isCoreIsolated: Boolean
@@ -79,7 +82,8 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
       this == MENISCUS_DEBUG ||
       this == CAVITY_ONLY ||
       this == CAUSTICS_ONLY ||
-      this == GLASS_ONLY
+      this == GLASS_ONLY ||
+      this == FOLD_NORMAL
 
   val locksReferenceFrame: Boolean
     get() = this == REFERENCE_LOCKED_FRAME

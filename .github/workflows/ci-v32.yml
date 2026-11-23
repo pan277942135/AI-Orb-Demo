@@ -1,4 +1,4 @@
-name: AI Orb V3.2 High-Fidelity Final Closure
+name: AI Orb V4.2 Core Fidelity Recovery
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  verify-v32-final-closure:
+  verify-v42-core-fidelity:
     name: Master, Assets, Offline Gates, GLES, Android Tests & Exact-HEAD APK
     runs-on: ubuntu-latest
 
@@ -103,13 +103,13 @@ jobs:
 
       - name: APK_ASSET_SHA_VERIFICATION
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk
-          sha256sum AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk > AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk.sha256
+          cp app/build/outputs/apk/debug/app-debug.apk AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk
+          sha256sum AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk > AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk.sha256
           python3 - <<'PY'
           import hashlib, json, zipfile
           from pathlib import Path
 
-          apk_path = Path("AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk")
+          apk_path = Path("AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk")
           manifest_path = Path("app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json")
           manifest = json.loads(manifest_path.read_text())
           config = Path("app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json").read_bytes()
@@ -137,43 +137,47 @@ jobs:
         run: |
           HEAD_SHA=$(git rev-parse HEAD)
           test "$HEAD_SHA" = "$EXPECTED_HEAD_SHA"
-          APK_SHA=$(awk '{print $1}' AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk.sha256)
+          APK_SHA=$(awk '{print $1}' AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk.sha256)
           CFG_SHA=$(sha256sum app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json | awk '{print $1}')
-          cat > docs/v3/BUILD_FINGERPRINT.json <<EOF
+          mkdir -p docs/v4.2
+          cat > docs/v4.2/BUILD_FINGERPRINT.json <<EOF
           {
-            "schema": "AI_ORB_V3_2_EXACT_HEAD_BUILD_FINGERPRINT_1_0",
-            "taskId": "AI_ORB_V32_FINAL_CLOSURE_YUJIAN_CORE_OPTICAL_FUSION_V3",
+            "schema": "AI_ORB_V4_2_EXACT_HEAD_BUILD_FINGERPRINT_1_0",
+            "taskId": "AI_ORB_DEMO_V42_CORE_REAL_GPU_FIDELITY_RECOVERY_P0",
             "gitCommitSha": "${HEAD_SHA}",
             "githubRunId": "${GITHUB_RUN_ID}",
             "githubRef": "${GITHUB_REF}",
             "ciRunUrl": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}",
             "referenceMasterSha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
             "masterFidelityV32Sha256": "${CFG_SHA}",
-            "apkFile": "AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk",
+            "apkFile": "AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk",
             "apkSha256": "${APK_SHA}",
-            "gpuCaptureStatus": "PENDING_REAL_GPU_CAPTURE"
+            "gpuCaptureStatus": "PENDING_USER_DEVICE_QA",
+            "deviceVisualAcceptance": "PENDING_USER_DEVICE_QA"
           }
           EOF
           sha256sum \
-            AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk \
+            AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk \
             public/assets/aistudio/____________910d1531.png \
             app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json \
             app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json \
             app/src/main/assets/orb_v3/manifest/SHA256SUMS \
             tools/orb-v3-generator/fitting/CANONICAL_VOLUME_PIXEL_CLOSURE.json \
             docs/v3/AI_ORB_V3_2_VISUAL_LOSS.json \
-            docs/v3/BUILD_FINGERPRINT.json > docs/v3/AI_ORB_V3_2_FINAL_V3_SHA256SUMS
-          cat docs/v3/AI_ORB_V3_2_FINAL_V3_SHA256SUMS
+            docs/v4.2/BUILD_FINGERPRINT.json \
+            docs/v4.2/AI_ORB_V42_CORE_ROOT_CAUSE_AND_FIX_REPORT.md \
+            docs/v4.2/AI_ORB_V42_FIDELITY_ACCEPTANCE_MATRIX.md > docs/v4.2/AI_ORB_V42_FINAL_SHA256SUMS
+          cat docs/v4.2/AI_ORB_V42_FINAL_SHA256SUMS
 
       - name: ARTIFACT_UPLOAD
         uses: actions/upload-artifact@v4
         with:
-          name: ai-orb-v32-final-closure-exact-head
+          name: ai-orb-v42-core-fidelity-exact-head
           path: |
-            AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk
-            AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk.sha256
-            docs/v3/BUILD_FINGERPRINT.json
-            docs/v3/AI_ORB_V3_2_*
+            AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk
+            AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk.sha256
+            docs/v4.2/BUILD_FINGERPRINT.json
+            docs/v4.2/AI_ORB_V42_*
             docs/v3/WEBP_ASSET_REPORT.md
             tools/orb-v3-generator/fitting/FIT_RUN_SUMMARY.json
             tools/orb-v3-generator/fitting/FIT_VALIDATION_RESULT.json

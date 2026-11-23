@@ -19,6 +19,40 @@ class AIOrbFluidMathTest {
   private fun isFiniteVec3(v: Vec3): Boolean = v.x.isFinite() && v.y.isFinite() && v.z.isFinite()
 
   @Test
+  fun foldCentralDifferenceUsesCoreSpaceSpansAndCorrectTextureVSign() {
+    val expected = Vec3(1.7f, -2.3f, 0.8f)
+    // The texture's positive V direction is negative Core Y. Exercise several normalized
+    // sampling intervals, representing different volume resolutions / filter footprints.
+    for (halfStep in listOf(0.007f, 0.014f, 0.028f, 0.032f)) {
+      val hx = halfStep
+      val hy = halfStep
+      val hz = halfStep * 2.0f
+      fun field(x: Float, y: Float, z: Float) = expected.x * x + expected.y * y + expected.z * z
+      val gradient = AIOrbFluidMath.centralDifferenceGradient(
+        positiveX = field(hx, 0f, 0f),
+        negativeX = field(-hx, 0f, 0f),
+        positiveYTexture = field(0f, -hy, 0f),
+        negativeYTexture = field(0f, hy, 0f),
+        positiveZ = field(0f, 0f, hz),
+        negativeZ = field(0f, 0f, -hz),
+        halfStep = Vec3(hx, hy, hz),
+      )
+      assertEquals(expected.x, gradient.x, 1e-5f)
+      assertEquals(expected.y, gradient.y, 1e-5f)
+      assertEquals(expected.z, gradient.z, 1e-5f)
+    }
+  }
+
+  @Test
+  fun foldGradientNormalizationFallsBackWithoutNanForFlatOrInvalidFields() {
+    val fallback = Vec3(0f, 0f, 1f)
+    assertEquals(fallback, AIOrbFluidMath.normalizedGradientOrFallback(Vec3(0f, 0f, 0f), fallback))
+    assertEquals(fallback, AIOrbFluidMath.normalizedGradientOrFallback(Vec3(Float.NaN, 1f, 0f), fallback))
+    val normalized = AIOrbFluidMath.normalizedGradientOrFallback(Vec3(2f, 0f, 0f), fallback)
+    assertEquals(Vec3(1f, 0f, 0f), normalized)
+  }
+
+  @Test
   fun advectFluidPosProducesContinuousDirectional3DRotation() {
     val controller = AIOrbMotionController()
     val cfg = AIOrbConfig.Default

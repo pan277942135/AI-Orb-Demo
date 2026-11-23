@@ -38,6 +38,38 @@ object AIOrbFluidMath {
   fun invSmoothstep(lo: Float, hi: Float, x: Float): Float = inverseSmoothstep(lo, hi, x)
 
   /**
+   * Central-difference gradient for scalar samples taken [halfStep] from the center.
+   * Components are expressed per normalized Core-space unit. This is the CPU contract
+   * mirrored by `estimateFluidFoldNormal()` in the production GLES shader.
+   */
+  fun centralDifferenceGradient(
+    positiveX: Float,
+    negativeX: Float,
+    positiveYTexture: Float,
+    negativeYTexture: Float,
+    positiveZ: Float,
+    negativeZ: Float,
+    halfStep: Vec3,
+  ): Vec3 {
+    require(halfStep.x.isFinite() && halfStep.x > 0f)
+    require(halfStep.y.isFinite() && halfStep.y > 0f)
+    require(halfStep.z.isFinite() && halfStep.z > 0f)
+    val inverseSpan = Vec3(1f / (2f * halfStep.x), -1f / (2f * halfStep.y), 1f / (2f * halfStep.z))
+    return Vec3(
+      (positiveX - negativeX) * inverseSpan.x,
+      (positiveYTexture - negativeYTexture) * inverseSpan.y,
+      (positiveZ - negativeZ) * inverseSpan.z,
+    )
+  }
+
+  fun normalizedGradientOrFallback(gradient: Vec3, fallback: Vec3): Vec3 =
+    if (gradient.x.isFinite() && gradient.y.isFinite() && gradient.z.isFinite() && gradient.length() > 1e-4f) {
+      gradient.normalized()
+    } else {
+      fallback.normalized()
+    }
+
+  /**
    * Rigid rotated Core Frame (`coreFramePos = uCoreRotMat * localPos`, NO curl).
    * Drives meniscus tilt/intersection, above/below liquid zoning, and core-locked spatial masks.
    */
