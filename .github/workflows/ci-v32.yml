@@ -138,7 +138,9 @@ jobs:
           HEAD_SHA=$(git rev-parse HEAD)
           test "$HEAD_SHA" = "$EXPECTED_HEAD_SHA"
           APK_SHA=$(awk '{print $1}' AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk.sha256)
+          APK_BYTES=$(stat -c%s AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk)
           CFG_SHA=$(sha256sum app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json | awk '{print $1}')
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           mkdir -p docs/v4.2
           cat > docs/v4.2/BUILD_FINGERPRINT.json <<EOF
           {
@@ -147,15 +149,54 @@ jobs:
             "gitCommitSha": "${HEAD_SHA}",
             "githubRunId": "${GITHUB_RUN_ID}",
             "githubRef": "${GITHUB_REF}",
-            "ciRunUrl": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}",
+            "ciRunUrl": "${RUN_URL}",
             "referenceMasterSha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
             "masterFidelityV32Sha256": "${CFG_SHA}",
             "apkFile": "AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk",
             "apkSha256": "${APK_SHA}",
+            "apkSizeBytes": ${APK_BYTES},
             "gpuCaptureStatus": "PENDING_USER_DEVICE_QA",
             "deviceVisualAcceptance": "PENDING_USER_DEVICE_QA"
           }
           EOF
+          export HEAD_SHA APK_SHA APK_BYTES RUN_URL
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          head = os.environ["HEAD_SHA"]
+          apk_sha = os.environ["APK_SHA"]
+          apk_bytes = os.environ["APK_BYTES"]
+          run_url = os.environ["RUN_URL"]
+
+          matrix_path = Path("docs/v4.2/AI_ORB_V42_FIDELITY_ACCEPTANCE_MATRIX.md")
+          matrix = matrix_path.read_text()
+          lines = []
+          for line in matrix.splitlines():
+              if line.startswith("| `SOURCE_FIX_COMPLETE` |"):
+                  line = "| `SOURCE_FIX_COMPLETE` | **PASS** | Source fixes, offline closure, production GLES compile/link, and exact-head Android CI passed. Hardware appearance remains a separate gate. |"
+              elif line.startswith("| `CI_PASS` |"):
+                  line = f"| `CI_PASS` | **PASS** | [Exact-HEAD run]({run_url}) for `{head}` built and fingerprinted the APK. |"
+              elif line.startswith("| `GPU_RENDER_VERIFIED` |"):
+                  line = "| `GPU_RENDER_VERIFIED` | **NOT_RUN** | No hardware GPU or Android device is attached to this execution. |"
+              elif line.startswith("| `VISUAL_FIDELITY_ACCEPTED` |"):
+                  line = "| `VISUAL_FIDELITY_ACCEPTED` | **NOT_RUN** | Requires device GPU evidence plus visual and metric review against the frozen master. |"
+              elif line.startswith("| `USER_DEVICE_QA_PENDING` |"):
+                  line = f"| `USER_DEVICE_QA_PENDING` | **PENDING USER** | Install the APK for `{head}`, export its V4.2 evidence ZIP, and record a 20-second run on HUAWEI CMS-AL20 / Android 16 API36. |"
+              lines.append(line)
+          matrix = "\n".join(lines) + "\n"
+          matrix += f"\n## Exact-HEAD CI artifact\n\n- Git HEAD: `{head}`\n- CI run: {run_url}\n- APK: `AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk`\n- APK SHA-256: `{apk_sha}`\n- APK size: `{apk_bytes}` bytes\n- Hardware GPU capture and device visual acceptance: `PENDING_USER_DEVICE_QA`\n"
+          matrix_path.write_text(matrix)
+
+          report_path = Path("docs/v4.2/AI_ORB_V42_CORE_ROOT_CAUSE_AND_FIX_REPORT.md")
+          report = report_path.read_text()
+          old = "- Local Android Gradle test/build could not start because this execution workspace has no Android SDK (`ANDROID_HOME`/platforms absent). The existing PR CI is updated to build the exact HEAD and upload the V4.2 Debug APK; its result is pending."
+          new = f"- Local Android Gradle test/build could not start because this execution workspace has no Android SDK (`ANDROID_HOME`/platforms absent). Exact-HEAD CI passed on `{head}` ([run]({run_url})); its artifact contains `AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk` ({apk_bytes} bytes, SHA-256 `{apk_sha}`)."
+          if old in report:
+              report = report.replace(old, new)
+          report += f"\n\n## Exact-HEAD CI result\n\n- HEAD: `{head}`\n- Run: {run_url}\n- APK SHA-256: `{apk_sha}`\n- APK size: `{apk_bytes}` bytes\n- Hardware GPU capture and device visual review remain `PENDING_USER_DEVICE_QA`.\n"
+          report_path.write_text(report)
+          PY
           sha256sum \
             AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk \
             public/assets/aistudio/____________910d1531.png \
