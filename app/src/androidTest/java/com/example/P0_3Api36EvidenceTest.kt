@@ -81,7 +81,13 @@ class P0_3Api36EvidenceTest {
     assertTrue("Configured HIGH raymarch steps must be 48", telemetry.getInt("configuredRaymarchSteps") == 48)
 
     val manifest = JSONObject(File(evidenceDir, "CAPTURE_MANIFEST.json").readText())
-    assertTrue("Capture manifest must be complete", manifest.getString("status") == "COMPLETE")
+    val captureValidation = manifest.getJSONObject("captureValidation")
+    assertTrue(
+      "Capture manifest is ${manifest.getString("status")}; validation=$captureValidation; " +
+        "volume=${manifest.getJSONObject("volume")}; geometry=${manifest.getJSONObject("geometry")}; " +
+        "uniforms=${manifest.getJSONObject("actualUniformSnapshot")}",
+      manifest.getString("status") == "COMPLETE",
+    )
     assertTrue(manifest.getJSONObject("captureValidation").getBoolean("allRequiredModesPresent"))
     assertTrue(manifest.getJSONObject("captureValidation").getBoolean("allRequiredModeEvidencePresent"))
     assertTrue(manifest.getJSONObject("volume").getBoolean("all3DTexturesValid"))

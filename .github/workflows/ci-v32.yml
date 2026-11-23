@@ -518,6 +518,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p p0_3_evidence/api36_avd/logs
+          adb pull "/sdcard/Android/data/$APP_ID/files/v42_fidelity_evidence" p0_3_evidence/api36_avd/failure_evidence 2>&1 || true
+          adb pull "/sdcard/Android/data/$APP_ID/files/p0_3_repeatability" p0_3_evidence/api36_avd/failure_repeatability 2>&1 || true
           adb devices -l > p0_3_evidence/api36_avd/adb_devices_after_failure.txt 2>&1 || true
           adb logcat -b all -d > p0_3_evidence/api36_avd/logs/logcat_after_failure.txt 2>&1 || true
           adb shell dumpsys activity > p0_3_evidence/api36_avd/logs/activity_after_failure.txt 2>&1 || true
