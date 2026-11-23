@@ -541,15 +541,17 @@ jobs:
           date -u +%Y-%m-%dT%H:%M:%SZ > p0_3_evidence/api36_avd/video_start_utc.txt
           adb shell monkey -p "$APP_ID" 1
           sleep 4
-          adb shell 'rm -f /sdcard/MOTION_20S.mp4; screenrecord --time-limit 22 /sdcard/MOTION_20S.mp4 >/sdcard/screenrecord.log 2>&1 &'
+          adb shell rm -f /sdcard/MOTION_20S.mp4
+          timeout 45s adb shell screenrecord --time-limit 22 /sdcard/MOTION_20S.mp4 \
+            > p0_3_evidence/api36_avd/logs/screenrecord.log 2>&1 &
+          SCREENRECORD_PID=$!
           for second in 0 4 8 12 16 20; do
             if [ "$second" != "0" ]; then sleep 4; fi
             adb exec-out screencap -p > "p0_3_evidence/motion_frames/MOTION_${second}S.png"
           done
-          sleep 2
+          wait "$SCREENRECORD_PID"
           date -u +%Y-%m-%dT%H:%M:%SZ > p0_3_evidence/api36_avd/video_end_utc.txt
           adb pull /sdcard/MOTION_20S.mp4 p0_3_evidence/MOTION_20S.mp4
-          adb pull /sdcard/screenrecord.log p0_3_evidence/api36_avd/logs/screenrecord.log || true
           ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 p0_3_evidence/MOTION_20S.mp4 > p0_3_evidence/motion_duration_seconds.txt
           adb logcat -b all -d > p0_3_evidence/api36_avd/logs/logcat.txt
           { grep -Eni 'GL error|GL_INVALID|GL_OUT_OF_MEMORY|shader compile failed|V3_ASSET_ERROR|FATAL EXCEPTION|ANR in' p0_3_evidence/api36_avd/logs/logcat.txt || true; } > p0_3_evidence/api36_avd/logs/gl_errors.txt

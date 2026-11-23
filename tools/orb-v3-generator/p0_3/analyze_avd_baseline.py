@@ -23,6 +23,7 @@ from PIL import Image, ImageDraw, ImageFont
 from scipy.ndimage import distance_transform_edt
 from skimage.color import deltaE_ciede2000, rgb2lab
 from skimage.metrics import structural_similarity
+from video_duration import parse_video_duration
 
 ROOT = Path(__file__).resolve().parents[3]
 P0 = ROOT / "docs/p0_3"
@@ -525,7 +526,8 @@ def main() -> None:
     }
 
     api = (evidence / "android_api.txt").read_text().strip() if (evidence / "android_api.txt").exists() else "UNKNOWN"
-    video_duration = float((evidence / "motion_duration_seconds.txt").read_text().strip()) if (evidence / "motion_duration_seconds.txt").exists() else 0.0
+    duration_path = evidence / "motion_duration_seconds.txt"
+    video_duration = parse_video_duration(duration_path.read_text()) if duration_path.exists() else 0.0
     if api != "36":
         raise ValueError(f"Expected API 36 AVD, got {api}")
     if not (evidence / "MOTION_20S.mp4").is_file() or (evidence / "MOTION_20S.mp4").stat().st_size == 0:

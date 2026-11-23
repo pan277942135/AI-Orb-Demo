@@ -64,6 +64,7 @@ from cavity_geometry_fitter import (
     crystal_lens_phi,
     intersect_crystal_lens,
 )
+from p0_3.video_duration import parse_video_duration
 
 
 def assert_true(cond: bool, msg: str) -> None:
@@ -247,6 +248,18 @@ def test_1b_shared_haze_classifier_contract() -> None:
     assert_true(not is_upper_dome_grey_white_haze(0.19, 210, 210, 100, False), "saturated pixel must not classify as haze")
     assert_true(not is_upper_dome_grey_white_haze(0.19, 135, 135, 135, False), "luma threshold is strict")
     print("[test_1b_haze_classifier] PASS: shared upper region, flare exclusion, luma, saturation")
+
+
+def test_1c_motion_video_duration_parser() -> None:
+    assert_true(parse_video_duration("20.0\n") == 20.0, "valid ffprobe duration must be parsed")
+    for invalid in ("N/A", "", "nan", "inf", "-1"):
+        try:
+            parse_video_duration(invalid)
+        except ValueError as exc:
+            assert_true("motion video duration" in str(exc), "invalid duration needs an actionable error")
+        else:
+            raise AssertionError(f"invalid video duration must fail closed: {invalid!r}")
+    print("[test_1c_video_duration] PASS: numeric ffprobe duration accepted; N/A/non-finite/negative rejected")
 
 
 def test_2_crystal_lens_geometry_consistency() -> None:
@@ -485,6 +498,7 @@ def test_3_ten_negative_ci_gate_tests() -> None:
 def main() -> int:
     test_1a_smoothstep_contract()
     test_1b_shared_haze_classifier_contract()
+    test_1c_motion_video_duration_parser()
     test_1_canonical_volume_algorithm_and_webp_roundtrip()
     test_2_crystal_lens_geometry_consistency()
     test_3_ten_negative_ci_gate_tests()
