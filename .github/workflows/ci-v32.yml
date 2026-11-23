@@ -316,10 +316,27 @@ jobs:
           set -euo pipefail
           mkdir -p p0_3_evidence/api36_avd/logs
           AVD_NAME=AIOrbP0Api36
-          AVD_HOME="${ANDROID_AVD_HOME:-${ANDROID_USER_HOME:-$HOME/.android}/avd}"
-          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager" create avd \
-            --name "$AVD_NAME" --package "system-images;android-36;google_apis;x86_64" --device pixel_7 --force
-          cp "$AVD_HOME/$AVD_NAME.avd/config.ini" p0_3_evidence/api36_avd/avd_config.ini
+          export ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-$HOME/.android/avd}"
+          AVD_HOME="$ANDROID_AVD_HOME"
+          mkdir -p "$AVD_HOME"
+          set +e
+          printf 'no\n' | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager" create avd \
+            --name "$AVD_NAME" --package "system-images;android-36;google_apis;x86_64" --device pixel_7 --force \
+            > p0_3_evidence/api36_avd/logs/avd_create.txt 2>&1
+          AVD_CREATE_RC=$?
+          set -e
+          cat p0_3_evidence/api36_avd/logs/avd_create.txt
+          if [ "$AVD_CREATE_RC" -ne 0 ]; then exit "$AVD_CREATE_RC"; fi
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager" list avd \
+            > p0_3_evidence/api36_avd/logs/avd_list.txt 2>&1
+          AVD_CONFIG="$AVD_HOME/$AVD_NAME.avd/config.ini"
+          if [ ! -f "$AVD_CONFIG" ]; then
+            cat p0_3_evidence/api36_avd/logs/avd_create.txt
+            cat p0_3_evidence/api36_avd/logs/avd_list.txt
+            echo "AVD config not found at $AVD_CONFIG" >&2
+            exit 1
+          fi
+          cp "$AVD_CONFIG" p0_3_evidence/api36_avd/avd_config.ini
           "$ANDROID_SDK_ROOT/emulator/emulator" -version > p0_3_evidence/api36_avd/logs/emulator_version.txt 2>&1
           set +e
           timeout 30s "$ANDROID_SDK_ROOT/emulator/emulator" -accel-check > p0_3_evidence/api36_avd/logs/kvm_accel_check.txt 2>&1
