@@ -54,8 +54,17 @@ def clamp01(v: float) -> float:
 
 
 def smoothstep(e0: float, e1: float, x: float) -> float:
-    t = clamp01((x - e0) / max(1e-6, e1 - e0))
+    if not (math.isfinite(e0) and math.isfinite(e1) and math.isfinite(x)):
+        return 0.0
+    if e0 >= e1:
+        raise ValueError(f"smoothstep requires ordered edges e0 < e1, got {e0} >= {e1}")
+    t = clamp01((x - e0) / (e1 - e0))
     return t * t * (3.0 - 2.0 * t)
+
+
+def inverse_smoothstep(lo: float, hi: float, x: float) -> float:
+    """Monotonically decreasing smoothstep with explicit, ordered bounds."""
+    return 1.0 - smoothstep(lo, hi, x)
 
 
 def mix(a: float, b: float, t: float) -> float:
@@ -258,7 +267,7 @@ def evaluate_canonical_voxel(
     aqua_gate = 1.0 - smoothstep(0.06 + vp["aquaUpperGateY"], 0.46 + vp["aquaUpperGateY"], y)
     dom_e07 = smoothstep(-0.16, 0.16, ref_e07 - 0.75 * ref_e05)
     ref_e07_sharp = smoothstep(0.14, 0.48, ref_e07) * (0.30 + 0.70 * dom_e07)
-    lower_aqua_boost = 1.0 + 0.48 * smoothstep(0.05, -0.58, y)
+    lower_aqua_boost = 1.0 + 0.48 * inverse_smoothstep(-0.58, 0.05, y)
     aqua_front = clamp01(
         (ref_e07_sharp * vp["aquaAnchorWeight"] * lower_aqua_boost + ref_e08 * decouple * 0.45)
         * (1.0 - 0.82 * emerald_w)
@@ -309,7 +318,7 @@ def evaluate_canonical_voxel(
     # Layer focused luminous clear aqua (high cyan luminance survives Beer-Lambert + ACES cleanly even in lower basin)
     aq_b = vp["aquaBrightnessGain"]
     aq_silk = smoothstep(-0.22, 0.68, n_silk + 0.25 * ref_e08)
-    lower_luma_comp = 1.0 + 0.14 * smoothstep(0.0, -0.65, y)
+    lower_luma_comp = 1.0 + 0.14 * inverse_smoothstep(-0.65, 0.0, y)
     ar_base = clamp01(min(0.44, m_aq[0] * 0.88 * aq_b))
     ag_base = clamp01(min(0.99, m_aq[1] * 1.50 * aq_b * lower_luma_comp))
     ab_base = clamp01(min(1.00, m_aq[2] * 1.48 * aq_b * lower_luma_comp))

@@ -153,7 +153,7 @@ class AIOrbV32ClosureContractTest {
     val simTimeBeforeCapture = ctrl.currentTimeSec
     assertTrue(simTimeBeforeCapture > 0.99)
 
-    val outDir = createTempDir(prefix = "v32_cap_snap_test_")
+    val outDir = kotlin.io.path.createTempDirectory("v32_cap_snap_test_").toFile()
     try {
       assertTrue(capture.requestCapture(outDir) {})
 
@@ -199,7 +199,7 @@ class AIOrbV32ClosureContractTest {
     // Flipping twice restores original buffer identically
     assertArrayEquals(rgba, OrbGpuReferenceCapture.flipRgbaVertically(flipped, w, h))
 
-    val tmpDir = createTempDir(prefix = "v32_png_roundtrip_")
+    val tmpDir = kotlin.io.path.createTempDirectory("v32_png_roundtrip_").toFile()
     try {
       val pngFile = File(tmpDir, "FULL_RENDER_GPU.png")
       val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)

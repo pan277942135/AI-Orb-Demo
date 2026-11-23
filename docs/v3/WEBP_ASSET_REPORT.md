@@ -5,7 +5,7 @@
 - **Frozen Master SHA-256:** `910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122` (verified unmodified)
 - **Deterministic Generator Seed:** `20261120`
 - **Total Production WebP Files:** `35` (`32` 3D volume slices + `3` 2D optical/detail maps)
-- **Total Compressed Asset Footprint on Disk:** `1013.0 KiB` (`1,037,346 bytes`)
+- **Total Compressed Asset Footprint on Disk:** `1064.5 KiB` (`1,090,048 bytes`)
 - **Total Uncompressed GPU VRAM Footprint:** `9.00 MiB` (`8.00 MiB` 3D Volume + `1.00 MiB` 2D Maps)
 
 ## 1. 3D Fluid Volume Texture (`uFluidVolume`, Texture Unit 1)
@@ -31,6 +31,7 @@
 ## 3. Integrity & Continuity Guarantees
 
 - Every asset is encoded with `libwebp -lossless 1` (`VP8L` chunk verified).
+- Each of the 32 slices records both compressed WebP SHA-256 and decoded RGBA SHA-256 (`262,144` bytes per slice); `test_v32_closure_gates.py` proves full byte identity against the canonical renderer.
 - Master PNG is never packaged or used as a runtime sphere texture.
 - Zero YuJian assets or external masks referenced anywhere in the pipeline.
 - Exact SHA-256 digests recorded in `app/src/main/assets/orb_v3/manifest/SHA256SUMS` and `ORB_V3_ASSET_MANIFEST.json`, verified by JVM unit tests (`AIOrbV3ReferenceAndAssetTest`).

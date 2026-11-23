@@ -22,6 +22,7 @@ import hashlib
 import json
 import sys
 import time
+from copy import deepcopy
 from pathlib import Path
 
 FITTING_DIR = Path(__file__).resolve().parent
@@ -31,7 +32,7 @@ if str(FITTING_DIR) not in sys.path:
 from camera_fitter import fit_camera
 from cavity_geometry_fitter import fit_cavity_geometry
 from optics_fitter import fit_optics
-from parameter_schema import build_default_schema, save_config
+from parameter_schema import save_config
 from reference_measurements import (
     EXPECTED_SHA256,
     REGIONS_JSON_PATH,
@@ -67,11 +68,15 @@ def verify_master_from_config(cfg: dict) -> str:
 
 def run_staged_optimization() -> tuple[dict, bool]:
     t0 = time.time()
-    cfg = build_default_schema()
-    if OUT_MASTER_CONFIG.exists():
-        existing_cfg = json.loads(OUT_MASTER_CONFIG.read_text(encoding="utf-8"))
-        if "referenceMaster" in existing_cfg and "path" in existing_cfg["referenceMaster"]:
-            cfg["referenceMaster"]["path"] = existing_cfg["referenceMaster"]["path"]
+    if not OUT_MASTER_CONFIG.exists():
+        raise FileNotFoundError(f"Missing frozen Master baseline: {OUT_MASTER_CONFIG}")
+    cfg = json.loads(OUT_MASTER_CONFIG.read_text(encoding="utf-8"))
+    frozen_camera = deepcopy(cfg["camera"])
+    frozen_residents = {
+        name: deepcopy(cfg[name])
+        for name in ("residentC01", "residentA01", "residentA02", "residentG01", "residentG02")
+    }
+    frozen_ribbon_lighting = deepcopy(cfg["lighting"])
     master_sha = verify_master_from_config(cfg)
 
     print(f"[optimize_reference_scene] === G0: Master Lock & E01-E14 Extraction (sha={master_sha[:12]}..) ===")
@@ -80,6 +85,14 @@ def run_staged_optimization() -> tuple[dict, bool]:
 
     print("[optimize_reference_scene] === Stage A: Camera Projection Fit ===")
     stage_a = fit_camera(cfg, targets)
+    # Stage A is rerun as a measurement, but the task contract freezes scene camera values.
+    cfg["camera"] = frozen_camera
+    stage_a["writeback"] = "FROZEN_CAMERA_RESTORED_AFTER_RECOMPUTE"
+    stage_a["masterCameraValues"] = {
+        key: entry.get("fittedValue")
+        for key, entry in frozen_camera.items()
+        if isinstance(entry, dict) and "fittedValue" in entry
+    }
     print(
         f"  [Stage A] camDist={stage_a['fitted']['cameraDistanceSquare']} vbr={stage_a['fitted']['visualBoundRadius']} "
         f"diamErr={stage_a['fitted']['squareDiamRelErr']*100:.2f}% centerErr={stage_a['fitted']['squareCenterErrW']*100:.2f}% "
@@ -107,7 +120,10 @@ def run_staged_optimization() -> tuple[dict, bool]:
     )
 
     print("[optimize_reference_scene] === Stage D: Resident Combined 3D Projection Fit ===")
-    stage_d = fit_residents(cfg, targets)
+    stage_d = fit_residents(cfg, targets, optimize=False)
+    # Defensive assertion: the Stage D audit must not alter any of the five frozen residents.
+    if any(cfg[name] != frozen_residents[name] for name in frozen_residents):
+        raise RuntimeError("Frozen resident Master parameters changed during Stage D audit")
     fg = stage_d["fittedGold"]
     print(
         f"  [Stage D] Gold Chamfer={fg['chamferR']:.4f}R (V3.1={stage_d['baselineV31Gold']['chamferR']:.4f}R) "
@@ -115,8 +131,10 @@ def run_staged_optimization() -> tuple[dict, bool]:
         f"regularOval={fg['ovalMetrics']['isRegularOval']} C01_turn={stage_d['c01MaxTurnDeg']}° pass={stage_d['pass']}"
     )
 
-    print("[optimize_reference_scene] === Stage E: Glass Optics & Ribbon Material Fit ===")
-    stage_e = fit_optics(cfg, targets)
+    print("[optimize_reference_scene] === Stage E: Glass Optics Fit (resident material frozen) ===")
+    stage_e = fit_optics(cfg, targets, fit_ribbon_material=False)
+    if cfg["lighting"] != frozen_ribbon_lighting:
+        raise RuntimeError("Frozen ribbon lighting/material parameters changed during Stage E")
     em = stage_e["metrics"]
     print(
         f"  [Stage E] haze={em['upperDomeHazeRatio']*100:.2f}% E09_err={em['e09AreaRelErr']*100:.1f}% "
@@ -157,6 +175,12 @@ def run_staged_optimization() -> tuple[dict, bool]:
         "allOfflineHardGatesPass": vl["allOfflineHardGatesPass"],
         "failedOfflineGates": vl["failedOfflineGates"],
         "elapsedSec": round(time.time() - t0, 2),
+        "scopeContract": {
+            "cameraWrittenBack": False,
+            "residentCurvesWrittenBack": False,
+            "ribbonMaterialWrittenBack": False,
+            "coreVolumeAndOpticsFitted": True,
+        },
     }
 
     save_config(cfg, OUT_MASTER_CONFIG)

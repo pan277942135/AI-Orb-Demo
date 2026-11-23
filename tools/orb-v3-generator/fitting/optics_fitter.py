@@ -19,6 +19,7 @@ from typing import Any
 
 from cavity_geometry_fitter import clamp01, smoothstep
 from parameter_schema import get_val, set_val
+from visual_metrics import UPPER_DOME_MIN_Y, is_upper_dome_grey_white_haze
 
 
 def evaluate_optics(targets: dict[str, Any], op: dict[str, float]) -> dict[str, Any]:
@@ -90,12 +91,9 @@ def evaluate_optics(targets: dict[str, Any], op: dict[str, float]) -> dict[str, 
                 flare_sx += nx
                 flare_sy += ny
 
-            if ny > 0.18:
+            if ny > UPPER_DOME_MIN_Y:
                 upper_cnt += 1
-                c_max = max(sr, sg, sb)
-                c_min = min(sr, sg, sb)
-                sat = (c_max - c_min) / max(1.0, float(c_max))
-                if not is_flare and luma > 135 and sat < 0.22:
+                if is_upper_dome_grey_white_haze(ny, sr, sg, sb, is_flare):
                     haze_cnt += 1
 
             if 0.80 <= math.hypot(nx, ny) <= 0.94:
@@ -147,7 +145,7 @@ def evaluate_optics(targets: dict[str, Any], op: dict[str, float]) -> dict[str, 
     }
 
 
-def fit_optics(cfg: dict[str, Any], targets: dict[str, Any]) -> dict[str, Any]:
+def fit_optics(cfg: dict[str, Any], targets: dict[str, Any], fit_ribbon_material: bool = True) -> dict[str, Any]:
     """Stage E coordinate-descent optical & ribbon material calibration."""
     op = {
         "iorGlass": float(get_val(cfg, "outerGlass", "iorGlass")),
@@ -174,7 +172,7 @@ def fit_optics(cfg: dict[str, Any], targets: dict[str, Any]) -> dict[str, Any]:
     for scale in (1.0, 0.4, 0.15):
         for _ in range(6):
             improved = False
-            for k, st, lo, hi in (
+            search_specs = (
                 ("crownGoldStrength", 0.22 * scale, 0.40, 2.00),
                 ("fresnelGain", 0.08 * scale, 0.20, 0.80),
                 ("razorRimGain", 0.10 * scale, 0.35, 1.35),
@@ -186,7 +184,12 @@ def fit_optics(cfg: dict[str, Any], targets: dict[str, Any]) -> dict[str, Any]:
                 ("secThreadGain", 0.10 * scale, 0.30, 1.25),
                 ("glassBellyGain", 0.06 * scale, 0.12, 0.65),
                 ("goldSpecGain", 0.10 * scale, 0.20, 1.05),
-            ):
+            )
+            if not fit_ribbon_material:
+                search_specs = tuple(spec for spec in search_specs if spec[0] not in {
+                    "goldWallsGain", "coreStreamGain", "secThreadGain", "glassBellyGain", "goldSpecGain"
+                })
+            for k, st, lo, hi in search_specs:
                 for sgn in (-1.0, 1.0):
                     trial = dict(op)
                     trial[k] = max(lo, min(hi, trial[k] + sgn * st))
@@ -206,12 +209,14 @@ def fit_optics(cfg: dict[str, Any], targets: dict[str, Any]) -> dict[str, Any]:
         "upperHazeSuppress", "crownGoldStrength",
     ):
         set_val(cfg, "outerGlass", k, round(op[k], 4))
-    for k in ("goldWallsGain", "coreStreamGain", "secThreadGain", "glassBellyGain", "goldSpecGain"):
-        set_val(cfg, "lighting", k, round(op[k], 4))
+    if fit_ribbon_material:
+        for k in ("goldWallsGain", "coreStreamGain", "secThreadGain", "glassBellyGain", "goldSpecGain"):
+            set_val(cfg, "lighting", k, round(op[k], 4))
 
     gate_pass = (best["upperDomeHazeRatio"] <= 0.01 and best["goldLumaErr"] <= 0.10)
     return {
         "stage": "STAGE_E_OPTICS_FIT",
+        "ribbonMaterialUpdated": fit_ribbon_material,
         "pass": gate_pass,
         "metrics": best,
         "history": history,

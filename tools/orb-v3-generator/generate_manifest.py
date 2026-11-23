@@ -16,6 +16,11 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+GEN_DIR = ROOT / "tools" / "orb-v3-generator"
+if str(GEN_DIR) not in sys.path:
+    sys.path.insert(0, str(GEN_DIR))
+from canonical_fluid_volume import decode_webp_volume_3d
+
 MASTER_PATH = ROOT / "public" / "assets" / "aistudio" / "____________910d1531.png"
 ASSETS_ROOT = ROOT / "app" / "src" / "main" / "assets" / "orb_v3"
 MANIFEST_DIR = ASSETS_ROOT / "manifest"
@@ -46,6 +51,7 @@ def main() -> int:
     volume_slices = []
     sha_lines = []
     total_disk_bytes = 0
+    decoded_rgba_slices = decode_webp_volume_3d(ASSETS_ROOT / "volume")
 
     for z in range(32):
         rel = f"volume/fluid_color_z{z:02d}.webp"
@@ -54,12 +60,16 @@ def main() -> int:
             raise FileNotFoundError(f"Missing volume slice: {p}")
         sz = p.stat().st_size
         digest = sha256_file(p)
+        decoded_rgba = decoded_rgba_slices[z]
+        decoded_digest = hashlib.sha256(decoded_rgba).hexdigest()
         total_disk_bytes += sz
         volume_slices.append({
             "zIndex": z,
             "path": rel,
             "bytes": sz,
             "sha256": digest,
+            "decodedRgbaBytes": len(decoded_rgba),
+            "decodedRgbaSha256": decoded_digest,
         })
         sha_lines.append(f"{digest}  {rel}")
 
@@ -196,6 +206,7 @@ def main() -> int:
 ## 3. Integrity & Continuity Guarantees
 
 - Every asset is encoded with `libwebp -lossless 1` (`VP8L` chunk verified).
+- Each of the 32 slices records both compressed WebP SHA-256 and decoded RGBA SHA-256 (`262,144` bytes per slice); `test_v32_closure_gates.py` proves full byte identity against the canonical renderer.
 - Master PNG is never packaged or used as a runtime sphere texture.
 - Zero YuJian assets or external masks referenced anywhere in the pipeline.
 - Exact SHA-256 digests recorded in `app/src/main/assets/orb_v3/manifest/SHA256SUMS` and `ORB_V3_ASSET_MANIFEST.json`, verified by JVM unit tests (`AIOrbV3ReferenceAndAssetTest`).

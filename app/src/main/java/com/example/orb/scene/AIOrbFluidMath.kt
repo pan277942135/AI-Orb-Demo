@@ -27,12 +27,15 @@ object AIOrbFluidMath {
   )
 
   fun smoothstepSafe(lo: Float, hi: Float, x: Float): Float {
+    if (!lo.isFinite() || !hi.isFinite() || !x.isFinite()) return 0f
     require(lo < hi) { "smoothstepSafe requires lo < hi, got lo=$lo, hi=$hi" }
     val t = ((x - lo) / (hi - lo)).coerceIn(0f, 1f)
     return t * t * (3f - 2f * t)
   }
 
-  fun invSmoothstep(lo: Float, hi: Float, x: Float): Float = 1f - smoothstepSafe(lo, hi, x)
+  fun inverseSmoothstep(lo: Float, hi: Float, x: Float): Float = 1f - smoothstepSafe(lo, hi, x)
+
+  fun invSmoothstep(lo: Float, hi: Float, x: Float): Float = inverseSmoothstep(lo, hi, x)
 
   /**
    * Rigid rotated Core Frame (`coreFramePos = uCoreRotMat * localPos`, NO curl).
@@ -292,6 +295,27 @@ object AIOrbFluidMath {
       exp(-liquidPath * 2.15f * density),
       exp(-liquidPath * 0.72f * density),
       exp(-liquidPath * 0.36f * density),
+    )
+  }
+
+  /** Per-channel Beer-Lambert attenuation for one sampled volume segment (GLSL parity: exp(-sigma)). */
+  fun volumeStepTransmittance(linearDensity: Float, densityScale: Float, segmentLength: Float): Float {
+    val sigma = linearDensity.coerceAtLeast(0f) * densityScale.coerceAtLeast(0f) * segmentLength.coerceAtLeast(0f)
+    return exp(-sigma)
+  }
+
+  /** Per-channel Beer-Lambert transmittance for one voxel segment (matches GLSL vector exp). */
+  fun volumeStepSpectralTransmittance(
+    linearDensity: Float,
+    densityScale: Float,
+    segmentLength: Float,
+    absorption: Vec3,
+  ): Vec3 {
+    val opticalPath = linearDensity.coerceAtLeast(0f) * densityScale.coerceAtLeast(0f) * segmentLength.coerceAtLeast(0f)
+    return Vec3(
+      exp(-absorption.x.coerceAtLeast(0f) * opticalPath),
+      exp(-absorption.y.coerceAtLeast(0f) * opticalPath),
+      exp(-absorption.z.coerceAtLeast(0f) * opticalPath),
     )
   }
 }

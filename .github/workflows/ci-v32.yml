@@ -1,55 +1,99 @@
-name: AI Orb V3.2 High-Fidelity Final Closure CI
+name: AI Orb V3.2 High-Fidelity Final Closure
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   verify-v32-final-closure:
-    name: Verify V3.2 Master Lock, Offline Gates, Negative CI Tests, Unit Tests & Exact-HEAD APK
+    name: Master, Assets, Offline Gates, GLES, Android Tests & Exact-HEAD APK
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Exact HEAD
         uses: actions/checkout@v4
 
-      - name: Install ffmpeg for Lossless RGBA WebP Verification
+      - name: Install WebP and GLES validation runtimes
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
+          sudo apt-get install -y -qq ffmpeg libegl1 libgl1-mesa-dri
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
+          cache: gradle
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Verify Sole Frozen Master PNG SHA-256
-        run: |
-          EXPECTED="910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122"
-          ACTUAL=$(sha256sum public/assets/aistudio/____________910d1531.png | awk '{print $1}')
-          echo "Master SHA-256: $ACTUAL"
-          test "$ACTUAL" = "$EXPECTED"
+      - name: Install pinned volume generation dependency
+        run: python -m pip install -r tools/orb-v3-generator/requirements.txt
 
-      - name: Validate WebP Assets, Volume Continuity, Strict Fit Gates & 10 Negative CI Tests
+      - name: MASTER_LOCK
         run: |
-          python3 tools/orb-v3-generator/validate_webp_assets.py
-          python3 tools/orb-v3-generator/validate_volume_continuity.py
-          python3 tools/orb-v3-generator/fitting/validate_fit.py
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+
+          expected = "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122"
+          master = Path("public/assets/aistudio/____________910d1531.png").read_bytes()
+          assert hashlib.sha256(master).hexdigest() == expected, "Frozen master SHA mismatch"
+          config = Path("app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json").read_bytes()
+          config_sha = hashlib.sha256(config).hexdigest()
+          loss = json.loads(Path("docs/v3/AI_ORB_V3_2_VISUAL_LOSS.json").read_text())
+          assert loss["masterFidelityConfigSha256"] == config_sha, "Master config SHA differs from offline fit"
+          cfg = json.loads(config)
+          assert cfg["referenceMaster"]["sha256"] == expected
+          assert cfg["fluidVolume"]["depth"]["fittedValue"] == 32
+          print(f"[MASTER_LOCK PASS] master={expected} config={config_sha}")
+          PY
+
+      - name: WEBP_ASSET_VALIDATION
+        run: python3 tools/orb-v3-generator/validate_webp_assets.py
+
+      - name: VOLUME_CONTINUITY
+        run: python3 tools/orb-v3-generator/validate_volume_continuity.py
+
+      - name: OFFLINE_FIT_VALIDATION
+        run: python3 tools/orb-v3-generator/fitting/validate_fit.py
+
+      - name: CANONICAL_CLOSURE_TESTS
+        run: |
           python3 tools/orb-v3-generator/test_v32_closure_gates.py
+          EGL_PLATFORM=surfaceless XDG_CACHE_HOME="$RUNNER_TEMP" MESA_GLES_VERSION_OVERRIDE=3.0 \
+            python3 tools/orb-v3-generator/validate_glsl_es.py
 
-      - name: Compile, Run All JVM/Robolectric Tests & Assemble Debug APK
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Create ephemeral Android debug signing key
+        run: |
+          if [ ! -f debug.keystore ]; then
+            keytool -genkeypair -v -keystore debug.keystore -storepass android -keypass android \
+              -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US" -noprompt
+          fi
+
+      - name: ALL_UNIT_TESTS
+        run: ./gradlew :app:testDebugUnitTest --console=plain
+
+      - name: ANDROID_TEST_COMPILE
+        run: ./gradlew :app:compileDebugAndroidTestKotlin --console=plain
+
+      - name: LINT
+        run: ./gradlew :app:lintDebug --console=plain
+
+      - name: DEBUG_APK_BUILD
         run: ./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :app:assembleDebug --console=plain
 
-      - name: Package Exact-HEAD Final Debug APK & Verify Embedded APK Assets SHA-256
+      - name: APK_ASSET_SHA_VERIFICATION
         run: |
           cp app/build/outputs/apk/debug/app-debug.apk AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk
           sha256sum AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk > AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk.sha256
@@ -58,36 +102,43 @@ jobs:
           from pathlib import Path
 
           apk_path = Path("AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk")
-          manifest = json.loads(Path("app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json").read_text())
-          master_cfg_bytes = Path("app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json").read_bytes()
-          master_cfg_sha = hashlib.sha256(master_cfg_bytes).hexdigest()
-
-          expected_entries = [
-              ("assets/orb_v3/manifest/MASTER_FIDELITY_V32.json", master_cfg_sha),
-          ]
-          for s in manifest["volume"]["slices"]:
-              expected_entries.append((f"assets/orb_v3/{s['path']}", s["sha256"]))
-          for m in manifest["maps"]:
-              expected_entries.append((f"assets/orb_v3/{m['path']}", m["sha256"]))
-
-          with zipfile.ZipFile(apk_path, "r") as zf:
-              for zpath, exp_sha in expected_entries:
-                  actual_sha = hashlib.sha256(zf.read(zpath)).hexdigest()
-                  assert actual_sha == exp_sha, f"APK asset mismatch: {zpath} {actual_sha} != {exp_sha}"
-          print(f"[CI] Verified all {len(expected_entries)} APK assets (35 WebP + MASTER_FIDELITY_V32.json) match disk SHA-256!")
+          manifest_path = Path("app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json")
+          manifest = json.loads(manifest_path.read_text())
+          config = Path("app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json").read_bytes()
+          expected_entries = [("assets/orb_v3/manifest/MASTER_FIDELITY_V32.json", hashlib.sha256(config).hexdigest())]
+          for item in manifest["volume"]["slices"]:
+              expected_entries.append((f"assets/orb_v3/{item['path']}", item["sha256"]))
+          for item in manifest["maps"]:
+              expected_entries.append((f"assets/orb_v3/{item['path']}", item["sha256"]))
+          assert len(manifest["volume"]["slices"]) == 32
+          assert len(manifest["maps"]) == 3
+          with zipfile.ZipFile(apk_path) as apk:
+              for apk_path_name, expected_sha in expected_entries:
+                  actual = hashlib.sha256(apk.read(apk_path_name)).hexdigest()
+                  assert actual == expected_sha, f"APK asset SHA mismatch: {apk_path_name}"
+          print(f"[APK_ASSET_SHA PASS] {len(expected_entries)} entries: 35 WebP + Master config")
           PY
 
-      - name: Emit Exact-HEAD BUILD_FINGERPRINT.json & SHA256SUMS
+      - name: EXACT_HEAD_FINGERPRINT
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
+          HEAD_SHA=$(git rev-parse HEAD)
+          test "$HEAD_SHA" = "$GITHUB_SHA"
           APK_SHA=$(awk '{print $1}' AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk.sha256)
           CFG_SHA=$(sha256sum app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json | awk '{print $1}')
           cat > docs/v3/BUILD_FINGERPRINT.json <<EOF
           {
             "schema": "AI_ORB_V3_2_EXACT_HEAD_BUILD_FINGERPRINT_1_0",
-            "taskId": "AI_ORB_V32_FINAL_FIDELITY_CLOSURE_V2",
-            "gitCommitSha": "${GITHUB_SHA}",
+            "taskId": "AI_ORB_V32_FINAL_CLOSURE_YUJIAN_CORE_OPTICAL_FUSION_V3",
+            "gitCommitSha": "${HEAD_SHA}",
             "githubRunId": "${GITHUB_RUN_ID}",
             "githubRef": "${GITHUB_REF}",
+            "ciRunUrl": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}",
             "referenceMasterSha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
             "masterFidelityV32Sha256": "${CFG_SHA}",
             "apkFile": "AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk",
@@ -100,11 +151,13 @@ jobs:
             public/assets/aistudio/____________910d1531.png \
             app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json \
             app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json \
+            app/src/main/assets/orb_v3/manifest/SHA256SUMS \
+            tools/orb-v3-generator/fitting/CANONICAL_VOLUME_PIXEL_CLOSURE.json \
             docs/v3/AI_ORB_V3_2_VISUAL_LOSS.json \
-            docs/v3/BUILD_FINGERPRINT.json > docs/v3/AI_ORB_V3_2_FINAL_V2_SHA256SUMS
-          cat docs/v3/AI_ORB_V3_2_FINAL_V2_SHA256SUMS
+            docs/v3/BUILD_FINGERPRINT.json > docs/v3/AI_ORB_V3_2_FINAL_V3_SHA256SUMS
+          cat docs/v3/AI_ORB_V3_2_FINAL_V3_SHA256SUMS
 
-      - name: Upload Exact-HEAD Final APK & Closure Evidence Artifacts
+      - name: ARTIFACT_UPLOAD
         uses: actions/upload-artifact@v4
         with:
           name: ai-orb-v32-final-closure-exact-head
@@ -113,4 +166,10 @@ jobs:
             AI-Orb-Demo-V3.2-HighFidelity-Final-debug.apk.sha256
             docs/v3/BUILD_FINGERPRINT.json
             docs/v3/AI_ORB_V3_2_*
+            docs/v3/WEBP_ASSET_REPORT.md
+            tools/orb-v3-generator/fitting/FIT_RUN_SUMMARY.json
             tools/orb-v3-generator/fitting/FIT_VALIDATION_RESULT.json
+            tools/orb-v3-generator/fitting/CANONICAL_VOLUME_PIXEL_CLOSURE.json
+            app/src/main/assets/orb_v3/manifest/SHA256SUMS
+            app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json
+            app/src/main/assets/orb_v3/volume/*.webp

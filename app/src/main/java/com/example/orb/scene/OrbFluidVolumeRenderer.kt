@@ -121,7 +121,6 @@ class OrbFluidVolumeRenderer {
     prog.setFloat("uMeniscusPhase", motion.meniscusPhase)
     prog.setFloat("uCausticsPhase", motion.causticsPhase)
     prog.setFloat("uFluidIntensity", config.fluidIntensity)
-    prog.setFloat("uDensityScale", config.densityScale)
     prog.setFloat("uCoreTransparency", config.coreTransparency)
     prog.setFloat("uRefraction", config.refraction)
     prog.setFloat("uOverallIntensity", config.overallIntensity)
@@ -137,6 +136,12 @@ class OrbFluidVolumeRenderer {
     val sap = fidelity.sapphireValleys
     val lgt = fidelity.lighting
     val cau = fidelity.caustics
+    val effectiveDensity = (vol.densityScale * config.densityScaleMultiplier.coerceIn(
+      AIOrbConfig.MIN_DENSITY_SCALE_MULTIPLIER,
+      AIOrbConfig.MAX_DENSITY_SCALE_MULTIPLIER,
+    )).coerceIn(vol.densityScaleMin, vol.densityScaleMax)
+    prog.setFloat("uDensityScale", effectiveDensity)
+    prog.setVec2("uDensityRange", vol.densityScaleMin, vol.densityScaleMax)
     prog.setVec3("uLensCenter", cav.lensCenterX, cav.lensCenterY, cav.lensCenterZ)
     prog.setVec3("uLensRadii", cav.lensRadiusX, cav.lensRadiusY, cav.lensRadiusZ)
     prog.setVec4(
@@ -160,6 +165,15 @@ class OrbFluidVolumeRenderer {
       glass.upperHazeSuppress,
       cau.causticIntensity,
     )
+    prog.setVec4(
+      "uGlassStructure",
+      glass.glassWallThickness,
+      glass.fresnelPower,
+      glass.fresnelGain,
+      glass.razorRimGain,
+    )
+    prog.setVec3("uGlassRim", glass.innerRingGain, glass.grooveDarkening, glass.envReflectionCap)
+    prog.setVec3("uInterfaceIor", cav.iorAir, cav.iorWater, cav.iorCrystal)
     prog.setVec3("uBeerLambert", sap.beerLambertR, sap.beerLambertG, sap.beerLambertB)
     prog.setFloat("uTaskInteriorTransmission", taskInteriorTransmission)
     prog.setFloat("uTaskAbsorptionGain", taskAbsorptionGain)

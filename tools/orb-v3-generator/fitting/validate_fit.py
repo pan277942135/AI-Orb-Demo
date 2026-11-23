@@ -181,6 +181,9 @@ def validate_webp_manifest_and_files(root: Path) -> tuple[list[str], int]:
             errors.append(f"WebP SHA-256 mismatch for {rel_path}: manifest={expected_sha[:12]}.. vs disk={actual_sha[:12]}..")
             continue
         verified += 1
+    for z, item in enumerate(volume_slices):
+        if not item.get("decodedRgbaSha256") or item.get("decodedRgbaBytes") != 256 * 256 * 4:
+            errors.append(f"Missing or invalid decoded RGBA digest metadata for volume slice z={z}")
     return errors, verified
 
 
@@ -236,6 +239,17 @@ def run_validation(root_override: Path | None = None, write_report: bool = True)
     # Independent verification directly against decoded 32 Lossless RGBA WebP slices on disk
     try:
         slices = decode_webp_volume_3d(vol_dir)
+        manifest_path = base_root / "app" / "src" / "main" / "assets" / "orb_v3" / "manifest" / "ORB_V3_ASSET_MANIFEST.json"
+        manifest_slices = json.loads(manifest_path.read_text(encoding="utf-8")).get("volume", {}).get("slices", [])
+        for z, raw_rgba in enumerate(slices):
+            if z >= len(manifest_slices):
+                errors.append(f"Missing decoded RGBA manifest entry for z={z}")
+                continue
+            entry = manifest_slices[z]
+            if sha256_bytes(raw_rgba) != entry.get("decodedRgbaSha256"):
+                errors.append(f"Decoded RGBA SHA-256 mismatch for volume slice z={z}")
+            if len(raw_rgba) != entry.get("decodedRgbaBytes"):
+                errors.append(f"Decoded RGBA byte count mismatch for volume slice z={z}")
         decoded_proj = evaluate_decoded_webp_projection(cfg, targets, slices, grid_n=96, steps=16)
         regs = decoded_proj["regions"]
         webp_proj_errs: list[str] = []

@@ -12,6 +12,7 @@ import com.example.orb.scene.AIOrbOrbitRibbons
 import com.example.orb.scene.AIOrbScene
 import com.example.orb.scene.RibbonRole
 import com.example.orb.v3.OrbWebpAssetLoader
+import com.example.orb.v3.MasterFidelityV32
 import com.example.orb.v3.ReferenceMeniscusProfile
 import java.io.File
 import kotlin.math.abs
@@ -202,16 +203,21 @@ class AIOrbV31StructuralParityTest {
   fun t04_unifiedDensityScaleContractAndBeerLambertNumericalStability() {
     val root = projectRoot()
     val cfg = AIOrbConfig.Default
-    assertTrue("Default densityScale ${cfg.densityScale} must lie in [1.20, 1.95]", cfg.densityScale in 1.20f..1.95f)
-    assertTrue("AIOrbConfig.toJson must include densityScale", cfg.toJson().contains("\"densityScale\""))
+    assertEquals(1.0f, cfg.densityScaleMultiplier, 0f)
+    assertTrue("AIOrbConfig.toJson must include the relative density multiplier", cfg.toJson().contains("\"densityScaleMultiplier\""))
 
     val rendererSrc = File(root, "app/src/main/java/com/example/orb/scene/OrbFluidVolumeRenderer.kt").readText(Charsets.UTF_8)
     val frag = CoreFluidShaders.CORE_GLASS_FRAG
-    assertTrue(rendererSrc.contains("prog.setFloat(\"uDensityScale\", config.densityScale)"))
+    assertTrue(rendererSrc.contains("vol.densityScale * config.densityScaleMultiplier"))
+    assertTrue(rendererSrc.contains("prog.setVec2(\"uDensityRange\", vol.densityScaleMin, vol.densityScaleMax)"))
     assertTrue(frag.contains("uniform float uDensityScale;"))
-    assertTrue(frag.contains("float densityScale = clamp(uDensityScale, 1.20, 1.95)"))
+    assertTrue(frag.contains("uniform vec2 uDensityRange;"))
+    assertTrue(frag.contains("float densityScale = clamp(uDensityScale, uDensityRange.x, uDensityRange.y)"))
 
-    val effScale = cfg.densityScale.coerceIn(1.20f, 1.95f) * (0.80f + 0.20f * cfg.fluidIntensity)
+    val masterDensity = MasterFidelityV32.Default.fluidVolume.densityScale
+    val range = MasterFidelityV32.Default.fluidVolume
+    val effScale = (masterDensity * cfg.densityScaleMultiplier).coerceIn(range.densityScaleMin, range.densityScaleMax)
+    assertEquals("Default runtime density must equal Master fitted density", masterDensity, effScale, 0f)
     var prevT = 1.0
     for (step in 0..40) {
       val path = step * 0.05
@@ -291,7 +297,8 @@ class AIOrbV31StructuralParityTest {
     assertTrue(frag.contains("fragColor = vec4(finalComposited * uHdrScale, 1.0);"))
 
     assertTrue(frag.contains("vec3 clearCavityCol = refractedBack * vec3(0.92, 0.99, 1.02)"))
-    assertTrue(frag.contains("float envBlend = clamp(fresnelOuter * (0.58 - uCoreTransparency * 0.38), 0.003, 0.22);"))
+    assertTrue(rendererSrc.contains("prog.setVec3(\"uGlassRim\", glass.innerRingGain, glass.grooveDarkening, glass.envReflectionCap)"))
+    assertTrue(frag.contains("float envBlend = clamp(fresnelOuter * (0.58 - uCoreTransparency * 0.38), 0.003, min(uGlassRim.z, 0.30));"))
     assertTrue(frag.contains("col = mix(col, envRefl, envBlend * 0.30);"))
     assertTrue(frag.contains("col += rimPalette * (fresnelOuter * 0.50 + razorOuterRim * 0.90);"))
     assertTrue(frag.contains("crownRimArc"))

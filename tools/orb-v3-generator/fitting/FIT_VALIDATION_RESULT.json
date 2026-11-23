@@ -1,91 +1,160 @@
 {
+  "status": "OFFLINE_FIDELITY_GATE_PASSED",
   "schemaValid": true,
-  "staticOfflineHardGatesPass": false,
-  "failedOfflineGates": [
-    "E05_emeraldCentroid_le_004D",
-    "E06_sapphireAreaRelErr_le_15pct",
-    "E06_sapphireCentroid_le_004D",
-    "E07_aquaAreaRelErr_le_15pct",
-    "E07_aquaCentroid_le_004D"
-  ],
+  "masterFidelityConfigSha256": "e1b00b49565a3bfb4932b1b970e98da92e10028fadcbe0de9dbf74695c00bb7a",
+  "staticOfflineHardGatesPass": true,
+  "webpManifestVerifiedCount": 35,
+  "webpManifestPass": true,
+  "decodedWebpProjectionPass": true,
+  "decodedWebpProjection": {
+    "evaluationSource": "DECODED_WEBP_32_SLICES_TRILINEAR",
+    "gridN": 96,
+    "steps": 16,
+    "diskSampleCount": 6400,
+    "loss": 1.7681,
+    "regions": {
+      "E03_upper_cavity": {
+        "targetAreaRatio": 0.06931,
+        "simAreaRatio": 0.06734,
+        "relativeAreaError": 0.0284,
+        "targetCentroid": [
+          0.2039,
+          0.476
+        ],
+        "simCentroid": [
+          0.1651,
+          0.4792
+        ],
+        "centroidDistD": 0.0194
+      },
+      "E05_emerald": {
+        "targetAreaRatio": 0.32254,
+        "simAreaRatio": 0.34406,
+        "relativeAreaError": 0.0667,
+        "targetCentroid": [
+          -0.1363,
+          -0.1007
+        ],
+        "simCentroid": [
+          -0.124,
+          -0.173
+        ],
+        "centroidDistD": 0.0367
+      },
+      "E06_sapphire": {
+        "targetAreaRatio": 0.25652,
+        "simAreaRatio": 0.28813,
+        "relativeAreaError": 0.1232,
+        "targetCentroid": [
+          0.1586,
+          0.0881
+        ],
+        "simCentroid": [
+          0.1496,
+          0.1204
+        ],
+        "centroidDistD": 0.0168
+      },
+      "E07_aqua": {
+        "targetAreaRatio": 0.15309,
+        "simAreaRatio": 0.16047,
+        "relativeAreaError": 0.0482,
+        "targetCentroid": [
+          0.027,
+          -0.162
+        ],
+        "simCentroid": [
+          0.0864,
+          -0.1766
+        ],
+        "centroidDistD": 0.0306
+      }
+    },
+    "classifierStats": {
+      "flarePixels": 412,
+      "overlapE03AndE06": 427,
+      "overlapE06AndE07": 165,
+      "overlapE05AndE07": 43,
+      "unclassifiedDiskPixels": 1119,
+      "unclassifiedRatio": 0.1748
+    }
+  },
   "dynamic360Sweep": {
-    "axis": [
-      0.14,
-      0.98,
-      -0.14
-    ],
+    "evaluationSource": "DECODED_WEBP_32_SLICES_TRILINEAR",
     "stepDeg": 30,
-    "maxStepAlphaJump": 0.20245,
+    "maxStepAlphaJump": 0.13746,
     "loopClosure360AlphaErr": 0.0,
     "pass": true,
     "samples": [
       {
         "angleDeg": 0,
-        "meanAlpha": 0.4588,
-        "meanGreen": 0.5724
+        "meanAlpha": 0.3062,
+        "meanGreen": 0.4332
       },
       {
         "angleDeg": 30,
-        "meanAlpha": 0.2943,
-        "meanGreen": 0.4361
+        "meanAlpha": 0.2789,
+        "meanGreen": 0.3813
       },
       {
         "angleDeg": 60,
-        "meanAlpha": 0.1677,
-        "meanGreen": 0.4805
+        "meanAlpha": 0.2789,
+        "meanGreen": 0.5702
       },
       {
         "angleDeg": 90,
-        "meanAlpha": 0.2513,
-        "meanGreen": 0.4452
+        "meanAlpha": 0.4163,
+        "meanGreen": 0.59
       },
       {
         "angleDeg": 120,
-        "meanAlpha": 0.2117,
-        "meanGreen": 0.4874
+        "meanAlpha": 0.3819,
+        "meanGreen": 0.5314
       },
       {
         "angleDeg": 150,
-        "meanAlpha": 0.4141,
-        "meanGreen": 0.5778
+        "meanAlpha": 0.3831,
+        "meanGreen": 0.4167
       },
       {
         "angleDeg": 180,
-        "meanAlpha": 0.3066,
-        "meanGreen": 0.6065
+        "meanAlpha": 0.4261,
+        "meanGreen": 0.5679
       },
       {
         "angleDeg": 210,
         "meanAlpha": 0.3872,
-        "meanGreen": 0.3974
+        "meanGreen": 0.5715
       },
       {
         "angleDeg": 240,
-        "meanAlpha": 0.3355,
-        "meanGreen": 0.5181
+        "meanAlpha": 0.3171,
+        "meanGreen": 0.4347
       },
       {
         "angleDeg": 270,
-        "meanAlpha": 0.3968,
-        "meanGreen": 0.5926
+        "meanAlpha": 0.4331,
+        "meanGreen": 0.5587
       },
       {
         "angleDeg": 300,
-        "meanAlpha": 0.2704,
-        "meanGreen": 0.3252
+        "meanAlpha": 0.3153,
+        "meanGreen": 0.5264
       },
       {
         "angleDeg": 330,
-        "meanAlpha": 0.2724,
-        "meanGreen": 0.5503
+        "meanAlpha": 0.4294,
+        "meanGreen": 0.5373
       },
       {
         "angleDeg": 360,
-        "meanAlpha": 0.4588,
-        "meanGreen": 0.5724
+        "meanAlpha": 0.3062,
+        "meanGreen": 0.4332
       }
     ]
   },
-  "overallOfflineValidationPass": false,
+  "failedOfflineGates": [],
+  "errors": [],
+  "overallOfflineValidationPass": true,
   "realGpuStatus": "PENDING_REAL_GPU_CAPTURE"
 }

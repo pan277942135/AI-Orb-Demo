@@ -104,7 +104,8 @@ class AIOrbV3VolumeShaderAndLoaderTest {
     // True independent 3D Core Rotation + bounded 3D curl + Beer-Lambert Front-to-Back accumulation
     assertTrue(frag.contains("mat3 invCoreRot = transpose(uCoreRotMat);"))
     assertTrue(frag.contains("computeVolumeCurl("))
-    assertTrue(frag.contains("accumColor += (1.0 - accumAlpha)"))
+    assertTrue(frag.contains("accumColor += volumeTransmittance * litSample * (vec3(1.0) - segmentTransmittance)"))
+    assertTrue(frag.contains("volumeTransmittance *= segmentTransmittance"))
     assertTrue(frag.contains("accumAlpha += (1.0 - accumAlpha)"))
     assertTrue(frag.contains("if (i > steps || accumAlpha > 0.96) break;"))
 

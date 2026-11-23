@@ -15,6 +15,7 @@ GL_TEXTURE_3D + CoreFluidShaders.kt) under the EXACT SAME unified pixel classifi
 from __future__ import annotations
 
 import math
+import itertools
 import sys
 from pathlib import Path
 from typing import Any
@@ -409,7 +410,10 @@ def benchmark_slice_depth_32_vs_64(
 
     err32 = trilinear_z_error(32)
     err64 = trilinear_z_error(64)
-    selected_depth = 32 if err32 < 0.016 else 64
+    # V3.2's runtime and release contract fixes the canonical texture at 256x256x32.
+    # Keep the 64-slice result as a quality comparison, but never emit an asset/runtime
+    # depth that the generator, manifest contract, and Android loader do not support.
+    selected_depth = 32
     return {
         "depth32": {
             "dimensions": "256x256x32",
@@ -423,9 +427,10 @@ def benchmark_slice_depth_32_vs_64(
         },
         "selectedDepth": selected_depth,
         "rationale": (
-            f"256x256x32 achieves mean Z trilinear error {err32:.5f} (< 0.016, ~3.5 LSB) while cutting GPU VRAM "
-            "in half (8.0 MiB vs 16.0 MiB) and preserving frozen V3 WebP-First startup latency; crisp "
-            "thin-sheet normals are further sharpened analytically in CoreFluidShaders.kt."
+            f"The release contract fixes 256x256x32 (8.0 MiB) and the canonical generator emits exactly 32 slices. "
+            f"The measured mean Z interpolation errors are {err32:.5f} at 32 slices and {err64:.5f} at 64 slices; "
+            "the 64-slice value is retained for comparison only and is not selected because it would violate the "
+            "manifest, loader, and APK asset contract."
         ),
     }
 
@@ -443,42 +448,68 @@ def fit_volume_structure(
     vp = extract_volume_params(cfg)
     initial_params = {k: round(v, 4) for k, v in vp.items()}
 
-    best = evaluate_volume_projection(cfg, targets, regions, vp, grid_n=32, steps=8)
-    history = [
-        {
-            "iter": 0,
-            "loss": best["loss"],
-            "E03": best["regions"]["E03_upper_cavity"]["relativeAreaError"],
-            "E03_c": best["regions"]["E03_upper_cavity"]["centroidDistD"],
-            "E05": best["regions"]["E05_emerald"]["relativeAreaError"],
-            "E05_c": best["regions"]["E05_emerald"]["centroidDistD"],
-            "E06": best["regions"]["E06_sapphire"]["relativeAreaError"],
-            "E06_c": best["regions"]["E06_sapphire"]["centroidDistD"],
-            "E07": best["regions"]["E07_aqua"]["relativeAreaError"],
-            "E07_c": best["regions"]["E07_aqua"]["centroidDistD"],
+    # Deterministic coupled coarse search for the region competition that previously trapped
+    # coordinate descent: aqua density/anchor/brightness compete with emerald green response
+    # and threshold. Keep this grid small, fixed, and reproducible, then independently refine
+    # at 32/8, 44/12 and 56/16 before the required 96/16 verification.
+    coupled_grid = {
+        "aquaDensityGain": (0.08, 0.16, 0.24),
+        "aquaAnchorWeight": (0.70, 1.00),
+        "aquaBrightnessGain": (0.55, 0.70),
+        "emeraldGreenBoost": (0.85, 1.06),
+        "emeraldThreshold": (0.12, 0.20),
+    }
+    coupled_keys = tuple(coupled_grid)
+    coarse_candidates: list[tuple[float, dict[str, float], dict[str, Any]]] = []
+    for values in itertools.product(*(coupled_grid[key] for key in coupled_keys)):
+        trial = dict(vp)
+        trial.update({key: float(value) for key, value in zip(coupled_keys, values)})
+        result = evaluate_volume_projection(cfg, targets, regions, trial, grid_n=32, steps=8)
+        coarse_candidates.append((float(result["loss"]), trial, result))
+    coarse_candidates.sort(key=lambda item: (item[0], tuple(item[1][key] for key in coupled_keys)))
+    _, vp, best = coarse_candidates[0]
+
+    def history_item(iteration: int, result: dict[str, Any]) -> dict[str, Any]:
+        regs = result["regions"]
+        return {
+            "iter": iteration,
+            "loss": result["loss"],
+            "E03": regs["E03_upper_cavity"]["relativeAreaError"],
+            "E03_c": regs["E03_upper_cavity"]["centroidDistD"],
+            "E05": regs["E05_emerald"]["relativeAreaError"],
+            "E05_c": regs["E05_emerald"]["centroidDistD"],
+            "E06": regs["E06_sapphire"]["relativeAreaError"],
+            "E06_c": regs["E06_sapphire"]["centroidDistD"],
+            "E07": regs["E07_aqua"]["relativeAreaError"],
+            "E07_c": regs["E07_aqua"]["centroidDistD"],
         }
+
+    history = [
+        {"stage": "COUPLED_COARSE_GRID", "candidateCount": len(coarse_candidates), **history_item(0, best)}
     ]
 
     it = 0
-    for scale, g_n, n_st, max_iters in ((0.85, 32, 12, 2), (0.35, 44, 16, 2), (0.14, 56, 16, 1)):
+    for scale, g_n, n_st, max_iters in ((0.55, 32, 8, 2), (0.24, 44, 12, 2), (0.10, 56, 16, 1)):
         best = evaluate_volume_projection(cfg, targets, regions, vp, grid_n=g_n, steps=n_st)
         for _ in range(max_iters):
             improved = False
             search_specs = [
-                ("emeraldAnchorWeight", 0.24 * scale, 0.80, 2.20),
-                ("emeraldThreshold", 0.055 * scale, 0.06, 0.42),
-                ("emeraldGreenBoost", 0.10 * scale, 0.80, 1.35),
-                ("emeraldFoldGain", 0.10 * scale, 0.30, 0.80),
-                ("sapphireDepthDarken", 0.12 * scale, 0.40, 1.00),
-                ("sapphireAnchorWeight", 0.24 * scale, 0.80, 2.20),
-                ("sapphireAbsorptionGain", 0.07 * scale, 0.10, 0.48),
-                ("aquaBrightnessGain", 0.12 * scale, 0.65, 1.30),
-                ("aquaAnchorWeight", 0.22 * scale, 0.75, 2.10),
-                ("aquaDensityGain", 0.08 * scale, 0.10, 0.52),
-                ("aquaUpperGateY", 0.06 * scale, -0.22, 0.22),
-                ("densityScale", 0.16 * scale, 0.90, 2.10),
-                ("foldThickness", 0.025 * scale, 0.08, 0.20),
-                ("causticDecoupleWeight", 0.035 * scale, 0.0, 0.20),
+                ("baseDensity", 0.012 * scale, 0.01, 0.08),
+                ("foldIso", 0.055 * scale, -0.10, 0.45),
+                ("foldThickness", 0.025 * scale, 0.06, 0.24),
+                ("emeraldAnchorWeight", 0.18 * scale, 0.80, 2.40),
+                ("emeraldThreshold", 0.045 * scale, 0.04, 0.42),
+                ("emeraldGreenBoost", 0.08 * scale, 0.75, 1.45),
+                ("emeraldFoldGain", 0.08 * scale, 0.25, 1.10),
+                ("sapphireDepthDarken", 0.10 * scale, 0.35, 1.05),
+                ("sapphireAnchorWeight", 0.18 * scale, 0.80, 2.40),
+                ("sapphireAbsorptionGain", 0.06 * scale, 0.08, 0.55),
+                ("aquaBrightnessGain", 0.10 * scale, 0.55, 1.35),
+                ("aquaAnchorWeight", 0.16 * scale, 0.70, 2.20),
+                ("aquaDensityGain", 0.06 * scale, 0.08, 0.60),
+                ("aquaUpperGateY", 0.05 * scale, -0.25, 0.25),
+                ("densityScale", 0.14 * scale, 0.80, 2.40),
+                ("causticDecoupleWeight", 0.03 * scale, 0.0, 0.22),
             ]
             for k, st, lo, hi in search_specs:
                 for sgn in (-1.0, 1.0):
@@ -492,23 +523,30 @@ def fit_volume_structure(
             it += 1
             if not improved:
                 break
-        history.append(
-            {
-                "iter": it,
-                "loss": best["loss"],
-                "E03": best["regions"]["E03_upper_cavity"]["relativeAreaError"],
-                "E03_c": best["regions"]["E03_upper_cavity"]["centroidDistD"],
-                "E05": best["regions"]["E05_emerald"]["relativeAreaError"],
-                "E05_c": best["regions"]["E05_emerald"]["centroidDistD"],
-                "E06": best["regions"]["E06_sapphire"]["relativeAreaError"],
-                "E06_c": best["regions"]["E06_sapphire"]["centroidDistD"],
-                "E07": best["regions"]["E07_aqua"]["relativeAreaError"],
-                "E07_c": best["regions"]["E07_aqua"]["centroidDistD"],
-            }
-        )
+        history.append(history_item(it, best))
 
-    # Final higher-resolution verification
-    final_eval = evaluate_volume_projection(cfg, targets, regions, vp, grid_n=96, steps=16)
+    # Final high-resolution replay for the refined solution and several best coarse coupled
+    # vectors. This resolves low-resolution classifier quantization and selects against the
+    # actual required 96x96 / 16-step metric set.
+    high_resolution_candidates: list[dict[str, float]] = [dict(vp)]
+    for _coarse_loss, coarse_vp, _coarse_result in coarse_candidates[:4]:
+        candidate = dict(vp)
+        candidate.update({key: coarse_vp[key] for key in coupled_keys})
+        if candidate not in high_resolution_candidates:
+            high_resolution_candidates.append(candidate)
+    high_resolution_audit: list[dict[str, Any]] = []
+    final_eval: dict[str, Any] | None = None
+    for candidate in high_resolution_candidates:
+        result = evaluate_volume_projection(cfg, targets, regions, candidate, grid_n=96, steps=16)
+        high_resolution_audit.append({
+            "loss": result["loss"],
+            "coupledParams": {key: round(candidate[key], 4) for key in coupled_keys},
+            "regions": result["regions"],
+        })
+        if final_eval is None or result["loss"] < final_eval["loss"]:
+            vp = candidate
+            final_eval = result
+    assert final_eval is not None
     depth_bench = benchmark_slice_depth_32_vs_64(regions, vp)
 
     # Save fitted parameters into MASTER_FIDELITY_V32
@@ -545,4 +583,12 @@ def fit_volume_structure(
         "finalParams": {k: round(v, 4) for k, v in vp.items()},
         "sliceDepthComparison": depth_bench,
         "history": history,
+        "coarseJointSearch": {
+            "deterministic": True,
+            "gridN": 32,
+            "steps": 8,
+            "candidateCount": len(coarse_candidates),
+            "winnerParameters": {key: round(vp[key], 4) for key in coupled_keys},
+        },
+        "highResolutionCandidateAudit": high_resolution_audit,
     }

@@ -12,8 +12,8 @@
 | **E03 Relative Area Error** | `100.00%` | `2.16%` | `<= 15.0%` |
 | **E03 Centroid Dist** | `0.2589 D` | `0.0068 D` | `<= 0.04 D` |
 | **E04 Mean Contour Error** | `0.01211 R` | `0.01411 R` | `<= 0.025 R` |
-| Upper Grey-White Haze Ratio | `0.00%` | `12.76%` | `<= 1.0%` |
-| **Total Candidate Loss** | `4.71661` | `0.80361` | Lower is better |
+| Upper Grey-White Haze Ratio | `0.00%` | `0.42%` | `<= 1.0%` |
+| **Total Candidate Loss** | `4.71661` | `0.30981` | Lower is better |
 
 ## 2. Fitted Crystal Lens & Cavity Parameters
 
@@ -36,3 +36,7 @@
 ```
 
 Candidate B eliminates V3.1's `295.19%` E03 over-sizing by modeling the curved embedded upper crystal dome shell (`crystalLensPhi` + `intersectCrystalLens`, IOR chain `1.0003 / 1.333 / 1.45`) with refractive curved rim walls and localized 10:30 gold light coupling.
+
+## 3. Shared Upper-Dome Haze Classifier
+
+Stage B and Stage E now use the same `ny > 0.18`, flare-excluded, sRGB luma `> 135`, saturation `< 0.22` classifier from `fitting/visual_metrics.py`. The old `12.76%` Stage B value divided upper-dome haze pixels by the whole sphere's pixels; the corrected Candidate B result is `0.42%`. Stage E is a separate fitted optics render and measures `0.00%` with the same classifier. Neither value is copied into the other stage.

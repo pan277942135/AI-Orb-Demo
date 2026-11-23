@@ -24,6 +24,7 @@ import math
 from typing import Any
 
 from parameter_schema import get_val, set_val
+from visual_metrics import UPPER_DOME_MIN_Y, is_upper_dome_grey_white_haze
 
 
 def clamp01(v: float) -> float:
@@ -319,13 +320,15 @@ def evaluate_cavity_candidate(
                 e03_sx += nx
                 e03_sy += ny
 
-            # Check for grey-white haze (high R+G+B low saturation in upper dome)
-            c_max = max(sr, sg, sb)
-            c_min = min(sr, sg, sb)
-            sat = (c_max - c_min) / max(1.0, float(c_max))
-            if not is_flare and luma > 135 and sat < 0.22:
-                haze_sum += 1.0
-            haze_cnt += 1
+            # Shared E02 domain and classifier: upper dome only (ny > 0.18), excluding the
+            # localized gold flare, luma > 135 and saturation < 0.22. Previously the
+            # numerator used the full sphere while Stage E divided by upper-dome pixels,
+            # making Stage B's "upper" haze ratio incomparable and inflating it with lower
+            # liquid pixels. Keep Stage B's real candidate render in the same locked domain.
+            if ny > UPPER_DOME_MIN_Y:
+                if is_upper_dome_grey_white_haze(ny, sr, sg, sb, is_flare):
+                    haze_sum += 1.0
+                haze_cnt += 1
 
     sim_area = e03_cnt / max(1.0, float(disk_samples))
     sim_cx = e03_sx / max(1, e03_cnt)
@@ -476,7 +479,7 @@ def fit_cavity_geometry(cfg: dict[str, Any], targets: dict[str, Any]) -> dict[st
         winner["e03AreaRelErr"] <= 0.15
         and winner["e03CentroidDistD"] <= 0.04
         and winner["e04MeanErrorR"] <= 0.025
-        and winner["upperGreyWhiteHazeRatio"] <= 0.02
+        and winner["upperGreyWhiteHazeRatio"] <= 0.01
     )
 
     return {

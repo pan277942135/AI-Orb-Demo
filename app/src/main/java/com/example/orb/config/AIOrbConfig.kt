@@ -104,7 +104,8 @@ data class AIOrbConfig(
   val refraction: Float = 0.76f,
   val fluidSpeed: Float = 1.0f,
   val fluidIntensity: Float = 1.08f,
-  val densityScale: Float = 1.65f,
+  /** Relative multiplier on the Master fitted density; 1.0 leaves the fitted value unchanged. */
+  val densityScaleMultiplier: Float = 1.0f,
   val ribbonCount: Int = 5,
   val ribbonWidth: Float = 1.0f,
   val ribbonSpeed: Float = 1.0f,
@@ -144,7 +145,7 @@ data class AIOrbConfig(
       appendLine("  \"refraction\": ${f(refraction)},")
       appendLine("  \"fluidSpeed\": ${f(fluidSpeed)},")
       appendLine("  \"fluidIntensity\": ${f(fluidIntensity)},")
-      appendLine("  \"densityScale\": ${f(densityScale)},")
+      appendLine("  \"densityScaleMultiplier\": ${f(densityScaleMultiplier)},")
       appendLine("  \"ribbonCount\": $ribbonCount,")
       appendLine("  \"ribbonWidth\": ${f(ribbonWidth)},")
       appendLine("  \"ribbonSpeed\": ${f(ribbonSpeed)},")
@@ -162,6 +163,8 @@ data class AIOrbConfig(
     const val MIN_RIBBON_COUNT = 2
     const val MAX_RIBBON_COUNT = 10
     const val CANONICAL_RESIDENT_COUNT = 5
+    const val MIN_DENSITY_SCALE_MULTIPLIER = 0.5f
+    const val MAX_DENSITY_SCALE_MULTIPLIER = 1.5f
     val Default = AIOrbConfig()
   }
 }

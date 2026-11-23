@@ -5,6 +5,7 @@ import com.example.orb.config.QualityTier
 import com.example.orb.geometry.Vec3
 import com.example.orb.scene.AIOrbFluidMath
 import com.example.orb.scene.AIOrbMotionController
+import com.example.orb.v3.MasterFidelityV32
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -136,6 +137,10 @@ class AIOrbFluidMathTest {
       threw = true
     }
     assertTrue("smoothstepSafe must reject inverted edges", threw)
+
+    assertEquals(0f, AIOrbFluidMath.smoothstepSafe(0.2f, 0.8f, Float.NaN), 0f)
+    assertEquals(0f, AIOrbFluidMath.smoothstepSafe(0.2f, 0.8f, Float.POSITIVE_INFINITY), 0f)
+    assertEquals(1f, AIOrbFluidMath.inverseSmoothstep(0.2f, 0.8f, Float.NaN), 0f)
   }
 
   @Test
@@ -150,6 +155,33 @@ class AIOrbFluidMathTest {
 
     // Physical water absorbs red fastest, then green, transmitting blue/cyan deepest
     assertTrue("Expected T_blue > T_green > T_red in deep water", deep.z > deep.y && deep.y > deep.x)
+  }
+
+  @Test
+  fun volumeBeerLambertUsesDensityAndSegmentLengthLikeGlsl() {
+    val masterDensityScale = MasterFidelityV32.Default.fluidVolume.densityScale
+    val shallow = AIOrbFluidMath.volumeStepTransmittance(0.42f, masterDensityScale, 0.08f)
+    val deep = AIOrbFluidMath.volumeStepTransmittance(0.42f, masterDensityScale, 0.24f)
+    val denser = AIOrbFluidMath.volumeStepTransmittance(0.84f, masterDensityScale, 0.08f)
+    assertTrue(shallow.isFinite() && deep.isFinite() && denser.isFinite())
+    assertTrue("Longer path must transmit less", deep < shallow)
+    assertTrue("Higher density must transmit less", denser < shallow)
+    assertEquals(
+      kotlin.math.exp(-0.42f * masterDensityScale * 0.08f),
+      shallow,
+      1e-6f,
+    )
+
+    val spectrum = AIOrbFluidMath.volumeStepSpectralTransmittance(
+      linearDensity = 0.42f,
+      densityScale = masterDensityScale,
+      segmentLength = 0.08f,
+      absorption = Vec3(2.6f, 0.92f, 0.42f),
+    )
+    assertTrue("Master absorption should attenuate red most and blue least", spectrum.z > spectrum.y && spectrum.y > spectrum.x)
+    assertEquals(kotlin.math.exp(-2.6f * 0.42f * masterDensityScale * 0.08f), spectrum.x, 1e-6f)
+    assertEquals(kotlin.math.exp(-0.92f * 0.42f * masterDensityScale * 0.08f), spectrum.y, 1e-6f)
+    assertEquals(kotlin.math.exp(-0.42f * 0.42f * masterDensityScale * 0.08f), spectrum.z, 1e-6f)
   }
 
   @Test
