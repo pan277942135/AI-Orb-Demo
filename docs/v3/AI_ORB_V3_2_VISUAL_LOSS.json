@@ -109,7 +109,7 @@
   "allOfflineHardGatesPass": true,
   "failedOfflineGates": [],
   "masterFidelityConfigPath": "app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json",
-  "masterFidelityConfigSha256": "e1b00b49565a3bfb4932b1b970e98da92e10028fadcbe0de9dbf74695c00bb7a",
+  "masterFidelityConfigSha256": "950636eef47dd81af138b4e0f6614bea9c91a124eb759e6fb7cbb222ebb94a9c",
   "allStagesPass": true,
   "failedStages": []
 }

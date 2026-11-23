@@ -1356,12 +1356,12 @@
     "raymarchStepsHigh": {
       "name": "raymarchStepsHigh",
       "unit": "steps",
-      "default": 36,
+      "default": 48,
       "min": 24,
       "max": 48,
       "optimizable": false,
-      "source": "FROZEN_V3_CONTRACT",
-      "fittedValue": 36
+      "source": "PRODUCTION_QUALITY_TIER_HIGH",
+      "fittedValue": 48
     },
     "raymarchStepsBalanced": {
       "name": "raymarchStepsBalanced",

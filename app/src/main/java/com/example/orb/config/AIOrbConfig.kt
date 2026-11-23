@@ -52,6 +52,7 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
   GPU_ONLY(0, "GPU Only"),
   REFERENCE_ONLY(0, "Reference Only"),
   CORE_ONLY(0, "Core Only"),
+  CORE_ONLY_TRANSPARENT(0, "Core Only Transparent"),
   CORE_ROTATION_ONLY(0, "Core Rotation"),
   CORE_GLASS_ONLY(5, "Core Glass"),
   FLUID_VOLUME_ONLY(7, "Fluid Volume"),
@@ -62,6 +63,7 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
   CAVITY_ONLY(9, "Cavity Only"),
   CAUSTICS_ONLY(4, "Caustics Only"),
   GLASS_ONLY(5, "Glass Only"),
+  RESIDENTS_ONLY(0, "Residents Only"),
   RIBBONS_ONLY(0, "Ribbons Only"),
   OPTICS_ONLY(0, "Optics Only"),
   DEPTH_DEBUG(6, "Depth Debug"),
@@ -74,6 +76,7 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
   val isCoreIsolated: Boolean
     get() = this == CORE_ROTATION_ONLY ||
       this == CORE_ONLY ||
+      this == CORE_ONLY_TRANSPARENT ||
       this == CORE_GLASS_ONLY ||
       this == FLUID_VOLUME_ONLY ||
       this == VOLUME_DEPTH ||
@@ -89,7 +92,7 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
     get() = this == REFERENCE_LOCKED_FRAME
 
   val locksCameraAndOuterShell: Boolean
-    get() = this == CORE_ROTATION_ONLY || this == REFERENCE_LOCKED_FRAME
+    get() = this == CORE_ROTATION_ONLY || this == CORE_ONLY_TRANSPARENT || this == REFERENCE_LOCKED_FRAME
 }
 
 enum class OrbSceneMode {

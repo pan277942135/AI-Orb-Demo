@@ -346,22 +346,24 @@ class AIOrbV32ReferenceFittingTest {
     val pngTopDown = OrbGpuReferenceCapture.flipRgbaVertically(glBottomUp, width, height)
     assertArrayEquals(row2 + row1 + row0, pngTopDown)
 
-    // Verify six core layers, six optical diagnostics, and 3 JSON evidence files.
+    // Verify all nine frozen contract capture modes plus production diagnostics.
     val pngNames = OrbGpuReferenceCapture.CAPTURE_STEPS.map { it.fileName }
     assertEquals(
       listOf(
+        "CORE_ONLY_TRANSPARENT.png",
+        "CAVITY_ONLY.png",
+        "FLUID_VOLUME_ONLY.png",
+        "GLASS_ONLY.png",
+        "RESIDENTS_ONLY.png",
+        "FULL_RENDER.png",
+        "BLOOM_OFF.png",
+        "PRE_TONEMAP.png",
+        "POST_TONEMAP.png",
         "REFERENCE_LOCKED_FRAME_GPU.png",
-        "CAVITY_ONLY_GPU.png",
-        "FLUID_VOLUME_ONLY_GPU.png",
         "RIBBONS_ONLY_GPU.png",
-        "GLASS_ONLY_GPU.png",
-        "FULL_RENDER_GPU.png",
         "CAUSTICS_ONLY_GPU.png",
-        "BLOOM_OFF_GPU.png",
         "FOLD_NORMAL_GPU.png",
         "VOLUME_DEPTH_GPU.png",
-        "PRE_TONEMAP_GPU.png",
-        "POST_TONEMAP_GPU.png",
       ),
       pngNames,
     )
@@ -370,6 +372,8 @@ class AIOrbV32ReferenceFittingTest {
         "RUNTIME_RENDER_CONFIG.json",
         "GPU_TELEMETRY.json",
         "BUILD_FINGERPRINT.json",
+        "RUNTIME_TELEMETRY.json",
+        "CAPTURE_MANIFEST.json",
       ),
       OrbGpuReferenceCapture.EXPECTED_JSON_FILES,
     )
@@ -395,6 +399,23 @@ class AIOrbV32ReferenceFittingTest {
     assertTrue(telJson.has("foldActiveRatio"))
     assertTrue(telJson.has("glErrorPass"))
     assertTrue(telJson.has("uniformStateValid"))
+    assertTrue(telJson.has("geometrySubdivisions"))
+    assertTrue(telJson.has("geometryFingerprintSha256"))
+
+    val manifestJson = JSONObject(OrbGpuReferenceCapture.buildCaptureManifestJson(
+      AIOrbConfig.Default,
+      tel,
+      1080,
+      2400,
+      snapshot = null,
+      capturedPngSha256 = pngNames.associateWith { "test-sha" },
+      framebufferComplete = true,
+      glErrorCode = 0,
+    ))
+    assertEquals("AI_ORB_P0_3_CAPTURE_MANIFEST_1_0", manifestJson.getString("schema"))
+    assertEquals("HARDWARE_GPU", manifestJson.getString("renderBackend"))
+    assertEquals(OrbGpuReferenceCapture.CAPTURE_STEPS.size, manifestJson.getJSONArray("frames").length())
+    assertTrue(manifestJson.getJSONObject("geometry").has("geometryFingerprintSha256"))
 
     val fpJson = JSONObject(OrbGpuReferenceCapture.buildFingerprintJson(fidelity, tel))
     assertEquals(MasterFidelityV32.EXPECTED_MASTER_SHA256, fpJson.getString("referenceMasterSha256"))

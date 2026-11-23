@@ -2,9 +2,11 @@ package com.example
 
 import com.example.orb.config.AIOrbConfig
 import com.example.orb.config.QualityTier
+import com.example.orb.config.RenderDebugMode
 import com.example.orb.geometry.OrbGeometryBuilder
 import com.example.orb.geometry.Vec3
 import com.example.orb.ui.AIOrbViewModel
+import com.example.orb.v3.OrbGpuReferenceCapture
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -66,5 +68,21 @@ class AIOrbConfigTest {
     assertEquals(start.x, end.x, 1e-4f)
     assertEquals(start.y, end.y, 1e-4f)
     assertEquals(start.z, end.z, 1e-4f)
+  }
+
+  @Test
+  fun p0_3HighTierAndTransparentCaptureContractsMatchProductionGeometry() {
+    assertEquals(48, QualityTier.HIGH.raymarchSteps)
+    assertEquals(4, QualityTier.HIGH.icosphereSubdivisions)
+    assertEquals(2562, OrbGeometryBuilder.icosphereVertexCount(QualityTier.HIGH.icosphereSubdivisions))
+    assertEquals(5120, OrbGeometryBuilder.icosphereTriangleCount(QualityTier.HIGH.icosphereSubdivisions))
+    assertTrue(RenderDebugMode.CORE_ONLY_TRANSPARENT.isCoreIsolated)
+    assertTrue(RenderDebugMode.CORE_ONLY_TRANSPARENT.locksCameraAndOuterShell)
+    assertFalse(RenderDebugMode.RESIDENTS_ONLY.isCoreIsolated)
+    val capturedModes = OrbGpuReferenceCapture.CAPTURE_STEPS.map { it.mode.name }.toSet()
+    assertTrue(capturedModes.containsAll(setOf(
+      "CORE_ONLY_TRANSPARENT", "CAVITY_ONLY", "FLUID_VOLUME_ONLY", "GLASS_ONLY", "RESIDENTS_ONLY",
+      "FULL_RENDER", "BLOOM_OFF", "PRE_TONEMAP", "POST_TONEMAP",
+    )))
   }
 }

@@ -54,30 +54,20 @@ The following values are **not** computed from the offline fit output. They need
 | `L_cavity` | ≤0.15 | NOT_COMPARABLE | GPU loss not calculated |
 | `L_volume` | ≤0.10 | NOT_COMPARABLE | GPU loss not calculated |
 | `L_total` | ≤0.08 | NOT_COMPARABLE | GPU loss not calculated |
-| Bloom OFF readability | Emerald fold, Sapphire valleys, glass rim, caustics visible | NOT_RUN | `BLOOM_OFF_GPU.png` is included in the device capture sequence |
-| Lens integration | No independent eye-like outline | NOT_RUN | `CAVITY_ONLY_GPU.png`, `GLASS_ONLY_GPU.png`, and lens diagnostics pending |
-| Resident occlusion | Core remains readable with five frozen residents | NOT_RUN | `RIBBONS_ONLY_GPU.png` and same-snapshot full frame pending |
+| Bloom OFF readability | Emerald fold, Sapphire valleys, glass rim, caustics visible | NOT_RUN | `BLOOM_OFF.png` is included in the device capture sequence |
+| Lens integration | No independent eye-like outline | NOT_RUN | `CAVITY_ONLY.png`, `GLASS_ONLY.png`, and lens diagnostics pending |
+| Resident occlusion | Core remains readable with five frozen residents | NOT_RUN | `RESIDENTS_ONLY.png`, `RIBBONS_ONLY_GPU.png`, and same-snapshot full frame pending |
 | 20-second dynamic run | ≥30 FPS average, P95 ≤33.3ms, no >500ms freeze | NOT_RUN | Target device is unavailable |
 | Real GPU telemetry | GLES vendor/renderer, IDs, uniforms, errors | NOT_RUN | Export implementation is ready; no device capture exists |
 
 ## Capture and package contents
 
-The one-click Tab 1 capture now uses one frozen camera/model/motion snapshot and waits for each file to decode and hash before advancing. It emits:
+The one-click Tab 1 capture uses one frozen camera/model/motion snapshot and keeps the nine P0-3 contract modes first and in exact order:
 
-- `REFERENCE_LOCKED_FRAME_GPU.png`
-- `CAVITY_ONLY_GPU.png`
-- `FLUID_VOLUME_ONLY_GPU.png`
-- `RIBBONS_ONLY_GPU.png`
-- `GLASS_ONLY_GPU.png`
-- `FULL_RENDER_GPU.png`
-- `CAUSTICS_ONLY_GPU.png`
-- `BLOOM_OFF_GPU.png`
-- `FOLD_NORMAL_GPU.png` (linear activation is sRGB-encoded in red; two channels show fold-normal orientation; measured ratio is recorded in telemetry)
-- `VOLUME_DEPTH_GPU.png`
-- `PRE_TONEMAP_GPU.png`
-- `POST_TONEMAP_GPU.png`
-- `RUNTIME_RENDER_CONFIG.json`, `GPU_TELEMETRY.json`, `BUILD_FINGERPRINT.json`, `SHA256SUMS.txt`
-- `AI_ORB_V42_GPU_FIDELITY_EVIDENCE.zip`
+- `CORE_ONLY_TRANSPARENT.png`, `CAVITY_ONLY.png`, `FLUID_VOLUME_ONLY.png`, `GLASS_ONLY.png`, `RESIDENTS_ONLY.png`, `FULL_RENDER.png`, `BLOOM_OFF.png`, `PRE_TONEMAP.png`, `POST_TONEMAP.png`
+- Additional V4.2 diagnostics remain after the required modes: `REFERENCE_LOCKED_FRAME_GPU.png`, `RIBBONS_ONLY_GPU.png`, `CAUSTICS_ONLY_GPU.png`, `FOLD_NORMAL_GPU.png`, and `VOLUME_DEPTH_GPU.png`.
+- Each frame includes actual runtime mode/configuration, production shader Uniform readback where the core shader executes, FBO/GL state, dimensions, and PNG SHA-256 in `CAPTURE_MANIFEST.json`.
+- `RUNTIME_RENDER_CONFIG.json`, `GPU_TELEMETRY.json`, `RUNTIME_TELEMETRY.json`, `BUILD_FINGERPRINT.json`, `SHA256SUMS.txt`, and `AI_ORB_V42_GPU_FIDELITY_EVIDENCE.zip` are included.
 
 If capture runs on SwiftShader, llvmpipe, or another software GLES backend, the telemetry and progress explicitly label it software diagnostics. It cannot satisfy the hardware GPU gate.
 

@@ -38,6 +38,14 @@ jobs:
       - name: Install pinned volume generation dependency
         run: python -m pip install -r tools/orb-v3-generator/requirements.txt
 
+      - name: P0_3_PF01_ROI_MASKS
+        run: |
+          python3 tools/orb-v3-generator/p0_3/generate_semantic_roi_masks.py
+          python3 tools/orb-v3-generator/p0_3/validate_semantic_roi_masks.py
+
+      - name: P0_3_STATIC_PREFLIGHT
+        run: python3 tools/orb-v3-generator/p0_3/validate_static_preflight.py
+
       - name: MASTER_LOCK
         run: |
           python3 - <<'PY'
@@ -54,6 +62,7 @@ jobs:
           cfg = json.loads(config)
           assert cfg["referenceMaster"]["sha256"] == expected
           assert cfg["fluidVolume"]["depth"]["fittedValue"] == 32
+          assert cfg["quality"]["raymarchStepsHigh"]["fittedValue"] == 48
           print(f"[MASTER_LOCK PASS] master={expected} config={config_sha}")
           PY
 
@@ -93,17 +102,22 @@ jobs:
         run: ./gradlew :app:testDebugUnitTest --console=plain
 
       - name: ANDROID_TEST_COMPILE
-        run: ./gradlew :app:compileDebugAndroidTestKotlin --console=plain
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: ./gradlew :app:compileDebugAndroidTestKotlin :app:assembleDebugAndroidTest -PgitSha="$EXPECTED_HEAD_SHA" --console=plain
 
       - name: LINT
         run: ./gradlew :app:lintDebug --console=plain
 
       - name: DEBUG_APK_BUILD
-        run: ./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :app:assembleDebug --console=plain
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: ./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest -PgitSha="$EXPECTED_HEAD_SHA" --console=plain
 
       - name: APK_ASSET_SHA_VERIFICATION
         run: |
           cp app/build/outputs/apk/debug/app-debug.apk AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk
+          cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug-androidTest.apk
           sha256sum AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk > AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk.sha256
           python3 - <<'PY'
           import hashlib, json, zipfile
@@ -176,7 +190,7 @@ jobs:
               if line.startswith("| `SOURCE_FIX_COMPLETE` |"):
                   line = "| `SOURCE_FIX_COMPLETE` | **PASS** | Source fixes, offline closure, production GLES compile/link, and exact-head Android CI passed. Hardware appearance remains a separate gate. |"
               elif line.startswith("| `CI_PASS` |"):
-                  line = f"| `CI_PASS` | **PASS** | [Exact-HEAD run]({run_url}) for `{head}` built and fingerprinted the APK. |"
+                  line = f"| `CI_PASS` | **CORE_BUILD_PASS** | The exact-HEAD build/test job passed and fingerprinted `{head}` ([run]({run_url})); API36 AVD preflight is reported separately. |"
               elif line.startswith("| `GPU_RENDER_VERIFIED` |"):
                   line = "| `GPU_RENDER_VERIFIED` | **NOT_RUN** | No hardware GPU or Android device is attached to this execution. |"
               elif line.startswith("| `VISUAL_FIDELITY_ACCEPTED` |"):
@@ -184,7 +198,7 @@ jobs:
               elif line.startswith("| `USER_DEVICE_QA_PENDING` |"):
                   line = f"| `USER_DEVICE_QA_PENDING` | **PENDING USER** | Install the APK for `{head}`, export its V4.2 evidence ZIP, and record a 20-second run on HUAWEI CMS-AL20 / Android 16 API36. |"
               elif line.startswith("| Kotlin/Robolectric tests |"):
-                  line = f"| Kotlin/Robolectric tests | All existing + V4.2 tests | **PASS in exact-HEAD CI** | 107 tests passed on `{head}` ([run]({run_url})) |"
+                  line = f"| Kotlin/Robolectric tests | All existing + V4.2 tests | **PASS in exact-HEAD CI** | `:app:testDebugUnitTest` passed on `{head}` ([run]({run_url})) |"
               elif line.startswith("| AndroidTest compile |"):
                   line = f"| AndroidTest compile | Pass | **PASS in exact-HEAD CI** | ([run]({run_url})) |"
               elif line.startswith("| Lint |"):
@@ -201,11 +215,11 @@ jobs:
 
           - Final source HEAD: `{head}`.
           - Existing PR: #1; branch remains `codex/ai-orb-v32-final-closure-optical-fusion-v3`; no new PR or merge.
-          - Workflow: [exact-HEAD CI run]({run_url}) — all required steps passed.
+          - Workflow: [exact-HEAD CI run]({run_url}) — the Android build/test job passed; API36 AVD/PF01–PF05 status is reported separately by its dependent job.
           - APK: `AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk`
           - APK SHA-256: `{apk_sha}`
           - APK size: `{apk_bytes}` bytes
-          - Android unit tests: 107 passed; AndroidTest compilation, lint, APK build, and embedded asset SHA verification passed.
+          - Android unit tests, AndroidTest compilation, lint, APK build, and embedded asset SHA verification passed in the exact-HEAD build job.
           - Hardware GPU capture and device visual acceptance: `PENDING_USER_DEVICE_QA`.
 
           """
@@ -242,9 +256,11 @@ jobs:
           name: ai-orb-v42-core-fidelity-exact-head
           path: |
             AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk
+            AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug-androidTest.apk
             AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk.sha256
             docs/v4.2/BUILD_FINGERPRINT.json
             docs/v4.2/AI_ORB_V42_*
+            docs/p0_3/**
             docs/v3/WEBP_ASSET_REPORT.md
             tools/orb-v3-generator/fitting/FIT_RUN_SUMMARY.json
             tools/orb-v3-generator/fitting/FIT_VALIDATION_RESULT.json
@@ -252,3 +268,265 @@ jobs:
             app/src/main/assets/orb_v3/manifest/SHA256SUMS
             app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json
             app/src/main/assets/orb_v3/volume/*.webp
+
+  api36-avd-baseline:
+    name: API36_AVD_BASELINE_CAPTURE + PF05 Repeatability
+    needs: verify-v42-core-fidelity
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout exact PR HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Download exact-HEAD APKs
+        uses: actions/download-artifact@v4
+        with:
+          name: ai-orb-v42-core-fidelity-exact-head
+          path: exact-head
+
+      - name: Set up Java and Python runtimes
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install API36 Android emulator system image
+        uses: android-actions/setup-android@v3
+        with:
+          packages: ''
+
+      - name: Install Android 36, emulator and analysis tools
+        run: |
+          set -euo pipefail
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "emulator" "system-images;android-36;google_apis;x86_64"
+          python -m pip install -r tools/orb-v3-generator/requirements.txt
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          mkdir -p p0_3_evidence/api36_avd/logs p0_3_evidence/motion_frames
+
+      - name: Create API36 x86_64 AVD and record host acceleration
+        id: avd
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p p0_3_evidence/api36_avd/logs
+          AVD_NAME=AIOrbP0Api36
+          AVD_HOME="${ANDROID_AVD_HOME:-${ANDROID_USER_HOME:-$HOME/.android}/avd}"
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager" create avd \
+            --name "$AVD_NAME" --package "system-images;android-36;google_apis;x86_64" --device pixel_7 --force
+          cp "$AVD_HOME/$AVD_NAME.avd/config.ini" p0_3_evidence/api36_avd/avd_config.ini
+          "$ANDROID_SDK_ROOT/emulator/emulator" -version > p0_3_evidence/api36_avd/logs/emulator_version.txt 2>&1
+          set +e
+          timeout 30s "$ANDROID_SDK_ROOT/emulator/emulator" -accel-check > p0_3_evidence/api36_avd/logs/kvm_accel_check.txt 2>&1
+          ACCEL_RC=$?
+          set -e
+          if [ "$ACCEL_RC" -eq 0 ] && grep -Eiq 'KVM.*usable|installed and usable' p0_3_evidence/api36_avd/logs/kvm_accel_check.txt; then
+            EMULATOR_ACCEL=on
+            KVM_STATUS=AVAILABLE
+          else
+            EMULATOR_ACCEL=off
+            KVM_STATUS=UNAVAILABLE_SOFTWARE_CPU_EMULATION
+          fi
+          echo "accel=$EMULATOR_ACCEL" >> "$GITHUB_OUTPUT"
+          cat > p0_3_evidence/api36_avd/environment.json <<EOF
+          {
+            "runnerOs": "${RUNNER_OS}",
+            "runnerImageOS": "${ImageOS:-unknown}",
+            "runnerImageVersion": "${ImageVersion:-unknown}",
+            "kernel": "$(uname -srvm)",
+            "avdName": "${AVD_NAME}",
+            "apiLevel": 36,
+            "systemImage": "system-images;android-36;google_apis;x86_64",
+            "cpuArchitecture": "x86_64",
+            "emulatorVersion": "$(head -n 1 p0_3_evidence/api36_avd/logs/emulator_version.txt)",
+            "kvmCheckExitCode": ${ACCEL_RC},
+            "kvmAcceleration": "${KVM_STATUS}",
+            "renderBackendRequested": "SOFTWARE_RENDERER (SwiftShader)",
+            "hardwareGpuVerification": "PENDING"
+          }
+          EOF
+
+      - name: Start API36 AVD and verify system boot
+        env:
+          EMULATOR_ACCEL: ${{ steps.avd.outputs.accel }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          EMULATOR="$ANDROID_SDK_ROOT/emulator/emulator"
+          if [ -z "$EMULATOR_ACCEL" ]; then echo "AVD acceleration probe did not return a usable state"; exit 1; fi
+          "$EMULATOR" @AIOrbP0Api36 -accel "$EMULATOR_ACCEL" -gpu swiftshader_indirect \
+            -no-window -noaudio -no-boot-anim -no-snapshot -wipe-data -verbose \
+            > p0_3_evidence/api36_avd/logs/emulator_start.log 2>&1 &
+          echo $! > p0_3_evidence/api36_avd/emulator.pid
+          adb start-server
+          timeout 300s adb wait-for-device
+          BOOTED=0
+          for i in $(seq 1 120); do
+            if [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; then BOOTED=1; break; fi
+            sleep 5
+          done
+          if [ "$BOOTED" -ne 1 ]; then
+            adb devices -l > p0_3_evidence/api36_avd/adb_devices.txt || true
+            adb logcat -b all -d > p0_3_evidence/api36_avd/logs/adb_boot_logcat.txt || true
+            exit 1
+          fi
+          adb devices -l > p0_3_evidence/api36_avd/adb_devices.txt
+          cp p0_3_evidence/api36_avd/logs/emulator_start.log p0_3_evidence/api36_avd/emulator_start.log
+          adb shell getprop > p0_3_evidence/api36_avd/system_properties.txt
+          adb shell getprop ro.build.version.sdk > p0_3_evidence/android_api.txt
+          adb shell getprop ro.product.model > p0_3_evidence/avd_model.txt
+          test "$(cat p0_3_evidence/android_api.txt | tr -d '\r')" = "36"
+          adb shell cmd package list packages > p0_3_evidence/api36_avd/logs/package_manager_ready.txt
+          adb shell settings put global window_animation_scale 0
+          adb shell settings put global transition_animation_scale 0
+          adb shell settings put global animator_duration_scale 0
+          adb shell wm size 1254x1254
+          adb shell wm density 160
+          adb shell wm size > p0_3_evidence/api36_avd/logs/wm_size.txt
+          adb shell wm density > p0_3_evidence/api36_avd/logs/wm_density.txt
+
+      - name: Verify Exact-HEAD APK and install application
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP_ID=com.aistudio.aiorbdemo.vxkrmq
+          APK=exact-head/AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk
+          TEST_APK=exact-head/AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug-androidTest.apk
+          python3 - <<'PY'
+          import hashlib, json, os, zipfile
+          from pathlib import Path
+          apk = Path("exact-head/AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk")
+          fingerprint = json.loads(Path("exact-head/docs/v4.2/BUILD_FINGERPRINT.json").read_text())
+          head = os.environ["EXPECTED_HEAD_SHA"]
+          apk_sha = hashlib.sha256(apk.read_bytes()).hexdigest()
+          assert fingerprint["gitCommitSha"] == head
+          assert fingerprint["apkSha256"] == apk_sha
+          with zipfile.ZipFile(apk) as archive:
+              asset_manifest = json.loads(archive.read("assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json"))
+              config = archive.read("assets/orb_v3/manifest/MASTER_FIDELITY_V32.json")
+              checks = {"assets/orb_v3/manifest/MASTER_FIDELITY_V32.json": hashlib.sha256(config).hexdigest()}
+              for item in asset_manifest["volume"]["slices"]:
+                  checks[f"assets/orb_v3/{item['path']}"] = item["sha256"]
+              for item in asset_manifest["maps"]:
+                  checks[f"assets/orb_v3/{item['path']}"] = item["sha256"]
+              for path, expected in checks.items():
+                  assert hashlib.sha256(archive.read(path)).hexdigest() == expected, f"APK asset SHA mismatch: {path}"
+          Path("p0_3_evidence/api36_avd/installed_apk.json").write_text(json.dumps({
+              "expectedHeadSha": head,
+              "apkPath": str(apk),
+              "apkSha256": apk_sha,
+              "androidTestApkSha256": hashlib.sha256(Path("exact-head/AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug-androidTest.apk").read_bytes()).hexdigest(),
+              "buildConfigGitSha": fingerprint["gitCommitSha"],
+              "verifiedAssetCount": len(checks),
+              "assetSha256": checks,
+              "installationState": "PENDING_ADB_INSTALL"
+          }, indent=2) + "\n")
+          PY
+          adb install -r "$APK"
+          adb install -r "$TEST_APK"
+          adb shell pm path "$APP_ID" > p0_3_evidence/api36_avd/logs/package_paths.txt
+          test -s p0_3_evidence/api36_avd/logs/package_paths.txt
+          adb shell dumpsys package "$APP_ID" > p0_3_evidence/api36_avd/logs/package_dump.txt
+          adb shell am start -W -n "$APP_ID/com.example.MainActivity" > p0_3_evidence/api36_avd/logs/activity_start.txt
+          rg -q 'Status: ok' p0_3_evidence/api36_avd/logs/activity_start.txt
+          APP_PID=""
+          for i in $(seq 1 60); do
+            APP_PID=$(adb shell pidof "$APP_ID" | tr -d '\r' || true)
+            [ -n "$APP_PID" ] && break
+            sleep 1
+          done
+          test -n "$APP_PID"
+          adb pull "$(awk -F: 'NR==1 {print $2}' p0_3_evidence/api36_avd/logs/package_paths.txt | tr -d '\r')" p0_3_evidence/api36_avd/installed_base.apk
+          export APP_PID
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          p = Path("p0_3_evidence/api36_avd/installed_apk.json")
+          data = json.loads(p.read_text())
+          data["installedBaseApkSha256"] = hashlib.sha256(Path("p0_3_evidence/api36_avd/installed_base.apk").read_bytes()).hexdigest()
+          assert data["installedBaseApkSha256"] == data["apkSha256"], "ADB-pulled installed APK differs from exact-head artifact"
+          data["installationState"] = "INSTALLED_AND_ACTIVITY_RUNNING"
+          data["applicationPid"] = os.environ["APP_PID"]
+          data["packagePresent"] = True
+          data["activityStarted"] = True
+          p.write_text(json.dumps(data, indent=2) + "\n")
+          PY
+
+      - name: Run three cold-started nine-mode baseline captures
+        env:
+          APP_ID: com.aistudio.aiorbdemo.vxkrmq
+        shell: bash
+        run: |
+          set -euo pipefail
+          adb logcat -c
+          for run in 1 2 3; do
+            adb shell am force-stop "$APP_ID"
+            adb shell am force-stop "$APP_ID.test"
+            timeout 420s adb shell am instrument -w -r \
+              -e p0_3Run "$run" \
+              -e class com.example.P0_3Api36EvidenceTest#capturesOneP0_3BaselineAfterAppRestart \
+              "$APP_ID.test/androidx.test.runner.AndroidJUnitRunner" \
+              | tee "p0_3_evidence/api36_avd/logs/instrumentation_run_${run}.txt"
+          done
+          adb pull "/sdcard/Android/data/$APP_ID/files/p0_3_repeatability" p0_3_evidence/repeats
+          adb pull "/sdcard/Android/data/$APP_ID/files/v42_fidelity_evidence" p0_3_evidence/latest_capture
+          adb shell pidof "$APP_ID" > p0_3_evidence/api36_avd/logs/application_pid_after_baselines.txt
+
+      - name: Record 20-second API36 motion run and runtime logs
+        env:
+          APP_ID: com.aistudio.aiorbdemo.vxkrmq
+        shell: bash
+        run: |
+          set -euo pipefail
+          adb shell am force-stop "$APP_ID"
+          date -u +%Y-%m-%dT%H:%M:%SZ > p0_3_evidence/api36_avd/video_start_utc.txt
+          adb shell monkey -p "$APP_ID" 1
+          sleep 4
+          adb shell 'rm -f /sdcard/MOTION_20S.mp4; screenrecord --time-limit 22 /sdcard/MOTION_20S.mp4 >/sdcard/screenrecord.log 2>&1 &'
+          for second in 0 4 8 12 16 20; do
+            if [ "$second" != "0" ]; then sleep 4; fi
+            adb exec-out screencap -p > "p0_3_evidence/motion_frames/MOTION_${second}S.png"
+          done
+          sleep 2
+          date -u +%Y-%m-%dT%H:%M:%SZ > p0_3_evidence/api36_avd/video_end_utc.txt
+          adb pull /sdcard/MOTION_20S.mp4 p0_3_evidence/MOTION_20S.mp4
+          adb pull /sdcard/screenrecord.log p0_3_evidence/api36_avd/logs/screenrecord.log || true
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 p0_3_evidence/MOTION_20S.mp4 > p0_3_evidence/motion_duration_seconds.txt
+          adb logcat -b all -d > p0_3_evidence/api36_avd/logs/logcat.txt
+          { rg -ni 'GL error|GL_INVALID|GL_OUT_OF_MEMORY|shader compile failed|V3_ASSET_ERROR|FATAL EXCEPTION|ANR in' p0_3_evidence/api36_avd/logs/logcat.txt || true; } > p0_3_evidence/api36_avd/logs/gl_errors.txt
+          adb shell dumpsys activity > p0_3_evidence/api36_avd/logs/activity_dump.txt
+          adb shell dumpsys meminfo "$APP_ID" > p0_3_evidence/api36_avd/logs/meminfo.txt
+          adb shell dumpsys gfxinfo "$APP_ID" > p0_3_evidence/api36_avd/logs/gfxinfo_after_motion.txt
+
+      - name: Analyze PF02-PF05 runtime and produce evidence archives
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 tools/orb-v3-generator/p0_3/analyze_avd_baseline.py \
+            --evidence-dir p0_3_evidence \
+            --expected-apk exact-head/AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk \
+            --expected-head "$EXPECTED_HEAD_SHA"
+
+      - name: Upload API36 baseline and PF05 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-orb-p0-3-api36-avd-baseline-${{ github.run_id }}
+          path: |
+            p0_3_evidence/**
+            docs/p0_3/P0_3_PREFLIGHT_REPORT.json
+            docs/p0_3/ROI_MASK_FREEZE_MANIFEST.json
+            docs/p0_3/PF02_RAYMARCH_RUNTIME_EVIDENCE.json
+            docs/p0_3/PF03_GEOMETRY_RUNTIME_EVIDENCE.json
+            docs/p0_3/PF05_REPEATABILITY_REPORT.json
+            docs/p0_3/VISUAL_DIFF_REPORT.json
+            docs/p0_3/VISUAL_DIFF_CONTACT_SHEET.png
+            docs/p0_3/VISUAL_DIFF_HEATMAPS/**
+          if-no-files-found: warn

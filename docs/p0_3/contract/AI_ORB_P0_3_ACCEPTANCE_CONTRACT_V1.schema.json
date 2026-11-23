@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ai-orb/p0-3-acceptance-contract-v1.schema.json",
+  "title": "AI Orb P0-3 Machine-Readable Visual Acceptance Contract",
+  "type": "object",
+  "required": [
+    "contract_id",
+    "contract_version",
+    "status",
+    "execution_readiness",
+    "created_for",
+    "authority",
+    "source_of_truth",
+    "technical_baseline",
+    "visual_regions",
+    "capture_contract",
+    "dynamic_contract",
+    "visual_acceptance_thresholds",
+    "iteration_policy",
+    "final_acceptance",
+    "preflight_blockers"
+  ],
+  "properties": {
+    "contract_id": {
+      "const": "AI_ORB_P0_3_MACHINE_READABLE_VISUAL_ACCEPTANCE"
+    },
+    "contract_version": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "DRAFT",
+        "FROZEN",
+        "SUPERSEDED"
+      ]
+    },
+    "execution_readiness": {
+      "enum": [
+        "READY",
+        "PREFLIGHT_REQUIRED",
+        "PREFLIGHT_BLOCKED"
+      ]
+    },
+    "created_for": {
+      "type": "object"
+    },
+    "authority": {
+      "type": "object"
+    },
+    "source_of_truth": {
+      "type": "object"
+    },
+    "technical_baseline": {
+      "type": "object"
+    },
+    "visual_regions": {
+      "type": "object"
+    },
+    "capture_contract": {
+      "type": "object"
+    },
+    "dynamic_contract": {
+      "type": "object"
+    },
+    "visual_acceptance_thresholds": {
+      "type": "object"
+    },
+    "iteration_policy": {
+      "type": "object"
+    },
+    "final_acceptance": {
+      "type": "object"
+    },
+    "preflight_blockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "description"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false
+}

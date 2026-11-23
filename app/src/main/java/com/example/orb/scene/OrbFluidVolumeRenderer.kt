@@ -15,7 +15,14 @@ import com.example.orb.v3.ReferenceMeniscusProfile
 data class OrbCoreRuntimeShaderState(
   val programId: Int = 0,
   val shaderSourceSha256: String = "UNAVAILABLE",
+  val qualityTier: String = "UNKNOWN",
+  val isSoftwareRenderer: Boolean = false,
+  val configuredRaymarchSteps: Int = -1,
+  val effectiveRaymarchSteps: Int = -1,
+  val currentSubdivisions: Int = -1,
+  val geometryStateValid: Boolean = false,
   val uVolumeLoaded: Int = -1,
+  val uDebugMode: Int = -1,
   val gpuTextureObjectsValid: Boolean = false,
   val volumeTextureId: Int = 0,
   val detailTextureId: Int = 0,
@@ -30,6 +37,10 @@ data class OrbCoreRuntimeShaderState(
   val foldActiveRatio: Float? = null,
   val foldActiveRatioStatus: String = "NOT_MEASURED",
   val renderResolution: String = "0x0",
+  val geometrySubdivisions: Int = -1,
+  val geometryVertexCount: Int = 0,
+  val geometryTriangleCount: Int = 0,
+  val geometryFingerprint: String = "UNAVAILABLE",
   val glError: String = "GL_NO_ERROR",
   val glErrorPass: String = "NONE",
 )
@@ -212,11 +223,15 @@ class OrbFluidVolumeRenderer {
 
     val actualVolumeLoaded = prog.getIntUniform("uVolumeLoaded") ?: -1
     val actualSteps = prog.getIntUniform("uRaymarchSteps") ?: -1
+    val actualDebugMode = prog.getIntUniform("uDebugMode") ?: -1
     val actualDensity = prog.getFloatUniform("uDensityScale") ?: Float.NaN
     val actualTransparency = prog.getFloatUniform("uCoreTransparency") ?: Float.NaN
     val expectedVolumeLoaded = if (volumeTextures.isReady) 1 else 0
+    val geometryStateValid = sphere.subdivisionLevel == currentSubdivisions &&
+      sphere.vertexCount > 0 && sphere.triangleCount > 0 && sphere.geometryFingerprint.matches(Regex("[0-9a-f]{64}"))
     val uniformStateValid = actualVolumeLoaded == expectedVolumeLoaded &&
       actualSteps == effectiveSteps &&
+      actualDebugMode == config.debugMode.shaderModeId &&
       actualDensity.isFinite() && kotlin.math.abs(actualDensity - effectiveDensity) <= 1e-5f &&
       actualTransparency.isFinite() && kotlin.math.abs(actualTransparency - config.coreTransparency) <= 1e-5f
     val errors = ArrayList<Int>(2)
@@ -229,7 +244,14 @@ class OrbFluidVolumeRenderer {
     lastRuntimeShaderState = OrbCoreRuntimeShaderState(
       programId = prog.programId,
       shaderSourceSha256 = CORE_SHADER_SOURCE_SHA256,
+      qualityTier = config.quality.name,
+      isSoftwareRenderer = isSoftwareRenderer,
+      configuredRaymarchSteps = config.quality.raymarchSteps,
+      effectiveRaymarchSteps = actualSteps,
+      currentSubdivisions = currentSubdivisions,
+      geometryStateValid = geometryStateValid,
       uVolumeLoaded = actualVolumeLoaded,
+      uDebugMode = actualDebugMode,
       gpuTextureObjectsValid = volumeTextures.telemetry.gpuTextureObjectsValid && volumeTextures.isReady,
       volumeTextureId = volumeTextures.volumeTexId,
       detailTextureId = volumeTextures.fluidDetailTexId,
@@ -242,6 +264,10 @@ class OrbFluidVolumeRenderer {
       coreTransparency = actualTransparency,
       uniformStateValid = uniformStateValid,
       renderResolution = "${fboWidth}x${fboHeight}",
+      geometrySubdivisions = sphere.subdivisionLevel,
+      geometryVertexCount = sphere.vertexCount,
+      geometryTriangleCount = sphere.triangleCount,
+      geometryFingerprint = sphere.geometryFingerprint,
       glError = if (errors.isEmpty()) "GL_NO_ERROR" else errors.joinToString(",") { "0x${it.toString(16)}" },
       glErrorPass = if (errors.isEmpty()) "NONE" else "PASS_6_CORE_VOLUME_GLASS",
     )

@@ -141,6 +141,10 @@ class GlMesh(
   val ebo: Int,
   val indexCount: Int,
   val drawMode: Int = GLES30.GL_TRIANGLES,
+  val vertexCount: Int = 0,
+  val triangleCount: Int = 0,
+  val subdivisionLevel: Int = -1,
+  val geometryFingerprint: String = "UNAVAILABLE",
 ) {
   fun draw() {
     GLES30.glBindVertexArray(vao)

@@ -1,0 +1,28 @@
+{
+  "schema": "AI_ORB_P0_3_PREFLIGHT_REPORT_1_0",
+  "generatedAtUtc": "2026-11-23T15:43:59.498766+00:00",
+  "sourceHead": "PENDING_COMMIT",
+  "sourceChecks": {
+    "PF01_SEMANTIC_ROI_MASKS": "SEE_VALIDATE_SEMANTIC_ROI_MASKS",
+    "PF02_RAYMARCH_STEPS_CONFLICT": {
+      "status": "PASS_STATIC_CONTRACT",
+      "masterFittedValue": 48,
+      "hardwareHighTierSourceValue": 48,
+      "softwareRendererCap": 20,
+      "runtimeFullRenderValue": "PENDING_API36_CAPTURE"
+    },
+    "PF03_RUNTIME_GEOMETRY_SUBDIVISION": {
+      "status": "PASS_CAPTURE_INSTRUMENTED_PENDING_RUNTIME",
+      "productionHighTierSubdivisionSource": 4,
+      "expectedVertexCount": 2562,
+      "expectedTriangleCount": 5120,
+      "runtimeGeometryFingerprint": "PENDING_API36_CAPTURE"
+    },
+    "PF04_BASELINE_ANDROID_AVD_CAPTURE": "PENDING_API36_AVD_RUN",
+    "PF05_REPEATABILITY_NOISE": "PENDING_THREE_BASELINE_RUNS"
+  },
+  "preflightReadyForRound1": false,
+  "preflightReadyForOptimization": false,
+  "optimizationRoundsStarted": false,
+  "deviceGpuStatus": "PENDING_USER_DEVICE_QA"
+}

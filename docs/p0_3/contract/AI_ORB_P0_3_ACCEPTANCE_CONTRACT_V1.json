@@ -1,0 +1,832 @@
+{
+  "contract_id": "AI_ORB_P0_3_MACHINE_READABLE_VISUAL_ACCEPTANCE",
+  "contract_version": "1.0.0",
+  "status": "FROZEN",
+  "execution_readiness": "PREFLIGHT_REQUIRED",
+  "created_for": {
+    "project": "AI Orb Demo",
+    "repository": "pan277942135/AI-Orb-Demo",
+    "baseline_branch": "codex/ai-orb-v32-final-closure-optical-fusion-v3",
+    "baseline_head": "e33cbc9c28d6a203e6b81c249eff6bf853f4cd8d",
+    "baseline_release": "V4.2",
+    "pull_request": 1
+  },
+  "authority": {
+    "product_visual_spec_owner": "User/Product Owner",
+    "technical_design_owner": "User/Product Owner",
+    "implementation_owner": "CodeX",
+    "automated_visual_comparison_owner": "CodeX",
+    "root_cause_and_iteration_owner": "CodeX",
+    "final_video_acceptance_owner": "User/Product Owner",
+    "intermediate_human_review_required": false
+  },
+  "source_of_truth": {
+    "reference_files_are_immutable": true,
+    "reference_a_role": "CORE_AND_GLASS_MATERIAL_REFERENCE",
+    "reference_b_role": "FULL_SCENE_COMPOSITION_AND_RESIDENT_REFERENCE",
+    "precedence": [
+      "Reference A is authoritative for isolated core silhouette, internal fluid, embedded lens, glass shell, refraction, caustics and core lighting.",
+      "Reference B is authoritative for full-scene composition, background, overall core-to-frame scale, five-ribbon arrangement, foreground/background depth and atmosphere.",
+      "When A and B appear to differ in apparent core size, use A only for isolated-core proportion and B for full-scene camera/composition. Do not resize one reference to imitate the other."
+    ],
+    "reference_images": [
+      {
+        "id": "REF_A",
+        "file": "references/REF_A_CORE_CRYSTAL_RGBA.png",
+        "original_filename": "透明湖水玻璃球.png",
+        "sha256": "2773e4628ff6132605314693742488542c3e70fd04b581d8825dd13cea0067ee",
+        "width": 1254,
+        "height": 1254,
+        "color_mode": "RGBA",
+        "color_space": "sRGB",
+        "alpha": {
+          "present": true,
+          "premultiplied": false,
+          "silhouette_threshold": 8,
+          "silhouette_bbox_width_height": [
+            998,
+            996
+          ],
+          "silhouette_bbox_center_px": [
+            626.5,
+            620.5
+          ],
+          "silhouette_bbox_diameter_ratio_of_canvas": 0.795853,
+          "silhouette_mask": "roi_masks/REF_A_CORE_SILHOUETTE_ALPHA_GE_008.png",
+          "silhouette_mask_sha256": "b90907983d33cb4b2e0963b8d6e0242f0998eb065920380085138dc03f79c1ed",
+          "silhouette_bbox_xyxy_exclusive": [
+            128,
+            123,
+            1126,
+            1119
+          ]
+        },
+        "usage": "Render CORE_ONLY with transparent background; preserve alpha; compare without auto-cropping or geometric warping."
+      },
+      {
+        "id": "REF_B",
+        "file": "references/REF_B_FULL_SCENE_RGB.png",
+        "original_filename": "翡翠星光中的流光水晶球.png",
+        "sha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
+        "width": 1254,
+        "height": 1254,
+        "color_mode": "RGB",
+        "color_space": "sRGB",
+        "alpha": {
+          "present": false
+        },
+        "usage": "Render FULL_SCENE at the frozen square composition; compare full frame without auto-cropping or geometric warping."
+      }
+    ]
+  },
+  "technical_baseline": {
+    "baseline_source_files": [
+      "app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json",
+      "app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json",
+      "app/src/main/java/com/example/orb/config/AIOrbConfig.kt",
+      "app/src/main/java/com/example/orb/scene/AIOrbMotionController.kt",
+      "app/src/main/java/com/example/orb/scene/AIOrbOrbitRibbons.kt",
+      "app/src/main/java/com/example/orb/scene/AIOrbLighting.kt",
+      "app/src/main/java/com/example/orb/scene/AIOrbPostProcessing.kt"
+    ],
+    "camera_and_composition": {
+      "fov_y_degrees": 42.0,
+      "core_scale_world": 1.0,
+      "core_shell_scale_world": 0.8,
+      "ribbon_hug_scale": 0.87,
+      "visual_bound_radius_world": 1.5661,
+      "camera_distance_world": 4.0798,
+      "target_offset_world": [
+        0.0265,
+        -0.125
+      ],
+      "full_scene_target_sphere_diameter_ratio": 0.51994,
+      "authority": "MASTER_FIDELITY_V32.json",
+      "optimization_policy": "Keep frozen for all three optimization rounds unless a measured P0 composition defect is assigned. Any approved change must be recorded as a parameter delta and compared against the same reference."
+    },
+    "geometry": {
+      "outer_shell": {
+        "primitive": "GEODESIC_ICOSPHERE",
+        "radius_local": 1.0,
+        "core_shell_scale_world": 0.8,
+        "optical_model": "TWO_INTERFACE_OUTER_GLASS",
+        "must_remain_transparent": true,
+        "must_not_rotate_with_internal_core": true
+      },
+      "embedded_crystal_lens": {
+        "model": "CANDIDATE_B_CRYSTAL_LENS",
+        "shape": "ASYMMETRIC_SHEARED_ELLIPSOID_SDF",
+        "asym_shear": 0.08,
+        "center_r": [
+          0.1529,
+          0.336,
+          0.16
+        ],
+        "radii_r": [
+          0.3,
+          0.1793,
+          0.39
+        ],
+        "wall_thickness_r": 0.047,
+        "must_be_embedded": true,
+        "must_not_appear_as_detached_ellipse_or_second_sphere": true,
+        "authority": "MASTER_FIDELITY_V32.json + CrystalLensGeometry.kt"
+      },
+      "fluid_volume": {
+        "dimensions_xyz": [
+          256,
+          256,
+          32
+        ],
+        "source_format": "LOSSLESS_RGBA_WEBP",
+        "slice_count": 32,
+        "gpu_target": "GL_TEXTURE_3D",
+        "gpu_internal_format": "GL_SRGB8_ALPHA8",
+        "uniform": "uFluidVolume",
+        "texture_unit": 1,
+        "rgb_color_space": "sRGB",
+        "alpha_color_space": "LINEAR",
+        "premultiplied_alpha": false,
+        "sampling": "TRILINEAR_3D",
+        "volume_gpu_memory_bytes": 8388608,
+        "all_maps_total_gpu_memory_bytes": 9437184,
+        "meniscus_source": "GPU_SINGLE_SOURCE_CORE_GLASS_FRAG",
+        "y_axis_convention": "ROW_0_IS_TOP_PLUS_Y_SHADER_FLIPS_V",
+        "must_be_bound_and_sampled_in_production_shader": true,
+        "silent_procedural_fallback_for_acceptance": false,
+        "authority": "ORB_V3_ASSET_MANIFEST.json"
+      },
+      "auxiliary_maps": [
+        {
+          "id": "emerald_distribution",
+          "dimensions": [
+            256,
+            256
+          ],
+          "gpu_format": "GL_RGBA8",
+          "color_space": "LINEAR_DATA",
+          "uniform": "uFluidDetailMap",
+          "texture_unit": 2,
+          "channels": {
+            "R": "emerald_curtain",
+            "G": "silk_grain",
+            "B": "meniscus_ripple",
+            "A": "absorption_mod"
+          }
+        },
+        {
+          "id": "caustics",
+          "dimensions": [
+            256,
+            256
+          ],
+          "gpu_format": "GL_RGBA8",
+          "color_space": "LINEAR_DATA",
+          "uniform": "uCausticsMap",
+          "texture_unit": 3,
+          "channels": {
+            "R": "primary_curved_caustics",
+            "G": "secondary_curved_caustics",
+            "B": "fine_filaments",
+            "A": "convergence_nodes"
+          }
+        },
+        {
+          "id": "glass_environment",
+          "dimensions": [
+            512,
+            256
+          ],
+          "gpu_format": "GL_SRGB8_ALPHA8",
+          "color_space": "sRGB",
+          "uniform": "uGlassEnvMap",
+          "texture_unit": 4,
+          "channels": {
+            "RGB": "equirectangular_crystal_studio_environment",
+            "A": "specular_weight"
+          }
+        }
+      ]
+    },
+    "optics": {
+      "indices_of_refraction": {
+        "air": 1.0003,
+        "water": 1.333,
+        "glass": 1.45,
+        "crystal": 1.45
+      },
+      "outer_glass": {
+        "wall_thickness_r": 0.115,
+        "fresnel_power": 6.2,
+        "fresnel_gain": 0.8,
+        "razor_rim_gain": 1.35,
+        "inner_ring_gain": 0.32,
+        "groove_darkening": 0.54,
+        "environment_reflection_cap": 0.24,
+        "upper_haze_suppress": 0.8,
+        "crown_gold_strength": 0.4
+      },
+      "volume_and_fold": {
+        "density_scale": 2.2664,
+        "base_density": 0.0254,
+        "fold_count": 3,
+        "fold_iso": 0.2008,
+        "fold_thickness_r": 0.206,
+        "fold_normal_perturbation": 0.34,
+        "fold_refraction_gain": 0.22,
+        "fold_specular_gain": 0.42,
+        "beer_lambert_rgb_coefficients": [
+          2.6,
+          0.92,
+          0.42
+        ]
+      },
+      "regional_material": {
+        "emerald_fold_gain": 1.05,
+        "emerald_anchor_weight": 1.4974,
+        "emerald_green_boost": 0.8228,
+        "emerald_threshold": 0.2248,
+        "sapphire_absorption_gain": 0.2582,
+        "sapphire_anchor_weight": 1.3078,
+        "sapphire_depth_darken": 0.809,
+        "aqua_density_gain": 0.16,
+        "aqua_anchor_weight": 1.0768,
+        "aqua_brightness_gain": 0.669,
+        "aqua_upper_gate_y_r": 0.1345
+      },
+      "cavity_and_lens": {
+        "meniscus_y_offset_r": -0.012,
+        "dome_depth_dip_r": 0.14,
+        "side_wall_climb_r": 0.048,
+        "cavity_tint_gain": 0.14,
+        "cavity_rim_refraction_gain": 0.752,
+        "upper_gold_penetration_gain": 0.86
+      },
+      "caustics": {
+        "intensity": 0.56,
+        "decouple_weight": 0.1395,
+        "upper_gold_gain": 0.44
+      },
+      "post_processing": {
+        "bloom_threshold_linear_hdr": 1.32,
+        "bloom_strength": 0.62,
+        "aces_exposure": 1.06,
+        "saturation_boost": 1.1,
+        "final_transfer": "sRGB_OETF"
+      },
+      "parameter_policy": "These are the V4.2 source/master fitted baseline values, not proof of visual acceptance. CodeX may tune only within the source-declared min/max ranges and only when a measured defect is assigned. Every delta must be logged."
+    },
+    "lighting": {
+      "key_light_direction": [
+        -0.62,
+        0.72,
+        0.68
+      ],
+      "key_light_color": [
+        1.0,
+        0.93,
+        0.78
+      ],
+      "warm_rim_direction": [
+        0.84,
+        0.28,
+        0.42
+      ],
+      "warm_rim_color": [
+        1.0,
+        0.76,
+        0.36
+      ],
+      "cool_rim_direction": [
+        -0.48,
+        -0.78,
+        0.56
+      ],
+      "cool_rim_color": [
+        0.24,
+        0.9,
+        1.0
+      ],
+      "emerald_fill_color": [
+        0.18,
+        0.62,
+        0.34
+      ],
+      "deep_abyss_color": [
+        0.015,
+        0.09,
+        0.11
+      ],
+      "authority": "AIOrbLighting.kt"
+    },
+    "motion": {
+      "core_rotation": {
+        "speed_degrees_per_second": 26.0,
+        "axis_raw": [
+          0.14,
+          0.98,
+          -0.14
+        ],
+        "axis_normalized": [
+          0.140028,
+          0.980196,
+          -0.140028
+        ],
+        "outer_glass_rotates_with_core": false
+      },
+      "resident_identity_and_motion": [
+        {
+          "id": "C01",
+          "material": "ICE_CYAN_LIQUID_GLASS",
+          "depth_role": "FRONT",
+          "period_ms": 4400
+        },
+        {
+          "id": "G01",
+          "material": "GREEN_AQUATIC_SILK",
+          "depth_role": "BACK",
+          "period_ms": 6100
+        },
+        {
+          "id": "G02",
+          "material": "GREEN_AQUATIC_SILK",
+          "depth_role": "FRONT",
+          "period_ms": 5300
+        },
+        {
+          "id": "A01",
+          "material": "CHAMPAGNE_GOLD_FILAMENT",
+          "depth_role": "BACK",
+          "period_ms": 3700
+        },
+        {
+          "id": "A02",
+          "material": "CHAMPAGNE_GOLD_FILAMENT",
+          "depth_role": "FRONT",
+          "period_ms": 2900
+        }
+      ],
+      "resident_geometry": {
+        "curve_type": "OPEN_3D_CATMULL_ROM",
+        "surface_frame": "PARALLEL_TRANSPORT_BISHOP_FRAME",
+        "width_profile": "INDEPENDENT_PER_RESIDENT",
+        "twist_profile": "INDEPENDENT_PER_RESIDENT",
+        "independent_phase": true,
+        "independent_motion": true
+      },
+      "time_source": "AIOrbMotionController.MONOTONIC_SIMULATION_CLOCK",
+      "pause_resume_must_preserve_phase_continuity": true
+    },
+    "render_pipeline": [
+      "DEEP_EMERALD_TEAL_BACKGROUND",
+      "FAR_DEPTH_PARTICLES",
+      "BACK_HEMISPHERE_RESIDENTS",
+      "BACK_HEMISPHERE_STARBURSTS",
+      "CAPTURE_REFRACTION_SNAPSHOT",
+      "UNIFIED_CORE_VOLUME_CAVITY_LENS_GLASS",
+      "FRONT_OF_GLASS_RESIDENTS",
+      "FRONT_STARBURSTS_AND_DROPLETS",
+      "HDR_BLOOM_ACES_SRGB_COMPOSITE"
+    ],
+    "quality_profiles": {
+      "visual_acceptance_profile": {
+        "tier": "HIGH",
+        "render_scale": 1.0,
+        "ribbon_segments": 128,
+        "bloom_iterations": 4,
+        "raymarch_steps_runtime": 48,
+        "source": "AIOrbConfig.kt"
+      },
+      "known_parameter_conflict": {
+        "master_fidelity_json_raymarch_steps_high": 36,
+        "runtime_quality_high_raymarch_steps": 48,
+        "status": "MUST_RECONCILE_IN_PREFLIGHT",
+        "rule": "Do not silently change either value. CodeX must identify which value is consumed by the production FULL_RENDER path, update the non-authoritative declaration/documentation, and record the effective runtime value in the capture manifest before Round 1."
+      },
+      "geometry_subdivision": {
+        "status": "RUNTIME_READ_REQUIRED",
+        "rule": "Record the actual subdivision value passed to OrbFluidVolumeRenderer.init/ensureQuality; do not infer it from an old design note."
+      }
+    }
+  },
+  "visual_regions": {
+    "mask_policy": {
+      "reference_images_are_immutable": true,
+      "roi_masks_are_derived_artifacts": true,
+      "all_semantic_masks_must_be_generated_and_hashed_before_round_1": true,
+      "mask_generation_may_not_modify_or_recompress_reference_images": true,
+      "mask_method": "CODEX_SEMANTIC_ANNOTATION_WITH_IMAGE_SEGMENTATION_AND_OVERLAY_SELF_CHECK",
+      "mask_review": "AUTOMATED_OVERLAY_VALIDATION_BY_CODEX; no intermediate user approval",
+      "missing_mask_behavior": "BLOCK_ROUND_1"
+    },
+    "regions": [
+      {
+        "id": "CORE_SILHOUETTE",
+        "reference": "REF_A",
+        "source": "ALPHA_GE_8",
+        "mask_file": "roi_masks/REF_A_CORE_SILHOUETTE_ALPHA_GE_008.png",
+        "required": true,
+        "metrics": [
+          "SILHOUETTE_IOU",
+          "CENTER_ERROR_D",
+          "DIAMETER_RELATIVE_ERROR"
+        ]
+      },
+      {
+        "id": "OUTER_GLASS_RIM",
+        "reference": "REF_A",
+        "source": "SEMANTIC_MASK",
+        "mask_file": "roi_masks/REF_A_OUTER_GLASS_RIM.png",
+        "required": true,
+        "metrics": [
+          "SSIM",
+          "DELTA_E_2000",
+          "EDGE_ALIGNMENT"
+        ]
+      },
+      {
+        "id": "EMERALD_FOLD",
+        "reference": "REF_A",
+        "source": "SEMANTIC_MASK",
+        "mask_file": "roi_masks/REF_A_EMERALD_FOLD.png",
+        "required": true,
+        "metrics": [
+          "ROI_AREA_RELATIVE_ERROR",
+          "ROI_CENTROID_ERROR_D",
+          "SSIM",
+          "DELTA_E_2000"
+        ]
+      },
+      {
+        "id": "SAPPHIRE_VALLEY",
+        "reference": "REF_A",
+        "source": "SEMANTIC_MASK",
+        "mask_file": "roi_masks/REF_A_SAPPHIRE_VALLEY.png",
+        "required": true,
+        "metrics": [
+          "ROI_AREA_RELATIVE_ERROR",
+          "ROI_CENTROID_ERROR_D",
+          "SSIM",
+          "DELTA_E_2000"
+        ]
+      },
+      {
+        "id": "AQUA_LIQUID",
+        "reference": "REF_A",
+        "source": "SEMANTIC_MASK",
+        "mask_file": "roi_masks/REF_A_AQUA_LIQUID.png",
+        "required": true,
+        "metrics": [
+          "ROI_AREA_RELATIVE_ERROR",
+          "ROI_CENTROID_ERROR_D",
+          "SSIM",
+          "DELTA_E_2000"
+        ]
+      },
+      {
+        "id": "EMBEDDED_CRYSTAL_LENS",
+        "reference": "REF_A",
+        "source": "SEMANTIC_MASK",
+        "mask_file": "roi_masks/REF_A_EMBEDDED_CRYSTAL_LENS.png",
+        "required": true,
+        "metrics": [
+          "EDGE_ALIGNMENT",
+          "SSIM",
+          "ROI_CENTROID_ERROR_D"
+        ]
+      },
+      {
+        "id": "GOLD_CAUSTIC_HIGHLIGHTS",
+        "reference": "REF_A",
+        "source": "SEMANTIC_MASK",
+        "mask_file": "roi_masks/REF_A_GOLD_CAUSTIC_HIGHLIGHTS.png",
+        "required": true,
+        "metrics": [
+          "HIGHLIGHT_COVERAGE",
+          "CLIPPED_HIGHLIGHT_RATIO",
+          "DELTA_E_2000"
+        ]
+      },
+      {
+        "id": "FULL_SCENE_COMPOSITION",
+        "reference": "REF_B",
+        "source": "FULL_FRAME",
+        "mask_file": null,
+        "required": true,
+        "metrics": [
+          "SSIM",
+          "CENTER_ERROR_D",
+          "DIAMETER_RELATIVE_ERROR",
+          "DELTA_E_2000"
+        ]
+      },
+      {
+        "id": "RESIDENT_FRONT_CYAN",
+        "reference": "REF_B",
+        "source": "SEMANTIC_MASK",
+        "mask_file": "roi_masks/REF_B_RESIDENT_FRONT_CYAN.png",
+        "required": true,
+        "metrics": [
+          "EDGE_ALIGNMENT",
+          "PATH_COVERAGE",
+          "SSIM"
+        ]
+      },
+      {
+        "id": "RESIDENT_FRONT_GOLD",
+        "reference": "REF_B",
+        "source": "SEMANTIC_MASK",
+        "mask_file": "roi_masks/REF_B_RESIDENT_FRONT_GOLD.png",
+        "required": true,
+        "metrics": [
+          "EDGE_ALIGNMENT",
+          "PATH_COVERAGE",
+          "SSIM"
+        ]
+      },
+      {
+        "id": "RESIDENT_BACK_GREEN_GOLD",
+        "reference": "REF_B",
+        "source": "SEMANTIC_MASK",
+        "mask_file": "roi_masks/REF_B_RESIDENT_BACK_GREEN_GOLD.png",
+        "required": true,
+        "metrics": [
+          "EDGE_ALIGNMENT",
+          "PATH_COVERAGE",
+          "SSIM"
+        ]
+      },
+      {
+        "id": "BACKGROUND_BOKEH",
+        "reference": "REF_B",
+        "source": "SEMANTIC_MASK",
+        "mask_file": "roi_masks/REF_B_BACKGROUND_BOKEH.png",
+        "required": true,
+        "metrics": [
+          "SSIM",
+          "DELTA_E_2000"
+        ]
+      },
+      {
+        "id": "DROPLETS_AND_PARTICLES",
+        "reference": "REF_B",
+        "source": "SEMANTIC_MASK",
+        "mask_file": "roi_masks/REF_B_DROPLETS_AND_PARTICLES.png",
+        "required": true,
+        "metrics": [
+          "COUNT_RELATIVE_ERROR",
+          "CENTROID_ERROR_D"
+        ]
+      }
+    ]
+  },
+  "capture_contract": {
+    "required_render_modes": [
+      "CORE_ONLY_TRANSPARENT",
+      "CAVITY_ONLY",
+      "FLUID_VOLUME_ONLY",
+      "GLASS_ONLY",
+      "RESIDENTS_ONLY",
+      "FULL_RENDER",
+      "BLOOM_OFF",
+      "PRE_TONEMAP",
+      "POST_TONEMAP"
+    ],
+    "canonical_canvas": [
+      1254,
+      1254
+    ],
+    "aspect_ratio": "1:1",
+    "comparison_alignment": {
+      "allow_translation_registration": false,
+      "allow_scale_registration": false,
+      "allow_non_rigid_warp": false,
+      "allow_perspective_warp": false,
+      "resampling": "ONE_FIXED_LANCZOS3_RESIZE_ONLY_IF_CAPTURE_DIMENSIONS_DIFFER",
+      "reason": "Alignment must not hide camera, scale, or geometry defects."
+    },
+    "fixed_variables": [
+      "same APK build SHA and source HEAD",
+      "same Android API and AVD device profile",
+      "same render backend",
+      "same viewport and surface size",
+      "same camera and projection",
+      "same quality tier HIGH",
+      "same reference-locked initial motion phase",
+      "same light rig and exposure",
+      "same texture asset hashes",
+      "same color management and output transfer",
+      "same debug render mode for each layer capture"
+    ],
+    "runtime_telemetry_required": [
+      "buildSha",
+      "apkSha256",
+      "glVendor",
+      "glRenderer",
+      "glVersion",
+      "renderBackend",
+      "shaderSourceSha256",
+      "shaderProgramId",
+      "volumeLoadState",
+      "uVolumeLoaded",
+      "all3DTexturesValid",
+      "volumeDimensions",
+      "volumeInternalFormat",
+      "raymarchSteps",
+      "renderResolution",
+      "cameraSnapshot",
+      "motionSnapshot",
+      "actualUniformSnapshot",
+      "glError",
+      "fps",
+      "frameTimeP50Ms",
+      "frameTimeP95Ms"
+    ],
+    "required_artifacts": [
+      "CORE_ONLY_TRANSPARENT.png",
+      "CAVITY_ONLY.png",
+      "FLUID_VOLUME_ONLY.png",
+      "GLASS_ONLY.png",
+      "RESIDENTS_ONLY.png",
+      "FULL_RENDER.png",
+      "BLOOM_OFF.png",
+      "PRE_TONEMAP.png",
+      "POST_TONEMAP.png",
+      "MOTION_20S.mp4",
+      "RUNTIME_TELEMETRY.json",
+      "CAPTURE_MANIFEST.json",
+      "VISUAL_DIFF_REPORT.json",
+      "VISUAL_DIFF_CONTACT_SHEET.png",
+      "VISUAL_DIFF_HEATMAPS/"
+    ],
+    "render_backend_policy": {
+      "swiftshader": "May be used for deterministic software-rendered regression and progress comparison only. Must be labeled SOFTWARE_RENDER; cannot satisfy HARDWARE_GPU_VERIFIED.",
+      "host_gpu_emulator": "May satisfy EMULATOR_HARDWARE_RENDER_VERIFIED only when telemetry proves hardware acceleration and records the actual GL renderer/vendor.",
+      "physical_device": "Required for DEVICE_GPU_VERIFIED and final device performance claim.",
+      "backend_must_not_change_between_round_comparisons": true
+    }
+  },
+  "dynamic_contract": {
+    "reference_limit": "The two frozen PNGs define static appearance only; they do not define a unique motion trajectory or timing curve.",
+    "motion_truth_source": "P0-2 technical baseline and current frozen motion descriptors",
+    "minimum_recording_seconds": 20,
+    "capture_times_seconds": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      20
+    ],
+    "core_rotation_speed_degrees_per_second": 26.0,
+    "core_rotation_axis_normalized": [
+      0.140028,
+      0.980196,
+      -0.140028
+    ],
+    "resident_periods_ms": {
+      "C01": 4400,
+      "G01": 6100,
+      "G02": 5300,
+      "A01": 3700,
+      "A02": 2900
+    },
+    "invariants": [
+      "Core rotation is true 3D rotation, not a 2D texture translation.",
+      "Outer glass does not rigidly rotate with the internal core.",
+      "All five Resident identities remain present throughout the capture.",
+      "Resident phases and motion remain independent.",
+      "Front/back depth roles remain stable unless the frozen trajectory crosses the depth plane.",
+      "Fluid, Cavity, Lens and Caustics share the same Core Frame.",
+      "Pause/resume preserves phase continuity.",
+      "No sudden phase reset, visible texture swimming, flicker, z-fighting or unexplained geometry jump."
+    ],
+    "performance_gates": {
+      "minimum_average_fps": 30,
+      "maximum_p95_frame_time_ms": 33.3,
+      "maximum_continuous_freeze_ms": 500,
+      "gl_errors_allowed": 0
+    },
+    "motion_measurement": {
+      "core_angular_velocity_tolerance_percent": 5,
+      "resident_period_tolerance_percent": 1,
+      "frame_to_frame_discontinuity": "No unexplained displacement outlier greater than 3x the robust median after excluding intentional occlusion and camera motion."
+    }
+  },
+  "visual_acceptance_thresholds": {
+    "geometry": {
+      "core_silhouette_iou_min": 0.95,
+      "core_center_error_max_d": 0.01,
+      "core_diameter_relative_error_max": 0.02
+    },
+    "material_regions": {
+      "required_region_area_relative_error_max": 0.15,
+      "required_region_centroid_error_max_d": 0.04,
+      "core_roi_ssim_min": 0.85,
+      "full_scene_ssim_min": 0.82,
+      "median_delta_e_2000_max": 8.0,
+      "p90_delta_e_2000_max": 15.0
+    },
+    "resident": {
+      "resident_identity_count": 5,
+      "required_resident_roi_edge_alignment_min": 0.85,
+      "front_back_role_match": 1.0
+    },
+    "highlight_and_bloom": {
+      "clipped_highlight_ratio_max_in_core_roi": 0.02,
+      "bloom_off_must_preserve_core_structure": true,
+      "bloom_may_not_increase_core_haze": true
+    },
+    "prohibited_visual_defects": [
+      "large_uniform_green_haze",
+      "opaque_flat_core",
+      "missing_sapphire_valleys",
+      "detached_oval_or_eye_like_lens",
+      "thick_white_plastic_rim",
+      "uniform_noise_or_honeycomb_caustics",
+      "resident_ribbons_merged_into_one_thick_band",
+      "resident_ribbons_occlude_large_core_regions",
+      "clipped_gold_or_cyan_highlights_destroy_internal_detail",
+      "neon_hud_or_static_image_substitution"
+    ],
+    "scoring_policy": "All hard gates must pass. Do not use a weighted total score to compensate for a failed P0 region. Metrics must be calculated from actual captured application output, not source assets or offline proxies."
+  },
+  "iteration_policy": {
+    "preflight_is_not_an_optimization_round": true,
+    "maximum_optimization_rounds": 3,
+    "each_round_must_have": [
+      "pre_change_source_head",
+      "pre_change_apk_sha256",
+      "pre_change_capture_manifest",
+      "assigned_target_defect_ids",
+      "root_cause_evidence",
+      "files_and_functions_changed",
+      "parameter_delta_report",
+      "post_change_source_head",
+      "post_change_apk_sha256",
+      "post_change_capture_manifest",
+      "same_backend_same_conditions_visual_comparison",
+      "regression_report"
+    ],
+    "measurable_progress_rule": {
+      "at_least_one_assigned_P0_or_P1_target_must_improve": true,
+      "minimum_relative_reduction_in_target_error": 0.05,
+      "measurement_noise_rule": "Improvement must also exceed 3x the standard deviation measured from three repeated baseline captures.",
+      "alternative_gate_closure": "If a target metric is already within 5% of its final threshold, the round must close at least one previously failing hard gate.",
+      "protected_metric_max_regression_percent": 2,
+      "new_P0_defects_allowed": 0,
+      "no_progress_round_counts_toward_limit": true
+    },
+    "round_failure_policy": "A round with no measurable progress, unverified root cause, changed capture conditions, or a new P0 regression is FAIL and counts toward the three-round limit.",
+    "after_round_3": "If any final hard gate remains failed, report NOT_ACCEPTED and deliver the best verified build plus remaining defects. Never claim high fidelity by default."
+  },
+  "final_acceptance": {
+    "required": [
+      "all visual hard gates pass",
+      "all P0 prohibited visual defects are absent",
+      "all five Residents are present and independently animated",
+      "20-second motion and performance gates pass",
+      "final video is generated from the exact accepted APK",
+      "APK SHA256, source HEAD, capture manifest and video build fingerprint match",
+      "all evidence files are present and checksummed"
+    ],
+    "final_status_values": [
+      "NOT_RUN",
+      "PREFLIGHT_BLOCKED",
+      "ROUND_IN_PROGRESS",
+      "NOT_ACCEPTED",
+      "EMULATOR_VISUAL_ACCEPTED_SOFTWARE_RENDER_ONLY",
+      "EMULATOR_VISUAL_ACCEPTED_HARDWARE_ACCELERATED",
+      "DEVICE_GPU_VERIFIED",
+      "FINAL_VIDEO_ACCEPTED"
+    ],
+    "important_limit": "A final video rendered with SwiftShader can be accepted for visual review only as software-emulator output. It cannot be labeled hardware-GPU verified or device-GPU verified."
+  },
+  "preflight_blockers": [
+    {
+      "id": "PF01_SEMANTIC_ROI_MASKS",
+      "status": "REQUIRED",
+      "description": "Generate all semantic ROI masks listed in visual_regions.regions, validate overlays against the exact reference images, save masks and SHA256, and freeze them before Round 1."
+    },
+    {
+      "id": "PF02_RAYMARCH_STEPS_CONFLICT",
+      "status": "REQUIRED",
+      "description": "Resolve MasterFidelityV32.json raymarchStepsHigh=36 versus AIOrbConfig QualityTier.HIGH raymarchSteps=48. Record the effective FULL_RENDER value and reconcile the non-authoritative declaration before Round 1."
+    },
+    {
+      "id": "PF03_RUNTIME_GEOMETRY_SUBDIVISION",
+      "status": "REQUIRED",
+      "description": "Read the actual Icosphere subdivision value passed to the production renderer and record it in CAPTURE_MANIFEST.json."
+    },
+    {
+      "id": "PF04_BASELINE_ANDROID_AVD_CAPTURE",
+      "status": "REQUIRED",
+      "description": "Run V4.2 on an API 36 Android AVD, install and launch the real APK, capture all required render modes and a 20-second video, and record the actual render backend. If KVM is unavailable in the Codex VM, use a KVM-enabled GitHub Actions runner."
+    },
+    {
+      "id": "PF05_REPEATABILITY_NOISE",
+      "status": "REQUIRED",
+      "description": "Capture the unchanged baseline three times under identical conditions and calculate metric variance before applying per-round progress thresholds."
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "template_id": "AI_ORB_P0_3_ROI_ANNOTATION_TEMPLATE",
+  "version": "1.0.0",
+  "instructions": [
+    "Do not edit, crop, recolor, resize or recompress the source reference images.",
+    "Create one binary 1254x1254 PNG mask per required semantic ROI.",
+    "White (255) means inside the region; black (0) means outside.",
+    "Masks must be overlaid on the original reference and checked for semantic correctness.",
+    "Record source reference SHA256, mask SHA256, annotator/tool version and pixel count.",
+    "Freeze mask hashes before Round 1; never alter masks to improve a later round score."
+  ],
+  "masks": [
+    {
+      "id": "REF_A_OUTER_GLASS_RIM",
+      "reference": "REF_A",
+      "file": "roi_masks/REF_A_OUTER_GLASS_RIM.png",
+      "status": "PREFLIGHT_REQUIRED"
+    },
+    {
+      "id": "REF_A_EMERALD_FOLD",
+      "reference": "REF_A",
+      "file": "roi_masks/REF_A_EMERALD_FOLD.png",
+      "status": "PREFLIGHT_REQUIRED"
+    },
+    {
+      "id": "REF_A_SAPPHIRE_VALLEY",
+      "reference": "REF_A",
+      "file": "roi_masks/REF_A_SAPPHIRE_VALLEY.png",
+      "status": "PREFLIGHT_REQUIRED"
+    },
+    {
+      "id": "REF_A_AQUA_LIQUID",
+      "reference": "REF_A",
+      "file": "roi_masks/REF_A_AQUA_LIQUID.png",
+      "status": "PREFLIGHT_REQUIRED"
+    },
+    {
+      "id": "REF_A_EMBEDDED_CRYSTAL_LENS",
+      "reference": "REF_A",
+      "file": "roi_masks/REF_A_EMBEDDED_CRYSTAL_LENS.png",
+      "status": "PREFLIGHT_REQUIRED"
+    },
+    {
+      "id": "REF_A_GOLD_CAUSTIC_HIGHLIGHTS",
+      "reference": "REF_A",
+      "file": "roi_masks/REF_A_GOLD_CAUSTIC_HIGHLIGHTS.png",
+      "status": "PREFLIGHT_REQUIRED"
+    },
+    {
+      "id": "REF_B_RESIDENT_FRONT_CYAN",
+      "reference": "REF_B",
+      "file": "roi_masks/REF_B_RESIDENT_FRONT_CYAN.png",
+      "status": "PREFLIGHT_REQUIRED"
+    },
+    {
+      "id": "REF_B_RESIDENT_FRONT_GOLD",
+      "reference": "REF_B",
+      "file": "roi_masks/REF_B_RESIDENT_FRONT_GOLD.png",
+      "status": "PREFLIGHT_REQUIRED"
+    },
+    {
+      "id": "REF_B_RESIDENT_BACK_GREEN_GOLD",
+      "reference": "REF_B",
+      "file": "roi_masks/REF_B_RESIDENT_BACK_GREEN_GOLD.png",
+      "status": "PREFLIGHT_REQUIRED"
+    },
+    {
+      "id": "REF_B_BACKGROUND_BOKEH",
+      "reference": "REF_B",
+      "file": "roi_masks/REF_B_BACKGROUND_BOKEH.png",
+      "status": "PREFLIGHT_REQUIRED"
+    },
+    {
+      "id": "REF_B_DROPLETS_AND_PARTICLES",
+      "reference": "REF_B",
+      "file": "roi_masks/REF_B_DROPLETS_AND_PARTICLES.png",
+      "status": "PREFLIGHT_REQUIRED"
+    }
+  ]
+}

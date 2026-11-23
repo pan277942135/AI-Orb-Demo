@@ -99,11 +99,15 @@ class AIOrbPostProcessing {
     GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
   }
 
-  fun beginScenePass() {
+  fun beginScenePass(transparentClear: Boolean = false) {
     val fbo = sceneFbo ?: return
     val s = hdrScale
     fbo.bind()
-    GLES30.glClearColor(0.005f * s, 0.024f * s, 0.032f * s, 1.0f)
+    if (transparentClear) {
+      GLES30.glClearColor(0f, 0f, 0f, 0f)
+    } else {
+      GLES30.glClearColor(0.005f * s, 0.024f * s, 0.032f * s, 1.0f)
+    }
     GLES30.glClearDepthf(1.0f)
     GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT or GLES30.GL_DEPTH_BUFFER_BIT)
   }
@@ -126,6 +130,7 @@ class AIOrbPostProcessing {
     config: AIOrbConfig,
     preTonemapBypass: Boolean = false,
     forceBloomOff: Boolean = false,
+    preserveSceneAlpha: Boolean = false,
   ) {
     val src = sceneFbo ?: return
     val ping = bloomPingFbo ?: return
@@ -195,6 +200,7 @@ class AIOrbPostProcessing {
     compProg.setFloat("uChromaticAmount", if (bloomDisabled) 0f else 0.0038f * (0.45f + 0.55f * config.refraction))
     compProg.setFloat("uHdrScale", scale)
     compProg.setInt("uPreTonemapBypass", if (preTonemapBypass) 1 else 0)
+    compProg.setInt("uPreserveSceneAlpha", if (preserveSceneAlpha) 1 else 0)
     mesh.draw()
 
     GLES30.glActiveTexture(GLES30.GL_TEXTURE1)

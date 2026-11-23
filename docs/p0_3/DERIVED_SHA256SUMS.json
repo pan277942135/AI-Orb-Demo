@@ -1,0 +1,114 @@
+{
+  "ROI_MASK_FREEZE_MANIFEST.json": {
+    "bytes": 14013,
+    "sha256": "e05b630b734204105d752dda3fe61cb34a8c9ed4d2bee08f5dc41d460b3b092f"
+  },
+  "ROI_MASK_MANIFEST.json": {
+    "bytes": 14013,
+    "sha256": "e05b630b734204105d752dda3fe61cb34a8c9ed4d2bee08f5dc41d460b3b092f"
+  },
+  "overlays/REF_A_SEMANTIC_ROI_CONTACT_SHEET.png": {
+    "bytes": 673128,
+    "sha256": "ac1dc3d5336c19d982b35f9327199e7ee660a6798f40b397500d4c5ff0604a82"
+  },
+  "overlays/REF_B_SEMANTIC_ROI_CONTACT_SHEET.png": {
+    "bytes": 513569,
+    "sha256": "c42245e027d52589c28345bdbd97a7a299b7fe0f900c3ccb8d42d950729cedc8"
+  },
+  "overlays/masks/REF_A_AQUA_LIQUID_OVERLAY.png": {
+    "bytes": 1414701,
+    "sha256": "f1ac3d84d2a33a8ac3c0cd76869b061a1e17d91036282fb8eb4a876cfaab02a7"
+  },
+  "overlays/masks/REF_A_CORE_SILHOUETTE_ALPHA_GE_008_OVERLAY.png": {
+    "bytes": 1431366,
+    "sha256": "add3c233da14eba79098699ed301275926a33107d81804ec13e3980fbb33a31c"
+  },
+  "overlays/masks/REF_A_EMBEDDED_CRYSTAL_LENS_OVERLAY.png": {
+    "bytes": 1390562,
+    "sha256": "e639f408313a2048901d0ed619fd9939bf68d5ac2d8dee31cea11eb07c91161e"
+  },
+  "overlays/masks/REF_A_EMERALD_FOLD_OVERLAY.png": {
+    "bytes": 1413482,
+    "sha256": "c6cb6ac1273b243a800df339cb96928d41fa784496256b70baf72bcc5f3f82d2"
+  },
+  "overlays/masks/REF_A_GOLD_CAUSTIC_HIGHLIGHTS_OVERLAY.png": {
+    "bytes": 1422291,
+    "sha256": "9b91287dc3ffa1399c18b02fa90669dcbe51db9d3af26e0494f8c6c6e7bf93b7"
+  },
+  "overlays/masks/REF_A_OUTER_GLASS_RIM_OVERLAY.png": {
+    "bytes": 1373768,
+    "sha256": "54525b24a5f1aafdaebc01bba7ee143f1199abbe50378f6dbfa0d78690c93f88"
+  },
+  "overlays/masks/REF_A_SAPPHIRE_VALLEY_OVERLAY.png": {
+    "bytes": 1427396,
+    "sha256": "f33b9b086f3a388f0c2017e7f1d71ac868114c62cf918766b85e8aa06fcea532"
+  },
+  "overlays/masks/REF_B_BACKGROUND_BOKEH_OVERLAY.png": {
+    "bytes": 1870319,
+    "sha256": "56d2502201022d2d9f0afb57e709451015cdfbecd0e6f5b757ace4a0d738327b"
+  },
+  "overlays/masks/REF_B_DROPLETS_AND_PARTICLES_OVERLAY.png": {
+    "bytes": 1873376,
+    "sha256": "f726ad92ebe6b4a299f9df5f942516041c060efb2f724a91eebc9a000575e94c"
+  },
+  "overlays/masks/REF_B_RESIDENT_BACK_GREEN_GOLD_OVERLAY.png": {
+    "bytes": 1852508,
+    "sha256": "0c43a2b47bfff405f433d6a18009e08f37e5cc5f658e624242747318a96cbfa8"
+  },
+  "overlays/masks/REF_B_RESIDENT_FRONT_CYAN_OVERLAY.png": {
+    "bytes": 1864841,
+    "sha256": "fbb2004515f47acd7a9c9c74ae4d41ae8b858bbf00bcbfec23b6309c8690a2d7"
+  },
+  "overlays/masks/REF_B_RESIDENT_FRONT_GOLD_OVERLAY.png": {
+    "bytes": 1871631,
+    "sha256": "c58f8fbe4ba438ed17d72fa140df1f4b090943b51c1763259350799d6a5d6acf"
+  },
+  "roi_masks/REF_A_AQUA_LIQUID.png": {
+    "bytes": 9082,
+    "sha256": "30a3b237db9ad9bbba424cbbb63bbec45c9d43fc84df5ad66ef42413edb1e8a7"
+  },
+  "roi_masks/REF_A_CORE_SILHOUETTE_ALPHA_GE_008.png": {
+    "bytes": 7586,
+    "sha256": "b90907983d33cb4b2e0963b8d6e0242f0998eb065920380085138dc03f79c1ed"
+  },
+  "roi_masks/REF_A_EMBEDDED_CRYSTAL_LENS.png": {
+    "bytes": 3947,
+    "sha256": "d731801838b63038de7e6081357f52268907e2d3e002738a725a7b002277d016"
+  },
+  "roi_masks/REF_A_EMERALD_FOLD.png": {
+    "bytes": 11291,
+    "sha256": "422d422a3103731d26e8cd7b8ea2c5b9201aa2fd1f882146fca0b2eec275b868"
+  },
+  "roi_masks/REF_A_GOLD_CAUSTIC_HIGHLIGHTS.png": {
+    "bytes": 26422,
+    "sha256": "b4d35dd3af6654b680f2c509c0c209190ef55b1c347b8ba445a7521b1bc16598"
+  },
+  "roi_masks/REF_A_OUTER_GLASS_RIM.png": {
+    "bytes": 9326,
+    "sha256": "339f2fba0dec74bf1fb2f3eaa2f1140e38679b1bd066303207264c498d4c18ba"
+  },
+  "roi_masks/REF_A_SAPPHIRE_VALLEY.png": {
+    "bytes": 5478,
+    "sha256": "854852fad959fded623c4975dbde4323c383d89e322ebd409db5f07cdbc36da8"
+  },
+  "roi_masks/REF_B_BACKGROUND_BOKEH.png": {
+    "bytes": 5966,
+    "sha256": "6768e9669dea0b7c113fe0023f41f2e462efb75b22750b938c10d952695a4476"
+  },
+  "roi_masks/REF_B_DROPLETS_AND_PARTICLES.png": {
+    "bytes": 2938,
+    "sha256": "4d8912c3e78dc976ef0f6f9ce6d71ce87b32423e78e6995b3f22a01e51bcbc8f"
+  },
+  "roi_masks/REF_B_RESIDENT_BACK_GREEN_GOLD.png": {
+    "bytes": 8292,
+    "sha256": "2dd38c84caac6849c05b0b18a04df4a928ccd06a04b5e4d416fe441d14aa701a"
+  },
+  "roi_masks/REF_B_RESIDENT_FRONT_CYAN.png": {
+    "bytes": 4499,
+    "sha256": "5debbbb887fba96df20287fa83b95cdb4d4ec85a1ae31f0ee7e25cff6f0e777e"
+  },
+  "roi_masks/REF_B_RESIDENT_FRONT_GOLD.png": {
+    "bytes": 6456,
+    "sha256": "94897a93e78517db875eb802030b7a8dd2375f6f296674ba173b13707f6970de"
+  }
+}

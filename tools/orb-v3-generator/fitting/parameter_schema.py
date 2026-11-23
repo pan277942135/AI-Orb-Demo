@@ -188,7 +188,7 @@ def build_default_schema() -> dict[str, Any]:
             "saturationBoost": param("saturationBoost", "ratio", 1.10, 1.00, 1.24, True, "STAGE_E_OPTICS_FIT"),
         },
         "quality": {
-            "raymarchStepsHigh": param("raymarchStepsHigh", "steps", 36, 24, 48, False, "FROZEN_V3_CONTRACT"),
+            "raymarchStepsHigh": param("raymarchStepsHigh", "steps", 48, 24, 48, False, "PRODUCTION_QUALITY_TIER_HIGH"),
             "raymarchStepsBalanced": param("raymarchStepsBalanced", "steps", 28, 20, 36, False, "FROZEN_V3_CONTRACT"),
             "raymarchStepsEco": param("raymarchStepsEco", "steps", 20, 16, 28, False, "FROZEN_V3_CONTRACT"),
             "coreRotationSpeedDegPerSec": param("coreRotationSpeedDegPerSec", "deg/s", 26.0, 26.0, 26.0, False, "FROZEN_V3_CONTRACT"),

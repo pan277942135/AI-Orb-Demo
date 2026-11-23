@@ -70,7 +70,13 @@ data class AIOrbTelemetry(
   val apkSha256: String? = null,
   val shaderProgramId: Int = 0,
   val shaderSourceSha256: String = "UNAVAILABLE",
+  val qualityTier: String = "UNKNOWN",
+  val configuredRaymarchSteps: Int = -1,
+  val effectiveRaymarchSteps: Int = -1,
+  val currentSubdivisions: Int = -1,
+  val geometryStateValid: Boolean = false,
   val uVolumeLoaded: Int = -1,
+  val uDebugMode: Int = -1,
   val gpuTextureObjectsValid: Boolean = false,
   val volumeTextureId: Int = 0,
   val detailTextureId: Int = 0,
@@ -85,6 +91,10 @@ data class AIOrbTelemetry(
   val foldActiveRatio: Float? = null,
   val foldActiveRatioStatus: String = "NOT_MEASURED",
   val renderResolution: String = "0x0",
+  val geometrySubdivisions: Int = -1,
+  val geometryVertexCount: Int = 0,
+  val geometryTriangleCount: Int = 0,
+  val geometryFingerprint: String = "UNAVAILABLE",
   val glError: String = "GL_NO_ERROR",
   val glErrorPass: String = "NONE",
   val webpDecodeMs: Float = 0f,
@@ -215,7 +225,7 @@ class AIOrbScene(
   }
 
   /**
-   * Triggers the Gate 4 one-click 6-frame production GLES 3.0 evidence capture
+   * Triggers the one-click production GLES 3.0 evidence capture for all required layers
    * directly on the active GL thread (zero Compose UI/status bar).
    */
   fun requestV32EvidenceExport(
@@ -531,14 +541,18 @@ class AIOrbScene(
     val productionFrameMode = cfg.debugMode == RenderDebugMode.FULL_RENDER ||
       cfg.debugMode == RenderDebugMode.REFERENCE_LOCKED_FRAME ||
       cfg.debugMode == RenderDebugMode.PRE_TONEMAP ||
-      cfg.debugMode == RenderDebugMode.POST_TONEMAP
+      cfg.debugMode == RenderDebugMode.POST_TONEMAP ||
+      cfg.debugMode == RenderDebugMode.CORE_ONLY_TRANSPARENT
     if (!isTaskDemo && productionFrameMode && !core.isVolumeReady) {
       // Production fidelity frames never fall through to the analytic shader fallback.
       // Keep the backdrop responsive and publish LOADING / V3_ASSET_ERROR telemetry.
       postProcessing.resize(surfaceWidth, surfaceHeight, cfg.quality)
-      postProcessing.beginScenePass()
-      background.draw(0f, postProcessing.renderWidth, postProcessing.renderHeight, 0f, 0f, postProcessing.hdrScale, cfg)
-      postProcessing.executePostProcessToScreen(cfg)
+      val transparentCore = cfg.debugMode == RenderDebugMode.CORE_ONLY_TRANSPARENT
+      postProcessing.beginScenePass(transparentClear = transparentCore)
+      if (!transparentCore) {
+        background.draw(0f, postProcessing.renderWidth, postProcessing.renderHeight, 0f, 0f, postProcessing.hdrScale, cfg)
+      }
+      postProcessing.executePostProcessToScreen(cfg, preserveSceneAlpha = transparentCore)
       val pausedMotion = motionController.step(0.0, cfg.copy(isPaused = true))
       recordAndPublishTelemetry(frameStartNanos, volumeJustUpdated, pausedMotion, cfg.debugMode)
       return
@@ -585,7 +599,7 @@ class AIOrbScene(
       simDeltaSec = 0.0
       wasCapturingV32LastFrame = true
     } else {
-      // If we just resumed from a frozen 6-frame capture, step with zero jump on the first live frame
+      // If we just resumed from a frozen multi-layer capture, step with zero jump on the first live frame
       val effectiveRawDt = if (wasCapturingV32LastFrame) {
         wasCapturingV32LastFrame = false
         0.0
@@ -700,16 +714,21 @@ class AIOrbScene(
     val hideOuter = cfg.effectiveHideOuterOrbitals
 
     val drawRibbons = !hideOuter && mode != RenderDebugMode.OPTICS_ONLY
-    val drawHighlights = !hideOuter && mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
-    val drawParticles = !hideOuter && mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
-    val drawCore = mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.OPTICS_ONLY
+    val drawHighlights = !hideOuter && mode != RenderDebugMode.RIBBONS_ONLY &&
+      mode != RenderDebugMode.RESIDENTS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
+    val drawParticles = !hideOuter && mode != RenderDebugMode.RIBBONS_ONLY &&
+      mode != RenderDebugMode.RESIDENTS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
+    val drawCore = mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.RESIDENTS_ONLY &&
+      mode != RenderDebugMode.OPTICS_ONLY
 
     // ==================== V3 SINGLE-VOLUME MULTI-PASS GPU PIPELINE ====================
-    postProcessing.beginScenePass()
+    val transparentCoreCapture = mode == RenderDebugMode.CORE_ONLY_TRANSPARENT
+    postProcessing.beginScenePass(transparentClear = transparentCoreCapture)
 
     // Pass 1: Deep emerald-teal atmospheric space & multi-depth bokeh
-    if (mode == RenderDebugMode.FOLD_NORMAL) {
+    if (mode == RenderDebugMode.FOLD_NORMAL || transparentCoreCapture) {
       GLES30.glClearColor(0f, 0f, 0f, 1f)
+      if (transparentCoreCapture) GLES30.glClearColor(0f, 0f, 0f, 0f)
       GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT or GLES30.GL_DEPTH_BUFFER_BIT)
     } else {
       background.draw(time, rw, rh, autoYawRad, autoPitchRad, hdrScale, cfg)
@@ -773,6 +792,7 @@ class AIOrbScene(
     postProcessing.executePostProcessToScreen(
       config = cfg,
       preTonemapBypass = mode == RenderDebugMode.PRE_TONEMAP || mode == RenderDebugMode.FOLD_NORMAL,
+      preserveSceneAlpha = transparentCoreCapture,
     )
 
     // Gate 4: Real GL-thread zero-UI glReadPixels capture when user triggers V3.2 Evidence Export
@@ -1014,7 +1034,13 @@ class AIOrbScene(
       apkSha256 = apkSha256Ref.get(),
       shaderProgramId = core.runtimeShaderState.programId,
       shaderSourceSha256 = core.runtimeShaderState.shaderSourceSha256,
+      qualityTier = core.runtimeShaderState.qualityTier,
+      configuredRaymarchSteps = core.runtimeShaderState.configuredRaymarchSteps,
+      effectiveRaymarchSteps = core.runtimeShaderState.effectiveRaymarchSteps,
+      currentSubdivisions = core.runtimeShaderState.currentSubdivisions,
+      geometryStateValid = core.runtimeShaderState.geometryStateValid,
       uVolumeLoaded = core.runtimeShaderState.uVolumeLoaded,
+      uDebugMode = core.runtimeShaderState.uDebugMode,
       gpuTextureObjectsValid = core.runtimeShaderState.gpuTextureObjectsValid,
       volumeTextureId = core.runtimeShaderState.volumeTextureId,
       detailTextureId = core.runtimeShaderState.detailTextureId,
@@ -1029,6 +1055,10 @@ class AIOrbScene(
       foldActiveRatio = core.runtimeShaderState.foldActiveRatio,
       foldActiveRatioStatus = core.runtimeShaderState.foldActiveRatioStatus,
       renderResolution = core.runtimeShaderState.renderResolution,
+      geometrySubdivisions = core.runtimeShaderState.geometrySubdivisions,
+      geometryVertexCount = core.runtimeShaderState.geometryVertexCount,
+      geometryTriangleCount = core.runtimeShaderState.geometryTriangleCount,
+      geometryFingerprint = core.runtimeShaderState.geometryFingerprint,
       glError = core.runtimeShaderState.glError,
       glErrorPass = core.runtimeShaderState.glErrorPass,
       webpDecodeMs = volTel.decodeTimeMs,
