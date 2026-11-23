@@ -541,40 +541,45 @@ vec3 meniscusNormal(vec2 coreXZ, float meniscusPhase, out vec2 slopeOut) {
 }
 
 // V3.2 Candidate B: Embedded Asymmetric Crystal Lens SDF in rotated Core Frame.
+// Shared 1:1 with Python `cavity_geometry_fitter.py` and Kotlin `CrystalLensGeometry.kt`.
 // phi < 0 lies inside the clear embedded crystal pocket; phi == 0 is the curved refractive lens wall.
+const float CRYSTAL_LENS_ASYM_SHEAR = 0.08;
+
 float crystalLensPhi(vec3 p) {
-    vec3 radii = max(uLensRadii, vec3(0.08));
-    vec3 q = p - uLensCenter;
-    // Slight organic top-dome asymmetry so the crystal pocket follows the master's curved crown
-    q.y -= 0.032 * q.x * q.x + 0.018 * q.x;
-    vec3 scaled = q / radii;
-    float k0 = length(scaled);
-    float k1 = length(scaled / radii);
-    if (k0 < 1e-5) return -min(radii.x, min(radii.y, radii.z));
-    return k0 * (k0 - 1.0) / max(k1, 1e-4);
+    vec3 invR = 1.0 / max(uLensRadii, vec3(0.05));
+    vec3 q = (p - uLensCenter) * invR;
+    q.y += CRYSTAL_LENS_ASYM_SHEAR * q.x;
+    return length(q) - 1.0;
 }
 
 vec3 crystalLensNormal(vec3 p) {
-    float e = 0.008;
-    float gx = crystalLensPhi(p + vec3(e, 0.0, 0.0)) - crystalLensPhi(p - vec3(e, 0.0, 0.0));
-    float gy = crystalLensPhi(p + vec3(0.0, e, 0.0)) - crystalLensPhi(p - vec3(0.0, e, 0.0));
-    float gz = crystalLensPhi(p + vec3(0.0, 0.0, e)) - crystalLensPhi(p - vec3(0.0, 0.0, e));
-    return normalize(vec3(gx, gy, gz) + vec3(0.0, 1e-5, 0.0));
+    vec3 invR = 1.0 / max(uLensRadii, vec3(0.05));
+    vec3 q = (p - uLensCenter) * invR;
+    q.y += CRYSTAL_LENS_ASYM_SHEAR * q.x;
+    vec3 g = vec3(
+        (q.x + CRYSTAL_LENS_ASYM_SHEAR * q.y) * invR.x,
+        q.y * invR.y,
+        q.z * invR.z
+    );
+    float gLen = length(g);
+    return gLen > 1e-6 ? (g / gLen) : vec3(0.0, 1.0, 0.0);
 }
 
-// Analytic ellipsoid ray intersection in Core Frame matching crystalLensPhi()
+// Exact analytic ray intersection matching crystalLensPhi() identically (phi(ro + rd * t) == 0)
 bool intersectCrystalLens(vec3 ro, vec3 rd, float tMax, out float tEnter, out float tExit, out float thickness) {
-    vec3 radii = max(uLensRadii, vec3(0.08));
-    vec3 oc = (ro - uLensCenter) / radii;
-    vec3 d = rd / radii;
+    vec3 invR = 1.0 / max(uLensRadii, vec3(0.05));
+    vec3 q = (ro - uLensCenter) * invR;
+    q.y += CRYSTAL_LENS_ASYM_SHEAR * q.x;
+    vec3 d = rd * invR;
+    d.y += CRYSTAL_LENS_ASYM_SHEAR * d.x;
     float a = dot(d, d);
-    float b = dot(oc, d);
-    float c = dot(oc, oc) - 1.0;
+    float b = dot(q, d);
+    float c = dot(q, q) - 1.0;
     float disc = b * b - a * c;
     tEnter = 0.0;
     tExit = 0.0;
     thickness = 0.0;
-    if (disc <= 0.0 || a < 1e-6) return false;
+    if (disc <= 0.0 || a <= 1e-8) return false;
     float s = sqrt(disc);
     float t0 = (-b - s) / a;
     float t1 = (-b + s) / a;

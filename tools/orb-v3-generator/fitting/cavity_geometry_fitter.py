@@ -68,6 +68,9 @@ def cavity_phi_v32(
     return y - (base_y + y_offset + dip + climb + wave)
 
 
+CRYSTAL_LENS_ASYM_SHEAR = 0.08
+
+
 def crystal_lens_phi(
     x: float,
     y: float,
@@ -80,15 +83,47 @@ def crystal_lens_phi(
     rz: float,
 ) -> float:
     """
-    Signed distance proxy to the embedded upper transparent crystal dome/lens cavity.
+    Canonical signed distance proxy to the embedded upper transparent crystal dome/lens cavity.
+    Shared 1:1 across Python (cavity_geometry_fitter.py), GLSL (CoreFluidShaders.kt),
+    and Kotlin (CrystalLensGeometry.kt).
     Negative inside the embedded crystal pocket, zero on the crystal shell boundary, positive outside.
     """
-    dx = (x - cx) / max(0.05, rx)
-    dy = (y - cy) / max(0.05, ry)
-    dz = (z - cz) / max(0.05, rz)
-    # Subtle asymmetric tilt so left 10:30 sweeps smoothly higher than right 2:00
-    dy_asym = dy + 0.08 * dx
-    return math.sqrt(dx * dx + dy_asym * dy_asym + dz * dz) - 1.0
+    inv_rx = 1.0 / max(0.05, rx)
+    inv_ry = 1.0 / max(0.05, ry)
+    inv_rz = 1.0 / max(0.05, rz)
+    qx = (x - cx) * inv_rx
+    qy = (y - cy) * inv_ry + CRYSTAL_LENS_ASYM_SHEAR * qx
+    qz = (z - cz) * inv_rz
+    return math.sqrt(qx * qx + qy * qy + qz * qz) - 1.0
+
+
+def crystal_lens_normal(
+    x: float,
+    y: float,
+    z: float,
+    cx: float,
+    cy: float,
+    cz: float,
+    rx: float,
+    ry: float,
+    rz: float,
+) -> tuple[float, float, float]:
+    """
+    Exact outward unit normal (analytic gradient of crystal_lens_phi) matching GLSL and Kotlin 1:1.
+    """
+    inv_rx = 1.0 / max(0.05, rx)
+    inv_ry = 1.0 / max(0.05, ry)
+    inv_rz = 1.0 / max(0.05, rz)
+    qx = (x - cx) * inv_rx
+    qy = (y - cy) * inv_ry + CRYSTAL_LENS_ASYM_SHEAR * qx
+    qz = (z - cz) * inv_rz
+    gx = (qx + CRYSTAL_LENS_ASYM_SHEAR * qy) * inv_rx
+    gy = qy * inv_ry
+    gz = qz * inv_rz
+    gl = math.sqrt(gx * gx + gy * gy + gz * gz)
+    if gl <= 1e-8:
+        return 0.0, 1.0, 0.0
+    return gx / gl, gy / gl, gz / gl
 
 
 def intersect_crystal_lens(
@@ -115,11 +150,11 @@ def intersect_crystal_lens(
     inv_rz = 1.0 / max(0.05, rad_z)
 
     qx = (ox - cx) * inv_rx
-    qy = (oy - cy) * inv_ry + 0.08 * qx
+    qy = (oy - cy) * inv_ry + CRYSTAL_LENS_ASYM_SHEAR * qx
     qz = (oz - cz) * inv_rz
 
     dx = rx_d * inv_rx
-    dy = ry_d * inv_ry + 0.08 * dx
+    dy = ry_d * inv_ry + CRYSTAL_LENS_ASYM_SHEAR * dx
     dz = rz_d * inv_rz
 
     a = dx * dx + dy * dy + dz * dz
@@ -230,33 +265,38 @@ def evaluate_cavity_candidate(
             g_lin = 0.055 + 0.160 * (1.0 - air_frac)
             b_lin = 0.095 + 0.260 * (1.0 - air_frac)
 
-            # Localized 10:30 golden refraction flare (E09) strictly on upper-left dome (zero 12:00 grey mixing!)
+            # Localized 10:30 golden refraction flare (E09) strictly on upper-left dome (zero grey-white blue+gold mixing!)
             vn_l = math.hypot(nx, ny) + 1e-5
             ul_dot = (nx / vn_l) * (-0.58) + (ny / vn_l) * 0.815
-            ul_sec = smoothstep(0.76, 0.98, ul_dot) * smoothstep(0.36, 0.88, math.hypot(nx, ny)) * (1.0 - smoothstep(-0.18, -0.06, nx))
-            gold_raw = ul_sec * (0.35 + 0.65 * (1.0 - ndotv) ** 1.6)
-            gold_on = smoothstep(0.24, 0.38, gold_raw)
+            ul_sec = (
+                smoothstep(0.80, 0.96, ul_dot)
+                * smoothstep(0.42, 0.86, math.hypot(nx, ny))
+                * (1.0 - smoothstep(-0.16, -0.10, nx))
+                * smoothstep(0.35, 0.44, ny)
+            )
+            gold_raw = ul_sec * (0.42 + 0.58 * (1.0 - ndotv) ** 1.5)
+            gold_on = smoothstep(0.28, 0.42, gold_raw)
             gold_ray = gold_raw * gold_on * gold_pen
 
             if use_lens:
                 hit_l, t_in, t_out, thick = intersect_crystal_lens(
                     ox, oy, oz, rx, ry, rz, t_exit, lx, ly, lz, lrx, lry, lrz
                 )
-                cyan_keep = 1.0 - gold_on
+                cyan_keep = (1.0 - gold_on) * (1.0 - gold_on)
                 if hit_l:
                     wall_ring = math.exp(-((thick - l_wall * 4.5) / max(0.06, l_wall * 3.8)) ** 2)
                     deep_pocket = smoothstep(l_wall * 5.2, l_wall * 10.5, thick)
                     r_lin = r_lin * (1.0 - deep_pocket * 0.84) + 0.006 * wall_ring * rim_refr * cyan_keep
                     g_lin = g_lin * (1.0 - deep_pocket * 0.80) + 0.145 * wall_ring * rim_refr * cyan_keep + tint_gain * 0.10 * (1.0 - deep_pocket) * cyan_keep
-                    b_lin = b_lin * (1.0 - deep_pocket * 0.76) + 0.375 * wall_ring * rim_refr * cyan_keep + tint_gain * 0.24 * (1.0 - deep_pocket) * cyan_keep
-                    r_lin += gold_ray * 1.55
-                    g_lin += gold_ray * 0.95
+                    b_lin = b_lin * (1.0 - deep_pocket * 0.76) * cyan_keep + 0.375 * wall_ring * rim_refr * cyan_keep + tint_gain * 0.24 * (1.0 - deep_pocket) * cyan_keep
+                    r_lin += gold_ray * 1.65
+                    g_lin += gold_ray * 0.96
                     b_lin += gold_ray * 0.02
                     highlight_align_sum += wall_ring * ul_sec
                 else:
-                    r_lin += 0.005 * cyan_keep + gold_ray * 1.50
-                    g_lin += 0.125 * cyan_keep + gold_ray * 0.90
-                    b_lin += 0.385 * cyan_keep + gold_ray * 0.02
+                    r_lin = r_lin * cyan_keep + 0.005 * cyan_keep + gold_ray * 1.60
+                    g_lin = g_lin * cyan_keep + 0.125 * cyan_keep + gold_ray * 0.92
+                    b_lin = b_lin * cyan_keep + 0.385 * cyan_keep + gold_ray * 0.02
             else:
                 # Candidate A: uniform air-cavity without crystal lens shell walls
                 r_lin = r_lin * (1.0 - air_frac * 0.85) + 0.008 * air_frac + gold_ray * 0.55

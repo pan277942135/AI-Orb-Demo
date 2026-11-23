@@ -2,12 +2,14 @@ package com.example.orb.v3
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.opengl.GLES30
 import android.os.Build
 import com.example.orb.config.AIOrbConfig
 import com.example.orb.config.RenderDebugMode
 import com.example.orb.gl.CoreFluidShaders
 import com.example.orb.gl.RibbonOpticsShaders
+import com.example.orb.scene.AIOrbMotionSnapshot
 import com.example.orb.scene.AIOrbTelemetry
 import java.io.File
 import java.io.FileOutputStream
@@ -41,13 +43,88 @@ data class GpuCaptureProgress(
 )
 
 /**
+ * Frozen, immutable capture state shared identically across ALL 6 GPU evidence frames
+ * (`REFERENCE_LOCKED_FRAME`, `CAVITY_ONLY`, `FLUID_VOLUME_ONLY`, `RIBBONS_ONLY`,
+ * `GLASS_ONLY`, `FULL_RENDER`), guaranteeing pixel-exact camera, viewport, object
+ * transform, and rotation-phase alignment with zero inter-frame drift.
+ */
+data class OrbGpuCaptureSnapshot(
+  val snapshotId: String,
+  val camera: OrbCameraSnapshot,
+  val motion: AIOrbMotionSnapshot,
+  val outerGlassModel: FloatArray,
+  val invOuterGlassModel: FloatArray,
+  val cameraConfigHash: String,
+  val modelTransformHash: String,
+) {
+  companion object {
+    fun create(
+      surfaceWidth: Int,
+      surfaceHeight: Int,
+      fidelity: MasterFidelityV32,
+      motion: AIOrbMotionSnapshot,
+      snapshotId: String = defaultSnapshotId(),
+    ): OrbGpuCaptureSnapshot {
+      val camera = OrbCameraBuilder.build(
+        surfaceWidth = surfaceWidth,
+        surfaceHeight = surfaceHeight,
+        cameraFit = fidelity.camera,
+        yawRad = 0f,
+        pitchRad = 0f,
+      )
+      val model = FloatArray(16)
+      val invModel = FloatArray(16)
+      motion.writeOuterGlassModelMatrix(model)
+      motion.writeInvOuterGlassModelMatrix(invModel)
+
+      val modelCanonical = buildString {
+        append("sim=").append(String.format(Locale.US, "%.6f", motion.simTimeSec))
+        append("|angle=").append(String.format(Locale.US, "%.6f", motion.coreRotationAngleDeg))
+        append("|fluid=").append(String.format(Locale.US, "%.6f", motion.fluidPhase))
+        append("|meniscus=").append(String.format(Locale.US, "%.6f", motion.meniscusPhase))
+        append("|caustics=").append(String.format(Locale.US, "%.6f", motion.causticsPhase))
+        append("|ribbon=").append(String.format(Locale.US, "%.6f", motion.ribbonTimeSec))
+        append("|M=")
+        for (i in model.indices) {
+          if (i > 0) append(',')
+          append(String.format(Locale.US, "%.5f", model[i]))
+        }
+        append("|R=")
+        for (i in motion.coreRotationMat3.indices) {
+          if (i > 0) append(',')
+          append(String.format(Locale.US, "%.5f", motion.coreRotationMat3[i]))
+        }
+      }
+      val modelHash = MasterFidelityV32.sha256Hex(modelCanonical.toByteArray(Charsets.UTF_8))
+      return OrbGpuCaptureSnapshot(
+        snapshotId = snapshotId,
+        camera = camera,
+        motion = motion,
+        outerGlassModel = model,
+        invOuterGlassModel = invModel,
+        cameraConfigHash = camera.configHash,
+        modelTransformHash = modelHash,
+      )
+    }
+
+    private fun defaultSnapshotId(): String {
+      val sdf = SimpleDateFormat("yyyyMMdd'T'HHmmssSSS'Z'", Locale.US)
+      sdf.timeZone = TimeZone.getTimeZone("UTC")
+      return "v32_snap_${sdf.format(Date())}"
+    }
+  }
+}
+
+/**
  * Gate 4 Production GLES 3.0 GPU Frame & Evidence Exporter.
  *
  * Driven directly from `AIOrbScene.onDrawFrame()` on the real GL thread:
- * - Captures 6 zero-UI production frames via `GLES30.glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, buf)`
- * - Performs exact row-wise vertical Y-flip into lossless `Bitmap.Config.ARGB_8888` PNGs on a background IO thread
+ * - Locks ONE [OrbGpuCaptureSnapshot] across all 6 frames (identical camera, viewport, transform, phase)
+ * - Verifies framebuffer completeness (`glCheckFramebufferStatus`) and `glGetError()` around `glReadPixels`
+ * - Performs exact row-wise vertical Y-flip into lossless `Bitmap.Config.ARGB_8888` PNGs on an IO thread
+ * - Re-decodes every written PNG to verify valid dimensions & computes exact per-PNG SHA-256 digests
  * - Writes `RUNTIME_RENDER_CONFIG.json`, `GPU_TELEMETRY.json`, and `BUILD_FINGERPRINT.json`
- *   to `context.getExternalFilesDir("v32_fidelity_evidence") ?: File(context.filesDir, "v32_fidelity_evidence")`.
+ *   including `snapshotId`, `cameraConfigHash`, `modelTransformHash`, `capturedPngSha256`, and real telemetry.
  */
 class OrbGpuReferenceCapture {
   private val lock = Any()
@@ -59,7 +136,8 @@ class OrbGpuReferenceCapture {
   private var stepIndex = 0
   private var outputDir: File? = null
   private var callback: ((GpuCaptureProgress) -> Unit)? = null
-  private var capturedMetaFiles = ArrayList<String>(10)
+  private var frozenSnapshot: OrbGpuCaptureSnapshot? = null
+  private val capturedPngSha256 = LinkedHashMap<String, String>(8)
 
   val isCapturing: Boolean
     get() = synchronized(lock) { active }
@@ -74,7 +152,8 @@ class OrbGpuReferenceCapture {
       stepIndex = 0
       outputDir = outputDirectory
       callback = onProgress
-      capturedMetaFiles.clear()
+      frozenSnapshot = null
+      capturedPngSha256.clear()
     }
     onProgress(
       GpuCaptureProgress(
@@ -83,7 +162,7 @@ class OrbGpuReferenceCapture {
         totalSteps = CAPTURE_STEPS.size,
         currentFile = CAPTURE_STEPS.first().fileName,
         outputDirPath = outputDirectory.absolutePath,
-        statusMessage = "Starting 6-frame GPU capture...",
+        statusMessage = "Starting 6-frame frozen-snapshot GPU capture...",
       )
     )
     return true
@@ -98,6 +177,31 @@ class OrbGpuReferenceCapture {
   }
 
   /**
+   * Locks ONE [OrbGpuCaptureSnapshot] on step 0 and reuses the EXACT SAME snapshot
+   * across all 6 capture frames so every layer shares identical camera, transform, and phase.
+   */
+  fun getOrCreateFrozenSnapshot(
+    surfaceWidth: Int,
+    surfaceHeight: Int,
+    fidelity: MasterFidelityV32,
+    motionSupplier: () -> AIOrbMotionSnapshot,
+  ): OrbGpuCaptureSnapshot = synchronized(lock) {
+    val existing = frozenSnapshot
+    if (existing != null) {
+      existing
+    } else {
+      val created = OrbGpuCaptureSnapshot.create(
+        surfaceWidth = surfaceWidth,
+        surfaceHeight = surfaceHeight,
+        fidelity = fidelity,
+        motion = motionSupplier(),
+      )
+      frozenSnapshot = created
+      created
+    }
+  }
+
+  /**
    * Called on the GL thread IMMEDIATELY AFTER `postProcessing.executePostProcessToScreen(...)`
    * while the default framebuffer holds the final zero-UI rendered frame.
    */
@@ -107,27 +211,39 @@ class OrbGpuReferenceCapture {
     config: AIOrbConfig,
     fidelity: MasterFidelityV32,
     telemetry: AIOrbTelemetry,
+    snapshot: OrbGpuCaptureSnapshot? = null,
   ) {
     val step: GpuCaptureStep
     val dir: File
     val cb: ((GpuCaptureProgress) -> Unit)?
     val idx: Int
+    val activeSnap: OrbGpuCaptureSnapshot?
     synchronized(lock) {
       if (!active || stepIndex !in CAPTURE_STEPS.indices) return
       step = CAPTURE_STEPS[stepIndex]
       dir = outputDir ?: return
       cb = callback
       idx = stepIndex
+      activeSnap = snapshot ?: frozenSnapshot
       stepIndex++
     }
 
     val w = surfaceWidth.coerceAtLeast(1)
     val h = surfaceHeight.coerceAtLeast(1)
     val byteCount = w * h * 4
+
+    // Drain any prior unrelated error, verify default FBO completeness, and read back pixels cleanly
+    while (GLES30.glGetError() != GLES30.GL_NO_ERROR) {
+      // clear prior error queue before capture
+    }
+    val fboStatus = GLES30.glCheckFramebufferStatus(GLES30.GL_FRAMEBUFFER)
+    val fboComplete = fboStatus == GLES30.GL_FRAMEBUFFER_COMPLETE
+
     val buffer = ByteBuffer.allocateDirect(byteCount).order(ByteOrder.nativeOrder())
     GLES30.glFinish()
     GLES30.glPixelStorei(GLES30.GL_PACK_ALIGNMENT, 1)
     GLES30.glReadPixels(0, 0, w, h, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buffer)
+    val readError = GLES30.glGetError()
 
     val rawRgba = ByteArray(byteCount)
     buffer.rewind()
@@ -138,30 +254,57 @@ class OrbGpuReferenceCapture {
 
     ioExecutor.execute {
       try {
+        check(fboComplete) { "Framebuffer incomplete before glReadPixels (status=0x${fboStatus.toString(16)})" }
+        check(readError == GLES30.GL_NO_ERROR) { "glReadPixels failed with GL error 0x${readError.toString(16)}" }
+        check(rawRgba.size == byteCount) { "Unexpected pixel buffer size ${rawRgba.size} != $byteCount" }
+
         if (!dir.exists()) dir.mkdirs()
         val flipped = flipRgbaVertically(rawRgba, w, h)
         val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(flipped))
         val outFile = File(dir, step.fileName)
         FileOutputStream(outFile).use { fos ->
-          bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+          val ok = bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+          check(ok) { "Bitmap.compress(PNG) returned false for ${step.fileName}" }
         }
         bitmap.recycle()
 
+        // Re-decode written PNG to verify valid header, non-empty size, exact dimensions & SHA-256
+        val pngSha = verifyWrittenPngAndSha256(outFile, expectedWidth = w, expectedHeight = h)
+        val shaMapSnapshot: Map<String, String> = synchronized(lock) {
+          capturedPngSha256[step.fileName] = pngSha
+          LinkedHashMap(capturedPngSha256)
+        }
+
         if (isLastStep) {
           File(dir, FILE_RUNTIME_RENDER_CONFIG).writeText(
-            buildRuntimeRenderConfigJson(config, fidelity, w, h),
+            buildRuntimeRenderConfigJson(config, fidelity, w, h, activeSnap),
             Charsets.UTF_8,
           )
           File(dir, FILE_GPU_TELEMETRY).writeText(
-            buildGpuTelemetryJson(telemetry, w, h),
+            buildGpuTelemetryJson(
+              telemetry = telemetry,
+              surfaceWidth = w,
+              surfaceHeight = h,
+              snapshot = activeSnap,
+              framebufferComplete = fboComplete,
+              glErrorCode = readError,
+            ),
             Charsets.UTF_8,
           )
           File(dir, FILE_BUILD_FINGERPRINT).writeText(
-            buildFingerprintJson(fidelity, telemetry),
+            buildFingerprintJson(
+              fidelity = fidelity,
+              telemetry = telemetry,
+              snapshot = activeSnap,
+              capturedPngSha256 = shaMapSnapshot,
+            ),
             Charsets.UTF_8,
           )
-          synchronized(lock) { active = false }
+          synchronized(lock) {
+            active = false
+            frozenSnapshot = null
+          }
           cb?.invoke(
             GpuCaptureProgress(
               state = GpuCaptureState.COMPLETED,
@@ -169,7 +312,7 @@ class OrbGpuReferenceCapture {
               totalSteps = CAPTURE_STEPS.size,
               currentFile = step.fileName,
               outputDirPath = dir.absolutePath,
-              statusMessage = "Exported 6 GPU PNGs + 3 JSONs to ${dir.name}/",
+              statusMessage = "Exported 6 verified GPU PNGs + 3 JSONs to ${dir.name}/",
             )
           )
         } else {
@@ -185,7 +328,10 @@ class OrbGpuReferenceCapture {
           )
         }
       } catch (e: Exception) {
-        synchronized(lock) { active = false }
+        synchronized(lock) {
+          active = false
+          frozenSnapshot = null
+        }
         cb?.invoke(
           GpuCaptureProgress(
             state = GpuCaptureState.FAILED,
@@ -201,7 +347,10 @@ class OrbGpuReferenceCapture {
   }
 
   fun release() {
-    synchronized(lock) { active = false }
+    synchronized(lock) {
+      active = false
+      frozenSnapshot = null
+    }
     ioExecutor.shutdownNow()
   }
 
@@ -249,18 +398,49 @@ class OrbGpuReferenceCapture {
       return out
     }
 
+    /**
+     * Verifies a written PNG file by re-decoding its bounds via [BitmapFactory], confirming
+     * non-empty file size and exact [expectedWidth] x [expectedHeight], and returning its SHA-256.
+     */
+    fun verifyWrittenPngAndSha256(
+      file: File,
+      expectedWidth: Int,
+      expectedHeight: Int,
+    ): String {
+      require(file.exists() && file.length() > 8L) {
+        "Written PNG missing or empty: ${file.name}"
+      }
+      val opts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+      BitmapFactory.decodeFile(file.absolutePath, opts)
+      require(opts.outWidth == expectedWidth && opts.outHeight == expectedHeight) {
+        "Decoded PNG dimensions mismatch for ${file.name}: ${opts.outWidth}x${opts.outHeight} != ${expectedWidth}x${expectedHeight}"
+      }
+      return MasterFidelityV32.sha256Hex(file.readBytes())
+    }
+
     fun buildRuntimeRenderConfigJson(
       config: AIOrbConfig,
       fidelity: MasterFidelityV32,
       surfaceWidth: Int,
       surfaceHeight: Int,
+      snapshot: OrbGpuCaptureSnapshot? = null,
     ): String {
+      fun esc(s: String): String = s.replace("\\", "\\\\").replace("\"", "\\\"")
+      val camSnap = snapshot?.camera ?: OrbCameraBuilder.build(
+        surfaceWidth = surfaceWidth,
+        surfaceHeight = surfaceHeight,
+        cameraFit = fidelity.camera,
+      )
       return buildString {
         appendLine("{")
-        appendLine("  \"schema\": \"AI_ORB_V3_2_RUNTIME_RENDER_CONFIG_1_0\",")
+        appendLine("  \"schema\": \"AI_ORB_V3_2_RUNTIME_RENDER_CONFIG_1_1\",")
         appendLine("  \"capturedAtUtc\": \"${utcIsoNow()}\",")
+        appendLine("  \"snapshotId\": \"${esc(snapshot?.snapshotId ?: "UNBOUND")}\",")
+        appendLine("  \"cameraConfigHash\": \"${esc(snapshot?.cameraConfigHash ?: camSnap.configHash)}\",")
+        appendLine("  \"modelTransformHash\": \"${esc(snapshot?.modelTransformHash ?: "UNBOUND")}\",")
         appendLine("  \"surfaceWidth\": $surfaceWidth,")
         appendLine("  \"surfaceHeight\": $surfaceHeight,")
+        appendLine("  \"cameraSnapshot\": ${camSnap.toJson().prependIndent("  ").trimStart()},")
         appendLine("  \"aiOrbConfig\": ${config.toJson().prependIndent("  ").trimStart()},")
         appendLine("  \"masterFidelityV32\": ${fidelity.toRuntimeSummaryJson().prependIndent("  ").trimStart()}")
         append("}")
@@ -271,18 +451,31 @@ class OrbGpuReferenceCapture {
       telemetry: AIOrbTelemetry,
       surfaceWidth: Int,
       surfaceHeight: Int,
+      snapshot: OrbGpuCaptureSnapshot? = null,
+      framebufferComplete: Boolean = true,
+      glErrorCode: Int = 0,
     ): String {
       fun esc(s: String): String = s.replace("\\", "\\\\").replace("\"", "\\\"")
       fun f(v: Float): String = String.format(Locale.US, "%.3f", v)
       return buildString {
         appendLine("{")
-        appendLine("  \"schema\": \"AI_ORB_V3_2_GPU_TELEMETRY_1_0\",")
+        appendLine("  \"schema\": \"AI_ORB_V3_2_GPU_TELEMETRY_1_1\",")
         appendLine("  \"capturedAtUtc\": \"${utcIsoNow()}\",")
+        appendLine("  \"snapshotId\": \"${esc(snapshot?.snapshotId ?: "UNBOUND")}\",")
+        appendLine("  \"cameraConfigHash\": \"${esc(snapshot?.cameraConfigHash ?: "UNBOUND")}\",")
+        appendLine("  \"modelTransformHash\": \"${esc(snapshot?.modelTransformHash ?: "UNBOUND")}\",")
         appendLine("  \"surfaceWidth\": $surfaceWidth,")
         appendLine("  \"surfaceHeight\": $surfaceHeight,")
         appendLine("  \"fps\": ${telemetry.fps},")
+        appendLine("  \"latestCpuFrameMs\": ${f(telemetry.frameMsLatest)},")
         appendLine("  \"frameMsP50\": ${f(telemetry.frameMsP50)},")
         appendLine("  \"frameMsP95\": ${f(telemetry.frameMsP95)},")
+        appendLine("  \"sampleCount\": ${telemetry.frameSampleCount},")
+        appendLine("  \"hasSufficientSamples\": ${telemetry.hasSufficientTimingSamples},")
+        appendLine("  \"gpuFrameTimeMs\": null,")
+        appendLine("  \"gpuFrameTimeStatus\": \"${esc(telemetry.gpuFrameTimeStatus)}\",")
+        appendLine("  \"framebufferComplete\": $framebufferComplete,")
+        appendLine("  \"glErrorCode\": $glErrorCode,")
         appendLine("  \"coreAngleDeg\": ${f(telemetry.coreAngleDeg)},")
         appendLine("  \"coreAngularVelDegPerSec\": ${f(telemetry.coreAngularVelDegPerSec)},")
         appendLine("  \"isHdrFbo\": ${telemetry.isHdrFbo},")
@@ -309,6 +502,8 @@ class OrbGpuReferenceCapture {
     fun buildFingerprintJson(
       fidelity: MasterFidelityV32,
       telemetry: AIOrbTelemetry,
+      snapshot: OrbGpuCaptureSnapshot? = null,
+      capturedPngSha256: Map<String, String> = emptyMap(),
     ): String {
       fun esc(s: String): String = s.replace("\\", "\\\\").replace("\"", "\\\"")
       val coreShaderSha = MasterFidelityV32.sha256Hex(
@@ -319,9 +514,12 @@ class OrbGpuReferenceCapture {
       )
       return buildString {
         appendLine("{")
-        appendLine("  \"schema\": \"AI_ORB_V3_2_BUILD_FINGERPRINT_1_0\",")
-        appendLine("  \"taskId\": \"AI_ORB_V3_2_REFERENCE_TO_3D_FINAL_FIDELITY_P0\",")
+        appendLine("  \"schema\": \"AI_ORB_V3_2_BUILD_FINGERPRINT_1_1\",")
+        appendLine("  \"taskId\": \"AI_ORB_V32_FINAL_FIDELITY_CLOSURE_V2\",")
         appendLine("  \"capturedAtUtc\": \"${utcIsoNow()}\",")
+        appendLine("  \"snapshotId\": \"${esc(snapshot?.snapshotId ?: "UNBOUND")}\",")
+        appendLine("  \"cameraConfigHash\": \"${esc(snapshot?.cameraConfigHash ?: "UNBOUND")}\",")
+        appendLine("  \"modelTransformHash\": \"${esc(snapshot?.modelTransformHash ?: "UNBOUND")}\",")
         appendLine("  \"referenceMasterSha256\": \"${esc(fidelity.masterSha256)}\",")
         appendLine("  \"masterFidelityV32Sha256\": \"${esc(fidelity.configSha256)}\",")
         appendLine("  \"loadedFromAssets\": ${fidelity.loadedFromAssets},")
@@ -336,7 +534,14 @@ class OrbGpuReferenceCapture {
           val comma = if (i < CAPTURE_STEPS.lastIndex) "," else ""
           appendLine("    \"${step.fileName}\"$comma")
         }
-        appendLine("  ]")
+        appendLine("  ],")
+        appendLine("  \"capturedPngSha256\": {")
+        val entries = capturedPngSha256.entries.toList()
+        entries.forEachIndexed { i, (name, sha) ->
+          val comma = if (i < entries.lastIndex) "," else ""
+          appendLine("    \"${esc(name)}\": \"${esc(sha)}\"$comma")
+        }
+        appendLine("  }")
         append("}")
       }
     }

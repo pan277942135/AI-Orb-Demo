@@ -90,20 +90,20 @@ data class MasterFidelityV32(
     val width: Int = 256,
     val height: Int = 256,
     val depth: Int = 32,
-    val densityScale: Float = 2.3f,
+    val densityScale: Float = 1.686f,
     val baseDensity: Float = 0.032f,
     val foldCount: Int = 3,
     val foldIso: Float = 0.18f,
-    val foldThickness: Float = 0.2f,
+    val foldThickness: Float = 0.11f,
     val foldNormalPerturbation: Float = 0.34f,
     val foldRefraction: Float = 0.22f,
     val foldSpecularGain: Float = 0.42f,
   )
 
   data class SapphireValleysFit(
-    val sapphireAbsorptionGain: Float = 0.32f,
-    val sapphireAnchorWeight: Float = 1.45f,
-    val sapphireDepthDarken: Float = 0.74f,
+    val sapphireAbsorptionGain: Float = 0.1805f,
+    val sapphireAnchorWeight: Float = 1.534f,
+    val sapphireDepthDarken: Float = 0.452f,
     val beerLambertR: Float = 2.6f,
     val beerLambertG: Float = 0.92f,
     val beerLambertB: Float = 0.42f,
@@ -307,7 +307,7 @@ data class MasterFidelityV32(
       postProcessing = PostProcessingFit(),
       selectedCavityModel = "CANDIDATE_B_CRYSTAL_LENS",
       selectedVolumeDepth = 32,
-      offlineVisualLossTotal = 0.21507f,
+      offlineVisualLossTotal = 0.11547f,
     )
 
     fun loadFromAssets(assetManager: AssetManager?): MasterFidelityV32 {

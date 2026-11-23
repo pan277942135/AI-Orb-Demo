@@ -136,10 +136,19 @@ class AIOrbV32ReferenceFittingTest {
     assertTrue(gates.getJSONObject("E03_cavityAreaRelErr_le_15pct").getBoolean("pass"))
     assertTrue(gates.getJSONObject("E03_cavityCentroid_le_004D").getBoolean("pass"))
     assertTrue(gates.getJSONObject("E04_meniscusMeanErr_le_0025R").getBoolean("pass"))
+    assertTrue(gates.getJSONObject("E05_emeraldAreaRelErr_le_15pct").getBoolean("pass"))
+    assertTrue(gates.getJSONObject("E05_emeraldCentroid_le_004D").getBoolean("pass"))
+    assertTrue(gates.getJSONObject("E06_sapphireAreaRelErr_le_15pct").getBoolean("pass"))
+    assertTrue(gates.getJSONObject("E06_sapphireCentroid_le_004D").getBoolean("pass"))
+    assertTrue(gates.getJSONObject("E07_aquaAreaRelErr_le_15pct").getBoolean("pass"))
+    assertTrue(gates.getJSONObject("E07_aquaCentroid_le_004D").getBoolean("pass"))
     assertTrue(gates.getJSONObject("E10_goldCombinedChamfer_le_0025R").getBoolean("pass"))
     assertTrue(gates.getJSONObject("E10_goldNonRegularOval").getBoolean("pass"))
     assertTrue(gates.getJSONObject("E11_c01SmoothTurn_lt_20deg").getBoolean("pass"))
     assertTrue(gates.getJSONObject("E02_upperDomeHaze_le_1pct").getBoolean("pass"))
+
+    assertTrue("All 17 offline hard gates must pass", lossJson.getBoolean("allOfflineHardGatesPass"))
+    assertEquals(0, lossJson.getJSONArray("failedOfflineGates").length())
 
     // Honest GPU pending status must never be fabricated
     assertEquals("PENDING_REAL_GPU_CAPTURE", lossJson.getString("realGpuStatus"))

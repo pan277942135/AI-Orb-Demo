@@ -26,6 +26,9 @@ import com.example.orb.task.TaskSceneLayoutSnapshot
 import com.example.orb.task.TaskVisualDebugMode
 import com.example.orb.v3.GpuCaptureProgress
 import com.example.orb.v3.MasterFidelityV32
+import com.example.orb.v3.OrbCameraBuilder
+import com.example.orb.v3.OrbCameraSnapshot
+import com.example.orb.v3.OrbGpuCaptureSnapshot
 import com.example.orb.v3.OrbGpuReferenceCapture
 import com.example.orb.v3.OrbV3LoadState
 import java.io.File
@@ -37,16 +40,19 @@ import javax.microedition.khronos.opengles.GL10
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.math.tan
 
 /**
  * Live runtime & GPU hardware/software telemetry reported by [AIOrbScene],
  * including V3 WebP 3D Volume decode, upload, and VRAM metrics.
  */
 data class AIOrbTelemetry(
-  val fps: Int = 60,
+  val fps: Int = 0,
   val frameMsP50: Float = 0f,
   val frameMsP95: Float = 0f,
+  val frameMsLatest: Float = 0f,
+  val frameSampleCount: Int = 0,
+  val hasSufficientTimingSamples: Boolean = false,
+  val gpuFrameTimeStatus: String = FrameTimingSnapshot.GPU_FRAME_TIME_UNAVAILABLE,
   val coreAngleDeg: Float = 0f,
   val coreAngularVelDegPerSec: Float = 0f,
   val isHdrFbo: Boolean = true,
@@ -141,7 +147,7 @@ class AIOrbScene(
 
   private var surfaceWidth = 1
   private var surfaceHeight = 1
-  private val fovYDeg = 42f
+  private val fovYDeg: Float get() = masterFidelity.camera.fovYDeg
   private var lastFrameNanos: Long = 0L
   private var lastMotionSimTimeSec: Double = Double.NaN
   private var lastTaskEvidenceNanos: Long = 0L
@@ -154,11 +160,8 @@ class AIOrbScene(
   private var currentYawDeg: Float = 0f
   private var currentPitchDeg: Float = 0f
 
-  private val cpuFrameMsWindow = FloatArray(120)
-  private var cpuWindowCount = 0
-  private var cpuWindowCursor = 0
-  private var fpsFrameCount = 0
-  private var fpsWindowStartNanos = 0L
+  private val frameTelemetryTracker = FrameTelemetryStatsTracker()
+  private var wasCapturingV32LastFrame: Boolean = false
 
   private var glVendor: String = "Unknown"
   private var glRenderer: String = "Unknown"
@@ -336,10 +339,8 @@ class AIOrbScene(
 
     lastFrameNanos = System.nanoTime()
     lastMotionSimTimeSec = Double.NaN
-    fpsWindowStartNanos = lastFrameNanos
-    fpsFrameCount = 0
-    cpuWindowCount = 0
-    cpuWindowCursor = 0
+    frameTelemetryTracker.reset(lastFrameNanos)
+    wasCapturingV32LastFrame = false
     hasRenderedFirstFrame = false
 
     val volTel = core.volumeTelemetry
@@ -347,26 +348,11 @@ class AIOrbScene(
       webpLoadCounter.incrementAndGet()
     }
     onTelemetryUpdated(
-      AIOrbTelemetry(
-        fps = 60,
-        frameMsP50 = 0f,
-        frameMsP95 = 0f,
+      buildTelemetrySnapshot(
+        timing = frameTelemetryTracker.snapshot(),
         coreAngleDeg = 0f,
         coreAngularVelDegPerSec = 0f,
-        isHdrFbo = postProcessing.hdrScale > 0.5f,
-        activeRenderMode = cfg.debugMode,
-        glVendor = glVendor,
-        glRenderer = glRenderer,
-        glVersion = glVersion,
-        eglVersion = eglVersion,
-        isSoftwareRenderer = isSoftwareRenderer,
-        volumeLoadState = volTel.loadState,
-        volumeLoaded = volTel.isLoaded,
-        volumeDimensions = volTel.dimensionsLabel,
-        webpDecodeMs = volTel.decodeTimeMs,
-        texture3dUploadMs = volTel.uploadTimeMs,
-        gpuVolumeMemoryMiB = volTel.gpuMemoryMiB,
-        volumeStatus = volTel.statusMessage,
+        mode = cfg.debugMode,
       )
     )
   }
@@ -380,8 +366,12 @@ class AIOrbScene(
   }
 
   private fun updateProjectionMatrix() {
-    val aspect = surfaceWidth.toFloat() / surfaceHeight.toFloat()
-    Matrix.perspectiveM(projMatrix, 0, fovYDeg, aspect, 1.2f, 32.0f)
+    val camSnap = OrbCameraBuilder.build(
+      surfaceWidth = surfaceWidth,
+      surfaceHeight = surfaceHeight,
+      cameraFit = masterFidelity.camera,
+    )
+    camSnap.writeProjMatrix(projMatrix)
   }
 
   private fun ensureTaskRenderersInitialized() {
@@ -465,37 +455,73 @@ class AIOrbScene(
     hasRenderedFirstFrame = true
 
     // Tab 2 preserves live continuous V3 Orb spin even if Tab 1 had pause/debug modes enabled,
-    // without mutating Tab 1's AIOrbConfig. During Gate 4 GPU capture on Tab 1, temporarily override
-    // debugMode per capture step so all 6 production frames are captured cleanly without UI overlays.
+    // without mutating Tab 1's AIOrbConfig. During Gate 4 GPU capture on Tab 1, freeze ONE single
+    // OrbGpuCaptureSnapshot (camera + transform + phase) across all 6 frames without stepping live motion.
     val captureOverrideMode = if (!isTaskDemo) gpuReferenceCapture.currentOverrideModeOrNull() else null
+    val captureActive = captureOverrideMode != null
     val effectiveOrbCfg = when {
       isTaskDemo -> cfg.copy(
         isPaused = false,
         isolateCoreDebug = false,
         debugMode = RenderDebugMode.FULL_RENDER,
       )
-      captureOverrideMode != null -> cfg.copy(
+      captureActive -> cfg.copy(
         isPaused = false,
         isolateCoreDebug = false,
-        debugMode = captureOverrideMode,
+        debugMode = captureOverrideMode!!,
       )
       else -> cfg
     }
 
-    val motion = motionController.step(rawDt, effectiveOrbCfg)
-    val simDeltaSec = if (lastMotionSimTimeSec.isNaN()) {
-      0.0
+    val frozenCaptureSnapshot: OrbGpuCaptureSnapshot? = if (captureActive) {
+      gpuReferenceCapture.getOrCreateFrozenSnapshot(
+        surfaceWidth = surfaceWidth,
+        surfaceHeight = surfaceHeight,
+        fidelity = masterFidelity,
+      ) {
+        motionController.step(
+          0.0,
+          effectiveOrbCfg.copy(debugMode = RenderDebugMode.REFERENCE_LOCKED_FRAME),
+        )
+      }
     } else {
-      (motion.simTimeSec - lastMotionSimTimeSec).coerceIn(0.0, 0.25)
+      null
     }
-    lastMotionSimTimeSec = motion.simTimeSec
+
+    val motion: AIOrbMotionSnapshot
+    val simDeltaSec: Double
+    if (frozenCaptureSnapshot != null) {
+      motion = frozenCaptureSnapshot.motion
+      simDeltaSec = 0.0
+      wasCapturingV32LastFrame = true
+    } else {
+      // If we just resumed from a frozen 6-frame capture, step with zero jump on the first live frame
+      val effectiveRawDt = if (wasCapturingV32LastFrame) {
+        wasCapturingV32LastFrame = false
+        0.0
+      } else {
+        rawDt
+      }
+      motion = motionController.step(effectiveRawDt, effectiveOrbCfg)
+      simDeltaSec = if (lastMotionSimTimeSec.isNaN()) {
+        0.0
+      } else {
+        (motion.simTimeSec - lastMotionSimTimeSec).coerceIn(0.0, 0.25)
+      }
+      lastMotionSimTimeSec = motion.simTimeSec
+    }
 
     core.ensureQuality(effectiveOrbCfg.quality.icosphereSubdivisions)
     orbitRibbons.ensureQuality(effectiveOrbCfg.quality.ribbonSegments)
     postProcessing.resize(surfaceWidth, surfaceHeight, effectiveOrbCfg.quality)
 
-    motion.writeOuterGlassModelMatrix(outerGlassModel)
-    motion.writeInvOuterGlassModelMatrix(invOuterGlassModel)
+    if (frozenCaptureSnapshot != null) {
+      System.arraycopy(frozenCaptureSnapshot.outerGlassModel, 0, outerGlassModel, 0, 16)
+      System.arraycopy(frozenCaptureSnapshot.invOuterGlassModel, 0, invOuterGlassModel, 0, 16)
+    } else {
+      motion.writeOuterGlassModelMatrix(outerGlassModel)
+      motion.writeInvOuterGlassModelMatrix(invOuterGlassModel)
+    }
 
     if (isTaskDemo) {
       renderTaskPerimeterDemoFrame(
@@ -506,10 +532,11 @@ class AIOrbScene(
       )
     } else {
       renderOriginalOrbOnlyFrame(
+        frameStartNanos = frameStartNanos,
         rawDt = rawDt,
         motion = motion,
         cfg = effectiveOrbCfg,
-        captureActive = captureOverrideMode != null,
+        frozenCaptureSnapshot = frozenCaptureSnapshot,
       )
     }
 
@@ -522,79 +549,56 @@ class AIOrbScene(
   }
 
   /**
-   * 100% preserved Tab 1 (`ORB_ONLY`) V3 Single-Volume Multi-Pass GPU Pipeline.
+   * 100% preserved Tab 1 (`ORB_ONLY`) V3 Single-Volume Multi-Pass GPU Pipeline with unified
+   * V3.2 `OrbCameraBuilder` camera shared identically by `FULL_RENDER` and ALL diagnostic modes.
    * Zero Task, Photo, or Perimeter passes execute here.
    */
   private fun renderOriginalOrbOnlyFrame(
+    frameStartNanos: Long,
     rawDt: Double,
     motion: AIOrbMotionSnapshot,
     cfg: AIOrbConfig,
-    captureActive: Boolean = false,
+    frozenCaptureSnapshot: OrbGpuCaptureSnapshot? = null,
   ) {
+    val captureActive = frozenCaptureSnapshot != null
     val dt = rawDt.toFloat().coerceIn(0.0001f, 0.05f)
     val time = motion.simTimeSec.toFloat()
 
-    if (!isDragging) {
-      val decay = (1.0f - dt * 2.2f).coerceIn(0f, 1f)
-      targetYawDeg *= decay
-      targetPitchDeg *= decay
-    }
-    val follow = (dt * 7.5f).coerceIn(0f, 1f)
-    currentYawDeg += (targetYawDeg - currentYawDeg) * follow
-    currentPitchDeg += (targetPitchDeg - currentPitchDeg) * follow
-
-    // Calibrated reference composition: frozen 1.36f production bound + Stage A V3.2 Reference-Locked framing
-    val aspect = surfaceWidth.toFloat() / surfaceHeight.toFloat()
-    val tanHalfY = tan(Math.toRadians(fovYDeg.toDouble() * 0.5)).toFloat()
-    val tanHalfX = (tanHalfY * aspect).coerceAtLeast(0.10f)
-    val visualBoundRadius = 1.36f
-    val lockRef = cfg.debugMode.locksReferenceFrame
-    val baseCamDist = if (lockRef) {
-      val fittedCam = masterFidelity.camera
-      if (abs(aspect - 1.0f) <= 0.15f) {
-        fittedCam.cameraDistance
-      } else {
-        maxOf(
-          fittedCam.visualBoundRadius / tanHalfY,
-          fittedCam.visualBoundRadius / tanHalfX,
-          fittedCam.cameraDistance,
-        )
+    if (!captureActive) {
+      if (!isDragging) {
+        val decay = (1.0f - dt * 2.2f).coerceIn(0f, 1f)
+        targetYawDeg *= decay
+        targetPitchDeg *= decay
       }
-    } else {
-      maxOf(
-        visualBoundRadius / tanHalfY,
-        visualBoundRadius / tanHalfX,
-        3.65f,
-      )
+      val follow = (dt * 7.5f).coerceIn(0f, 1f)
+      currentYawDeg += (targetYawDeg - currentYawDeg) * follow
+      currentPitchDeg += (targetPitchDeg - currentPitchDeg) * follow
     }
 
+    val lockRef = cfg.debugMode.locksReferenceFrame
     val lockCamera = cfg.effectiveLockCoreRotation
     val autoYawRad = when {
-      lockRef || captureActive -> 0f
+      captureActive || lockRef -> 0f
       lockCamera -> Math.toRadians(currentYawDeg.toDouble()).toFloat()
       else -> sin(time * 0.14f) * 0.026f + Math.toRadians(currentYawDeg.toDouble()).toFloat()
     }
     val autoPitchRad = when {
-      lockRef || captureActive -> 0f
+      captureActive || lockRef -> 0f
       lockCamera -> Math.toRadians(currentPitchDeg.toDouble()).toFloat()
       else -> cos(time * 0.11f) * 0.020f + Math.toRadians(currentPitchDeg.toDouble()).toFloat()
     }
 
-    val targetX = if (lockRef) masterFidelity.camera.targetOffsetX else 0f
-    val targetY = if (lockRef) masterFidelity.camera.targetOffsetY else 0f
-    val camX = targetX + baseCamDist * cos(autoPitchRad) * sin(autoYawRad)
-    val camY = targetY + baseCamDist * sin(autoPitchRad)
-    val camZ = baseCamDist * cos(autoPitchRad) * cos(autoYawRad)
-    cameraPos[0] = camX
-    cameraPos[1] = camY
-    cameraPos[2] = camZ
-
-    Matrix.setLookAtM(
-      viewMatrix, 0,
-      camX, camY, camZ,
-      targetX, targetY, 0f,
-      0f, 1f, 0f,
+    // Unified single-source Tab 1 Camera: FULL_RENDER and ALL diagnostic/capture modes use masterFidelity.camera
+    val cameraSnapshot: OrbCameraSnapshot = frozenCaptureSnapshot?.camera ?: OrbCameraBuilder.build(
+      surfaceWidth = surfaceWidth,
+      surfaceHeight = surfaceHeight,
+      cameraFit = masterFidelity.camera,
+      yawRad = autoYawRad,
+      pitchRad = autoPitchRad,
     )
+    cameraSnapshot.writeCameraPos(cameraPos)
+    cameraSnapshot.writeViewMatrix(viewMatrix)
+    cameraSnapshot.writeProjMatrix(projMatrix)
 
     Matrix.multiplyMV(orbOriginView, 0, viewMatrix, 0, orbOriginWorld, 0)
     val orbCenterViewZ = orbOriginView[2]
@@ -674,28 +678,13 @@ class AIOrbScene(
     postProcessing.executePostProcessToScreen(cfg)
 
     // Gate 4: Real GL-thread zero-UI glReadPixels capture when user triggers V3.2 Evidence Export
-    if (captureActive) {
-      val volTel = core.volumeTelemetry
-      val captureTel = AIOrbTelemetry(
-        fps = 60,
-        frameMsP50 = if (cpuWindowCount > 0) cpuFrameMsWindow[0] else 0f,
-        frameMsP95 = if (cpuWindowCount > 0) cpuFrameMsWindow[0] else 0f,
+    if (frozenCaptureSnapshot != null) {
+      val timingSnap = frameTelemetryTracker.snapshot()
+      val captureTel = buildTelemetrySnapshot(
+        timing = timingSnap,
         coreAngleDeg = AIOrbMotionController.wrapAngleDeg(motion.coreRotationAngleDeg),
         coreAngularVelDegPerSec = motion.coreAngularVelocityDegPerSec,
-        isHdrFbo = postProcessing.hdrScale > 0.5f,
-        activeRenderMode = cfg.debugMode,
-        glVendor = glVendor,
-        glRenderer = glRenderer,
-        glVersion = glVersion,
-        eglVersion = eglVersion,
-        isSoftwareRenderer = isSoftwareRenderer,
-        volumeLoadState = volTel.loadState,
-        volumeLoaded = volTel.isLoaded,
-        volumeDimensions = volTel.dimensionsLabel,
-        webpDecodeMs = volTel.decodeTimeMs,
-        texture3dUploadMs = volTel.uploadTimeMs,
-        gpuVolumeMemoryMiB = volTel.gpuMemoryMiB,
-        volumeStatus = volTel.statusMessage,
+        mode = cfg.debugMode,
       )
       gpuReferenceCapture.captureCurrentGlFrameIfActive(
         surfaceWidth = surfaceWidth,
@@ -703,6 +692,7 @@ class AIOrbScene(
         config = cfg,
         fidelity = masterFidelity,
         telemetry = captureTel,
+        snapshot = frozenCaptureSnapshot,
       )
     }
   }
@@ -871,18 +861,11 @@ class AIOrbScene(
 
     // Capture zero-UI GL frame if user triggered V4 6KF GPU evidence export
     if (captureStep != null) {
-      val volTel = core.volumeTelemetry
-      val captureTel = AIOrbTelemetry(
-        fps = 60,
-        isHdrFbo = postProcessing.hdrScale > 0.5f,
-        glVendor = glVendor,
-        glRenderer = glRenderer,
-        glVersion = glVersion,
-        eglVersion = eglVersion,
-        isSoftwareRenderer = isSoftwareRenderer,
-        volumeLoadState = volTel.loadState,
-        volumeLoaded = volTel.isLoaded,
-        volumeDimensions = volTel.dimensionsLabel,
+      val captureTel = buildTelemetrySnapshot(
+        timing = frameTelemetryTracker.snapshot(),
+        coreAngleDeg = AIOrbMotionController.wrapAngleDeg(motion.coreRotationAngleDeg),
+        coreAngularVelDegPerSec = motion.coreAngularVelocityDegPerSec,
+        mode = taskOrbCfg.debugMode,
       )
       taskGpuEvidenceCapture.captureCurrentGlFrameIfActive(
         surfaceWidth = surfaceWidth,
@@ -902,55 +885,56 @@ class AIOrbScene(
     }
   }
 
+  private fun buildTelemetrySnapshot(
+    timing: FrameTimingSnapshot,
+    coreAngleDeg: Float,
+    coreAngularVelDegPerSec: Float,
+    mode: RenderDebugMode,
+  ): AIOrbTelemetry {
+    val volTel = core.volumeTelemetry
+    return AIOrbTelemetry(
+      fps = timing.fps,
+      frameMsP50 = timing.cpuFrameMsP50,
+      frameMsP95 = timing.cpuFrameMsP95,
+      frameMsLatest = timing.latestCpuFrameMs,
+      frameSampleCount = timing.sampleCount,
+      hasSufficientTimingSamples = timing.hasSufficientSamples,
+      gpuFrameTimeStatus = timing.gpuFrameTimeStatus,
+      coreAngleDeg = coreAngleDeg,
+      coreAngularVelDegPerSec = coreAngularVelDegPerSec,
+      isHdrFbo = postProcessing.hdrScale > 0.5f,
+      activeRenderMode = mode,
+      glVendor = glVendor,
+      glRenderer = glRenderer,
+      glVersion = glVersion,
+      eglVersion = eglVersion,
+      isSoftwareRenderer = isSoftwareRenderer,
+      volumeLoadState = volTel.loadState,
+      volumeLoaded = volTel.isLoaded,
+      volumeDimensions = volTel.dimensionsLabel,
+      webpDecodeMs = volTel.decodeTimeMs,
+      texture3dUploadMs = volTel.uploadTimeMs,
+      gpuVolumeMemoryMiB = volTel.gpuMemoryMiB,
+      volumeStatus = volTel.statusMessage,
+    )
+  }
+
   private fun recordAndPublishTelemetry(
     frameStartNanos: Long,
     volumeJustUpdated: Boolean,
     motion: AIOrbMotionSnapshot,
     mode: RenderDebugMode,
   ) {
-    val cpuMs = (System.nanoTime() - frameStartNanos) * 1e-6f
-    cpuFrameMsWindow[cpuWindowCursor] = cpuMs
-    cpuWindowCursor = (cpuWindowCursor + 1) % cpuFrameMsWindow.size
-    if (cpuWindowCount < cpuFrameMsWindow.size) cpuWindowCount++
-
-    fpsFrameCount++
-    val elapsed = frameStartNanos - fpsWindowStartNanos
-    if (volumeJustUpdated || elapsed >= 500_000_000L) {
-      val fps = if (elapsed > 0L) {
-        ((fpsFrameCount * 1_000_000_000.0) / elapsed).toInt().coerceIn(1, 120)
-      } else {
-        60
-      }
-      val sorted = cpuFrameMsWindow.copyOf(cpuWindowCount).apply { sort() }
-      val p50 = if (sorted.isNotEmpty()) sorted[sorted.size / 2] else 0f
-      val p95 = if (sorted.isNotEmpty()) sorted[((sorted.size - 1) * 0.95f).toInt()] else 0f
-      val volTel = core.volumeTelemetry
-
+    val shouldPublish = frameTelemetryTracker.recordFrame(frameStartNanos, System.nanoTime())
+    if (volumeJustUpdated || shouldPublish) {
       onTelemetryUpdated(
-        AIOrbTelemetry(
-          fps = fps,
-          frameMsP50 = p50,
-          frameMsP95 = p95,
+        buildTelemetrySnapshot(
+          timing = frameTelemetryTracker.snapshot(),
           coreAngleDeg = AIOrbMotionController.wrapAngleDeg(motion.coreRotationAngleDeg),
           coreAngularVelDegPerSec = motion.coreAngularVelocityDegPerSec,
-          isHdrFbo = postProcessing.hdrScale > 0.5f,
-          activeRenderMode = mode,
-          glVendor = glVendor,
-          glRenderer = glRenderer,
-          glVersion = glVersion,
-          eglVersion = eglVersion,
-          isSoftwareRenderer = isSoftwareRenderer,
-          volumeLoadState = volTel.loadState,
-          volumeLoaded = volTel.isLoaded,
-          volumeDimensions = volTel.dimensionsLabel,
-          webpDecodeMs = volTel.decodeTimeMs,
-          texture3dUploadMs = volTel.uploadTimeMs,
-          gpuVolumeMemoryMiB = volTel.gpuMemoryMiB,
-          volumeStatus = volTel.statusMessage,
+          mode = mode,
         )
       )
-      fpsFrameCount = 0
-      fpsWindowStartNanos = frameStartNanos
     }
   }
 

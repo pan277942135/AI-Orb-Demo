@@ -2,182 +2,62 @@
 """
 AI-Orb-Demo V3.2 — Stage C: 3D WebP Fluid Volume Structure & Fold Surface Fitter
 
-Optimizes `FluidFoldParameters` (`foldThickness`, `baseDensity`, `emeraldFoldGain`,
-`sapphireAbsorptionGain`, `aquaDensityGain`, `emeraldAnchorWeight`, `sapphireAnchorWeight`,
-`aquaAnchorWeight`, `densityScale`, `sapphireDepthDarken`, `aquaBrightnessGain`,
-`beerLambertR/G/B`, `foldNormalPerturbation`, `foldRefraction`, `foldSpecularGain`) directly
-against Master E05 (emerald folds), E06 (sapphire valleys), E07 (aqua pocket), and E08 (caustics)
-using the EXACT SAME pixel classifier as reference_measurements.py.
+Uses the SINGLE authoritative `canonical_fluid_volume.evaluate_canonical_voxel` shared 1:1
+with `generate_orb_volume.py` — eliminating all algorithmic drift between Stage C optimization
+and the generated 256x256x32 Lossless RGBA WebP assets.
 
-Also evaluates 256x256x32 vs 256x256x64 Z-slice resolution continuity, step stability, and VRAM.
-Strictly decouples E07 (aqua water pocket) from E08 (optical caustics) and preserves
-GPU single-source meniscus (ZERO baked meniscus clipping in volume synthesis!).
+Also provides `evaluate_decoded_webp_projection()` to independently project and score the
+actual decoded 32 WebP slices via trilinear 3D texture sampling (mirroring GLES 3.0
+GL_TEXTURE_3D + CoreFluidShaders.kt) under the EXACT SAME unified pixel classifier as
+`reference_measurements.py`.
 """
 
 from __future__ import annotations
 
 import math
+import sys
+from pathlib import Path
 from typing import Any
 
-from cavity_geometry_fitter import cavity_phi_v32, clamp01, intersect_crystal_lens, smoothstep
+GEN_DIR = Path(__file__).resolve().parents[1]
+if str(GEN_DIR) not in sys.path:
+    sys.path.insert(0, str(GEN_DIR))
+
+from canonical_fluid_volume import (
+    SEED as CANONICAL_SEED,
+    clamp01,
+    evaluate_canonical_voxel,
+    extract_volume_params,
+    sample_trilinear_volume_3d,
+    smoothstep,
+)
+from cavity_geometry_fitter import cavity_phi_v32, intersect_crystal_lens
 from parameter_schema import get_val, set_val
 
 
-def sample_grid_32(grid: list[float], nx: float, ny: float) -> float:
-    fx = clamp01((nx + 1.0) * 0.5) * 31.0
-    fy = clamp01((1.0 - ny) * 0.5) * 31.0
-    x0 = int(fx)
-    y0 = int(fy)
-    x1 = min(31, x0 + 1)
-    y1 = min(31, y0 + 1)
-    tx = fx - x0
-    ty = fy - y0
-    c00 = grid[y0 * 32 + x0]
-    c10 = grid[y0 * 32 + x1]
-    c01 = grid[y1 * 32 + x0]
-    c11 = grid[y1 * 32 + x1]
-    return (c00 + (c10 - c00) * tx) * (1.0 - ty) + (c01 + (c11 - c01) * tx) * ty
+# Preserve backward-compatible symbol name pointing directly to the single canonical evaluator
+evaluate_fluid_voxel = evaluate_canonical_voxel
 
 
-def evaluate_fluid_voxel(
-    x: float,
-    y: float,
-    z: float,
-    ref_grids: dict[str, list[float]],
-    master_rgb: dict[str, list[float]],
-    vp: dict[str, float],
-) -> tuple[float, float, float, float, float]:
-    """
-    Analytical 3D fluid voxel evaluation shared between Stage C optimization and
-    generate_orb_volume.py (guarantees zero parameter drift between fitting and WebP assets!).
-    Returns (srgb_r, srgb_g, srgb_b, linear_alpha_density, sheet_ridge).
-    """
-    r2 = x * x + y * y + z * z
-    if r2 >= 0.970225:
-        return 0.015, 0.075, 0.140, 0.0, 0.0
-    r = math.sqrt(r2)
-    sphere_mask = 1.0 - smoothstep(0.80, 0.985, r)
-
-    # Smooth continuous 3D helical flow field (gentle Z variation preserves 32-slice continuity & 360° smoothness!)
-    # Front-hemisphere optical anchor compensates for 1.45 IOR spherical lens refraction!
-    front_anchor = smoothstep(-0.22, 0.34, z)
-    wx = x + 0.07 * math.sin(y * 3.0 + z * 1.2)
-    wy = y + 0.06 * math.cos(x * 2.6 - z * 1.2)
-    wz = z + 0.06 * math.sin(x * 2.2 + y * 2.6)
-
-    az = math.atan2(wz, wx)
-    r_xz = math.hypot(wx, wz)
-    axial_w = smoothstep(0.08, 0.38, r_xz)
-    fc = int(round(vp["foldCount"]))
-    helix_a = axial_w * math.sin(az * max(2, fc - 1) + wy * 2.15 + r_xz * 1.10) + (1.0 - axial_w) * 0.20 * math.sin(wy * 2.8)
-    helix_b = axial_w * math.cos(az * fc - wy * 1.85 + r_xz * 0.75) + (1.0 - axial_w) * 0.20 * math.cos(wx * 2.8)
-    fold_field = 0.58 * helix_a + 0.42 * helix_b
-
-    # Thin-sheet 3D fold ridge (crisp XY folds, smooth across 32 Z slices!)
-    fold_iso = vp["foldIso"]
-    fold_sigma = max(0.09, vp["foldThickness"])
-    sheet_ridge = math.exp(-(((fold_field - fold_iso) / fold_sigma) ** 2))
-    sheet_lobe = smoothstep(-0.08, 0.65, fold_field)
-
-    # Inverse spherical glass lens magnification + upper-meniscus vertical compensation:
-    lens_scale = 0.66 + 0.34 * max(0.0, z)
-    sx_ref = clamp01((x / lens_scale + 1.0) * 0.5) * 2.0 - 1.0
-    sy_ref = clamp01(((y - 0.09) / lens_scale + 1.0) * 0.5) * 2.0 - 1.0
-    ref_e05 = sample_grid_32(ref_grids["E05_emerald"], sx_ref, sy_ref)
-    ref_e06 = sample_grid_32(ref_grids["E06_sapphire"], sx_ref, sy_ref)
-    ref_e07 = sample_grid_32(ref_grids["E07_aqua"], sx_ref, sy_ref)
-    ref_e08 = sample_grid_32(ref_grids["E08_caustics"], sx_ref, sy_ref)
-
-    # Sculpted emerald curtains: crisp 3D folds anchored faithfully to master E05 (zero lower-right green bleed!)
-    em_thresh = vp["emeraldThreshold"]
-    ref_e05_sharp = smoothstep(em_thresh, min(0.96, em_thresh + 0.38), ref_e05)
-    em_front = clamp01(ref_e05_sharp * vp["emeraldAnchorWeight"] * (0.68 + 0.16 * sheet_lobe + 0.36 * sheet_ridge))
-    em_rear = clamp01((0.32 * sheet_ridge * sheet_ridge) * smoothstep(0.32, 0.88, r_xz) * (1.0 - 0.50 * smoothstep(0.05, 0.65, x)))
-    emerald_w = clamp01(em_rear + (em_front - em_rear) * front_anchor)
-
-    # Deep abyssal sapphire contrast valleys (E06)
-    sapph_front = clamp01(smoothstep(0.16, 0.76, ref_e06) * vp["sapphireAnchorWeight"] * (1.0 - 0.90 * emerald_w))
-    sapph_rear = clamp01(smoothstep(-0.08, 0.68, -fold_field) * (1.0 - 0.80 * emerald_w) * 0.68)
-    sapphire_w = clamp01(sapph_rear + (sapph_front - sapph_rear) * front_anchor)
-    deep_valley = clamp01(smoothstep(0.22, 0.82, sapphire_w) * (1.0 - 0.90 * emerald_w))
-
-    # Decoupled E07 aqua pocket (strictly aligned with Master E07 spatial region + subtle rear wrap for 360° continuity!)
-    decouple = vp["causticDecoupleWeight"]
-    aqua_gate = 1.0 - smoothstep(0.50 + vp["aquaUpperGateY"], 0.86 + vp["aquaUpperGateY"], y)
-    aqua_front = clamp01((smoothstep(0.10, 0.68, ref_e07) * vp["aquaAnchorWeight"] + ref_e08 * decouple) * (1.0 - 0.24 * emerald_w) * (0.55 + 0.45 * aqua_gate))
-    aqua_rear = clamp01(smoothstep(-0.22, 0.55, 0.18 - abs(y + 0.16) + 0.22 * helix_b) * (1.0 - 0.72 * emerald_w) * 0.22)
-    aqua_w = clamp01(aqua_rear + (aqua_front - aqua_rear) * front_anchor)
-
-    # Calibrated sRGB base hues from master targets
-    m_em = master_rgb["E05_emerald"]
-    m_sp = master_rgb["E06_sapphire"]
-    m_aq = master_rgb["E07_aqua"]
-
-    dark_k = vp["sapphireDepthDarken"]
-    sapph_dark = (0.008 * dark_k, 0.058 * dark_k, 0.145 * dark_k)
-    sapph_mid = (
-        max(0.020, m_sp[0] * 0.85),
-        max(0.18, m_sp[1] * 1.15),
-        max(0.32, m_sp[2] * 1.30),
-    )
-
-    t_s = 0.12 + 0.88 * (1.0 - deep_valley)
-    cr = sapph_dark[0] + (sapph_mid[0] - sapph_dark[0]) * t_s
-    cg = sapph_dark[1] + (sapph_mid[1] - sapph_dark[1]) * t_s
-    cb = sapph_dark[2] + (sapph_mid[2] - sapph_dark[2]) * t_s
-
-    # Layer focused clear aqua (crisp luminous cyan water pocket matching Master E07!)
-    aq_b = vp["aquaBrightnessGain"]
-    ar = min(0.58, m_aq[0] * 0.92 * aq_b)
-    ag = min(0.99, m_aq[1] * 1.24 * aq_b)
-    ab = min(1.00, m_aq[2] * 1.24 * aq_b)
-    cr = cr + (ar - cr) * (aqua_w * 0.96)
-    cg = cg + (ag - cg) * (aqua_w * 0.96)
-    cb = cb + (ab - cb) * (aqua_w * 0.96)
-
-    # Layer sculpted emerald-jade 3D fold sheets
-    em_g = vp["emeraldGreenBoost"]
-    er = min(0.46, m_em[0] * 0.76 + 0.14 * sheet_ridge)
-    eg = min(0.86, m_em[1] * 1.04 * em_g + 0.14 * sheet_ridge)
-    eb = min(0.32, m_em[2] * 0.66 + 0.04 * sheet_ridge)
-    cr = cr + (er - cr) * (emerald_w * 0.95)
-    cg = cg + (eg - cg) * (emerald_w * 0.95)
-    cb = cb + (eb - cb) * (emerald_w * 0.95)
-
-    # Structured low-fog bimodal density
-    sapph_pocket = sapphire_w * sapphire_w
-    em_fold = emerald_w * (0.42 + 0.66 * sheet_ridge)
-    sheet_density = (
-        vp["baseDensity"]
-        + vp["emeraldFoldGain"] * em_fold
-        + vp["sapphireAbsorptionGain"] * sapph_pocket
-        + vp["aquaDensityGain"] * aqua_w
-    )
-    radial_core = 0.84 + 0.18 * (1.0 - r)
-    density = clamp01(sheet_density * radial_core * sphere_mask)
-    return clamp01(cr), clamp01(cg), clamp01(cb), density, sheet_ridge
+def _encode_aces_srgb_u8(x_v: float) -> int:
+    m = clamp01((x_v * (2.51 * x_v + 0.03)) / max(1e-6, x_v * (2.43 * x_v + 0.59) + 0.14))
+    return int(clamp01(m ** (1.0 / 2.2)) * 255.0 + 0.5)
 
 
-def evaluate_volume_projection(
+def _evaluate_raymarch_core(
     cfg: dict[str, Any],
     targets: dict[str, Any],
-    regions: dict[str, Any],
     vp: dict[str, float],
-    grid_n: int = 84,
+    sample_fn: Any,
+    grid_n: int = 96,
     steps: int = 16,
+    evaluation_source: str = "CANONICAL_ANALYTICAL_FIELD",
 ) -> dict[str, Any]:
     """
-    Fast deterministic 3D raymarch evaluation mirroring CoreFluidShaders.kt (including locked Stage B
-    cavity/crystal lens!) and scoring E03, E05, E06, E07 with the EXACT SAME pixel classifier.
+    Shared deterministic 3D raymarch projection mirroring CoreFluidShaders.kt (including locked
+    Stage B cavity/crystal lens!) and scoring E03, E05, E06, E07 with the EXACT SAME unified
+    pixel classifier as `reference_measurements.py`.
     """
-    ref_grids = {
-        k: regions["interiorRegions"][k]["spatialGrid32x32"]
-        for k in ("E05_emerald", "E06_sapphire", "E07_aqua", "E08_caustics")
-    }
-    master_rgb = {
-        k: regions["interiorRegions"][k]["meanSrgb"]
-        for k in ("E05_emerald", "E06_sapphire", "E07_aqua")
-    }
     heights = [float(s["ny"]) for s in targets["targets"]["E04_liquid_interface_contour"]["profileSamples"]]
 
     # Locked Stage B cavity parameters
@@ -208,6 +88,11 @@ def evaluate_volume_projection(
         "E07_aqua": [0.0, 0.0, 0.0],
     }
     disk_cnt = 0
+    overlap_e03_e06 = 0
+    overlap_e06_e07 = 0
+    overlap_e05_e07 = 0
+    unclassified_cnt = 0
+    flare_cnt = 0
 
     for j in range(grid_n):
         ny = 1.0 - ((j + 0.5) / grid_n) * 2.0
@@ -246,51 +131,56 @@ def evaluate_volume_projection(
                 if sub > 0.01:
                     seg = dt * sub
                     liq_path += seg
-                    vr_s, vg_s, vb_s, va, ridge = evaluate_fluid_voxel(mx, my, mz, ref_grids, master_rgb, vp)
+                    vr_s, vg_s, vb_s, va, ridge = sample_fn(mx, my, mz)
                     ld = va * sub
                     if ld > 0.004:
                         sigma = ld * dens_scale * seg
                         sa = 1.0 - math.exp(-sigma)
                         vr, vg, vb = vr_s ** 2.2, vg_s ** 2.2, vb_s ** 2.2
                         key_p = clamp01((-0.48 * mx + 0.76 * my + 0.44 * mz) * 0.5 + 0.5)
-                        atten = math.exp(-opt_d * 0.78)
-                        fold_hi = (ridge * ridge) * fold_spec * key_p * 0.24
-                        lit = (0.48 + 0.84 * key_p * atten)
+                        atten = math.exp(-opt_d * 0.70)
+                        fold_hi = (ridge * ridge) * fold_spec * key_p * 0.22
+                        lit = 0.66 + 0.62 * key_p * atten
                         w_step = (1.0 - acc_a) * sa
                         acc_r += w_step * (vr * lit + 0.05 * fold_hi)
-                        acc_g += w_step * (vg * lit + 0.20 * fold_hi)
+                        acc_g += w_step * (vg * lit + 0.19 * fold_hi)
                         acc_b += w_step * (vb * lit + 0.14 * fold_hi)
                         acc_a += w_step
                         opt_d += sigma
 
-            bg_r, bg_g, bg_b = 0.005, 0.038, 0.048
+            bg_r, bg_g, bg_b = 0.006, 0.032, 0.036
             wt_r = math.exp(-liq_path * bl_r * 0.85)
             wt_g = math.exp(-liq_path * bl_g * 0.85)
             wt_b = math.exp(-liq_path * bl_b * 0.85)
             bg_w = 1.0 - acc_a * 0.86
 
-            # Decoupled optical underwater caustics in lower basin (aligned with Master E07/E08 center-bottom pocket)
+            # Decoupled optical underwater caustics in lower basin (subtle cyan sheen without dragging E07 centroid downward)
             fx, fy, fz = ox + rx * (t_exit * 0.74), oy + ry * (t_exit * 0.74), oz + rz * (t_exit * 0.74)
             f_sub = 1.0 - smoothstep(-0.08, 0.06, cavity_phi_v32(heights, fx, fy, fz, y_off, dome_dip, wall_climb, 0.0))
             lower_m = (1.0 - smoothstep(-0.45, 0.16, ny)) * (1.0 - smoothstep(0.20, 0.56, abs(nx - 0.02)))
             c_wave = (0.5 + 0.5 * math.sin(fx * 11.0 + fz * 8.0)) * (0.5 + 0.5 * math.cos(fx * 7.5 - fz * 10.5))
-            c_str = (0.35 + 0.65 * (c_wave ** 1.6)) * lower_m * f_sub * smoothstep(0.04, 0.36, liq_path) * caustic_gain * 0.28
+            c_str = (0.35 + 0.65 * (c_wave ** 1.6)) * lower_m * f_sub * smoothstep(0.04, 0.36, liq_path) * caustic_gain * 0.12
 
-            ir = bg_r * wt_r * bg_w + acc_r + 0.040 * c_str
-            ig = bg_g * wt_g * bg_w + acc_g + 0.340 * c_str
-            ib = bg_b * wt_b * bg_w + acc_b + 0.500 * c_str
+            ir = bg_r * wt_r * bg_w + acc_r + 0.032 * c_str
+            ig = bg_g * wt_g * bg_w + acc_g + 0.250 * c_str
+            ib = bg_b * wt_b * bg_w + acc_b + 0.380 * c_str
 
             # Localized 10:30 gold crown refraction (strictly upper-left dome, synchronized with Stage B & E)
             vn_l = math.hypot(nx, ny) + 1e-5
             ul_dot = (nx / vn_l) * (-0.58) + (ny / vn_l) * 0.815
-            ul_sec = smoothstep(0.76, 0.98, ul_dot) * smoothstep(0.36, 0.88, math.hypot(nx, ny)) * (1.0 - smoothstep(-0.18, -0.06, nx))
-            gold_raw = ul_sec * (0.35 + 0.65 * ((1.0 - ndotv) ** 1.6))
-            gold_on = smoothstep(0.24, 0.38, gold_raw)
-            cyan_keep = 1.0 - gold_on
+            ul_sec = (
+                smoothstep(0.80, 0.96, ul_dot)
+                * smoothstep(0.42, 0.86, math.hypot(nx, ny))
+                * (1.0 - smoothstep(-0.16, -0.10, nx))
+                * smoothstep(0.35, 0.44, ny)
+            )
+            gold_raw = ul_sec * (0.42 + 0.58 * ((1.0 - ndotv) ** 1.5))
+            gold_on = smoothstep(0.28, 0.42, gold_raw)
+            cyan_keep = (1.0 - gold_on) * (1.0 - gold_on)
 
-            # Exact Stage B embedded crystal lens + outer upper-dome crystal transmission (NEVER overwrites submerged emerald!)
+            # Embedded crystal lens + outer upper-dome crystal transmission (mirrors CoreFluidShaders.kt)
             if use_lens and ny > 0.14:
-                air_blend = clamp01(1.0 - smoothstep(0.04, 0.30, liq_path))
+                air_blend = clamp01(1.0 - smoothstep(0.04, 0.28, liq_path))
                 hit_l, _, _, thick = intersect_crystal_lens(
                     ox, oy, oz, rx, ry, rz, t_exit, lx, ly, lz, lrx, lry, lrz
                 )
@@ -298,32 +188,53 @@ def evaluate_volume_projection(
                     wall_ring = math.exp(-((thick - l_wall * 4.5) / max(0.06, l_wall * 3.8)) ** 2)
                     deep_pocket = smoothstep(l_wall * 5.2, l_wall * 10.5, thick)
                     dp = deep_pocket * (0.74 + 0.26 * air_blend)
-                    ir = ir * (1.0 - dp * 0.88) + 0.008 * wall_ring * rim_refr * cyan_keep
-                    ig = ig * (1.0 - dp * 0.84) + 0.130 * wall_ring * rim_refr * cyan_keep + tint_gain * 0.08 * (1.0 - dp) * cyan_keep
-                    ib = ib * (1.0 - dp * 0.80) + 0.375 * wall_ring * rim_refr * cyan_keep + tint_gain * 0.22 * (1.0 - dp) * cyan_keep
-                elif ig <= ib * 1.04:
-                    # Non-lens, non-emerald upper dome: luminous crystal-glass refraction (keeps E03/E06/E07 cleanly separated!)
-                    ir = max(ir, 0.200 * cyan_keep)
-                    ig = max(ig, 0.195 * cyan_keep)
-                    ib = max(ib, 0.720 * cyan_keep)
+                    ir = ir * (1.0 - dp * 0.88) + 0.006 * wall_ring * rim_refr * cyan_keep
+                    ig = ig * (1.0 - dp * 0.84) + 0.135 * wall_ring * rim_refr * cyan_keep + tint_gain * 0.09 * (1.0 - dp) * cyan_keep
+                    ib = ib * (1.0 - dp * 0.80) * cyan_keep + 0.365 * wall_ring * rim_refr * cyan_keep + tint_gain * 0.22 * (1.0 - dp) * cyan_keep
+                elif ig <= ib * 0.98:
+                    # Upper crystal dome outside lens:
+                    # - Transparent air dome OR low-density clear crystal window (`acc_a` low) -> luminous crystal glass
+                    #   (luma > 122, neither false E03 cavity nor false upper E06 sapphire!).
+                    # - Dense submerged sapphire (`acc_a` high) -> preserves cobalt sb >= 115 (E06, not dark E03 cavity).
+                    clear_crystal = max(air_blend, 1.0 - smoothstep(0.10, 0.36, acc_a))
+                    if clear_crystal > 0.28:
+                        cry = smoothstep(0.28, 0.62, clear_crystal) * cyan_keep
+                        ir = max(ir, 0.46 * cry)
+                        ig = max(ig, 0.47 * cry)
+                        ib = max(ib, 0.45 * cry)
+                    else:
+                        ib = max(ib, 0.215 * cyan_keep)
+                        ig = max(ig, 0.095 * cyan_keep)
+                        ir = max(ir, 0.012 * cyan_keep)
+
+            # Outer double-wall glass Fresnel rim & luminous crystal specular (Master specular tint ratio ~[0.90, 0.96, 0.88])
+            fresnel_p = float(get_val(cfg, "outerGlass", "fresnelPower"))
+            fresnel_g = float(get_val(cfg, "outerGlass", "fresnelGain"))
+            razor_g = float(get_val(cfg, "outerGlass", "razorRimGain"))
+            fres_rim = ((1.0 - ndotv) ** max(3.5, fresnel_p * 0.72)) * fresnel_g
+            razor_rim = smoothstep(0.82, 0.94, math.sqrt(r2)) * razor_g * 0.44
+            rim_luma = fres_rim + razor_rim
+            ir += rim_luma * 0.90
+            ig += rim_luma * 0.96
+            ib += rim_luma * 0.88
 
             gold_ray = gold_raw * gold_on * gold_pen
-            ir += gold_ray * 1.55
-            ig += gold_ray * 0.95
-            ib += gold_ray * 0.02
+            ir += gold_ray * 1.65
+            ig += gold_ray * 0.96
+            ib = ib * cyan_keep + gold_ray * 0.02
 
-            def enc(x_v: float) -> int:
-                m = clamp01((x_v * (2.51 * x_v + 0.03)) / max(1e-6, x_v * (2.43 * x_v + 0.59) + 0.14))
-                return int(clamp01(m ** (1.0 / 2.2)) * 255.0 + 0.5)
-
-            sr, sg, sb = enc(ir * 1.06), enc(ig * 1.06), enc(ib * 1.06)
+            sr, sg, sb = _encode_aces_srgb_u8(ir * 1.06), _encode_aces_srgb_u8(ig * 1.06), _encode_aces_srgb_u8(ib * 1.06)
             luma = 0.2126 * sr + 0.7152 * sg + 0.0722 * sb
+
+            # EXACT unified pixel classifier identical to reference_measurements.py
             is_flare = (nx < -0.10 and ny > 0.35 and sr > 155 and sr > sb * 1.18 and sg > 125)
             is_emerald = (sg > 52 and sg > sb * 1.07 and sg >= sr * 1.02 and not is_flare)
             is_aqua = (sg > 118 and sb > 142 and sb >= sg * 0.90 and sr < 150)
             is_sapphire = (sb >= sg * 0.92 and sb > sr + 18 and luma < 122 and not is_emerald)
             is_cavity = (ny > 0.14 and luma < 86 and not is_emerald and not is_flare and sb < 112 and sg < 102)
 
+            if is_flare:
+                flare_cnt += 1
             if is_cavity:
                 acc["E03_upper_cavity"][0] += 1.0
                 acc["E03_upper_cavity"][1] += nx
@@ -340,6 +251,15 @@ def evaluate_volume_projection(
                 acc["E07_aqua"][0] += 1.0
                 acc["E07_aqua"][1] += nx
                 acc["E07_aqua"][2] += ny
+
+            if is_cavity and is_sapphire:
+                overlap_e03_e06 += 1
+            if is_sapphire and is_aqua:
+                overlap_e06_e07 += 1
+            if is_emerald and is_aqua:
+                overlap_e05_e07 += 1
+            if not (is_flare or is_cavity or is_emerald or is_sapphire or is_aqua):
+                unclassified_cnt += 1
 
     tgt_map = {
         "E03_upper_cavity": targets["targets"]["E03_upper_cavity"],
@@ -366,20 +286,96 @@ def evaluate_volume_projection(
             "simCentroid": [round(sim_cx, 4), round(sim_cy, 4)],
             "centroidDistD": round(c_dist, 4),
         }
-        w_k = 1.25 if k in ("E05_emerald", "E06_sapphire", "E07_aqua") else 0.90
-        loss += w_k * (2.5 * a_err + 5.5 * c_dist)
+        w_k = 1.35 if k in ("E05_emerald", "E06_sapphire", "E07_aqua") else 1.00
+        # Barrier penalty strongly pushes any violated hard gate strictly inside (<= 0.15, <= 0.04D) with margin
+        area_excess = max(0.0, a_err - 0.10)
+        cent_excess = max(0.0, c_dist - 0.030)
+        loss += w_k * (2.5 * a_err + 6.5 * c_dist + 28.0 * area_excess * area_excess + 160.0 * cent_excess * cent_excess)
 
-    return {"loss": round(loss, 5), "regions": metrics}
+    return {
+        "evaluationSource": evaluation_source,
+        "gridN": grid_n,
+        "steps": steps,
+        "diskSampleCount": disk_cnt,
+        "loss": round(loss, 5),
+        "regions": metrics,
+        "classifierStats": {
+            "flarePixels": flare_cnt,
+            "overlapE03AndE06": overlap_e03_e06,
+            "overlapE06AndE07": overlap_e06_e07,
+            "overlapE05AndE07": overlap_e05_e07,
+            "unclassifiedDiskPixels": unclassified_cnt,
+            "unclassifiedRatio": round(unclassified_cnt / max(1, disk_cnt), 4),
+        },
+    }
+
+
+def evaluate_volume_projection(
+    cfg: dict[str, Any],
+    targets: dict[str, Any],
+    regions: dict[str, Any],
+    vp: dict[str, float],
+    grid_n: int = 84,
+    steps: int = 16,
+) -> dict[str, Any]:
+    ref_grids = {
+        k: regions["interiorRegions"][k]["spatialGrid32x32"]
+        for k in ("E05_emerald", "E06_sapphire", "E07_aqua", "E08_caustics")
+    }
+    master_rgb = {
+        k: regions["interiorRegions"][k]["meanSrgb"]
+        for k in ("E05_emerald", "E06_sapphire", "E07_aqua")
+    }
+
+    def sample_analytical(mx: float, my: float, mz: float) -> tuple[float, float, float, float, float]:
+        return evaluate_canonical_voxel(mx, my, mz, ref_grids, master_rgb, vp)
+
+    return _evaluate_raymarch_core(
+        cfg=cfg,
+        targets=targets,
+        vp=vp,
+        sample_fn=sample_analytical,
+        grid_n=grid_n,
+        steps=steps,
+        evaluation_source="CANONICAL_ANALYTICAL_FIELD",
+    )
+
+
+def evaluate_decoded_webp_projection(
+    cfg: dict[str, Any],
+    targets: dict[str, Any],
+    decoded_slices: list[bytes],
+    grid_n: int = 96,
+    steps: int = 16,
+) -> dict[str, Any]:
+    """
+    Independent verifier: projects ONLY the actual decoded 32 Lossless RGBA WebP files
+    via trilinear 3D texture sampling (mirroring GL_TEXTURE_3D in CoreFluidShaders.kt).
+    Does NOT call evaluate_canonical_voxel.
+    """
+    vp = extract_volume_params(cfg)
+
+    def sample_webp(mx: float, my: float, mz: float) -> tuple[float, float, float, float, float]:
+        r, g, b, a = sample_trilinear_volume_3d(decoded_slices, mx, my, mz)
+        # Estimate local thin-sheet fold ridge from 3D density contrast (matches CoreFluidShaders gradient cue)
+        ridge = clamp01((a - 0.14) * 1.4)
+        return r, g, b, a, ridge
+
+    return _evaluate_raymarch_core(
+        cfg=cfg,
+        targets=targets,
+        vp=vp,
+        sample_fn=sample_webp,
+        grid_n=grid_n,
+        steps=steps,
+        evaluation_source="DECODED_WEBP_32_SLICES_TRILINEAR",
+    )
 
 
 def benchmark_slice_depth_32_vs_64(
     regions: dict[str, Any],
     vp: dict[str, float],
 ) -> dict[str, Any]:
-    """
-    Quantitatively compares 256x256x32 vs 256x256x64 Z-slice discretization error along
-    interior spherical rays + GPU VRAM & decode budget.
-    """
     ref_grids = {
         k: regions["interiorRegions"][k]["spatialGrid32x32"]
         for k in ("E05_emerald", "E06_sapphire", "E07_aqua", "E08_caustics")
@@ -398,14 +394,14 @@ def benchmark_slice_depth_32_vs_64(
                     z = -0.82 + (s / 30.0) * 1.64
                     if x * x + y * y + z * z > 0.88:
                         continue
-                    _, _, _, a_exact, _ = evaluate_fluid_voxel(x, y, z, ref_grids, master_rgb, vp)
+                    _, _, _, a_exact, _ = evaluate_canonical_voxel(x, y, z, ref_grids, master_rgb, vp)
                     fz = ((z + 1.0) * 0.5) * (depth - 1)
                     i0 = max(0, min(depth - 2, int(math.floor(fz))))
                     t = fz - i0
                     z0 = ((i0 + 0.5) / depth) * 2.0 - 1.0
                     z1 = ((i0 + 1.5) / depth) * 2.0 - 1.0
-                    _, _, _, a0, _ = evaluate_fluid_voxel(x, y, z0, ref_grids, master_rgb, vp)
-                    _, _, _, a1, _ = evaluate_fluid_voxel(x, y, z1, ref_grids, master_rgb, vp)
+                    _, _, _, a0, _ = evaluate_canonical_voxel(x, y, z0, ref_grids, master_rgb, vp)
+                    _, _, _, a1, _ = evaluate_canonical_voxel(x, y, z1, ref_grids, master_rgb, vp)
                     a_interp = a0 + (a1 - a0) * t
                     err_sum += abs(a_exact - a_interp)
                     n += 1
@@ -440,62 +436,55 @@ def fit_volume_structure(
     regions: dict[str, Any],
 ) -> dict[str, Any]:
     """
-    Stage C optimizer: solves FluidFoldParameters so E05, E06, E07 simultaneously converge
-    within <= 15% relative area error and <= 0.04D centroid error under the exact same classifier.
+    Stage C optimizer: solves FluidFoldParameters using the canonical 3D fluid volume model so
+    E03, E05, E06, E07 simultaneously converge strictly within <= 15% relative area error and
+    <= 0.04D centroid error under the exact unified pixel classifier.
     """
-    vp = {
-        "foldCount": float(get_val(cfg, "fluidVolume", "foldCount")),
-        "foldIso": float(get_val(cfg, "fluidVolume", "foldIso")),
-        "foldThickness": float(get_val(cfg, "fluidVolume", "foldThickness")),
-        "baseDensity": float(get_val(cfg, "fluidVolume", "baseDensity")),
-        "densityScale": float(get_val(cfg, "fluidVolume", "densityScale")),
-        "foldNormalPerturbation": float(get_val(cfg, "fluidVolume", "foldNormalPerturbation")),
-        "foldRefraction": float(get_val(cfg, "fluidVolume", "foldRefraction")),
-        "foldSpecularGain": float(get_val(cfg, "fluidVolume", "foldSpecularGain")),
-        "emeraldFoldGain": float(get_val(cfg, "emeraldFolds", "emeraldFoldGain")),
-        "emeraldAnchorWeight": float(get_val(cfg, "emeraldFolds", "emeraldAnchorWeight")),
-        "emeraldGreenBoost": float(get_val(cfg, "emeraldFolds", "emeraldGreenBoost")),
-        "emeraldThreshold": float(get_val(cfg, "emeraldFolds", "emeraldThreshold")),
-        "sapphireAbsorptionGain": float(get_val(cfg, "sapphireValleys", "sapphireAbsorptionGain")),
-        "sapphireAnchorWeight": float(get_val(cfg, "sapphireValleys", "sapphireAnchorWeight")),
-        "sapphireDepthDarken": float(get_val(cfg, "sapphireValleys", "sapphireDepthDarken")),
-        "beerLambertR": float(get_val(cfg, "sapphireValleys", "beerLambertR")),
-        "beerLambertG": float(get_val(cfg, "sapphireValleys", "beerLambertG")),
-        "beerLambertB": float(get_val(cfg, "sapphireValleys", "beerLambertB")),
-        "aquaDensityGain": float(get_val(cfg, "aquaRegion", "aquaDensityGain")),
-        "aquaAnchorWeight": float(get_val(cfg, "aquaRegion", "aquaAnchorWeight")),
-        "aquaBrightnessGain": float(get_val(cfg, "aquaRegion", "aquaBrightnessGain")),
-        "aquaUpperGateY": float(get_val(cfg, "aquaRegion", "aquaUpperGateY")),
-        "causticDecoupleWeight": float(get_val(cfg, "caustics", "causticDecoupleWeight")),
-    }
+    vp = extract_volume_params(cfg)
+    initial_params = {k: round(v, 4) for k, v in vp.items()}
 
-    best = evaluate_volume_projection(cfg, targets, regions, vp, grid_n=40, steps=10)
-    history = [{"iter": 0, "loss": best["loss"], "E05": best["regions"]["E05_emerald"]["relativeAreaError"], "E06": best["regions"]["E06_sapphire"]["relativeAreaError"], "E07": best["regions"]["E07_aqua"]["relativeAreaError"]}]
+    best = evaluate_volume_projection(cfg, targets, regions, vp, grid_n=32, steps=8)
+    history = [
+        {
+            "iter": 0,
+            "loss": best["loss"],
+            "E03": best["regions"]["E03_upper_cavity"]["relativeAreaError"],
+            "E03_c": best["regions"]["E03_upper_cavity"]["centroidDistD"],
+            "E05": best["regions"]["E05_emerald"]["relativeAreaError"],
+            "E05_c": best["regions"]["E05_emerald"]["centroidDistD"],
+            "E06": best["regions"]["E06_sapphire"]["relativeAreaError"],
+            "E06_c": best["regions"]["E06_sapphire"]["centroidDistD"],
+            "E07": best["regions"]["E07_aqua"]["relativeAreaError"],
+            "E07_c": best["regions"]["E07_aqua"]["centroidDistD"],
+        }
+    ]
 
     it = 0
-    for scale in (1.0, 0.38):
-        for _ in range(4):
+    for scale, g_n, n_st, max_iters in ((0.85, 32, 12, 2), (0.35, 44, 16, 2), (0.14, 56, 16, 1)):
+        best = evaluate_volume_projection(cfg, targets, regions, vp, grid_n=g_n, steps=n_st)
+        for _ in range(max_iters):
             improved = False
             search_specs = [
-                ("emeraldAnchorWeight", 0.28 * scale, 0.80, 2.40),
-                ("emeraldThreshold", 0.055 * scale, 0.04, 0.42),
-                ("emeraldGreenBoost", 0.12 * scale, 0.75, 1.45),
-                ("emeraldFoldGain", 0.14 * scale, 0.25, 1.05),
-                ("sapphireDepthDarken", 0.14 * scale, 0.35, 1.05),
-                ("sapphireAnchorWeight", 0.26 * scale, 0.80, 2.40),
-                ("sapphireAbsorptionGain", 0.08 * scale, 0.08, 0.52),
-                ("aquaBrightnessGain", 0.14 * scale, 0.55, 1.35),
-                ("aquaAnchorWeight", 0.24 * scale, 0.70, 2.20),
-                ("aquaDensityGain", 0.09 * scale, 0.08, 0.58),
-                ("aquaUpperGateY", 0.07 * scale, -0.24, 0.24),
-                ("densityScale", 0.20 * scale, 0.85, 2.30),
-                ("foldThickness", 0.03 * scale, 0.07, 0.20),
+                ("emeraldAnchorWeight", 0.24 * scale, 0.80, 2.20),
+                ("emeraldThreshold", 0.055 * scale, 0.06, 0.42),
+                ("emeraldGreenBoost", 0.10 * scale, 0.80, 1.35),
+                ("emeraldFoldGain", 0.10 * scale, 0.30, 0.80),
+                ("sapphireDepthDarken", 0.12 * scale, 0.40, 1.00),
+                ("sapphireAnchorWeight", 0.24 * scale, 0.80, 2.20),
+                ("sapphireAbsorptionGain", 0.07 * scale, 0.10, 0.48),
+                ("aquaBrightnessGain", 0.12 * scale, 0.65, 1.30),
+                ("aquaAnchorWeight", 0.22 * scale, 0.75, 2.10),
+                ("aquaDensityGain", 0.08 * scale, 0.10, 0.52),
+                ("aquaUpperGateY", 0.06 * scale, -0.22, 0.22),
+                ("densityScale", 0.16 * scale, 0.90, 2.10),
+                ("foldThickness", 0.025 * scale, 0.08, 0.20),
+                ("causticDecoupleWeight", 0.035 * scale, 0.0, 0.20),
             ]
             for k, st, lo, hi in search_specs:
                 for sgn in (-1.0, 1.0):
                     trial = dict(vp)
                     trial[k] = max(lo, min(hi, trial[k] + sgn * st))
-                    res = evaluate_volume_projection(cfg, targets, regions, trial, grid_n=40, steps=10)
+                    res = evaluate_volume_projection(cfg, targets, regions, trial, grid_n=g_n, steps=n_st)
                     if res["loss"] < best["loss"] - 1e-5:
                         vp = trial
                         best = res
@@ -503,14 +492,20 @@ def fit_volume_structure(
             it += 1
             if not improved:
                 break
-        history.append({
-            "iter": it,
-            "loss": best["loss"],
-            "E03": best["regions"]["E03_upper_cavity"]["relativeAreaError"],
-            "E05": best["regions"]["E05_emerald"]["relativeAreaError"],
-            "E06": best["regions"]["E06_sapphire"]["relativeAreaError"],
-            "E07": best["regions"]["E07_aqua"]["relativeAreaError"],
-        })
+        history.append(
+            {
+                "iter": it,
+                "loss": best["loss"],
+                "E03": best["regions"]["E03_upper_cavity"]["relativeAreaError"],
+                "E03_c": best["regions"]["E03_upper_cavity"]["centroidDistD"],
+                "E05": best["regions"]["E05_emerald"]["relativeAreaError"],
+                "E05_c": best["regions"]["E05_emerald"]["centroidDistD"],
+                "E06": best["regions"]["E06_sapphire"]["relativeAreaError"],
+                "E06_c": best["regions"]["E06_sapphire"]["centroidDistD"],
+                "E07": best["regions"]["E07_aqua"]["relativeAreaError"],
+                "E07_c": best["regions"]["E07_aqua"]["centroidDistD"],
+            }
+        )
 
     # Final higher-resolution verification
     final_eval = evaluate_volume_projection(cfg, targets, regions, vp, grid_n=96, steps=16)
@@ -530,16 +525,24 @@ def fit_volume_structure(
     set_val(cfg, "caustics", "causticDecoupleWeight", round(vp["causticDecoupleWeight"], 4))
 
     regs = final_eval["regions"]
-    gate_pass = all(
-        regs[k]["relativeAreaError"] <= 0.15 and regs[k]["centroidDistD"] <= 0.04
-        for k in ("E05_emerald", "E06_sapphire", "E07_aqua")
-    )
+    failed_items: list[str] = []
+    for k in ("E03_upper_cavity", "E05_emerald", "E06_sapphire", "E07_aqua"):
+        if regs[k]["relativeAreaError"] > 0.15:
+            failed_items.append(f"{k}.relativeAreaError={regs[k]['relativeAreaError']:.4f} > 0.15")
+        if regs[k]["centroidDistD"] > 0.04:
+            failed_items.append(f"{k}.centroidDistD={regs[k]['centroidDistD']:.4f} > 0.04")
+    gate_pass = len(failed_items) == 0
 
     return {
         "stage": "STAGE_C_VOLUME_FIT",
         "pass": gate_pass,
+        "canonicalModelSeed": CANONICAL_SEED,
         "lossFinal": final_eval["loss"],
         "regions": regs,
+        "classifierStats": final_eval["classifierStats"],
+        "failedItems": failed_items,
+        "initialParams": initial_params,
+        "finalParams": {k: round(v, 4) for k, v in vp.items()},
         "sliceDepthComparison": depth_bench,
         "history": history,
     }

@@ -347,7 +347,8 @@ class AIOrbV31StructuralParityTest {
     // Frozen composition constants preserved in AIOrbConfig & AIOrbScene
     assertEquals(0.80f, AIOrbConfig.Default.coreShellScale, 1e-5f)
     val sceneSrc = File(root, "app/src/main/java/com/example/orb/scene/AIOrbScene.kt").readText(Charsets.UTF_8)
-    assertTrue("Frozen visualBoundRadius = 1.36f must remain preserved", sceneSrc.contains("1.36f"))
+    assertTrue("Unified V3.2 OrbCameraBuilder must drive Tab 1 camera", sceneSrc.contains("OrbCameraBuilder.build("))
+    assertFalse("Legacy visualBoundRadius = 1.36f divergence must be removed", sceneSrc.contains("visualBoundRadius = 1.36f"))
 
     // REFERENCE_LOCKED_FRAME must be 100% deterministic across repeated calls
     val ctrl = AIOrbMotionController()
