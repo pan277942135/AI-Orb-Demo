@@ -430,6 +430,20 @@ class AIOrbV32ReferenceFittingTest {
   }
 
   @Test
+  fun v32_captureReadbackRejectsAFrameWhenAsyncStepAdvancesAfterModeSelection() {
+    val cavityStep = OrbGpuReferenceCapture.CAPTURE_STEPS.indexOfFirst { it.mode == RenderDebugMode.CAVITY_ONLY }
+    val fluidStep = OrbGpuReferenceCapture.CAPTURE_STEPS.indexOfFirst { it.mode == RenderDebugMode.FLUID_VOLUME_ONLY }
+    assertTrue(cavityStep >= 0 && fluidStep == cavityStep + 1)
+    assertFalse(
+      "A CAVITY_ONLY frame must not be mislabeled as the next FLUID_VOLUME_ONLY capture",
+      OrbGpuReferenceCapture.isExpectedRenderedMode(fluidStep, RenderDebugMode.CAVITY_ONLY),
+    )
+    assertTrue(
+      OrbGpuReferenceCapture.isExpectedRenderedMode(fluidStep, RenderDebugMode.FLUID_VOLUME_ONLY),
+    )
+  }
+
+  @Test
   fun v32_09_sceneInitializesWithMasterFidelityAndPreservesCavityOnlyPassIsolation() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val scene = AIOrbScene(assetManager = context.assets)

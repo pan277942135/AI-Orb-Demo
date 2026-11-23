@@ -240,7 +240,12 @@ class OrbGpuReferenceCapture {
     val activeSnap: OrbGpuCaptureSnapshot?
     synchronized(lock) {
       if (!active || capturePending || stepIndex !in CAPTURE_STEPS.indices) return
-      step = CAPTURE_STEPS[stepIndex]
+      val currentStep = CAPTURE_STEPS[stepIndex]
+      // The IO thread advances stepIndex after readback validation. It can do so between
+      // onDrawFrame selecting its override mode and this post-render callback. Never label
+      // pixels from the previous mode as the next capture step; skip that stale frame.
+      if (!isExpectedRenderedMode(stepIndex, config.debugMode)) return
+      step = currentStep
       dir = outputDir ?: return
       cb = callback
       idx = stepIndex
@@ -468,6 +473,9 @@ class OrbGpuReferenceCapture {
       GpuCaptureStep(FOLD_NORMAL_FILE, RenderDebugMode.FOLD_NORMAL),
       GpuCaptureStep("VOLUME_DEPTH_GPU.png", RenderDebugMode.VOLUME_DEPTH),
     )
+
+    internal fun isExpectedRenderedMode(stepIndex: Int, renderedMode: RenderDebugMode): Boolean =
+      stepIndex in CAPTURE_STEPS.indices && CAPTURE_STEPS[stepIndex].mode == renderedMode
 
     val EXPECTED_JSON_FILES: List<String> = listOf(
       FILE_RUNTIME_RENDER_CONFIG,
