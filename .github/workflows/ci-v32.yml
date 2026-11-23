@@ -196,8 +196,7 @@ jobs:
               lines.append(line)
           matrix = "\n".join(lines) + "\n"
           delivery_start = matrix.find("## Exact-head delivery")
-          delivery_end = matrix.find("## GPU and visual gates")
-          if delivery_start >= 0 and delivery_end > delivery_start:
+          if delivery_start >= 0:
               delivery = f"""## Exact-head delivery
 
           - Final source HEAD: `{head}`.
@@ -210,7 +209,7 @@ jobs:
           - Hardware GPU capture and device visual acceptance: `PENDING_USER_DEVICE_QA`.
 
           """
-              matrix = matrix[:delivery_start] + delivery + matrix[delivery_end:]
+              matrix = matrix[:delivery_start] + delivery
           matrix_path.write_text(matrix)
 
           report_path = Path("docs/v4.2/AI_ORB_V42_CORE_ROOT_CAUSE_AND_FIX_REPORT.md")
