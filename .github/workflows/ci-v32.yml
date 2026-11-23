@@ -509,7 +509,11 @@ jobs:
           done
           adb pull "/sdcard/Android/data/$APP_ID/files/p0_3_repeatability" p0_3_evidence/repeats
           adb pull "/sdcard/Android/data/$APP_ID/files/v42_fidelity_evidence" p0_3_evidence/latest_capture
-          adb shell pidof "$APP_ID" > p0_3_evidence/api36_avd/logs/application_pid_after_baselines.txt
+          if adb shell pidof "$APP_ID" | tr -d '\r' | tee p0_3_evidence/api36_avd/logs/application_pid_after_baselines.txt | grep -Eq '^[0-9]+$'; then
+            echo "PROCESS_REMAINS_RUNNING_AFTER_INSTRUMENTATION" > p0_3_evidence/api36_avd/logs/application_lifecycle_after_baselines.txt
+          else
+            echo "PROCESS_EXITED_AFTER_INSTRUMENTATION_TEARDOWN" > p0_3_evidence/api36_avd/logs/application_lifecycle_after_baselines.txt
+          fi
 
       - name: Preserve API36 diagnostics after failure
         if: failure()
