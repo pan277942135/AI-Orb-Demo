@@ -27,6 +27,7 @@ float invSmoothstep(float lo, float hi, float x) {
   // -------------------------------------------------------------------------
   const val RIBBON_VERT = """#version 300 es
 precision highp float;
+precision highp int;
 layout(location = 0) in vec3 aCenter;
 layout(location = 1) in vec3 aOffset;
 layout(location = 2) in vec3 aNormal;
@@ -98,6 +99,7 @@ void main() {
 
   const val RIBBON_FRAG = """#version 300 es
 precision highp float;
+precision highp int;
 
 in vec3 vWorldPos;
 in vec3 vViewPos;
@@ -125,6 +127,8 @@ uniform vec3 uColorB;
 uniform float uFlowSpeed;
 uniform float uPulseOffset;
 uniform int uDepthDebug;         // 0 = Normal, 1 = Depth/Hemisphere occlusion visualization
+uniform vec4 uGoldOptics;        // V3.2 fitted (goldWallsGain, coreStreamGain, secThreadGain, glassBellyGain)
+uniform float uGoldSpecGain;     // V3.2 fitted gold specular gain
 
 $GLSL_INV_SMOOTHSTEP
 
@@ -312,13 +316,19 @@ void main() {
         vec3 wallColor = mix(moltenAmber, sunlitGold, clamp(0.30 + 0.50 * NdotLWarm + 0.25 * fresnel, 0.0, 1.0));
         vec3 coreColor = mix(moltenAmber, sunlitGold, clamp(0.45 + 0.45 * coreStream, 0.0, 1.0));
 
-        col = moltenAmber * 0.36 * glassBelly
-            + wallColor * (goldWalls * 1.18 + secThread * 0.72)
-            + coreColor * (coreStream * 1.08 * innerShimmer)
-            + champagneCrest * (localGlint * (0.58 * coreStream + 0.46 * goldWalls) + goldSpec * (0.48 * goldWalls + 0.38 * coreStream));
+        float wallsGain = uGoldOptics.x > 0.01 ? uGoldOptics.x : 0.74;
+        float streamGain = uGoldOptics.y > 0.01 ? uGoldOptics.y : 0.66;
+        float threadGain = uGoldOptics.z > 0.01 ? uGoldOptics.z : 0.395;
+        float bellyGain = uGoldOptics.w > 0.01 ? uGoldOptics.w : 0.16;
+        float specGain = uGoldSpecGain > 0.01 ? uGoldSpecGain : 0.305;
+
+        col = moltenAmber * bellyGain * glassBelly
+            + wallColor * (goldWalls * wallsGain + secThread * threadGain)
+            + coreColor * (coreStream * streamGain * innerShimmer)
+            + champagneCrest * (localGlint * (0.48 * coreStream + 0.38 * goldWalls) + goldSpec * specGain * (1.25 * goldWalls + 0.95 * coreStream));
 
         alpha = clamp(
-            tipFade * (glassBelly * (0.11 + 0.14 * fresnel) + goldWalls * 0.66 + coreStream * 0.52 + secThread * 0.34 + localGlint * 0.26)
+            tipFade * (glassBelly * (0.09 + 0.12 * fresnel) + goldWalls * 0.64 + coreStream * 0.48 + secThread * 0.30 + localGlint * 0.24)
             * uRibbonTransparency * uOpacityScale,
             0.0, 0.90
         );

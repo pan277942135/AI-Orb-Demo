@@ -7,6 +7,7 @@ import com.example.orb.config.QualityTier
 import com.example.orb.config.RenderDebugMode
 import com.example.orb.scene.AIOrbTelemetry
 import com.example.orb.task.TaskEnergyEvidence
+import com.example.orb.v3.GpuCaptureProgress
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +21,7 @@ data class AIOrbUiState(
   val telemetry: AIOrbTelemetry = AIOrbTelemetry(),
   val taskEvidence: TaskEnergyEvidence = TaskEnergyEvidence(),
   val showExportDialog: Boolean = false,
+  val gpuCaptureProgress: GpuCaptureProgress = GpuCaptureProgress(),
 ) {
   val fps: Int get() = telemetry.fps
 }
@@ -113,6 +115,12 @@ class AIOrbViewModel : ViewModel() {
   fun reportTaskEvidence(evidence: TaskEnergyEvidence) {
     _uiState.update { current ->
       if (current.taskEvidence == evidence) current else current.copy(taskEvidence = evidence)
+    }
+  }
+
+  fun reportGpuCaptureProgress(progress: GpuCaptureProgress) {
+    _uiState.update { current ->
+      if (current.gpuCaptureProgress == progress) current else current.copy(gpuCaptureProgress = progress)
     }
   }
 }

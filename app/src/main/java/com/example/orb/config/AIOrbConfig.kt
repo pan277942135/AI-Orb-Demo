@@ -59,6 +59,7 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
   FLUID_DENSITY(1, "Fluid Density"),
   FLUID_FLOW(2, "Fluid Flow"),
   MENISCUS_DEBUG(3, "Meniscus"),
+  CAVITY_ONLY(9, "Cavity Only"),
   CAUSTICS_ONLY(4, "Caustics Only"),
   GLASS_ONLY(5, "Glass Only"),
   RIBBONS_ONLY(0, "Ribbons Only"),
@@ -76,6 +77,7 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
       this == FLUID_DENSITY ||
       this == FLUID_FLOW ||
       this == MENISCUS_DEBUG ||
+      this == CAVITY_ONLY ||
       this == CAUSTICS_ONLY ||
       this == GLASS_ONLY
 

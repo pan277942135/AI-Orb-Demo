@@ -7,6 +7,7 @@ import com.example.orb.geometry.OrbGeometryBuilder
 import com.example.orb.gl.CoreFluidShaders
 import com.example.orb.gl.GlMesh
 import com.example.orb.gl.GlShaderProgram
+import com.example.orb.v3.MasterFidelityV32
 import com.example.orb.v3.OrbVolumeTelemetry
 import com.example.orb.v3.OrbVolumeTexture3D
 import com.example.orb.v3.ReferenceMeniscusProfile
@@ -80,6 +81,7 @@ class OrbFluidVolumeRenderer {
     lighting: AIOrbLighting,
     config: AIOrbConfig,
     isSoftwareRenderer: Boolean = false,
+    fidelity: MasterFidelityV32 = MasterFidelityV32.Default,
   ) {
     val prog = program ?: return
     val sphere = mesh ?: return
@@ -125,6 +127,38 @@ class OrbFluidVolumeRenderer {
     prog.setInt("uRaymarchSteps", effectiveSteps)
     prog.setInt("uDebugMode", config.debugMode.shaderModeId)
     prog.setFloatArray("uReferenceMeniscusY", ReferenceMeniscusProfile.HEIGHTS)
+
+    // V3.2 Master-Fitted Candidate B Crystal Lens + Active-Surface Fold Relief + Beer-Lambert Uniforms
+    val cav = fidelity.innerCavity
+    val vol = fidelity.fluidVolume
+    val glass = fidelity.outerGlass
+    val sap = fidelity.sapphireValleys
+    val lgt = fidelity.lighting
+    val cau = fidelity.caustics
+    prog.setVec3("uLensCenter", cav.lensCenterX, cav.lensCenterY, cav.lensCenterZ)
+    prog.setVec3("uLensRadii", cav.lensRadiusX, cav.lensRadiusY, cav.lensRadiusZ)
+    prog.setVec4(
+      "uLensParams",
+      cav.lensWallThickness,
+      cav.cavityTintGain,
+      cav.cavityRimRefraction,
+      cav.upperGoldPenetration,
+    )
+    prog.setVec4(
+      "uFoldOptics",
+      vol.foldNormalPerturbation,
+      vol.foldSpecularGain,
+      vol.foldRefraction,
+      lgt.volumeExposure,
+    )
+    prog.setVec4(
+      "uGlassOptics",
+      glass.iorGlass,
+      glass.crownGoldStrength,
+      glass.upperHazeSuppress,
+      cau.causticIntensity,
+    )
+    prog.setVec3("uBeerLambert", sap.beerLambertR, sap.beerLambertG, sap.beerLambertB)
 
     lighting.applyTo(prog)
     sphere.draw()

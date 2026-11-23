@@ -2,6 +2,7 @@ package com.example.orb.scene
 
 import android.content.res.AssetManager
 import com.example.orb.config.AIOrbConfig
+import com.example.orb.v3.MasterFidelityV32
 import com.example.orb.v3.OrbVolumeTelemetry
 
 /**
@@ -49,6 +50,7 @@ class AIOrbCore {
     lighting: AIOrbLighting,
     config: AIOrbConfig,
     isSoftwareRenderer: Boolean = false,
+    fidelity: MasterFidelityV32 = MasterFidelityV32.Default,
   ) {
     volumeRenderer.draw(
       outerGlassModel = outerGlassModel,
@@ -64,6 +66,7 @@ class AIOrbCore {
       lighting = lighting,
       config = config,
       isSoftwareRenderer = isSoftwareRenderer,
+      fidelity = fidelity,
     )
   }
 

@@ -52,6 +52,7 @@ import com.example.orb.ui.AIOrbControlsOverlay
 import com.example.orb.ui.AIOrbViewModel
 import com.example.orb.ui.DemoTab
 import com.example.orb.ui.TaskRecognitionDemoScreen
+import com.example.orb.v3.OrbGpuReferenceCapture
 import com.example.ui.theme.AbyssEmerald
 import com.example.ui.theme.MyApplicationTheme
 
@@ -194,6 +195,12 @@ class MainActivity : ComponentActivity() {
               onSelectDebugMode = viewModel::setDebugMode,
               onOpenExportDialog = viewModel::openExportDialog,
               onDismissExportDialog = viewModel::dismissExportDialog,
+              onExportV32Evidence = {
+                val outDir = OrbGpuReferenceCapture.resolveEvidenceDir(applicationContext)
+                sharedScene?.requestV32EvidenceExport(outDir) { progress ->
+                  viewModel.reportGpuCaptureProgress(progress)
+                }
+              },
             )
           }
 

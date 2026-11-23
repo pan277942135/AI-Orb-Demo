@@ -1,0 +1,91 @@
+{
+  "schemaValid": true,
+  "staticOfflineHardGatesPass": false,
+  "failedOfflineGates": [
+    "E05_emeraldCentroid_le_004D",
+    "E06_sapphireAreaRelErr_le_15pct",
+    "E06_sapphireCentroid_le_004D",
+    "E07_aquaAreaRelErr_le_15pct",
+    "E07_aquaCentroid_le_004D"
+  ],
+  "dynamic360Sweep": {
+    "axis": [
+      0.14,
+      0.98,
+      -0.14
+    ],
+    "stepDeg": 30,
+    "maxStepAlphaJump": 0.20245,
+    "loopClosure360AlphaErr": 0.0,
+    "pass": true,
+    "samples": [
+      {
+        "angleDeg": 0,
+        "meanAlpha": 0.4588,
+        "meanGreen": 0.5724
+      },
+      {
+        "angleDeg": 30,
+        "meanAlpha": 0.2943,
+        "meanGreen": 0.4361
+      },
+      {
+        "angleDeg": 60,
+        "meanAlpha": 0.1677,
+        "meanGreen": 0.4805
+      },
+      {
+        "angleDeg": 90,
+        "meanAlpha": 0.2513,
+        "meanGreen": 0.4452
+      },
+      {
+        "angleDeg": 120,
+        "meanAlpha": 0.2117,
+        "meanGreen": 0.4874
+      },
+      {
+        "angleDeg": 150,
+        "meanAlpha": 0.4141,
+        "meanGreen": 0.5778
+      },
+      {
+        "angleDeg": 180,
+        "meanAlpha": 0.3066,
+        "meanGreen": 0.6065
+      },
+      {
+        "angleDeg": 210,
+        "meanAlpha": 0.3872,
+        "meanGreen": 0.3974
+      },
+      {
+        "angleDeg": 240,
+        "meanAlpha": 0.3355,
+        "meanGreen": 0.5181
+      },
+      {
+        "angleDeg": 270,
+        "meanAlpha": 0.3968,
+        "meanGreen": 0.5926
+      },
+      {
+        "angleDeg": 300,
+        "meanAlpha": 0.2704,
+        "meanGreen": 0.3252
+      },
+      {
+        "angleDeg": 330,
+        "meanAlpha": 0.2724,
+        "meanGreen": 0.5503
+      },
+      {
+        "angleDeg": 360,
+        "meanAlpha": 0.4588,
+        "meanGreen": 0.5724
+      }
+    ]
+  },
+  "overallOfflineValidationPass": false,
+  "realGpuStatus": "PENDING_REAL_GPU_CAPTURE"
+}

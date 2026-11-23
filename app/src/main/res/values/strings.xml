@@ -58,4 +58,7 @@
     <string name="task_action_play">播放</string>
     <string name="task_controls_title">任务水光 · 6KF</string>
     <string name="task_keyframe_jump_label">关键帧跳转 (GPU 实时渲染)</string>
+    <string name="qa_export_v32_evidence">Export V3.2 Fidelity Evidence</string>
+    <string name="qa_export_v32_capturing">Capturing %1$d/%2$d…</string>
+    <string name="cd_export_v32_evidence">Capture 6 real GPU frames and runtime JSON reports</string>
 </resources>

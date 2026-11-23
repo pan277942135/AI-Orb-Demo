@@ -379,6 +379,7 @@ void main() {
   // -------------------------------------------------------------------------
   const val CORE_GLASS_VERT = """#version 300 es
 precision highp float;
+precision highp int;
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec3 aNormal;
 
@@ -432,6 +433,7 @@ void main() {
 
   const val CORE_GLASS_FRAG = """#version 300 es
 precision highp float;
+precision highp int;
 precision highp sampler3D;
 
 in vec3 vWorldPos;
@@ -468,10 +470,17 @@ uniform float uOverallIntensity;
 uniform float uHdrScale;
 uniform int uRaymarchSteps;
 // 0=Full, 1=FluidDensity, 2=FluidFlow, 3=Meniscus, 4=CausticsOnly,
-// 5=GlassOnly, 6=DepthDebug, 7=FluidVolumeOnly, 8=VolumeDepth
+// 5=GlassOnly, 6=DepthDebug, 7=FluidVolumeOnly, 8=VolumeDepth, 9=CavityOnly
 uniform int uDebugMode;
 // P0-1: 32-sample master crystal-cavity meniscus profile auto-generated from REFERENCE_VISUAL_REGIONS.json
 uniform float uReferenceMeniscusY[32];
+// V3.2 Master-Fitted Candidate B Crystal Lens + 3D Fold Relief + Crystal Optics Uniforms
+uniform vec3 uLensCenter;
+uniform vec3 uLensRadii;
+uniform vec4 uLensParams;  // x=wallThickness, y=cavityTintGain, z=cavityRimRefraction, w=upperGoldPenetration
+uniform vec4 uFoldOptics;  // x=foldNormalPerturbation, y=foldSpecularGain, z=foldRefraction, w=volumeExposure
+uniform vec4 uGlassOptics; // x=iorGlass, y=crownGoldStrength, z=upperHazeSuppress, w=causticIntensity
+uniform vec3 uBeerLambert; // (R, G, B) fitted optical absorption coefficients
 
 uniform vec3 uKeyLightDir;
 uniform vec3 uKeyLightColor;
@@ -526,6 +535,70 @@ float meniscusHeight(vec2 coreXZ, float meniscusPhase) {
 vec3 meniscusNormal(vec2 coreXZ, float meniscusPhase, out vec2 slopeOut) {
     float y = meniscusHeight(coreXZ, meniscusPhase);
     return cavityNormal(vec3(coreXZ.x, y, coreXZ.y), meniscusPhase, slopeOut);
+}
+
+// V3.2 Candidate B: Embedded Asymmetric Crystal Lens SDF in rotated Core Frame.
+// phi < 0 lies inside the clear embedded crystal pocket; phi == 0 is the curved refractive lens wall.
+float crystalLensPhi(vec3 p) {
+    vec3 radii = max(uLensRadii, vec3(0.08));
+    vec3 q = p - uLensCenter;
+    // Slight organic top-dome asymmetry so the crystal pocket follows the master's curved crown
+    q.y -= 0.032 * q.x * q.x + 0.018 * q.x;
+    vec3 scaled = q / radii;
+    float k0 = length(scaled);
+    float k1 = length(scaled / radii);
+    if (k0 < 1e-5) return -min(radii.x, min(radii.y, radii.z));
+    return k0 * (k0 - 1.0) / max(k1, 1e-4);
+}
+
+vec3 crystalLensNormal(vec3 p) {
+    float e = 0.008;
+    float gx = crystalLensPhi(p + vec3(e, 0.0, 0.0)) - crystalLensPhi(p - vec3(e, 0.0, 0.0));
+    float gy = crystalLensPhi(p + vec3(0.0, e, 0.0)) - crystalLensPhi(p - vec3(0.0, e, 0.0));
+    float gz = crystalLensPhi(p + vec3(0.0, 0.0, e)) - crystalLensPhi(p - vec3(0.0, 0.0, e));
+    return normalize(vec3(gx, gy, gz) + vec3(0.0, 1e-5, 0.0));
+}
+
+// Analytic ellipsoid ray intersection in Core Frame matching crystalLensPhi()
+bool intersectCrystalLens(vec3 ro, vec3 rd, float tMax, out float tEnter, out float tExit, out float thickness) {
+    vec3 radii = max(uLensRadii, vec3(0.08));
+    vec3 oc = (ro - uLensCenter) / radii;
+    vec3 d = rd / radii;
+    float a = dot(d, d);
+    float b = dot(oc, d);
+    float c = dot(oc, oc) - 1.0;
+    float disc = b * b - a * c;
+    tEnter = 0.0;
+    tExit = 0.0;
+    thickness = 0.0;
+    if (disc <= 0.0 || a < 1e-6) return false;
+    float s = sqrt(disc);
+    float t0 = (-b - s) / a;
+    float t1 = (-b + s) / a;
+    if (t1 <= 0.0 || t0 >= tMax) return false;
+    tEnter = max(t0, 0.0);
+    tExit = min(t1, tMax);
+    thickness = max(tExit - tEnter, 0.0);
+    return thickness > 1e-4;
+}
+
+// Active-surface analytical 3D fluid fold normal (evaluated ONLY on thin dense liquid sheets, ld > 0.14)
+vec3 estimateFluidFoldNormal(vec3 samplePos, vec3 fallbackDir) {
+    if (uVolumeLoaded <= 0) return fallbackDir;
+    vec3 volUv = vec3(
+        samplePos.x * 0.5 + 0.5,
+        0.5 - samplePos.y * 0.5,
+        samplePos.z * 0.5 + 0.5
+    );
+    float epsXY = 0.014;
+    float epsZ = 0.032;
+    float a0 = texture(uFluidVolume, clamp(volUv, vec3(0.004), vec3(0.996))).a;
+    float ax = texture(uFluidVolume, clamp(volUv + vec3(epsXY, 0.0, 0.0), vec3(0.004), vec3(0.996))).a;
+    float ay = texture(uFluidVolume, clamp(volUv - vec3(0.0, epsXY, 0.0), vec3(0.004), vec3(0.996))).a;
+    float az = texture(uFluidVolume, clamp(volUv + vec3(0.0, 0.0, epsZ), vec3(0.004), vec3(0.996))).a;
+    vec3 grad = vec3(a0 - ax, a0 - ay, a0 - az);
+    float gLen = length(grad);
+    return gLen > 1e-4 ? (grad / gLen) : fallbackDir;
 }
 
 // Bounded divergence-free 3D curl offset for continuous living fluid motion inside the rotating volume
@@ -715,9 +788,18 @@ void main() {
     // Unified inverse Core Frame matrix so rotating core rotates both meniscus & 3D WebP volume together!
     mat3 invCoreRot = transpose(uCoreRotMat);
     vec3 keyDirCore = normalize(invCoreRot * normalize(uKeyLightDir));
+    vec3 rayOrgCore = toCoreFrame(rayOrg, invCoreRot);
+    vec3 rayDirCore = normalize(invCoreRot * rayDir);
+
+    // V3.2 Candidate B: Embedded Crystal Lens intersection in rotated Core Frame
+    float lensEnterT = 0.0;
+    float lensExitT = 0.0;
+    float lensThickness = 0.0;
+    bool hitCrystalLens = intersectCrystalLens(rayOrgCore, rayDirCore, tExit, lensEnterT, lensExitT, lensThickness);
+    float lensPocketMask = hitCrystalLens ? smoothstep(0.02, max(uLensParams.x * 2.4, 0.09), lensThickness) : 0.0;
 
     float prevT = 0.0;
-    vec3 prevCore = toCoreFrame(rayOrg, invCoreRot);
+    vec3 prevCore = rayOrgCore;
     float prevDiff = cavityPhi(prevCore, uMeniscusPhase);
     float densityScale = clamp(uDensityScale, 1.20, 1.95) * (0.80 + 0.20 * uFluidIntensity);
 
@@ -773,23 +855,40 @@ void main() {
         float submerge = invSmoothstep(-0.015, 0.015, midPhi);
 
         if (submerge > 0.01) {
-            float segDt = (currT - prevT) * submerge;
+            // Smoothly carve crystal clarity inside Candidate B embedded lens pocket (zero hard horizontal line!)
+            float lensPhi = crystalLensPhi(coreMidP);
+            float outsideLens = smoothstep(-max(uLensParams.x * 0.65, 0.02), max(uLensParams.x * 1.15, 0.045), lensPhi);
+            float segDt = (currT - prevT) * submerge * mix(0.22, 1.0, outsideLens);
             liquidPath += segDt;
 
             vec3 flowDir;
             vec4 volSample = sampleFluidVolume3D(coreMidP, uFluidPhase, flowDir);
-            float localDensity = volSample.a * submerge;
+            float localDensity = volSample.a * submerge * mix(0.18, 1.0, outsideLens);
 
             if (localDensity > 0.004) {
                 float sigma = localDensity * densityScale * segDt;
                 float stepAlpha = 1.0 - exp(-sigma);
 
-                // High-contrast Beer-Lambert directional subsurface lighting (crisp liquid folds, ZERO fog!)
-                float keyPhase = clamp(dot(normalize(coreMidP + vec3(1e-4)), keyDirCore) * 0.5 + 0.5, 0.0, 1.0);
+                // High-contrast Beer-Lambert directional subsurface lighting + active-surface 3D fold normals!
+                vec3 radialCore = normalize(coreMidP + vec3(1e-4));
+                float keyPhase = clamp(dot(radialCore, keyDirCore) * 0.5 + 0.5, 0.0, 1.0);
                 float depthAtten = exp(-opticalDepth * 0.78);
                 float rimWallBoost = smoothstep(0.45, 0.92, length(midP.xz));
-                // Deep dark obsidian-sapphire core valleys + sunlit emerald/aqua silk walls
-                vec3 litSample = volSample.rgb * (0.48 + 0.88 * keyPhase * depthAtten + 0.26 * rimWallBoost) * uFluidIntensity;
+
+                // Evaluate analytical 3D fluid fold normal ONLY on active liquid sheets (ld > 0.14)
+                float foldRelief = 0.0;
+                float foldSpec = 0.0;
+                if (localDensity > 0.14 && uFoldOptics.x > 0.01) {
+                    vec3 foldN = normalize(mix(radialCore, estimateFluidFoldNormal(coreMidP, radialCore), clamp(uFoldOptics.x, 0.0, 0.75)));
+                    float foldDiff = clamp(dot(foldN, keyDirCore), 0.0, 1.0);
+                    vec3 foldHalf = normalize(keyDirCore - rayDirCore);
+                    foldSpec = pow(max(dot(foldN, foldHalf), 0.0), 28.0) * uFoldOptics.y * depthAtten;
+                    foldRelief = (foldDiff - 0.42) * uFoldOptics.x * 0.68 * depthAtten;
+                }
+
+                // Deep dark obsidian-sapphire core valleys + sunlit sculptural emerald/aqua liquid folds
+                vec3 litSample = volSample.rgb * max(0.32, (0.48 + 0.88 * keyPhase * depthAtten + 0.26 * rimWallBoost + foldRelief)) * uFluidIntensity * uFoldOptics.w;
+                litSample += mix(vec3(0.08, 0.48, 0.34), vec3(0.24, 0.76, 0.92), clamp(volSample.b * 1.4, 0.0, 1.0)) * foldSpec * localDensity;
 
                 accumColor += (1.0 - accumAlpha) * litSample * stepAlpha;
                 accumAlpha += (1.0 - accumAlpha) * stepAlpha;
@@ -885,12 +984,32 @@ void main() {
         return;
     }
 
+    // Diagnostic Mode 9: V3.2 Candidate B Crystal Lens + Cavity SDF Isolation (`CAVITY_ONLY`)
+    if (uDebugMode == 9) {
+        float edgeMask = smoothstep(0.0, 0.042, NdotV);
+        float cavClear = invSmoothstep(0.02, 0.18, liquidPath);
+        vec3 cavVis = mix(vec3(0.008, 0.045, 0.095), vec3(0.06, 0.36, 0.52), cavClear);
+        if (hitCrystalLens) {
+            vec3 lensHitP = rayOrgCore + rayDirCore * lensEnterT;
+            vec3 lensN = crystalLensNormal(lensHitP);
+            float lensGrazing = pow(1.0 - clamp(abs(dot(lensN, rayDirCore)), 0.0, 1.0), 2.4);
+            cavVis = mix(cavVis, vec3(0.14, 0.64, 0.88), lensPocketMask * 0.55);
+            cavVis += vec3(0.42, 0.96, 1.24) * lensGrazing * uLensParams.z * 0.65;
+        }
+        if (hitMeniscus > 0.5 && meniscusCrossingDir > 0.0) {
+            float frontLip = invSmoothstep(0.10, 0.72, meniscusHitT);
+            cavVis += vec3(0.95, 0.72, 0.24) * frontLip * 0.52;
+        }
+        fragColor = vec4(mix(originalBg, cavVis, edgeMask) * uHdrScale, 1.0);
+        return;
+    }
+
     // Beer-Lambert optical transmission of refracted background through submerged liquid volume
-    vec3 waterTransmittance = exp(-liquidPath * vec3(2.45, 0.82, 0.38) * (1.28 - uCoreTransparency * 0.44));
+    vec3 waterTransmittance = exp(-liquidPath * uBeerLambert * (1.24 - uCoreTransparency * 0.42));
     float bgWeight = (1.0 - accumAlpha * 0.86);
     vec3 interiorCol = refractedBack * waterTransmittance * bgWeight
                      + accumColor
-                     + causticColor * (0.72 + 0.28 * (1.0 - accumAlpha * 0.35));
+                     + causticColor * (0.72 + 0.28 * (1.0 - accumAlpha * 0.35)) * clamp(uGlassOptics.w / 0.56, 0.45, 1.45);
 
     // P0-1: Subtle transparent crystal-water meniscus lip on front-wall top-entry crossings ONLY
     // (gates out deep back-wall water table hits so upper crystal dome stays pure dark transparent glass!)
@@ -910,12 +1029,28 @@ void main() {
         interiorCol += vec3(0.42, 1.15, 1.38) * (mFres * 0.08 + mSpec * 0.40) * uFluidIntensity;
     }
 
-    // P0-4: Crystal-clear transparent upper dome cavity above cavityPhi == 0 (ZERO grey-white frosted haze!)
+    // P0-4 & V3.2 Candidate B: Crystal-clear transparent upper dome & embedded crystal lens pocket (ZERO frosted haze!)
     float airCavity = invSmoothstep(0.02, 0.16, liquidPath);
     float domeCyanSheen = smoothstep(0.12, 0.88, vLocalPos.y) * smoothstep(0.22, 0.82, NdotV);
     vec3 clearCavityCol = refractedBack * vec3(0.92, 0.99, 1.02)
                         + vec3(0.001, 0.012, 0.021) * domeCyanSheen;
     interiorCol = mix(interiorCol, clearCavityCol, airCavity * 0.92);
+
+    // Smooth Candidate B embedded crystal lens refraction rim + localized 10:30 sunlit golden penetration
+    if (hitCrystalLens) {
+        vec3 lensEnterPos = rayOrgCore + rayDirCore * lensEnterT;
+        vec3 lensNCore = crystalLensNormal(lensEnterPos);
+        float lensNdotV = clamp(abs(dot(lensNCore, rayDirCore)), 0.0, 1.0);
+        float lensWallRing = exp(-pow((lensNdotV - 0.24) / 0.14, 2.0)) * smoothstep(0.015, 0.14, lensThickness);
+        float lensClearBg = lensPocketMask * (0.42 + 0.32 * airCavity);
+        vec3 lensCrystalTrans = refractedBack * vec3(0.88, 0.98, 1.06)
+                              + vec3(0.004, 0.036, 0.068) * uLensParams.y * lensPocketMask;
+        interiorCol = mix(interiorCol, lensCrystalTrans, clamp(lensClearBg * 0.58, 0.0, 0.68));
+        // Curved aqua-crystal wall refraction + warm golden penetration on the 10:30 upper-left lens wall
+        float goldWallSector = smoothstep(-0.35, 0.45, -lensEnterPos.x + lensEnterPos.y * 0.65);
+        vec3 lensRimCol = mix(vec3(0.08, 0.52, 0.78), vec3(0.92, 0.68, 0.22), goldWallSector * clamp(uLensParams.w * 0.45, 0.0, 0.65));
+        interiorCol += lensRimCol * lensWallRing * uLensParams.z * 0.22;
+    }
 
     // Diagnostic Mode 7: Pure 3D WebP Fluid Volume Only (in-shader composited over background!)
     if (uDebugMode == 7) {

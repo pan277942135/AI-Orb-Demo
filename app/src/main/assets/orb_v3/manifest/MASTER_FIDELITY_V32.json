@@ -1,0 +1,1439 @@
+{
+  "schemaVersion": "AI_ORB_V3_2_MASTER_FIDELITY_1_0",
+  "referenceMaster": {
+    "path": "public/assets/aistudio/____________910d1531.png",
+    "sha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
+    "width": 1254,
+    "height": 1254,
+    "immutable": true
+  },
+  "camera": {
+    "fovYDeg": {
+      "name": "fovYDeg",
+      "unit": "deg",
+      "default": 42.0,
+      "min": 35.0,
+      "max": 50.0,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 42.0
+    },
+    "coreScale": {
+      "name": "coreScale",
+      "unit": "world",
+      "default": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 1.0
+    },
+    "coreShellScale": {
+      "name": "coreShellScale",
+      "unit": "world",
+      "default": 0.8,
+      "min": 0.8,
+      "max": 0.8,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 0.8
+    },
+    "ribbonHugScale": {
+      "name": "ribbonHugScale",
+      "unit": "ratio",
+      "default": 0.87,
+      "min": 0.87,
+      "max": 0.87,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 0.87
+    },
+    "visualBoundRadius": {
+      "name": "visualBoundRadius",
+      "unit": "world",
+      "default": 1.54,
+      "min": 1.3,
+      "max": 1.85,
+      "optimizable": true,
+      "source": "STAGE_A_CAMERA_FIT",
+      "fittedValue": 1.5661
+    },
+    "cameraDistance": {
+      "name": "cameraDistance",
+      "unit": "world",
+      "default": 4.08,
+      "min": 3.4,
+      "max": 4.9,
+      "optimizable": true,
+      "source": "STAGE_A_CAMERA_FIT",
+      "fittedValue": 4.0798
+    },
+    "targetOffsetX": {
+      "name": "targetOffsetX",
+      "unit": "world",
+      "default": 0.0,
+      "min": -0.12,
+      "max": 0.12,
+      "optimizable": true,
+      "source": "STAGE_A_CAMERA_FIT",
+      "fittedValue": 0.0265
+    },
+    "targetOffsetY": {
+      "name": "targetOffsetY",
+      "unit": "world",
+      "default": 0.0,
+      "min": -0.2,
+      "max": 0.2,
+      "optimizable": true,
+      "source": "STAGE_A_CAMERA_FIT",
+      "fittedValue": -0.125
+    },
+    "targetSphereDiameterRatio": {
+      "name": "targetSphereDiameterRatio",
+      "unit": "ratio",
+      "default": 0.5199,
+      "min": 0.48,
+      "max": 0.56,
+      "optimizable": false,
+      "source": "G0_MASTER_LOCK",
+      "fittedValue": 0.51994
+    }
+  },
+  "outerGlass": {
+    "iorGlass": {
+      "name": "iorGlass",
+      "unit": "ior",
+      "default": 1.45,
+      "min": 1.36,
+      "max": 1.54,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 1.45
+    },
+    "glassWallThickness": {
+      "name": "glassWallThickness",
+      "unit": "R",
+      "default": 0.078,
+      "min": 0.045,
+      "max": 0.115,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.115
+    },
+    "fresnelPower": {
+      "name": "fresnelPower",
+      "unit": "exp",
+      "default": 6.2,
+      "min": 4.0,
+      "max": 8.5,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 6.2
+    },
+    "fresnelGain": {
+      "name": "fresnelGain",
+      "unit": "gain",
+      "default": 0.48,
+      "min": 0.15,
+      "max": 0.85,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.8
+    },
+    "razorRimGain": {
+      "name": "razorRimGain",
+      "unit": "gain",
+      "default": 0.88,
+      "min": 0.3,
+      "max": 1.4,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 1.35
+    },
+    "innerRingGain": {
+      "name": "innerRingGain",
+      "unit": "gain",
+      "default": 0.32,
+      "min": 0.05,
+      "max": 0.7,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.32
+    },
+    "grooveDarkening": {
+      "name": "grooveDarkening",
+      "unit": "gain",
+      "default": 0.54,
+      "min": 0.2,
+      "max": 0.8,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.54
+    },
+    "envReflectionCap": {
+      "name": "envReflectionCap",
+      "unit": "gain",
+      "default": 0.18,
+      "min": 0.04,
+      "max": 0.28,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.24
+    },
+    "upperHazeSuppress": {
+      "name": "upperHazeSuppress",
+      "unit": "ratio",
+      "default": 0.94,
+      "min": 0.75,
+      "max": 1.0,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.8
+    },
+    "crownGoldStrength": {
+      "name": "crownGoldStrength",
+      "unit": "gain",
+      "default": 1.12,
+      "min": 0.4,
+      "max": 2.0,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.4
+    }
+  },
+  "innerCavity": {
+    "selectedModel": {
+      "name": "selectedModel",
+      "unit": "enum",
+      "default": "CANDIDATE_B_CRYSTAL_LENS",
+      "min": "CANDIDATE_A_AIR_LIQUID",
+      "max": "CANDIDATE_B_CRYSTAL_LENS",
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": "CANDIDATE_B_CRYSTAL_LENS"
+    },
+    "meniscusYOffset": {
+      "name": "meniscusYOffset",
+      "unit": "R",
+      "default": 0.0,
+      "min": -0.18,
+      "max": 0.24,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": -0.012
+    },
+    "domeDepthDip": {
+      "name": "domeDepthDip",
+      "unit": "R",
+      "default": 0.14,
+      "min": 0.02,
+      "max": 0.28,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": 0.14
+    },
+    "sideWallClimb": {
+      "name": "sideWallClimb",
+      "unit": "R",
+      "default": 0.048,
+      "min": 0.0,
+      "max": 0.14,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": 0.048
+    },
+    "lensCenterX": {
+      "name": "lensCenterX",
+      "unit": "R",
+      "default": 0.14,
+      "min": -0.25,
+      "max": 0.35,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": 0.1529
+    },
+    "lensCenterY": {
+      "name": "lensCenterY",
+      "unit": "R",
+      "default": 0.48,
+      "min": 0.24,
+      "max": 0.76,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": 0.336
+    },
+    "lensCenterZ": {
+      "name": "lensCenterZ",
+      "unit": "R",
+      "default": 0.08,
+      "min": -0.2,
+      "max": 0.35,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": 0.16
+    },
+    "lensRadiusX": {
+      "name": "lensRadiusX",
+      "unit": "R",
+      "default": 0.52,
+      "min": 0.28,
+      "max": 0.92,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": 0.3
+    },
+    "lensRadiusY": {
+      "name": "lensRadiusY",
+      "unit": "R",
+      "default": 0.24,
+      "min": 0.12,
+      "max": 0.52,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": 0.1793
+    },
+    "lensRadiusZ": {
+      "name": "lensRadiusZ",
+      "unit": "R",
+      "default": 0.5,
+      "min": 0.28,
+      "max": 0.88,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": 0.39
+    },
+    "lensWallThickness": {
+      "name": "lensWallThickness",
+      "unit": "R",
+      "default": 0.055,
+      "min": 0.02,
+      "max": 0.12,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": 0.047
+    },
+    "iorAir": {
+      "name": "iorAir",
+      "unit": "ior",
+      "default": 1.0003,
+      "min": 1.0003,
+      "max": 1.0003,
+      "optimizable": false,
+      "source": "PHYSICAL_CONSTANT",
+      "fittedValue": 1.0003
+    },
+    "iorWater": {
+      "name": "iorWater",
+      "unit": "ior",
+      "default": 1.333,
+      "min": 1.333,
+      "max": 1.333,
+      "optimizable": false,
+      "source": "PHYSICAL_CONSTANT",
+      "fittedValue": 1.333
+    },
+    "iorCrystal": {
+      "name": "iorCrystal",
+      "unit": "ior",
+      "default": 1.45,
+      "min": 1.4,
+      "max": 1.54,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": 1.45
+    },
+    "cavityTintGain": {
+      "name": "cavityTintGain",
+      "unit": "gain",
+      "default": 0.18,
+      "min": 0.02,
+      "max": 0.55,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": 0.14
+    },
+    "cavityRimRefraction": {
+      "name": "cavityRimRefraction",
+      "unit": "gain",
+      "default": 0.42,
+      "min": 0.1,
+      "max": 0.95,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": 0.752
+    },
+    "upperGoldPenetration": {
+      "name": "upperGoldPenetration",
+      "unit": "gain",
+      "default": 0.78,
+      "min": 0.2,
+      "max": 1.6,
+      "optimizable": true,
+      "source": "STAGE_B_CAVITY_FIT",
+      "fittedValue": 0.86
+    }
+  },
+  "fluidVolume": {
+    "width": {
+      "name": "width",
+      "unit": "px",
+      "default": 256,
+      "min": 256,
+      "max": 256,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 256
+    },
+    "height": {
+      "name": "height",
+      "unit": "px",
+      "default": 256,
+      "min": 256,
+      "max": 256,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 256
+    },
+    "depth": {
+      "name": "depth",
+      "unit": "slices",
+      "default": 32,
+      "min": 32,
+      "max": 64,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 32
+    },
+    "densityScale": {
+      "name": "densityScale",
+      "unit": "gain",
+      "default": 1.55,
+      "min": 0.8,
+      "max": 2.4,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 2.3
+    },
+    "baseDensity": {
+      "name": "baseDensity",
+      "unit": "alpha",
+      "default": 0.032,
+      "min": 0.01,
+      "max": 0.08,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.032
+    },
+    "foldCount": {
+      "name": "foldCount",
+      "unit": "count",
+      "default": 3,
+      "min": 2,
+      "max": 5,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 3
+    },
+    "foldIso": {
+      "name": "foldIso",
+      "unit": "scalar",
+      "default": 0.18,
+      "min": -0.1,
+      "max": 0.45,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.18
+    },
+    "foldThickness": {
+      "name": "foldThickness",
+      "unit": "R",
+      "default": 0.11,
+      "min": 0.06,
+      "max": 0.24,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.2
+    },
+    "foldNormalPerturbation": {
+      "name": "foldNormalPerturbation",
+      "unit": "gain",
+      "default": 0.34,
+      "min": 0.05,
+      "max": 0.75,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.34
+    },
+    "foldRefraction": {
+      "name": "foldRefraction",
+      "unit": "gain",
+      "default": 0.22,
+      "min": 0.0,
+      "max": 0.55,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.22
+    },
+    "foldSpecularGain": {
+      "name": "foldSpecularGain",
+      "unit": "gain",
+      "default": 0.42,
+      "min": 0.05,
+      "max": 1.0,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.42
+    }
+  },
+  "emeraldFolds": {
+    "emeraldFoldGain": {
+      "name": "emeraldFoldGain",
+      "unit": "gain",
+      "default": 0.62,
+      "min": 0.25,
+      "max": 1.1,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 1.05
+    },
+    "emeraldAnchorWeight": {
+      "name": "emeraldAnchorWeight",
+      "unit": "gain",
+      "default": 1.55,
+      "min": 0.8,
+      "max": 2.4,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 1.3372
+    },
+    "emeraldGreenBoost": {
+      "name": "emeraldGreenBoost",
+      "unit": "gain",
+      "default": 1.06,
+      "min": 0.75,
+      "max": 1.45,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 1.3
+    },
+    "emeraldThreshold": {
+      "name": "emeraldThreshold",
+      "unit": "scalar",
+      "default": 0.16,
+      "min": 0.04,
+      "max": 0.42,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.16
+    }
+  },
+  "sapphireValleys": {
+    "sapphireAbsorptionGain": {
+      "name": "sapphireAbsorptionGain",
+      "unit": "gain",
+      "default": 0.24,
+      "min": 0.08,
+      "max": 0.55,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.32
+    },
+    "sapphireAnchorWeight": {
+      "name": "sapphireAnchorWeight",
+      "unit": "gain",
+      "default": 1.45,
+      "min": 0.8,
+      "max": 2.4,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 1.45
+    },
+    "sapphireDepthDarken": {
+      "name": "sapphireDepthDarken",
+      "unit": "gain",
+      "default": 0.74,
+      "min": 0.35,
+      "max": 1.05,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.74
+    },
+    "beerLambertR": {
+      "name": "beerLambertR",
+      "unit": "coeff",
+      "default": 2.6,
+      "min": 1.5,
+      "max": 3.8,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 2.6
+    },
+    "beerLambertG": {
+      "name": "beerLambertG",
+      "unit": "coeff",
+      "default": 0.92,
+      "min": 0.4,
+      "max": 1.6,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.92
+    },
+    "beerLambertB": {
+      "name": "beerLambertB",
+      "unit": "coeff",
+      "default": 0.42,
+      "min": 0.18,
+      "max": 0.95,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.42
+    }
+  },
+  "aquaRegion": {
+    "aquaDensityGain": {
+      "name": "aquaDensityGain",
+      "unit": "gain",
+      "default": 0.26,
+      "min": 0.08,
+      "max": 0.6,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.58
+    },
+    "aquaAnchorWeight": {
+      "name": "aquaAnchorWeight",
+      "unit": "gain",
+      "default": 1.42,
+      "min": 0.7,
+      "max": 2.2,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 2.2
+    },
+    "aquaBrightnessGain": {
+      "name": "aquaBrightnessGain",
+      "unit": "gain",
+      "default": 0.94,
+      "min": 0.55,
+      "max": 1.35,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 1.22
+    },
+    "aquaUpperGateY": {
+      "name": "aquaUpperGateY",
+      "unit": "R",
+      "default": 0.04,
+      "min": -0.25,
+      "max": 0.25,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.04
+    }
+  },
+  "caustics": {
+    "causticIntensity": {
+      "name": "causticIntensity",
+      "unit": "gain",
+      "default": 0.56,
+      "min": 0.15,
+      "max": 1.2,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.56
+    },
+    "causticDecoupleWeight": {
+      "name": "causticDecoupleWeight",
+      "unit": "ratio",
+      "default": 0.12,
+      "min": 0.0,
+      "max": 0.22,
+      "optimizable": true,
+      "source": "STAGE_C_VOLUME_FIT",
+      "fittedValue": 0.12
+    },
+    "upperGoldCausticGain": {
+      "name": "upperGoldCausticGain",
+      "unit": "gain",
+      "default": 0.44,
+      "min": 0.08,
+      "max": 1.1,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.44
+    }
+  },
+  "residentC01": {
+    "periodMs": {
+      "name": "periodMs",
+      "unit": "ms",
+      "default": 4400.0,
+      "min": 4400.0,
+      "max": 4400.0,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 4400.0
+    },
+    "closed": {
+      "name": "closed",
+      "unit": "bool",
+      "default": false,
+      "min": false,
+      "max": false,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": false
+    },
+    "halfWidth": {
+      "name": "halfWidth",
+      "unit": "world",
+      "default": 0.125,
+      "min": 0.08,
+      "max": 0.18,
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": 0.125
+    },
+    "opacityScale": {
+      "name": "opacityScale",
+      "unit": "ratio",
+      "default": 0.96,
+      "min": 0.65,
+      "max": 1.15,
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": 0.96
+    },
+    "controlPoints": {
+      "name": "controlPoints",
+      "unit": "vec3[]",
+      "default": [],
+      "min": [],
+      "max": [],
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": [
+        [
+          0.76,
+          0.58,
+          -0.44
+        ],
+        [
+          0.28,
+          1.02,
+          -0.18
+        ],
+        [
+          -0.36,
+          1.04,
+          0.06
+        ],
+        [
+          -0.96,
+          0.72,
+          0.28
+        ],
+        [
+          -1.26,
+          0.22,
+          0.52
+        ],
+        [
+          -1.04,
+          -0.24,
+          0.8
+        ],
+        [
+          -0.32,
+          -0.44,
+          0.96
+        ],
+        [
+          0.38,
+          -0.62,
+          0.82
+        ],
+        [
+          0.66,
+          -0.8,
+          0.46
+        ],
+        [
+          0.5,
+          -0.98,
+          0.12
+        ],
+        [
+          -0.02,
+          -1.04,
+          -0.14
+        ],
+        [
+          -0.56,
+          -0.94,
+          -0.3
+        ]
+      ]
+    }
+  },
+  "residentA01": {
+    "periodMs": {
+      "name": "periodMs",
+      "unit": "ms",
+      "default": 3700.0,
+      "min": 3700.0,
+      "max": 3700.0,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 3700.0
+    },
+    "closed": {
+      "name": "closed",
+      "unit": "bool",
+      "default": false,
+      "min": false,
+      "max": false,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": false
+    },
+    "halfWidth": {
+      "name": "halfWidth",
+      "unit": "world",
+      "default": 0.095,
+      "min": 0.045,
+      "max": 0.16,
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": 0.1365
+    },
+    "opacityScale": {
+      "name": "opacityScale",
+      "unit": "ratio",
+      "default": 0.94,
+      "min": 0.55,
+      "max": 1.15,
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": 0.94
+    },
+    "controlPoints": {
+      "name": "controlPoints",
+      "unit": "vec3[]",
+      "default": [],
+      "min": [],
+      "max": [],
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": [
+        [
+          -0.82,
+          0.441,
+          0.24
+        ],
+        [
+          -0.852,
+          0.497,
+          0.26
+        ],
+        [
+          -0.86,
+          0.567,
+          0.24
+        ],
+        [
+          -0.78,
+          0.775,
+          0.2
+        ],
+        [
+          -0.52,
+          0.893,
+          0.14
+        ],
+        [
+          -0.362,
+          1.04,
+          0.08
+        ],
+        [
+          -0.317,
+          1.075,
+          0.02
+        ],
+        [
+          -0.297,
+          1.02,
+          -0.06
+        ],
+        [
+          -0.143,
+          0.845,
+          -0.14
+        ]
+      ]
+    },
+    "widthProfile": {
+      "name": "widthProfile",
+      "unit": "float[]",
+      "default": [],
+      "min": [],
+      "max": [],
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": [
+        0.14,
+        0.246,
+        1.688,
+        0.69,
+        1.716,
+        0.252,
+        0.14,
+        0.62,
+        0.14
+      ]
+    },
+    "twistProfileDeg": {
+      "name": "twistProfileDeg",
+      "unit": "deg[]",
+      "default": [],
+      "min": [],
+      "max": [],
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": [
+        -16.0,
+        -8.0,
+        2.0,
+        12.0,
+        20.0,
+        26.0,
+        30.0,
+        34.0,
+        38.0
+      ]
+    }
+  },
+  "residentA02": {
+    "periodMs": {
+      "name": "periodMs",
+      "unit": "ms",
+      "default": 2900.0,
+      "min": 2900.0,
+      "max": 2900.0,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 2900.0
+    },
+    "closed": {
+      "name": "closed",
+      "unit": "bool",
+      "default": false,
+      "min": false,
+      "max": false,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": false
+    },
+    "halfWidth": {
+      "name": "halfWidth",
+      "unit": "world",
+      "default": 0.118,
+      "min": 0.055,
+      "max": 0.18,
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": 0.173
+    },
+    "opacityScale": {
+      "name": "opacityScale",
+      "unit": "ratio",
+      "default": 1.0,
+      "min": 0.65,
+      "max": 1.2,
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": 1.0
+    },
+    "controlPoints": {
+      "name": "controlPoints",
+      "unit": "vec3[]",
+      "default": [],
+      "min": [],
+      "max": [],
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": [
+        [
+          0.42,
+          -0.82,
+          0.34
+        ],
+        [
+          0.48,
+          -0.78,
+          0.34
+        ],
+        [
+          0.78,
+          -0.71,
+          0.3
+        ],
+        [
+          1.22,
+          -0.395,
+          0.24
+        ],
+        [
+          1.285,
+          -0.195,
+          0.18
+        ],
+        [
+          1.142,
+          -0.05,
+          0.12
+        ],
+        [
+          0.985,
+          0.117,
+          0.04
+        ],
+        [
+          0.76,
+          0.385,
+          -0.06
+        ],
+        [
+          0.7,
+          0.595,
+          -0.18
+        ]
+      ]
+    },
+    "widthProfile": {
+      "name": "widthProfile",
+      "unit": "float[]",
+      "default": [],
+      "min": [],
+      "max": [],
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": [
+        0.14,
+        0.14,
+        1.014,
+        0.778,
+        1.592,
+        1.782,
+        1.688,
+        0.772,
+        0.252
+      ]
+    },
+    "twistProfileDeg": {
+      "name": "twistProfileDeg",
+      "unit": "deg[]",
+      "default": [],
+      "min": [],
+      "max": [],
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": [
+        22.0,
+        12.0,
+        0.0,
+        -12.0,
+        -22.0,
+        -14.0,
+        -4.0,
+        8.0,
+        18.0
+      ]
+    }
+  },
+  "residentG01": {
+    "periodMs": {
+      "name": "periodMs",
+      "unit": "ms",
+      "default": 6100.0,
+      "min": 6100.0,
+      "max": 6100.0,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 6100.0
+    },
+    "closed": {
+      "name": "closed",
+      "unit": "bool",
+      "default": false,
+      "min": false,
+      "max": false,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": false
+    },
+    "halfWidth": {
+      "name": "halfWidth",
+      "unit": "world",
+      "default": 0.165,
+      "min": 0.1,
+      "max": 0.22,
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": 0.165
+    },
+    "opacityScale": {
+      "name": "opacityScale",
+      "unit": "ratio",
+      "default": 0.92,
+      "min": 0.6,
+      "max": 1.1,
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": 0.92
+    },
+    "controlPoints": {
+      "name": "controlPoints",
+      "unit": "vec3[]",
+      "default": [],
+      "min": [],
+      "max": [],
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": [
+        [
+          -0.22,
+          1.18,
+          -0.6
+        ],
+        [
+          0.28,
+          1.3,
+          -0.34
+        ],
+        [
+          0.78,
+          1.08,
+          -0.14
+        ],
+        [
+          1.14,
+          0.62,
+          -0.08
+        ],
+        [
+          1.22,
+          0.12,
+          -0.22
+        ],
+        [
+          1.04,
+          -0.32,
+          -0.34
+        ],
+        [
+          0.7,
+          -0.68,
+          -0.42
+        ],
+        [
+          0.28,
+          -0.92,
+          -0.54
+        ],
+        [
+          -0.14,
+          -1.04,
+          -0.68
+        ]
+      ]
+    }
+  },
+  "residentG02": {
+    "periodMs": {
+      "name": "periodMs",
+      "unit": "ms",
+      "default": 5300.0,
+      "min": 5300.0,
+      "max": 5300.0,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 5300.0
+    },
+    "closed": {
+      "name": "closed",
+      "unit": "bool",
+      "default": false,
+      "min": false,
+      "max": false,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": false
+    },
+    "halfWidth": {
+      "name": "halfWidth",
+      "unit": "world",
+      "default": 0.155,
+      "min": 0.09,
+      "max": 0.22,
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": 0.155
+    },
+    "opacityScale": {
+      "name": "opacityScale",
+      "unit": "ratio",
+      "default": 0.9,
+      "min": 0.6,
+      "max": 1.1,
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": 0.9
+    },
+    "controlPoints": {
+      "name": "controlPoints",
+      "unit": "vec3[]",
+      "default": [],
+      "min": [],
+      "max": [],
+      "optimizable": true,
+      "source": "STAGE_D_RESIDENT_FIT",
+      "fittedValue": [
+        [
+          -0.92,
+          0.48,
+          -0.36
+        ],
+        [
+          -1.12,
+          0.02,
+          0.12
+        ],
+        [
+          -1.08,
+          -0.46,
+          0.48
+        ],
+        [
+          -0.78,
+          -0.82,
+          0.66
+        ],
+        [
+          -0.48,
+          -1.0,
+          0.5
+        ],
+        [
+          -0.32,
+          -1.2,
+          0.3
+        ],
+        [
+          -0.04,
+          -1.32,
+          0.14
+        ],
+        [
+          0.26,
+          -1.36,
+          -0.06
+        ],
+        [
+          0.48,
+          -1.26,
+          -0.24
+        ]
+      ]
+    }
+  },
+  "lighting": {
+    "goldWallsGain": {
+      "name": "goldWallsGain",
+      "unit": "gain",
+      "default": 1.16,
+      "min": 0.55,
+      "max": 1.8,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.74
+    },
+    "coreStreamGain": {
+      "name": "coreStreamGain",
+      "unit": "gain",
+      "default": 1.08,
+      "min": 0.5,
+      "max": 1.75,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.66
+    },
+    "secThreadGain": {
+      "name": "secThreadGain",
+      "unit": "gain",
+      "default": 0.72,
+      "min": 0.25,
+      "max": 1.3,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.395
+    },
+    "glassBellyGain": {
+      "name": "glassBellyGain",
+      "unit": "gain",
+      "default": 0.34,
+      "min": 0.1,
+      "max": 0.7,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.16
+    },
+    "goldSpecGain": {
+      "name": "goldSpecGain",
+      "unit": "gain",
+      "default": 0.52,
+      "min": 0.15,
+      "max": 1.1,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.305
+    },
+    "volumeExposure": {
+      "name": "volumeExposure",
+      "unit": "gain",
+      "default": 1.06,
+      "min": 0.75,
+      "max": 1.45,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 1.06
+    }
+  },
+  "postProcessing": {
+    "bloomThreshold": {
+      "name": "bloomThreshold",
+      "unit": "hdr",
+      "default": 1.32,
+      "min": 1.1,
+      "max": 1.65,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 1.32
+    },
+    "bloomStrength": {
+      "name": "bloomStrength",
+      "unit": "gain",
+      "default": 0.62,
+      "min": 0.3,
+      "max": 1.0,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 0.62
+    },
+    "acesExposure": {
+      "name": "acesExposure",
+      "unit": "gain",
+      "default": 1.06,
+      "min": 0.85,
+      "max": 1.3,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 1.06
+    },
+    "saturationBoost": {
+      "name": "saturationBoost",
+      "unit": "ratio",
+      "default": 1.1,
+      "min": 1.0,
+      "max": 1.24,
+      "optimizable": true,
+      "source": "STAGE_E_OPTICS_FIT",
+      "fittedValue": 1.1
+    }
+  },
+  "quality": {
+    "raymarchStepsHigh": {
+      "name": "raymarchStepsHigh",
+      "unit": "steps",
+      "default": 36,
+      "min": 24,
+      "max": 48,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 36
+    },
+    "raymarchStepsBalanced": {
+      "name": "raymarchStepsBalanced",
+      "unit": "steps",
+      "default": 28,
+      "min": 20,
+      "max": 36,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 28
+    },
+    "raymarchStepsEco": {
+      "name": "raymarchStepsEco",
+      "unit": "steps",
+      "default": 20,
+      "min": 16,
+      "max": 28,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 20
+    },
+    "coreRotationSpeedDegPerSec": {
+      "name": "coreRotationSpeedDegPerSec",
+      "unit": "deg/s",
+      "default": 26.0,
+      "min": 26.0,
+      "max": 26.0,
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": 26.0
+    },
+    "coreRotationAxis": {
+      "name": "coreRotationAxis",
+      "unit": "vec3",
+      "default": [
+        0.14,
+        0.98,
+        -0.14
+      ],
+      "min": [
+        0.14,
+        0.98,
+        -0.14
+      ],
+      "max": [
+        0.14,
+        0.98,
+        -0.14
+      ],
+      "optimizable": false,
+      "source": "FROZEN_V3_CONTRACT",
+      "fittedValue": [
+        0.14,
+        0.98,
+        -0.14
+      ]
+    }
+  },
+  "fitSummary": {
+    "evaluationDomain": "OFFLINE_CPU_PROXY_ANALYTICAL_FITTING",
+    "realGpuStatus": "PENDING_REAL_GPU_CAPTURE",
+    "selectedCavityModel": "CANDIDATE_B_CRYSTAL_LENS",
+    "selectedVolumeDepth": 32,
+    "L_total": 0.21507,
+    "allOfflineHardGatesPass": false,
+    "failedOfflineGates": [
+      "E05_emeraldCentroid_le_004D",
+      "E06_sapphireAreaRelErr_le_15pct",
+      "E06_sapphireCentroid_le_004D",
+      "E07_aquaAreaRelErr_le_15pct",
+      "E07_aquaCentroid_le_004D"
+    ],
+    "elapsedSec": 212.74
+  }
+}

@@ -1,0 +1,550 @@
+{
+  "schemaVersion": "AI_ORB_V3_2_FIT_RUN_SUMMARY_1_0",
+  "elapsedSec": 212.74,
+  "masterFidelityConfigSha256": "b508c23b815819010107b9f4db25dba13e22e0c8c6fda22be54ac1b1e1cf9460",
+  "stageA": {
+    "stage": "STAGE_A_CAMERA_FIT",
+    "pass": true,
+    "frozen": {
+      "fovYDeg": 42.0,
+      "coreScale": 1.0,
+      "coreShellScale": 0.8
+    },
+    "baselineV31": {
+      "visualBoundRadius": 1.36,
+      "squareCamDist": 3.65,
+      "squareDiameterRatioW": 0.58435,
+      "squareDiamRelErr": 0.12389,
+      "portraitCamDist": 7.8732,
+      "portraitDiameterRatioW": 0.58993
+    },
+    "fitted": {
+      "cameraDistanceSquare": 4.0798,
+      "visualBoundRadius": 1.5661,
+      "targetOffsetX": 0.0265,
+      "targetOffsetY": -0.125,
+      "squareDiameterRatioW": 0.51996,
+      "squareDiamRelErr": 3e-05,
+      "squareCenterErrW": 9e-05,
+      "squareSilhouetteIoU": 0.99958,
+      "portrait1080x2400CamDist": 9.0663,
+      "portraitDiameterRatioW": 0.5115,
+      "portraitDiamRelErr": 0.01624
+    },
+    "lossFinal": 0.001213,
+    "history": [
+      {
+        "iter": 0,
+        "camDist": 4.0118,
+        "loss": 0.575324,
+        "diamRelErr": 0.0173,
+        "iou": 0.81109
+      },
+      {
+        "iter": 4,
+        "camDist": 4.1118,
+        "offX": 0.04,
+        "offY": -0.12,
+        "loss": 0.096487,
+        "diamRelErr": 0.00807,
+        "centerErrW": 0.00469,
+        "iou": 0.97493
+      },
+      {
+        "iter": 7,
+        "camDist": 4.0718,
+        "offX": 0.03,
+        "offY": -0.12,
+        "loss": 0.032787,
+        "diamRelErr": 0.00202,
+        "centerErrW": 0.00188,
+        "iou": 0.99047
+      },
+      {
+        "iter": 10,
+        "camDist": 4.0798,
+        "offX": 0.026,
+        "offY": -0.124,
+        "loss": 0.004934,
+        "diamRelErr": 2e-05,
+        "centerErrW": 0.00038,
+        "iou": 0.99814
+      },
+      {
+        "iter": 13,
+        "camDist": 4.0798,
+        "offX": 0.0265,
+        "offY": -0.125,
+        "loss": 0.001213,
+        "diamRelErr": 3e-05,
+        "centerErrW": 9e-05,
+        "iou": 0.99958
+      }
+    ]
+  },
+  "stageB": {
+    "stage": "STAGE_B_CAVITY_FIT",
+    "pass": false,
+    "selectedModel": "CANDIDATE_B_CRYSTAL_LENS",
+    "candidateA": {
+      "model": "CANDIDATE_A_AIR_LIQUID",
+      "e03TargetAreaRatio": 0.06931,
+      "e03SimAreaRatio": 0.0,
+      "e03AreaRelErr": 1.0,
+      "e03TargetCentroid": [
+        0.2039,
+        0.476
+      ],
+      "e03SimCentroid": [
+        0.0,
+        0.0
+      ],
+      "e03CentroidDistD": 0.2589,
+      "e04MeanErrorR": 0.01211,
+      "e04MaxErrorR": 0.04528,
+      "upperGreyWhiteHazeRatio": 0.0,
+      "highlightAlignmentScore": 0.0,
+      "loss": 4.71661,
+      "params": {
+        "meniscusYOffset": 0.0,
+        "domeDepthDip": 0.14,
+        "sideWallClimb": 0.0,
+        "upperGoldPenetration": 0.31
+      }
+    },
+    "candidateB": {
+      "model": "CANDIDATE_B_CRYSTAL_LENS",
+      "e03TargetAreaRatio": 0.06931,
+      "e03SimAreaRatio": 0.06781,
+      "e03AreaRelErr": 0.0216,
+      "e03TargetCentroid": [
+        0.2039,
+        0.476
+      ],
+      "e03SimCentroid": [
+        0.2092,
+        0.4634
+      ],
+      "e03CentroidDistD": 0.0068,
+      "e04MeanErrorR": 0.01411,
+      "e04MaxErrorR": 0.04064,
+      "upperGreyWhiteHazeRatio": 0.12763,
+      "highlightAlignmentScore": 0.00247,
+      "loss": 0.80361,
+      "params": {
+        "meniscusYOffset": -0.012,
+        "domeDepthDip": 0.14,
+        "sideWallClimb": 0.048,
+        "lensCenterX": 0.1529,
+        "lensCenterY": 0.336,
+        "lensCenterZ": 0.16,
+        "lensRadiusX": 0.3,
+        "lensRadiusY": 0.1793,
+        "lensRadiusZ": 0.39,
+        "lensWallThickness": 0.047,
+        "cavityRimRefraction": 0.752,
+        "upperGoldPenetration": 0.86,
+        "cavityTintGain": 0.14
+      }
+    },
+    "winner": {
+      "model": "CANDIDATE_B_CRYSTAL_LENS",
+      "e03TargetAreaRatio": 0.06931,
+      "e03SimAreaRatio": 0.06781,
+      "e03AreaRelErr": 0.0216,
+      "e03TargetCentroid": [
+        0.2039,
+        0.476
+      ],
+      "e03SimCentroid": [
+        0.2092,
+        0.4634
+      ],
+      "e03CentroidDistD": 0.0068,
+      "e04MeanErrorR": 0.01411,
+      "e04MaxErrorR": 0.04064,
+      "upperGreyWhiteHazeRatio": 0.12763,
+      "highlightAlignmentScore": 0.00247,
+      "loss": 0.80361,
+      "params": {
+        "meniscusYOffset": -0.012,
+        "domeDepthDip": 0.14,
+        "sideWallClimb": 0.048,
+        "lensCenterX": 0.1529,
+        "lensCenterY": 0.336,
+        "lensCenterZ": 0.16,
+        "lensRadiusX": 0.3,
+        "lensRadiusY": 0.1793,
+        "lensRadiusZ": 0.39,
+        "lensWallThickness": 0.047,
+        "cavityRimRefraction": 0.752,
+        "upperGoldPenetration": 0.86,
+        "cavityTintGain": 0.14
+      }
+    },
+    "history": [
+      {
+        "iter": 0,
+        "model": "CANDIDATE_B",
+        "loss": 4.55112,
+        "e03AreaRelErr": 1.4995,
+        "e04MeanR": 0.01773
+      },
+      {
+        "iter": 5,
+        "model": "CANDIDATE_B",
+        "loss": 0.81348,
+        "e03AreaRelErr": 0.0229,
+        "e03CentroidDistD": 0.0065,
+        "e04MeanR": 0.01411
+      },
+      {
+        "iter": 7,
+        "model": "CANDIDATE_B",
+        "loss": 0.7521,
+        "e03AreaRelErr": 0.0002,
+        "e03CentroidDistD": 0.0059,
+        "e04MeanR": 0.01411
+      }
+    ]
+  },
+  "stageC": {
+    "stage": "STAGE_C_VOLUME_FIT",
+    "pass": false,
+    "lossFinal": 3.49032,
+    "regions": {
+      "E03_upper_cavity": {
+        "targetAreaRatio": 0.06931,
+        "simAreaRatio": 0.07422,
+        "relativeAreaError": 0.0708,
+        "targetCentroid": [
+          0.2039,
+          0.476
+        ],
+        "simCentroid": [
+          0.1872,
+          0.4757
+        ],
+        "centroidDistD": 0.0084
+      },
+      "E05_emerald": {
+        "targetAreaRatio": 0.32254,
+        "simAreaRatio": 0.3275,
+        "relativeAreaError": 0.0154,
+        "targetCentroid": [
+          -0.1363,
+          -0.1007
+        ],
+        "simCentroid": [
+          -0.1805,
+          -0.1704
+        ],
+        "centroidDistD": 0.0413
+      },
+      "E06_sapphire": {
+        "targetAreaRatio": 0.25652,
+        "simAreaRatio": 0.32719,
+        "relativeAreaError": 0.2755,
+        "targetCentroid": [
+          0.1586,
+          0.0881
+        ],
+        "simCentroid": [
+          0.1374,
+          -0.0829
+        ],
+        "centroidDistD": 0.0862
+      },
+      "E07_aqua": {
+        "targetAreaRatio": 0.15309,
+        "simAreaRatio": 0.12187,
+        "relativeAreaError": 0.2039,
+        "targetCentroid": [
+          0.027,
+          -0.162
+        ],
+        "simCentroid": [
+          0.2165,
+          -0.3286
+        ],
+        "centroidDistD": 0.1261
+      }
+    },
+    "sliceDepthComparison": {
+      "depth32": {
+        "dimensions": "256x256x32",
+        "gpuVramMiB": 8.0,
+        "meanTrilinearAlphaError": 0.012234
+      },
+      "depth64": {
+        "dimensions": "256x256x64",
+        "gpuVramMiB": 16.0,
+        "meanTrilinearAlphaError": 0.00619
+      },
+      "selectedDepth": 32,
+      "rationale": "256x256x32 achieves mean Z trilinear error 0.01223 (< 0.016, ~3.5 LSB) while cutting GPU VRAM in half (8.0 MiB vs 16.0 MiB) and preserving frozen V3 WebP-First startup latency; crisp thin-sheet normals are further sharpened analytically in CoreFluidShaders.kt."
+    },
+    "history": [
+      {
+        "iter": 0,
+        "loss": 7.02629,
+        "E05": 0.1082,
+        "E06": 0.8059,
+        "E07": 0.6722
+      },
+      {
+        "iter": 4,
+        "loss": 3.66755,
+        "E03": 0.0989,
+        "E05": 0.0224,
+        "E06": 0.275,
+        "E07": 0.2274
+      },
+      {
+        "iter": 7,
+        "loss": 3.54506,
+        "E03": 0.0989,
+        "E05": 0.0001,
+        "E06": 0.2994,
+        "E07": 0.1923
+      }
+    ]
+  },
+  "stageD": {
+    "stage": "STAGE_D_RESIDENT_FIT",
+    "passStrict025R": true,
+    "pass": true,
+    "baselineV31Gold": {
+      "loss": 0.31352,
+      "ribbonToMasterR": 0.176,
+      "masterToRibbonR": 0.1043,
+      "chamferR": 0.1402,
+      "maxTurnA01Deg": 21.46,
+      "maxTurnA02Deg": 23.21,
+      "ovalMetrics": {
+        "rightFlareMeanR": 1.3773,
+        "upperLeftCrownMeanR": 1.2141,
+        "asymmetryRatio": 1.1344,
+        "minEndpointGapR": 0.3541,
+        "emptyAngularSectorsOf18": 0,
+        "isRegularOval": false
+      }
+    },
+    "fittedGold": {
+      "loss": 0.02484,
+      "ribbonToMasterR": 0.0307,
+      "masterToRibbonR": 0.019,
+      "chamferR": 0.0248,
+      "maxTurnA01Deg": 17.9,
+      "maxTurnA02Deg": 17.71,
+      "ovalMetrics": {
+        "rightFlareMeanR": 1.2425,
+        "upperLeftCrownMeanR": 1.1418,
+        "asymmetryRatio": 1.0881,
+        "minEndpointGapR": 0.9086,
+        "emptyAngularSectorsOf18": 8,
+        "isRegularOval": false
+      }
+    },
+    "c01MaxTurnDeg": 12.82,
+    "c01OuterChamferR": 0.1405,
+    "history": [
+      {
+        "iter": 0,
+        "chamferR": 0.0862,
+        "r2m": 0.0993,
+        "m2r": 0.0732,
+        "loss": 0.13967
+      },
+      {
+        "iter": 4,
+        "chamferR": 0.0483,
+        "r2m": 0.0594,
+        "m2r": 0.0371,
+        "loss": 0.04826
+      },
+      {
+        "iter": 8,
+        "chamferR": 0.0328,
+        "r2m": 0.0387,
+        "m2r": 0.027,
+        "loss": 0.03282
+      },
+      {
+        "iter": 12,
+        "chamferR": 0.0273,
+        "r2m": 0.0305,
+        "m2r": 0.0242,
+        "loss": 0.02731
+      },
+      {
+        "iter": 16,
+        "chamferR": 0.0265,
+        "r2m": 0.0292,
+        "m2r": 0.0238,
+        "loss": 0.02648
+      }
+    ]
+  },
+  "stageE": {
+    "stage": "STAGE_E_OPTICS_FIT",
+    "pass": true,
+    "metrics": {
+      "loss": 0.45134,
+      "e09TargetAreaRatio": 0.03922,
+      "e09SimAreaRatio": 0.0425,
+      "e09AreaRelErr": 0.0836,
+      "e09CentroidDistD": 0.0418,
+      "upperDomeHazeRatio": 0.0,
+      "rimMeanLuma": 0.3739,
+      "goldLumaTarget": 0.6299,
+      "goldLumaSim": 0.6297,
+      "goldLumaErr": 0.0003
+    },
+    "history": [
+      {
+        "iter": 0,
+        "loss": 2.778,
+        "e09AreaRelErr": 1.2735,
+        "haze": 0.0
+      },
+      {
+        "iter": 6,
+        "loss": 0.45583,
+        "e09AreaRelErr": 0.0836,
+        "haze": 0.0
+      },
+      {
+        "iter": 8,
+        "loss": 0.45205,
+        "e09AreaRelErr": 0.0836,
+        "haze": 0.0
+      },
+      {
+        "iter": 10,
+        "loss": 0.45134,
+        "e09AreaRelErr": 0.0836,
+        "haze": 0.0
+      }
+    ]
+  },
+  "stageF_visualLoss": {
+    "schemaVersion": "AI_ORB_V3_2_VISUAL_LOSS_1_0",
+    "evaluationDomain": "OFFLINE_CPU_PROXY_ANALYTICAL_FITTING",
+    "realGpuStatus": "PENDING_REAL_GPU_CAPTURE",
+    "weights": {
+      "L_sphere": 0.18,
+      "L_cavity": 0.22,
+      "L_volume": 0.25,
+      "L_resident": 0.2,
+      "L_optics": 0.1,
+      "L_layering": 0.05
+    },
+    "components": {
+      "L_sphere": 0.00315,
+      "L_cavity": 0.2977,
+      "L_volume": 0.50307,
+      "L_resident": 0.0992,
+      "L_optics": 0.03404,
+      "L_layering": 0.0,
+      "L_total": 0.21507
+    },
+    "hardGates": {
+      "E01_diameterRelErr_le_2pct": {
+        "value": 3e-05,
+        "threshold": 0.02,
+        "pass": true
+      },
+      "E01_portraitDiamRelErr_le_2pct": {
+        "value": 0.01624,
+        "threshold": 0.02,
+        "pass": true
+      },
+      "E01_centerErrW_le_1pct": {
+        "value": 9e-05,
+        "threshold": 0.01,
+        "pass": true
+      },
+      "E01_silhouetteIoU_ge_095": {
+        "value": 0.99958,
+        "threshold": 0.95,
+        "pass": true
+      },
+      "E03_cavityAreaRelErr_le_15pct": {
+        "value": 0.0708,
+        "threshold": 0.15,
+        "pass": true
+      },
+      "E03_cavityCentroid_le_004D": {
+        "value": 0.0084,
+        "threshold": 0.04,
+        "pass": true
+      },
+      "E04_meniscusMeanErr_le_0025R": {
+        "value": 0.01411,
+        "threshold": 0.025,
+        "pass": true
+      },
+      "E05_emeraldAreaRelErr_le_15pct": {
+        "value": 0.0154,
+        "threshold": 0.15,
+        "pass": true
+      },
+      "E05_emeraldCentroid_le_004D": {
+        "value": 0.0413,
+        "threshold": 0.04,
+        "pass": false
+      },
+      "E06_sapphireAreaRelErr_le_15pct": {
+        "value": 0.2755,
+        "threshold": 0.15,
+        "pass": false
+      },
+      "E06_sapphireCentroid_le_004D": {
+        "value": 0.0862,
+        "threshold": 0.04,
+        "pass": false
+      },
+      "E07_aquaAreaRelErr_le_15pct": {
+        "value": 0.2039,
+        "threshold": 0.15,
+        "pass": false
+      },
+      "E07_aquaCentroid_le_004D": {
+        "value": 0.1261,
+        "threshold": 0.04,
+        "pass": false
+      },
+      "E10_goldCombinedChamfer_le_0025R": {
+        "value": 0.0248,
+        "threshold": 0.025,
+        "pass": true
+      },
+      "E10_goldNonRegularOval": {
+        "value": true,
+        "threshold": true,
+        "pass": true
+      },
+      "E11_c01SmoothTurn_lt_20deg": {
+        "value": 12.82,
+        "threshold": 20.0,
+        "pass": true
+      },
+      "E02_upperDomeHaze_le_1pct": {
+        "value": 0.0,
+        "threshold": 0.01,
+        "pass": true
+      }
+    },
+    "allOfflineHardGatesPass": false,
+    "failedOfflineGates": [
+      "E05_emeraldCentroid_le_004D",
+      "E06_sapphireAreaRelErr_le_15pct",
+      "E06_sapphireCentroid_le_004D",
+      "E07_aquaAreaRelErr_le_15pct",
+      "E07_aquaCentroid_le_004D"
+    ],
+    "masterFidelityConfigPath": "app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json",
+    "masterFidelityConfigSha256": "b508c23b815819010107b9f4db25dba13e22e0c8c6fda22be54ac1b1e1cf9460"
+  }
+}

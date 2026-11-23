@@ -19,7 +19,11 @@ import com.example.orb.task.TaskEnergyRibbonRenderer
 import com.example.orb.task.TaskEnergySnapshot
 import com.example.orb.task.TaskEnergyStage
 import com.example.orb.task.TaskSceneLayoutSnapshot
+import com.example.orb.v3.GpuCaptureProgress
+import com.example.orb.v3.MasterFidelityV32
+import com.example.orb.v3.OrbGpuReferenceCapture
 import com.example.orb.v3.OrbV3LoadState
+import java.io.File
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
@@ -79,12 +83,16 @@ class AIOrbScene(
 
   private val configRef = AtomicReference(initialConfig)
 
+  // V3.2 Master-Fitted runtime parameters loaded from assets/orb_v3/manifest/MASTER_FIDELITY_V32.json
+  val masterFidelity: MasterFidelityV32 = MasterFidelityV32.loadFromAssets(assetManager)
+  private val gpuReferenceCapture = OrbGpuReferenceCapture()
+
   // Shared single-instance V3 AI Orb core, Residents, motion clock & post-processing
   private val motionController = AIOrbMotionController()
   private val lighting = AIOrbLighting()
   private val background = AIOrbBackground()
   private val core = AIOrbCore()
-  private val orbitRibbons = AIOrbOrbitRibbons()
+  private val orbitRibbons = AIOrbOrbitRibbons(masterFidelity)
   private val energyHighlights = AIOrbEnergyHighlights()
   private val particles = AIOrbParticles()
   private val postProcessing = AIOrbPostProcessing()
@@ -170,6 +178,17 @@ class AIOrbScene(
         emitTaskEvidenceNow()
       }
     }
+  }
+
+  /**
+   * Triggers the Gate 4 one-click 6-frame production GLES 3.0 evidence capture
+   * directly on the active GL thread (zero Compose UI/status bar).
+   */
+  fun requestV32EvidenceExport(
+    outputDir: File,
+    onProgress: (GpuCaptureProgress) -> Unit,
+  ): Boolean {
+    return gpuReferenceCapture.requestCapture(outputDir, onProgress)
   }
 
   fun updateTaskLayout(snapshot: TaskSceneLayoutSnapshot) {
@@ -414,15 +433,21 @@ class AIOrbScene(
     hasRenderedFirstFrame = true
 
     // Tab 2 preserves live continuous V3 Orb spin even if Tab 1 had pause/debug modes enabled,
-    // without mutating Tab 1's AIOrbConfig.
-    val effectiveOrbCfg = if (isTaskDemo) {
-      cfg.copy(
+    // without mutating Tab 1's AIOrbConfig. During Gate 4 GPU capture on Tab 1, temporarily override
+    // debugMode per capture step so all 6 production frames are captured cleanly without UI overlays.
+    val captureOverrideMode = if (!isTaskDemo) gpuReferenceCapture.currentOverrideModeOrNull() else null
+    val effectiveOrbCfg = when {
+      isTaskDemo -> cfg.copy(
         isPaused = false,
         isolateCoreDebug = false,
         debugMode = RenderDebugMode.FULL_RENDER,
       )
-    } else {
-      cfg
+      captureOverrideMode != null -> cfg.copy(
+        isPaused = false,
+        isolateCoreDebug = false,
+        debugMode = captureOverrideMode,
+      )
+      else -> cfg
     }
 
     val motion = motionController.step(rawDt, effectiveOrbCfg)
@@ -451,7 +476,8 @@ class AIOrbScene(
       renderOriginalOrbOnlyFrame(
         rawDt = rawDt,
         motion = motion,
-        cfg = cfg,
+        cfg = effectiveOrbCfg,
+        captureActive = captureOverrideMode != null,
       )
     }
 
@@ -471,6 +497,7 @@ class AIOrbScene(
     rawDt: Double,
     motion: AIOrbMotionSnapshot,
     cfg: AIOrbConfig,
+    captureActive: Boolean = false,
   ) {
     val dt = rawDt.toFloat().coerceIn(0.0001f, 0.05f)
     val time = motion.simTimeSec.toFloat()
@@ -484,32 +511,47 @@ class AIOrbScene(
     currentYawDeg += (targetYawDeg - currentYawDeg) * follow
     currentPitchDeg += (targetPitchDeg - currentPitchDeg) * follow
 
-    // Calibrated reference composition: heroic ~52% crystal orb presence with closely hugged ribbons
+    // Calibrated reference composition: frozen 1.36f production bound + Stage A V3.2 Reference-Locked framing
     val aspect = surfaceWidth.toFloat() / surfaceHeight.toFloat()
     val tanHalfY = tan(Math.toRadians(fovYDeg.toDouble() * 0.5)).toFloat()
     val tanHalfX = (tanHalfY * aspect).coerceAtLeast(0.10f)
     val visualBoundRadius = 1.36f
-    val baseCamDist = maxOf(
-      visualBoundRadius / tanHalfY,
-      visualBoundRadius / tanHalfX,
-      3.65f,
-    )
-
     val lockRef = cfg.debugMode.locksReferenceFrame
+    val baseCamDist = if (lockRef) {
+      val fittedCam = masterFidelity.camera
+      if (abs(aspect - 1.0f) <= 0.15f) {
+        fittedCam.cameraDistance
+      } else {
+        maxOf(
+          fittedCam.visualBoundRadius / tanHalfY,
+          fittedCam.visualBoundRadius / tanHalfX,
+          fittedCam.cameraDistance,
+        )
+      }
+    } else {
+      maxOf(
+        visualBoundRadius / tanHalfY,
+        visualBoundRadius / tanHalfX,
+        3.65f,
+      )
+    }
+
     val lockCamera = cfg.effectiveLockCoreRotation
     val autoYawRad = when {
-      lockRef -> 0f
+      lockRef || captureActive -> 0f
       lockCamera -> Math.toRadians(currentYawDeg.toDouble()).toFloat()
       else -> sin(time * 0.14f) * 0.026f + Math.toRadians(currentYawDeg.toDouble()).toFloat()
     }
     val autoPitchRad = when {
-      lockRef -> 0f
+      lockRef || captureActive -> 0f
       lockCamera -> Math.toRadians(currentPitchDeg.toDouble()).toFloat()
       else -> cos(time * 0.11f) * 0.020f + Math.toRadians(currentPitchDeg.toDouble()).toFloat()
     }
 
-    val camX = baseCamDist * cos(autoPitchRad) * sin(autoYawRad)
-    val camY = baseCamDist * sin(autoPitchRad)
+    val targetX = if (lockRef) masterFidelity.camera.targetOffsetX else 0f
+    val targetY = if (lockRef) masterFidelity.camera.targetOffsetY else 0f
+    val camX = targetX + baseCamDist * cos(autoPitchRad) * sin(autoYawRad)
+    val camY = targetY + baseCamDist * sin(autoPitchRad)
     val camZ = baseCamDist * cos(autoPitchRad) * cos(autoYawRad)
     cameraPos[0] = camX
     cameraPos[1] = camY
@@ -518,7 +560,7 @@ class AIOrbScene(
     Matrix.setLookAtM(
       viewMatrix, 0,
       camX, camY, camZ,
-      0f, 0f, 0f,
+      targetX, targetY, 0f,
       0f, 1f, 0f,
     )
 
@@ -579,6 +621,7 @@ class AIOrbScene(
         lighting = lighting,
         config = cfg,
         isSoftwareRenderer = isSoftwareRenderer,
+        fidelity = masterFidelity,
       )
     }
 
@@ -597,6 +640,39 @@ class AIOrbScene(
 
     // Pass 9: High-threshold HDR Bloom + ACES Filmic + True sRGB 2.2 Composite
     postProcessing.executePostProcessToScreen(cfg)
+
+    // Gate 4: Real GL-thread zero-UI glReadPixels capture when user triggers V3.2 Evidence Export
+    if (captureActive) {
+      val volTel = core.volumeTelemetry
+      val captureTel = AIOrbTelemetry(
+        fps = 60,
+        frameMsP50 = if (cpuWindowCount > 0) cpuFrameMsWindow[0] else 0f,
+        frameMsP95 = if (cpuWindowCount > 0) cpuFrameMsWindow[0] else 0f,
+        coreAngleDeg = AIOrbMotionController.wrapAngleDeg(motion.coreRotationAngleDeg),
+        coreAngularVelDegPerSec = motion.coreAngularVelocityDegPerSec,
+        isHdrFbo = postProcessing.hdrScale > 0.5f,
+        activeRenderMode = cfg.debugMode,
+        glVendor = glVendor,
+        glRenderer = glRenderer,
+        glVersion = glVersion,
+        eglVersion = eglVersion,
+        isSoftwareRenderer = isSoftwareRenderer,
+        volumeLoadState = volTel.loadState,
+        volumeLoaded = volTel.isLoaded,
+        volumeDimensions = volTel.dimensionsLabel,
+        webpDecodeMs = volTel.decodeTimeMs,
+        texture3dUploadMs = volTel.uploadTimeMs,
+        gpuVolumeMemoryMiB = volTel.gpuMemoryMiB,
+        volumeStatus = volTel.statusMessage,
+      )
+      gpuReferenceCapture.captureCurrentGlFrameIfActive(
+        surfaceWidth = surfaceWidth,
+        surfaceHeight = surfaceHeight,
+        config = cfg,
+        fidelity = masterFidelity,
+        telemetry = captureTel,
+      )
+    }
   }
 
   /**
@@ -677,6 +753,7 @@ class AIOrbScene(
       lighting = lighting,
       config = taskOrbCfg,
       isSoftwareRenderer = isSoftwareRenderer,
+      fidelity = masterFidelity,
     )
 
     // Pass 8-9: SHARED V3 AI Orb front-of-glass-dome 5 Residents, starbursts & crystal droplets
@@ -756,6 +833,7 @@ class AIOrbScene(
   }
 
   fun release() {
+    gpuReferenceCapture.release()
     background.release()
     core.release()
     orbitRibbons.release()

@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "AI_ORB_V3_2_VISUAL_LOSS_1_0",
+  "evaluationDomain": "OFFLINE_CPU_PROXY_ANALYTICAL_FITTING",
+  "realGpuStatus": "PENDING_REAL_GPU_CAPTURE",
+  "weights": {
+    "L_sphere": 0.18,
+    "L_cavity": 0.22,
+    "L_volume": 0.25,
+    "L_resident": 0.2,
+    "L_optics": 0.1,
+    "L_layering": 0.05
+  },
+  "components": {
+    "L_sphere": 0.00315,
+    "L_cavity": 0.2977,
+    "L_volume": 0.50307,
+    "L_resident": 0.0992,
+    "L_optics": 0.03404,
+    "L_layering": 0.0,
+    "L_total": 0.21507
+  },
+  "hardGates": {
+    "E01_diameterRelErr_le_2pct": {
+      "value": 3e-05,
+      "threshold": 0.02,
+      "pass": true
+    },
+    "E01_portraitDiamRelErr_le_2pct": {
+      "value": 0.01624,
+      "threshold": 0.02,
+      "pass": true
+    },
+    "E01_centerErrW_le_1pct": {
+      "value": 9e-05,
+      "threshold": 0.01,
+      "pass": true
+    },
+    "E01_silhouetteIoU_ge_095": {
+      "value": 0.99958,
+      "threshold": 0.95,
+      "pass": true
+    },
+    "E03_cavityAreaRelErr_le_15pct": {
+      "value": 0.0708,
+      "threshold": 0.15,
+      "pass": true
+    },
+    "E03_cavityCentroid_le_004D": {
+      "value": 0.0084,
+      "threshold": 0.04,
+      "pass": true
+    },
+    "E04_meniscusMeanErr_le_0025R": {
+      "value": 0.01411,
+      "threshold": 0.025,
+      "pass": true
+    },
+    "E05_emeraldAreaRelErr_le_15pct": {
+      "value": 0.0154,
+      "threshold": 0.15,
+      "pass": true
+    },
+    "E05_emeraldCentroid_le_004D": {
+      "value": 0.0413,
+      "threshold": 0.04,
+      "pass": false
+    },
+    "E06_sapphireAreaRelErr_le_15pct": {
+      "value": 0.2755,
+      "threshold": 0.15,
+      "pass": false
+    },
+    "E06_sapphireCentroid_le_004D": {
+      "value": 0.0862,
+      "threshold": 0.04,
+      "pass": false
+    },
+    "E07_aquaAreaRelErr_le_15pct": {
+      "value": 0.2039,
+      "threshold": 0.15,
+      "pass": false
+    },
+    "E07_aquaCentroid_le_004D": {
+      "value": 0.1261,
+      "threshold": 0.04,
+      "pass": false
+    },
+    "E10_goldCombinedChamfer_le_0025R": {
+      "value": 0.0248,
+      "threshold": 0.025,
+      "pass": true
+    },
+    "E10_goldNonRegularOval": {
+      "value": true,
+      "threshold": true,
+      "pass": true
+    },
+    "E11_c01SmoothTurn_lt_20deg": {
+      "value": 12.82,
+      "threshold": 20.0,
+      "pass": true
+    },
+    "E02_upperDomeHaze_le_1pct": {
+      "value": 0.0,
+      "threshold": 0.01,
+      "pass": true
+    }
+  },
+  "allOfflineHardGatesPass": false,
+  "failedOfflineGates": [
+    "E05_emeraldCentroid_le_004D",
+    "E06_sapphireAreaRelErr_le_15pct",
+    "E06_sapphireCentroid_le_004D",
+    "E07_aquaAreaRelErr_le_15pct",
+    "E07_aquaCentroid_le_004D"
+  ],
+  "masterFidelityConfigPath": "app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json",
+  "masterFidelityConfigSha256": "b508c23b815819010107b9f4db25dba13e22e0c8c6fda22be54ac1b1e1cf9460"
+}

@@ -34,6 +34,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DataObject
@@ -77,6 +78,7 @@ import com.example.R
 import com.example.orb.config.AIOrbConfig
 import com.example.orb.config.QualityTier
 import com.example.orb.config.RenderDebugMode
+import com.example.orb.v3.GpuCaptureState
 import com.example.orb.v3.OrbV3LoadState
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -98,6 +100,7 @@ fun AIOrbControlsOverlay(
   onSelectDebugMode: (RenderDebugMode) -> Unit = {},
   onOpenExportDialog: () -> Unit,
   onDismissExportDialog: () -> Unit,
+  onExportV32Evidence: () -> Unit = {},
   modifier: Modifier = Modifier,
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
@@ -233,6 +236,7 @@ fun AIOrbControlsOverlay(
         onSelectQuality = onSelectQuality,
         onSelectDebugMode = onSelectDebugMode,
         onOpenExportDialog = onOpenExportDialog,
+        onExportV32Evidence = onExportV32Evidence,
       )
     }
 
@@ -318,6 +322,7 @@ private fun DebugControlPanel(
   onSelectQuality: (QualityTier) -> Unit,
   onSelectDebugMode: (RenderDebugMode) -> Unit,
   onOpenExportDialog: () -> Unit,
+  onExportV32Evidence: () -> Unit,
 ) {
   val cfg = uiState.config
 
@@ -683,6 +688,56 @@ private fun DebugControlPanel(
               modifier = Modifier.testTag("debug_mode_${mode.name.lowercase(Locale.US)}_chip"),
             )
           }
+        }
+
+        // Gate 4: One-click 6-frame real GPU Evidence Export (glReadPixels, zero UI overlay)
+        Spacer(Modifier.height(6.dp))
+        val capture = uiState.gpuCaptureProgress
+        val isCapturing = capture.state == GpuCaptureState.CAPTURING
+        FilledTonalButton(
+          onClick = onExportV32Evidence,
+          enabled = !isCapturing,
+          colors = ButtonDefaults.filledTonalButtonColors(
+            containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.22f),
+            contentColor = MaterialTheme.colorScheme.secondary,
+          ),
+          modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .testTag("export_v32_evidence_button"),
+        ) {
+          Icon(
+            imageVector = Icons.Filled.CameraAlt,
+            contentDescription = stringResource(R.string.cd_export_v32_evidence),
+            modifier = Modifier.size(18.dp),
+          )
+          Spacer(Modifier.width(8.dp))
+          Text(
+            text = if (isCapturing) {
+              stringResource(
+                R.string.qa_export_v32_capturing,
+                capture.completedSteps,
+                capture.totalSteps,
+              )
+            } else {
+              stringResource(R.string.qa_export_v32_evidence)
+            },
+            style = MaterialTheme.typography.labelMedium,
+          )
+        }
+        if (capture.statusMessage.isNotBlank()) {
+          Text(
+            text = capture.statusMessage,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (capture.state == GpuCaptureState.FAILED) {
+              MaterialTheme.colorScheme.error
+            } else {
+              MaterialTheme.colorScheme.primary
+            },
+            modifier = Modifier
+              .padding(top = 2.dp)
+              .testTag("export_v32_evidence_status"),
+          )
         }
 
         // Compact GPU Runtime Info card (GL/EGL/FBO/HW-vs-SW/FPS/P50/P95/Mode)

@@ -10,6 +10,7 @@ import com.example.orb.geometry.Vec3
 import com.example.orb.gl.GlMesh
 import com.example.orb.gl.GlShaderProgram
 import com.example.orb.gl.RibbonOpticsShaders
+import com.example.orb.v3.MasterFidelityV32
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -70,9 +71,11 @@ data class RibbonDescriptor(
  * - Independent frozen R06 periods (6100ms / 5300ms / 3700ms / 2900ms / 4400ms) & independent phases
  * - Spherical-front-surface back/front partitioning with back-to-front alpha draw sorting & genuine FBO glass refraction
  */
-class AIOrbOrbitRibbons {
+class AIOrbOrbitRibbons(
+  private val fidelity: MasterFidelityV32 = MasterFidelityV32.Default,
+) {
   private var program: GlShaderProgram? = null
-  private val descriptors: List<RibbonDescriptor> = buildRibbonDescriptors()
+  private val descriptors: List<RibbonDescriptor> = buildRibbonDescriptors(fidelity)
   private val meshes = ArrayList<GlMesh>(descriptors.size)
   private var currentSegments: Int = -1
   private val modelMat = FloatArray(16)
@@ -217,6 +220,15 @@ class AIOrbOrbitRibbons {
     prog.setVec3("uOrbCenterViewPos", orbCenterViewPos[0], orbCenterViewPos[1], orbCenterViewPos[2])
     prog.setFloat("uCoreShellRadius", scaledCoreRadius)
     prog.setInt("uDepthDebug", if (config.debugMode == RenderDebugMode.DEPTH_DEBUG) 1 else 0)
+    val lgt = fidelity.lighting
+    prog.setVec4(
+      "uGoldOptics",
+      lgt.goldWallsGain,
+      lgt.coreStreamGain,
+      lgt.secThreadGain,
+      lgt.glassBellyGain,
+    )
+    prog.setFloat("uGoldSpecGain", lgt.goldSpecGain)
 
     // Strict back-to-front transparent alpha sorting among active ribbons
     val drawIndices = (0 until activeCount).sortedBy { descriptors[it].renderOrder }
@@ -703,6 +715,64 @@ class AIOrbOrbitRibbons {
           additiveBlend = false,
         ),
       )
+    }
+
+    /**
+     * V3.2 Reference-to-3D Fitted Resident descriptors loaded directly from
+     * `MASTER_FIDELITY_V32.json` via [MasterFidelityV32].
+     *
+     * Preserves all 5 frozen R06 Resident identities, periods (`6100/5300/3700/2900/4400`),
+     * `ribbonHugScale = 0.87f`, and open non-oval gold curves (`A01`, `A02`) while binding
+     * Stage D fitted control points, half-widths, width profiles, and twist profiles.
+     */
+    fun buildRibbonDescriptors(fidelity: MasterFidelityV32): List<RibbonDescriptor> {
+      val base = buildRibbonDescriptors()
+      val degToRad = (PI / 180.0).toFloat()
+
+      fun applyFit(desc: RibbonDescriptor, fit: MasterFidelityV32.ResidentCurveFit): RibbonDescriptor {
+        val pts = fit.controlPoints
+        val count = pts.size
+        val baseProf = desc.surfaceProfile
+        val widthArr = fit.widthProfile?.takeIf { it.size == count } ?: baseProf.widthControlPoints
+        val twistArr = fit.twistProfileDeg?.takeIf { it.size == count }
+          ?.map { it * degToRad }?.toFloatArray()
+          ?: baseProf.twistProfileRad
+        val leftArr = if (baseProf.leftAsymmetryPoints.size == count) {
+          baseProf.leftAsymmetryPoints
+        } else {
+          FloatArray(count) { 1.0f }
+        }
+        val rightArr = if (baseProf.rightAsymmetryPoints.size == count) {
+          baseProf.rightAsymmetryPoints
+        } else {
+          FloatArray(count) { 1.0f }
+        }
+        return desc.copy(
+          closed = fit.closed,
+          controlPoints = pts,
+          halfWidth = fit.halfWidth,
+          periodMs = fit.periodMs,
+          opacityScale = fit.opacityScale,
+          surfaceProfile = baseProf.copy(
+            widthControlPoints = widthArr,
+            leftAsymmetryPoints = leftArr,
+            rightAsymmetryPoints = rightArr,
+            twistProfileRad = twistArr,
+          ),
+        )
+      }
+
+      val fitByCode = mapOf(
+        "C01" to fidelity.residentC01,
+        "A01" to fidelity.residentA01,
+        "A02" to fidelity.residentA02,
+        "G01" to fidelity.residentG01,
+        "G02" to fidelity.residentG02,
+      )
+      return base.map { desc ->
+        val fit = fitByCode[desc.residentCode]
+        if (fit != null) applyFit(desc, fit) else desc
+      }
     }
   }
 }
