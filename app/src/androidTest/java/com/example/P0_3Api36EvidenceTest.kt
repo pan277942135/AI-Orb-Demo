@@ -1,13 +1,10 @@
 package com.example
 
-import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
+import android.os.SystemClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.example.orb.v3.GpuCaptureState
 import com.example.orb.v3.OrbGpuReferenceCapture
 import java.io.File
 import java.security.MessageDigest
@@ -35,35 +32,38 @@ class P0_3Api36EvidenceTest {
     val repeatRoot = File(context.getExternalFilesDir(null) ?: context.filesDir, "p0_3_repeatability")
     repeatRoot.mkdirs()
 
-    composeRule.onNodeWithTag("toggle_debug_controls_button").performClick()
-    composeRule.onNodeWithTag("volume_load_status").performScrollTo()
-    composeRule.waitUntil(timeoutMillis = 180_000) {
-      val volumeStatus = runCatching {
-        composeRule.onNodeWithTag("volume_load_status").fetchSemanticsNode()
-          .config[SemanticsProperties.Text].joinToString(" ") { it.text }
-      }.getOrDefault("")
-      volumeStatus.contains("WEBP3D_OK") || volumeStatus.contains("V3_ASSET_ERROR")
-    }
-    val volumeStatus = composeRule.onNodeWithTag("volume_load_status").fetchSemanticsNode()
-      .config[SemanticsProperties.Text].joinToString(" ") { it.text }
-    assertTrue("Production 3D WebP volume did not load: $volumeStatus", volumeStatus.contains("WEBP3D_OK"))
-    composeRule.onNodeWithTag("export_v32_evidence_button").performScrollTo().assertIsDisplayed()
-
     evidenceDir.walkBottomUp().forEach { file ->
       if (file.isFile) file.delete() else if (file != evidenceDir) file.delete()
     }
     evidenceDir.mkdirs()
-    composeRule.onNodeWithTag("export_v32_evidence_button").performClick()
-    composeRule.waitUntil(timeoutMillis = 600_000) {
-      val status = runCatching {
-        composeRule.onNodeWithTag("export_v32_evidence_status").fetchSemanticsNode()
-          .config[SemanticsProperties.Text].joinToString(" ") { it.text }
-      }.getOrDefault("")
-      status.contains("Exported") || status.contains("Capture failed")
+
+    val activity = composeRule.activity
+    val volumeDeadline = SystemClock.uptimeMillis() + 180_000L
+    var captureAccepted = false
+    while (!captureAccepted && SystemClock.uptimeMillis() < volumeDeadline) {
+      captureAccepted = activity.requestP0_3EvidenceCaptureForInstrumentation(evidenceDir)
+      val progress = activity.latestP0_3EvidenceProgressForInstrumentation()
+      assertTrue(
+        "Production 3D WebP volume failed to load: ${progress?.statusMessage}",
+        progress?.statusMessage?.contains("V3_ASSET_ERROR") != true,
+      )
+      if (!captureAccepted) Thread.sleep(250)
     }
-    val status = composeRule.onNodeWithTag("export_v32_evidence_status").fetchSemanticsNode()
-      .config[SemanticsProperties.Text].joinToString(" ") { it.text }
-    assertTrue("GPU evidence capture failed: $status", status.contains("Exported"))
+    assertTrue(
+      "Production scene / WebP volume / APK fingerprint did not become capture-ready: " +
+        activity.latestP0_3EvidenceProgressForInstrumentation()?.statusMessage,
+      captureAccepted,
+    )
+
+    val captureDeadline = SystemClock.uptimeMillis() + 600_000L
+    var progress = activity.latestP0_3EvidenceProgressForInstrumentation()
+    while (progress?.state != GpuCaptureState.COMPLETED && progress?.state != GpuCaptureState.FAILED &&
+      SystemClock.uptimeMillis() < captureDeadline
+    ) {
+      Thread.sleep(250)
+      progress = activity.latestP0_3EvidenceProgressForInstrumentation()
+    }
+    assertTrue("Production GLES capture did not complete: ${progress?.statusMessage}", progress?.state == GpuCaptureState.COMPLETED)
 
     val requiredFiles = listOf(
       "CORE_ONLY_TRANSPARENT.png", "CAVITY_ONLY.png", "FLUID_VOLUME_ONLY.png", "GLASS_ONLY.png",
@@ -142,7 +142,6 @@ class P0_3Api36EvidenceTest {
       File(evidenceDir, frame.getString("file")).copyTo(File(modeDir, frame.getString("file")), overwrite = true)
       File(modeDir, "mode.json").writeText(frame.toString(2))
     }
-    composeRule.onNodeWithTag("close_debug_controls_button").performScrollTo().performClick()
   }
 }
 

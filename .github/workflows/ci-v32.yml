@@ -502,10 +502,28 @@ jobs:
               -e class com.example.P0_3Api36EvidenceTest#capturesOneP0_3BaselineAfterAppRestart \
               "$APP_ID.test/androidx.test.runner.AndroidJUnitRunner" \
               | tee "p0_3_evidence/api36_avd/logs/instrumentation_run_${run}.txt"
+            grep -q 'OK (1 test)' "p0_3_evidence/api36_avd/logs/instrumentation_run_${run}.txt" || {
+              echo "Instrumentation run $run did not report a passing JUnit result" >&2
+              exit 1
+            }
           done
           adb pull "/sdcard/Android/data/$APP_ID/files/p0_3_repeatability" p0_3_evidence/repeats
           adb pull "/sdcard/Android/data/$APP_ID/files/v42_fidelity_evidence" p0_3_evidence/latest_capture
           adb shell pidof "$APP_ID" > p0_3_evidence/api36_avd/logs/application_pid_after_baselines.txt
+
+      - name: Preserve API36 diagnostics after failure
+        if: failure()
+        env:
+          APP_ID: com.aistudio.aiorbdemo.vxkrmq
+        shell: bash
+        run: |
+          mkdir -p p0_3_evidence/api36_avd/logs
+          adb devices -l > p0_3_evidence/api36_avd/adb_devices_after_failure.txt 2>&1 || true
+          adb logcat -b all -d > p0_3_evidence/api36_avd/logs/logcat_after_failure.txt 2>&1 || true
+          adb shell dumpsys activity > p0_3_evidence/api36_avd/logs/activity_after_failure.txt 2>&1 || true
+          adb shell dumpsys gfxinfo "$APP_ID" > p0_3_evidence/api36_avd/logs/gfxinfo_after_failure.txt 2>&1 || true
+          adb shell pidof "$APP_ID" > p0_3_evidence/api36_avd/logs/application_pid_after_failure.txt 2>&1 || true
+          adb exec-out screencap -p > p0_3_evidence/api36_avd/capture_failure_screen.png 2> p0_3_evidence/api36_avd/logs/screencap_after_failure.err || true
 
       - name: Record 20-second API36 motion run and runtime logs
         env:
