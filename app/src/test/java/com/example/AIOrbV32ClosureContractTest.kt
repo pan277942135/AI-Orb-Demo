@@ -203,7 +203,15 @@ class AIOrbV32ClosureContractTest {
     try {
       val pngFile = File(tmpDir, "FULL_RENDER_GPU.png")
       val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-      val argb = OrbGpuReferenceCapture.rgbaBytesToArgb(flipped)
+      val roundTripRgba = flipped.copyOf().apply {
+        // Use one fully opaque marker to test channel order without premultiplied-alpha
+        // quantization from arbitrary low-alpha fixture bytes.
+        this[0] = 0x22
+        this[1] = 0x44
+        this[2] = 0xCC.toByte()
+        this[3] = 0xFF.toByte()
+      }
+      val argb = OrbGpuReferenceCapture.rgbaBytesToArgb(roundTripRgba)
       bmp.setPixels(argb, 0, w, 0, 0, w, h)
       FileOutputStream(pngFile).use { fos ->
         assertTrue(bmp.compress(Bitmap.CompressFormat.PNG, 100, fos))
