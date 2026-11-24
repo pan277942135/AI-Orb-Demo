@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.ParcelFileDescriptor
 import android.os.SystemClock
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -205,7 +206,7 @@ class YuJianHybridTab3Api36Test {
   private fun capture(name: String, outputDir: File, telemetry: com.example.orb.scene.AIOrbTelemetry) {
     composeRule.waitForIdle()
     SystemClock.sleep(500)
-    val bitmap: Bitmap = requireNotNull(InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot())
+    val bitmap = captureCurrentDisplayBitmap()
     val file = File(outputDir, name)
     file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     require(file.length() > 0L) { "Failed to write GPU screenshot: $name" }
@@ -244,6 +245,22 @@ class YuJianHybridTab3Api36Test {
       .put("cameraSnapshot", "MASTER_CAMERA_REFERENCE_LOCKED_0_0_YAW_PITCH")
     File(outputDir, name.removeSuffix(".png") + ".json").writeText(snapshot.toString(2) + "\n")
     bitmap.recycle()
+  }
+
+  private fun captureCurrentDisplayBitmap(): Bitmap {
+    val uiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation
+    repeat(3) {
+      val bitmap = runCatching { uiAutomation.takeScreenshot() }.getOrNull()
+      if (bitmap != null) return bitmap
+      SystemClock.sleep(250)
+    }
+
+    // API 36's UiAutomation.takeScreenshot() can transiently return null while a
+    // SurfaceView frame is being composed. screencap reads the same live display
+    // through a binary pipe without relying on app external-storage permissions.
+    val pipe = uiAutomation.executeShellCommand("screencap -p")
+    val bitmap = ParcelFileDescriptor.AutoCloseInputStream(pipe).use { stream -> BitmapFactory.decodeStream(stream) }
+    return requireNotNull(bitmap) { "Both UiAutomation and screencap failed to capture the current GPU display" }
   }
 
   private fun verifyAndroidWebpDecode() {
