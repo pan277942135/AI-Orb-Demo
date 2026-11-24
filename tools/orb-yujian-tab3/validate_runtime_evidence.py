@@ -90,9 +90,9 @@ def main() -> None:
     assert telemetry["sourceCoreWebpSha256"] == EXPECTED_WEBP
     assert telemetry["sourceCoreWebpUsage"] == "PACKAGED_NOT_SAMPLED_BY_SOURCE_SPHERE_FS"
     assert telemetry["uniformsReadBackValid"] is True
-    assert telemetry["drawFramebufferComplete"] is True
-    assert telemetry["noFramebufferFeedbackLoop"] is True
-    assert telemetry["passStateReadBackValid"] is True
+    assert telemetry["yujianDrawFramebufferComplete"] is True
+    assert telemetry["yujianNoFramebufferFeedbackLoop"] is True
+    assert telemetry["yujianPassStateReadBackValid"] is True
     assert telemetry["refractionTextureId"] > 0
     assert telemetry["refractionTextureId"] == telemetry["boundTextureId"]
     assert telemetry["samplerTextureUnit"] == 0
