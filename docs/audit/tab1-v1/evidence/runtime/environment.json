@@ -1,0 +1,19 @@
+{
+  "runnerOs": "Linux",
+  "runnerImageOS": "ubuntu26",
+  "runnerImageVersion": "20261116.202.1",
+  "kernel": "Linux 7.0.0-1020-azure #21-Ubuntu SMP PREEMPT Tue Oct 27 22:34:38 UTC 2026 x86_64",
+  "avdName": "AIOrbP0Api36",
+  "apiLevel": 36,
+  "systemImage": "system-images;android-36;google_apis;x86_64",
+  "cpuArchitecture": "x86_64",
+  "emulatorVersion": "Android emulator version 37.3.10.0 (build_id 16970787) (CL:N/A)",
+  "kvmDevicePresent": true,
+  "kvmCheckExitCode": 0,
+  "kvmAcceleration": "AVAILABLE",
+  "avdVirtualCpuCores": 4,
+  "avdRamMiB": 4096,
+  "orientationSensorEnabled": false,
+  "renderBackendRequested": "SOFTWARE_RENDERER (SwiftShader)",
+  "hardwareGpuVerification": "PENDING"
+}

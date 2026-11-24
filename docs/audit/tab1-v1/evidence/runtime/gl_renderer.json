@@ -1,0 +1,9 @@
+{
+  "glVendor": "Google (Google Inc.)",
+  "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+  "glVersion": "OpenGL ES 3.0 (OpenGL ES 3.0 SwiftShader 4.0.0.1)",
+  "renderBackend": "SOFTWARE_RENDER",
+  "isSoftwareRenderer": true,
+  "glError": "GL_NO_ERROR",
+  "glErrorCode": 0
+}

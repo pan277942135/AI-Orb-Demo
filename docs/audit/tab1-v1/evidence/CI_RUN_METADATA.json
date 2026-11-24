@@ -1,0 +1,42 @@
+{
+  "repository": "pan277942135/AI-Orb-Demo",
+  "workflowRunId": 45376382788,
+  "workflowRunUrl": "https://github.com/pan277942135/AI-Orb-Demo/actions/runs/45376382788",
+  "headSha": "fb04598709a282d3818745c07b0a71897cccfd66",
+  "branch": "codex/tab3-refb-outer-optical-field-v1",
+  "jobs": [
+    {
+      "jobId": 138383672008,
+      "name": "Master, Assets, Offline Gates, GLES, Android Tests & Exact-HEAD APK",
+      "conclusion": "success"
+    },
+    {
+      "jobId": 138386031362,
+      "name": "API36_AVD_BASELINE_CAPTURE + PF05 Repeatability",
+      "conclusion": "success"
+    }
+  ],
+  "artifacts": [
+    {
+      "artifactId": 14912663909,
+      "name": "ai-orb-tab3-refb-api36-exact-head-45376382788",
+      "sizeBytes": 421761779,
+      "sha256": "6b8d2e7370a58d89b76d0bd92b4fb60ce147438d0c5ca4faa1e6f1121424672d"
+    },
+    {
+      "artifactId": 14911857639,
+      "name": "static/offline/core evidence bundle",
+      "sizeBytes": 51418209
+    },
+    {
+      "artifactId": 14911731895,
+      "name": "Tab3 package",
+      "sizeBytes": 26613642
+    }
+  ],
+  "avdBackend": "SOFTWARE_RENDER / Android Emulator OpenGL ES Translator (Google SwiftShader)",
+  "visualGate": "FAIL",
+  "repeatability": "PASS (3 cold starts, identical hashes)",
+  "hardwareGpu": "PENDING_REAL_DEVICE_GPU",
+  "note": "Workflow/job success indicates artifact/capture pipeline completed; it does not convert PF04 visual FAIL into PASS."
+}

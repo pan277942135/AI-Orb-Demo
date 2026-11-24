@@ -1,0 +1,20 @@
+{
+  "qualityTier": "HIGH",
+  "isSoftwareRenderer": true,
+  "configuredRaymarchSteps": 48,
+  "effectiveRaymarchSteps": 20,
+  "actualUniformSnapshot": {
+    "uVolumeLoaded": 1,
+    "uRaymarchSteps": 20,
+    "uDebugMode": 0,
+    "uDensityScale": 2.2664,
+    "uCoreTransparency": 0.9,
+    "uniformStateValid": true
+  },
+  "shaderProgramId": 6,
+  "shaderSourceSha256": "4fc2be7ecf52b94c44e7a25b8472c959b100141f8622e3abb6626ff96bc26014",
+  "glVendor": "Google (Google Inc.)",
+  "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+  "glVersion": "OpenGL ES 3.0 (OpenGL ES 3.0 SwiftShader 4.0.0.1)",
+  "glError": "GL_NO_ERROR"
+}

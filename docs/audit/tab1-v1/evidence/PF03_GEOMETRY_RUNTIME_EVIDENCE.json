@@ -1,0 +1,50 @@
+{
+  "formula": {
+    "triangleCount": "20 * 4^n",
+    "vertexCount": "10 * 4^n + 2"
+  },
+  "runs": [
+    {
+      "configuredSubdivision": 4,
+      "currentSubdivisions": 4,
+      "expectedTriangleCount": 5120,
+      "expectedVertexCount": 2562,
+      "geometryFingerprintSha256": "a0f23152788f37a1111db7830627ad4290fbd6c7ab42ba2d51ff7d43d8bc0131",
+      "geometryStateValid": true,
+      "qualityTier": "HIGH",
+      "runIndex": 1,
+      "status": "PASS",
+      "triangleCount": 5120,
+      "vertexCount": 2562
+    },
+    {
+      "configuredSubdivision": 4,
+      "currentSubdivisions": 4,
+      "expectedTriangleCount": 5120,
+      "expectedVertexCount": 2562,
+      "geometryFingerprintSha256": "a0f23152788f37a1111db7830627ad4290fbd6c7ab42ba2d51ff7d43d8bc0131",
+      "geometryStateValid": true,
+      "qualityTier": "HIGH",
+      "runIndex": 2,
+      "status": "PASS",
+      "triangleCount": 5120,
+      "vertexCount": 2562
+    },
+    {
+      "configuredSubdivision": 4,
+      "currentSubdivisions": 4,
+      "expectedTriangleCount": 5120,
+      "expectedVertexCount": 2562,
+      "geometryFingerprintSha256": "a0f23152788f37a1111db7830627ad4290fbd6c7ab42ba2d51ff7d43d8bc0131",
+      "geometryStateValid": true,
+      "qualityTier": "HIGH",
+      "runIndex": 3,
+      "status": "PASS",
+      "triangleCount": 5120,
+      "vertexCount": 2562
+    }
+  ],
+  "runtimeSource": "production Icosphere mesh metadata and canonical vertex-buffer fingerprint",
+  "schema": "AI_ORB_P0_3_PF03_GEOMETRY_RUNTIME_EVIDENCE_1_0",
+  "status": "PASS"
+}

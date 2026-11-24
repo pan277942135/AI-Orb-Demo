@@ -1,0 +1,1893 @@
+{
+  "schema": "AI_ORB_P0_3_PREFLIGHT_REPORT_1_0",
+  "generatedAtUtc": "2026-11-23T15:43:59.498766+00:00",
+  "sourceHead": "fb04598709a282d3818745c07b0a71897cccfd66",
+  "sourceChecks": {
+    "PF01_SEMANTIC_ROI_MASKS": "PASS",
+    "PF02_RAYMARCH_STEPS_CONFLICT": {
+      "status": "PASS",
+      "masterFittedValue": 48,
+      "hardwareHighTierSourceValue": 48,
+      "softwareRendererCap": 20,
+      "runtimeFullRenderEvidence": [
+        {
+          "runIndex": 1,
+          "qualityTier": "HIGH",
+          "isSoftwareRenderer": true,
+          "renderBackend": "SOFTWARE_RENDER",
+          "configuredRaymarchSteps": 48,
+          "effectiveRaymarchSteps": 20,
+          "shaderProgramId": 6,
+          "shaderSourceSha256": "4fc2be7ecf52b94c44e7a25b8472c959b100141f8622e3abb6626ff96bc26014",
+          "actualUniformReadback": {
+            "method": "GLES30.glGetUniformiv on the linked production shader program",
+            "uRaymarchSteps": 20,
+            "uniformStateValid": true
+          },
+          "glVendor": "Google (Google Inc.)",
+          "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+          "glVersion": "OpenGL ES 3.0 (OpenGL ES 3.0 SwiftShader 4.0.0.1)",
+          "glError": "GL_NO_ERROR",
+          "status": "PASS"
+        },
+        {
+          "runIndex": 2,
+          "qualityTier": "HIGH",
+          "isSoftwareRenderer": true,
+          "renderBackend": "SOFTWARE_RENDER",
+          "configuredRaymarchSteps": 48,
+          "effectiveRaymarchSteps": 20,
+          "shaderProgramId": 6,
+          "shaderSourceSha256": "4fc2be7ecf52b94c44e7a25b8472c959b100141f8622e3abb6626ff96bc26014",
+          "actualUniformReadback": {
+            "method": "GLES30.glGetUniformiv on the linked production shader program",
+            "uRaymarchSteps": 20,
+            "uniformStateValid": true
+          },
+          "glVendor": "Google (Google Inc.)",
+          "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+          "glVersion": "OpenGL ES 3.0 (OpenGL ES 3.0 SwiftShader 4.0.0.1)",
+          "glError": "GL_NO_ERROR",
+          "status": "PASS"
+        },
+        {
+          "runIndex": 3,
+          "qualityTier": "HIGH",
+          "isSoftwareRenderer": true,
+          "renderBackend": "SOFTWARE_RENDER",
+          "configuredRaymarchSteps": 48,
+          "effectiveRaymarchSteps": 20,
+          "shaderProgramId": 6,
+          "shaderSourceSha256": "4fc2be7ecf52b94c44e7a25b8472c959b100141f8622e3abb6626ff96bc26014",
+          "actualUniformReadback": {
+            "method": "GLES30.glGetUniformiv on the linked production shader program",
+            "uRaymarchSteps": 20,
+            "uniformStateValid": true
+          },
+          "glVendor": "Google (Google Inc.)",
+          "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+          "glVersion": "OpenGL ES 3.0 (OpenGL ES 3.0 SwiftShader 4.0.0.1)",
+          "glError": "GL_NO_ERROR",
+          "status": "PASS"
+        }
+      ]
+    },
+    "PF03_RUNTIME_GEOMETRY_SUBDIVISION": {
+      "status": "PASS",
+      "productionHighTierSubdivisionSource": 4,
+      "runtimeGeometryEvidence": [
+        {
+          "runIndex": 1,
+          "qualityTier": "HIGH",
+          "configuredSubdivision": 4,
+          "currentSubdivisions": 4,
+          "vertexCount": 2562,
+          "expectedVertexCount": 2562,
+          "triangleCount": 5120,
+          "expectedTriangleCount": 5120,
+          "geometryFingerprintSha256": "a0f23152788f37a1111db7830627ad4290fbd6c7ab42ba2d51ff7d43d8bc0131",
+          "geometryStateValid": true,
+          "status": "PASS"
+        },
+        {
+          "runIndex": 2,
+          "qualityTier": "HIGH",
+          "configuredSubdivision": 4,
+          "currentSubdivisions": 4,
+          "vertexCount": 2562,
+          "expectedVertexCount": 2562,
+          "triangleCount": 5120,
+          "expectedTriangleCount": 5120,
+          "geometryFingerprintSha256": "a0f23152788f37a1111db7830627ad4290fbd6c7ab42ba2d51ff7d43d8bc0131",
+          "geometryStateValid": true,
+          "status": "PASS"
+        },
+        {
+          "runIndex": 3,
+          "qualityTier": "HIGH",
+          "configuredSubdivision": 4,
+          "currentSubdivisions": 4,
+          "vertexCount": 2562,
+          "expectedVertexCount": 2562,
+          "triangleCount": 5120,
+          "expectedTriangleCount": 5120,
+          "geometryFingerprintSha256": "a0f23152788f37a1111db7830627ad4290fbd6c7ab42ba2d51ff7d43d8bc0131",
+          "geometryStateValid": true,
+          "status": "PASS"
+        }
+      ]
+    },
+    "PF04_BASELINE_ANDROID_AVD_CAPTURE": {
+      "status": "FAIL",
+      "apiLevel": 36,
+      "renderBackend": "SOFTWARE_RENDER",
+      "videoDurationSeconds": 60.197322,
+      "videoCaptureValidation": {
+        "captureNote": "This is the actual API36 SwiftShader-rendered Tab 3 video. The unmodified P0_4 gates are reported as measured; a frame-density failure remains a failure and is not waived. A second screenrecord is not started because the API36 SwiftShader recorder was observed to abort with UBSan sub-overflow and disconnect the AVD storage endpoint.",
+        "captureSource": "API36_TAB3_CONTINUOUS_20S_MOTION_VIDEO",
+        "captureSourcePath": "p0_3_evidence/yujian_tab3/AI_ORB_DEMO_TAB3_FINAL_20S.mp4",
+        "evidenceClass": "UNKNOWN",
+        "gates": {
+          "frameContentChanges": true,
+          "minimumDuration": true,
+          "minimumEffectiveFrameRate": false,
+          "minimumEncodedDecodedFrameCount": false,
+          "noDuplicatedStaticFrames": false,
+          "noFreezeOverMaximumPtsGap": false,
+          "passthroughFrameCountMatchesProbe": true,
+          "sourceVideoExists": true
+        },
+        "generatedAtUtc": "2026-11-24T10:58:58.665925+00:00",
+        "hardwareGpuClaim": "NOT_CLAIMED",
+        "limitations": [
+          "Core rotation and five Resident trajectories require a frame-dense video or a per-frame runtime telemetry trace.",
+          "Software AVD evidence does not establish hardware GPU or physical-device performance."
+        ],
+        "runtimeTelemetryContext": {
+          "apkSha256": "d43d087d4cf59b34323853c48f9dbf2fb96f8051f15ea1c8f64c1f7e89954714",
+          "buildSha": "fb04598709a282d3818745c07b0a71897cccfd66",
+          "coreAngleDeg": 39.806,
+          "coreAngularVelDegPerSec": null,
+          "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+          "note": "This is capture-time context, not a per-video-frame motion trace.",
+          "renderingBackend": null,
+          "source": "/home/runner/work/AI-Orb-Demo/AI-Orb-Demo/p0_3_evidence/yujian_tab3/captures/RUNTIME_TELEMETRY.json"
+        },
+        "schema": "AI_ORB_P04_VIDEO_CAPTURE_REPORT_1_0",
+        "status": "FAIL",
+        "stream": {
+          "averageFrameRate": "8820000/5417759",
+          "codec": "h264",
+          "consecutiveDuplicateFrameCount": 7,
+          "consecutiveDuplicateFrameRatio": 0.07216494845360824,
+          "declaredFrameCount": 98,
+          "durationSeconds": 60.197322,
+          "effectiveDecodedFramesPerSecond": 1.627979397488812,
+          "ffmpegFrameRateDuplicationUsedForCounting": false,
+          "ffprobeDecodedFrameCount": 98,
+          "height": 720,
+          "maximumPtsIntervalSeconds": 1.5679999999999978,
+          "meanAbsoluteRgbDifferenceByConsecutiveFrame": [
+            0.19538194444444446,
+            0.4010866769547325,
+            0.3610069444444444,
+            0.46804398148148146,
+            0.5874710648148148,
+            0.30343942901234566,
+            0.4216872427983539,
+            0.4462988683127572,
+            0.022933384773662552,
+            0.35037872942386833,
+            0.3328768004115226,
+            0.34106738683127574,
+            0.3348315329218107,
+            0.3316383744855967,
+            0.32926118827160494,
+            0.33605838477366257,
+            0.3262583590534979,
+            0.33064621913580244,
+            0.3245415380658436,
+            0.32556520061728395,
+            0.458954475308642,
+            0.2584497170781893,
+            0.39060185185185187,
+            0.2578594393004115,
+            0.3862866512345679,
+            0.2631970164609054,
+            76.9464274691358,
+            0.005818544238683127,
+            0.0,
+            119.28798418209877,
+            0.015320216049382716,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            181.65118505658435,
+            0.08506365740740741,
+            0.06349922839506172,
+            0.023234953703703702,
+            0.00018968621399176953,
+            8.487654320987654e-05,
+            7.716049382716049e-05,
+            7.716049382716049e-05,
+            7.716049382716049e-05,
+            7.716049382716049e-05,
+            0.18347865226337448,
+            0.1850173611111111,
+            0.1860352366255144,
+            0.00034593621399176954,
+            0.0021784979423868315,
+            0.18461548353909465,
+            0.18740805041152264,
+            0.18699395576131686,
+            0.18745048868312758,
+            0.18675154320987655,
+            0.18631944444444445,
+            0.1847318672839506,
+            0.18518518518518517,
+            0.05560120884773662,
+            0.13093106995884773,
+            0.1863085133744856,
+            0.056733539094650204,
+            0.13132137345679012,
+            0.18533629115226338,
+            0.18490483539094651,
+            0.185019933127572,
+            0.18553047839506173,
+            0.18309477880658437,
+            0.1314499742798354,
+            0.056158050411522636,
+            0.18564043209876543,
+            0.18607060185185184,
+            0.18544624485596709,
+            0.1851980452674897,
+            0.18521926440329217,
+            0.1841358024691358,
+            0.18474729938271606,
+            0.18499485596707818,
+            0.18625835905349794,
+            0.13081532921810698,
+            0.05564107510288066,
+            0.18527006172839505,
+            0.18589699074074073,
+            0.05620884773662552,
+            0.13080761316872427,
+            0.001819701646090535,
+            0.1853542952674897,
+            0.1315380658436214,
+            0.055634002057613166,
+            0.13055491255144033,
+            0.05605774176954732,
+            0.187485853909465,
+            0.186141975308642,
+            0.18481352880658436,
+            0.1858005401234568
+          ],
+          "passthroughDecodedFrameCount": 98,
+          "pixelFormat": "yuv420p",
+          "ptsIntervalsSeconds": [
+            0.117811,
+            0.654045,
+            0.7830769999999999,
+            0.7558670000000001,
+            0.8032330000000001,
+            1.0832449999999998,
+            0.7446780000000004,
+            0.8038879999999997,
+            0.9646670000000004,
+            0.11442199999999936,
+            0.6418670000000004,
+            0.7563439999999995,
+            0.7592340000000011,
+            0.7795999999999985,
+            0.8937780000000011,
+            0.6880659999999992,
+            0.7069109999999998,
+            0.815767000000001,
+            0.8654220000000006,
+            0.643656,
+            0.8543779999999987,
+            0.961844000000001,
+            0.22595600000000005,
+            1.5679999999999978,
+            1.1471000000000018,
+            0.02686599999999828,
+            0.06605599999999967,
+            0.023078000000001708,
+            0.10594400000000093,
+            0.028199999999998226,
+            0.007156000000001939,
+            0.017676999999999055,
+            0.040023000000001474,
+            0.02203299999999686,
+            0.029189000000002352,
+            0.052689000000000874,
+            0.05207699999999704,
+            0.026900000000001256,
+            0.01466699999999932,
+            0.05788899999999941,
+            0.03051100000000062,
+            0.036622000000001265,
+            0.012522999999998063,
+            0.027855000000002406,
+            0.03095599999999976,
+            0.06204400000000021,
+            0.0679559999999988,
+            0.2260440000000017,
+            0.9997219999999984,
+            1.0061560000000007,
+            0.01977799999999874,
+            0.1399000000000008,
+            0.8376659999999987,
+            0.992756,
+            1.0034550000000024,
+            0.9975120000000004,
+            1.001776999999997,
+            0.9960110000000029,
+            1.0034339999999986,
+            1.0007659999999987,
+            1.0079449999999994,
+            0.013067000000003048,
+            0.9790549999999953,
+            1.005422000000003,
+            0.02631099999999975,
+            0.965133999999999,
+            1.0067220000000034,
+            0.9950890000000001,
+            1.0012439999999998,
+            1.0032110000000003,
+            1.0012339999999966,
+            0.025477999999999668,
+            0.9680329999999984,
+            1.0033110000000036,
+            0.9988329999999976,
+            0.9979560000000021,
+            1.001854999999999,
+            1.0021449999999987,
+            0.9987780000000015,
+            0.997911000000002,
+            0.9957780000000014,
+            1.010432999999999,
+            0.007654999999999745,
+            0.9913449999999955,
+            0.9961550000000017,
+            1.0118890000000036,
+            0.03094499999999556,
+            0.12398900000000168,
+            0.8370889999999989,
+            1.001888000000001,
+            0.027745000000003017,
+            0.9673439999999971,
+            0.029778000000000304,
+            0.9699889999999982,
+            0.9962890000000044,
+            0.9968219999999945,
+            1.0033560000000037
+          ],
+          "ptsSeconds": [
+            0.0,
+            0.117811,
+            0.771856,
+            1.554933,
+            2.3108,
+            3.114033,
+            4.197278,
+            4.941956,
+            5.745844,
+            6.710511,
+            6.824933,
+            7.4668,
+            8.223144,
+            8.982378,
+            9.761978,
+            10.655756,
+            11.343822,
+            12.050733,
+            12.8665,
+            13.731922,
+            14.375578,
+            15.229956,
+            16.1918,
+            16.417756,
+            17.985756,
+            19.132856,
+            19.159722,
+            19.225778,
+            19.248856,
+            19.3548,
+            19.383,
+            19.390156,
+            19.407833,
+            19.447856,
+            19.469889,
+            19.499078,
+            19.551767,
+            19.603844,
+            19.630744,
+            19.645411,
+            19.7033,
+            19.733811,
+            19.770433,
+            19.782956,
+            19.810811,
+            19.841767,
+            19.903811,
+            19.971767,
+            20.197811,
+            21.197533,
+            22.203689,
+            22.223467,
+            22.363367,
+            23.201033,
+            24.193789,
+            25.197244,
+            26.194756,
+            27.196533,
+            28.192544,
+            29.195978,
+            30.196744,
+            31.204689,
+            31.217756,
+            32.196811,
+            33.202233,
+            33.228544,
+            34.193678,
+            35.2004,
+            36.195489,
+            37.196733,
+            38.199944,
+            39.201178,
+            39.226656,
+            40.194689,
+            41.198,
+            42.196833,
+            43.194789,
+            44.196644,
+            45.198789,
+            46.197567,
+            47.195478,
+            48.191256,
+            49.201689,
+            49.209344,
+            50.200689,
+            51.196844,
+            52.208733,
+            52.239678,
+            52.363667,
+            53.200756,
+            54.202644,
+            54.230389,
+            55.197733,
+            55.227511,
+            56.1975,
+            57.193789,
+            58.190611,
+            59.193967
+          ],
+          "reportedFrameRate": "8/3",
+          "uniqueDecodedFrameCount": 90,
+          "width": 720
+        },
+        "strictP04GateStatus": "FAIL",
+        "thresholds": {
+          "maximumConsecutiveDuplicateRatio": 0.05,
+          "maximumPtsGapSeconds": 0.5,
+          "minimumDecodedFrames": 400,
+          "minimumEffectiveFps": 20.0,
+          "minimumSeconds": 20.0
+        },
+        "video": "/home/runner/work/AI-Orb-Demo/AI-Orb-Demo/p0_3_evidence/MOTION_20S.mp4",
+        "videoBytes": 557146,
+        "videoSha256": "4f1fae9ca9a8030754a221efade7012dc9d25bc48338ec149f0e881e51f3139c"
+      },
+      "runCount": 3
+    },
+    "PF05_REPEATABILITY_NOISE": {
+      "status": "PASS",
+      "runCount": 3,
+      "sameConditions": true,
+      "varianceByMetric": {
+        "coreSilhouette.iou": {
+          "samples": [
+            0.43218991177406124,
+            0.43218991177406124,
+            0.43218991177406124
+          ],
+          "mean": 0.43218991177406124,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.centerErrorPixels": {
+          "samples": [
+            47.73912922288086,
+            47.73912922288086,
+            47.73912922288086
+          ],
+          "mean": 47.73912922288086,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.centerErrorFrameWidth": {
+          "samples": [
+            0.03806948103897995,
+            0.03806948103897995,
+            0.03806948103897995
+          ],
+          "mean": 0.03806948103897995,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.centerErrorD": {
+          "samples": [
+            0.047834798820521905,
+            0.047834798820521905,
+            0.047834798820521905
+          ],
+          "mean": 0.047834798820521905,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.diameterRelativeError": {
+          "samples": [
+            0.34468937875751504,
+            0.34468937875751504,
+            0.34468937875751504
+          ],
+          "mean": 0.34468937875751504,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.referenceDiameterPixels": {
+          "samples": [
+            998.0,
+            998.0,
+            998.0
+          ],
+          "mean": 998.0,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.candidateDiameterPixels": {
+          "samples": [
+            654.0,
+            654.0,
+            654.0
+          ],
+          "mean": 654.0,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.alphaThreshold": {
+          "samples": [
+            8.0,
+            8.0,
+            8.0
+          ],
+          "mean": 8.0,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "materialArea.EMERALD_FOLD.relativeError": {
+          "samples": [
+            1.2755296842237036,
+            1.2755296842237036,
+            1.2755296842237036
+          ],
+          "mean": 1.2755296842237036,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "materialArea.SAPPHIRE_VALLEY.relativeError": {
+          "samples": [
+            0.44234237084374706,
+            0.44234237084374706,
+            0.44234237084374706
+          ],
+          "mean": 0.44234237084374706,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "materialArea.AQUA_LIQUID.relativeError": {
+          "samples": [
+            0.9914589376117134,
+            0.9914589376117134,
+            0.9914589376117134
+          ],
+          "mean": 0.9914589376117134,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "materialCentroidErrorD.EMERALD_FOLD": {
+          "samples": [
+            0.02616002283566841,
+            0.02616002283566841,
+            0.02616002283566841
+          ],
+          "mean": 0.02616002283566841,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "materialCentroidErrorD.SAPPHIRE_VALLEY": {
+          "samples": [
+            0.08076310511594131,
+            0.08076310511594131,
+            0.08076310511594131
+          ],
+          "mean": 0.08076310511594131,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "materialCentroidErrorD.AQUA_LIQUID": {
+          "samples": [
+            0.2577404790316559,
+            0.2577404790316559,
+            0.2577404790316559
+          ],
+          "mean": 0.2577404790316559,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.OUTER_GLASS_RIM.ssim": {
+          "samples": [
+            0.0037727446190971513,
+            0.0037727446190971513,
+            0.0037727446190971513
+          ],
+          "mean": 0.0037727446190971513,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.OUTER_GLASS_RIM.deltaE2000Median": {
+          "samples": [
+            57.96843338012695,
+            57.96843338012695,
+            57.96843338012695
+          ],
+          "mean": 57.96843338012695,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.EMERALD_FOLD.ssim": {
+          "samples": [
+            0.19810224755499117,
+            0.19810224755499117,
+            0.19810224755499117
+          ],
+          "mean": 0.19810224755499117,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.EMERALD_FOLD.deltaE2000Median": {
+          "samples": [
+            32.310081481933594,
+            32.310081481933594,
+            32.310081481933594
+          ],
+          "mean": 32.310081481933594,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.SAPPHIRE_VALLEY.ssim": {
+          "samples": [
+            0.32709527632407215,
+            0.32709527632407215,
+            0.32709527632407215
+          ],
+          "mean": 0.32709527632407215,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.SAPPHIRE_VALLEY.deltaE2000Median": {
+          "samples": [
+            25.96674346923828,
+            25.96674346923828,
+            25.96674346923828
+          ],
+          "mean": 25.96674346923828,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.AQUA_LIQUID.ssim": {
+          "samples": [
+            0.28925222291686464,
+            0.28925222291686464,
+            0.28925222291686464
+          ],
+          "mean": 0.28925222291686464,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.AQUA_LIQUID.deltaE2000Median": {
+          "samples": [
+            25.594778060913086,
+            25.594778060913086,
+            25.594778060913086
+          ],
+          "mean": 25.594778060913086,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.EMBEDDED_CRYSTAL_LENS.ssim": {
+          "samples": [
+            0.2695316482565326,
+            0.2695316482565326,
+            0.2695316482565326
+          ],
+          "mean": 0.2695316482565326,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.EMBEDDED_CRYSTAL_LENS.deltaE2000Median": {
+          "samples": [
+            31.984174728393555,
+            31.984174728393555,
+            31.984174728393555
+          ],
+          "mean": 31.984174728393555,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.GOLD_CAUSTIC_HIGHLIGHTS.ssim": {
+          "samples": [
+            0.02498397702057292,
+            0.02498397702057292,
+            0.02498397702057292
+          ],
+          "mean": 0.02498397702057292,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.GOLD_CAUSTIC_HIGHLIGHTS.deltaE2000Median": {
+          "samples": [
+            75.71257019042969,
+            75.71257019042969,
+            75.71257019042969
+          ],
+          "mean": 75.71257019042969,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "fullSceneColor.ssim": {
+          "samples": [
+            0.462767449159689,
+            0.462767449159689,
+            0.462767449159689
+          ],
+          "mean": 0.462767449159689,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "fullSceneColor.deltaE2000Median": {
+          "samples": [
+            13.037932395935059,
+            13.037932395935059,
+            13.037932395935059
+          ],
+          "mean": 13.037932395935059,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "residentPath.RESIDENT_FRONT_CYAN.edgeF1": {
+          "samples": [
+            0.12188551295620637,
+            0.12188551295620637,
+            0.12188551295620637
+          ],
+          "mean": 0.12188551295620637,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "residentPath.RESIDENT_FRONT_GOLD.edgeF1": {
+          "samples": [
+            0.13130290361827548,
+            0.13130290361827548,
+            0.13130290361827548
+          ],
+          "mean": 0.13130290361827548,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "residentPath.RESIDENT_BACK_GREEN_GOLD.edgeF1": {
+          "samples": [
+            0.1550017355865096,
+            0.1550017355865096,
+            0.1550017355865096
+          ],
+          "mean": 0.1550017355865096,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        }
+      }
+    }
+  },
+  "preflightReadyForRound1": false,
+  "preflightReadyForOptimization": false,
+  "optimizationRoundsStarted": false,
+  "deviceGpuStatus": "SOFTWARE_RENDER_ONLY",
+  "runtimeChecks": {
+    "PF01_SEMANTIC_ROI_MASKS": {
+      "status": "PASS",
+      "visualRegionCount": 13,
+      "maskCount": 12,
+      "freezeManifestSha256": "e05b630b734204105d752dda3fe61cb34a8c9ed4d2bee08f5dc41d460b3b092f",
+      "maskSha256": {
+        "AQUA_LIQUID": "30a3b237db9ad9bbba424cbbb63bbec45c9d43fc84df5ad66ef42413edb1e8a7",
+        "BACKGROUND_BOKEH": "6768e9669dea0b7c113fe0023f41f2e462efb75b22750b938c10d952695a4476",
+        "CORE_SILHOUETTE": "b90907983d33cb4b2e0963b8d6e0242f0998eb065920380085138dc03f79c1ed",
+        "DROPLETS_AND_PARTICLES": "4d8912c3e78dc976ef0f6f9ce6d71ce87b32423e78e6995b3f22a01e51bcbc8f",
+        "EMBEDDED_CRYSTAL_LENS": "d731801838b63038de7e6081357f52268907e2d3e002738a725a7b002277d016",
+        "EMERALD_FOLD": "422d422a3103731d26e8cd7b8ea2c5b9201aa2fd1f882146fca0b2eec275b868",
+        "GOLD_CAUSTIC_HIGHLIGHTS": "b4d35dd3af6654b680f2c509c0c209190ef55b1c347b8ba445a7521b1bc16598",
+        "OUTER_GLASS_RIM": "339f2fba0dec74bf1fb2f3eaa2f1140e38679b1bd066303207264c498d4c18ba",
+        "RESIDENT_BACK_GREEN_GOLD": "2dd38c84caac6849c05b0b18a04df4a928ccd06a04b5e4d416fe441d14aa701a",
+        "RESIDENT_FRONT_CYAN": "5debbbb887fba96df20287fa83b95cdb4d4ec85a1ae31f0ee7e25cff6f0e777e",
+        "RESIDENT_FRONT_GOLD": "94897a93e78517db875eb802030b7a8dd2375f6f296674ba173b13707f6970de",
+        "SAPPHIRE_VALLEY": "854852fad959fded623c4975dbde4323c383d89e322ebd409db5f07cdbc36da8"
+      },
+      "overlapPolicy": "INDEPENDENT_SEMANTIC_REGIONS_ALLOW_OVERLAP"
+    },
+    "PF02_RAYMARCH_STEPS_RUNTIME_READBACK": {
+      "schema": "AI_ORB_P0_3_PF02_RAYMARCH_RUNTIME_EVIDENCE_1_0",
+      "status": "PASS",
+      "source": "actual FULL_RENDER capture from OrbFluidVolumeRenderer's linked production program",
+      "readbackFunction": "GlShaderProgram.getIntUniform -> GLES30.glGetUniformiv",
+      "hardwareHighTierExpectedSteps": 48,
+      "softwareRendererCap": 20,
+      "runs": [
+        {
+          "runIndex": 1,
+          "qualityTier": "HIGH",
+          "isSoftwareRenderer": true,
+          "renderBackend": "SOFTWARE_RENDER",
+          "configuredRaymarchSteps": 48,
+          "effectiveRaymarchSteps": 20,
+          "shaderProgramId": 6,
+          "shaderSourceSha256": "4fc2be7ecf52b94c44e7a25b8472c959b100141f8622e3abb6626ff96bc26014",
+          "actualUniformReadback": {
+            "method": "GLES30.glGetUniformiv on the linked production shader program",
+            "uRaymarchSteps": 20,
+            "uniformStateValid": true
+          },
+          "glVendor": "Google (Google Inc.)",
+          "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+          "glVersion": "OpenGL ES 3.0 (OpenGL ES 3.0 SwiftShader 4.0.0.1)",
+          "glError": "GL_NO_ERROR",
+          "status": "PASS"
+        },
+        {
+          "runIndex": 2,
+          "qualityTier": "HIGH",
+          "isSoftwareRenderer": true,
+          "renderBackend": "SOFTWARE_RENDER",
+          "configuredRaymarchSteps": 48,
+          "effectiveRaymarchSteps": 20,
+          "shaderProgramId": 6,
+          "shaderSourceSha256": "4fc2be7ecf52b94c44e7a25b8472c959b100141f8622e3abb6626ff96bc26014",
+          "actualUniformReadback": {
+            "method": "GLES30.glGetUniformiv on the linked production shader program",
+            "uRaymarchSteps": 20,
+            "uniformStateValid": true
+          },
+          "glVendor": "Google (Google Inc.)",
+          "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+          "glVersion": "OpenGL ES 3.0 (OpenGL ES 3.0 SwiftShader 4.0.0.1)",
+          "glError": "GL_NO_ERROR",
+          "status": "PASS"
+        },
+        {
+          "runIndex": 3,
+          "qualityTier": "HIGH",
+          "isSoftwareRenderer": true,
+          "renderBackend": "SOFTWARE_RENDER",
+          "configuredRaymarchSteps": 48,
+          "effectiveRaymarchSteps": 20,
+          "shaderProgramId": 6,
+          "shaderSourceSha256": "4fc2be7ecf52b94c44e7a25b8472c959b100141f8622e3abb6626ff96bc26014",
+          "actualUniformReadback": {
+            "method": "GLES30.glGetUniformiv on the linked production shader program",
+            "uRaymarchSteps": 20,
+            "uniformStateValid": true
+          },
+          "glVendor": "Google (Google Inc.)",
+          "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+          "glVersion": "OpenGL ES 3.0 (OpenGL ES 3.0 SwiftShader 4.0.0.1)",
+          "glError": "GL_NO_ERROR",
+          "status": "PASS"
+        }
+      ],
+      "hardwareGpuVerification": "PENDING"
+    },
+    "PF03_RUNTIME_GEOMETRY": {
+      "schema": "AI_ORB_P0_3_PF03_GEOMETRY_RUNTIME_EVIDENCE_1_0",
+      "status": "PASS",
+      "formula": {
+        "vertexCount": "10 * 4^n + 2",
+        "triangleCount": "20 * 4^n"
+      },
+      "runtimeSource": "production Icosphere mesh metadata and canonical vertex-buffer fingerprint",
+      "runs": [
+        {
+          "runIndex": 1,
+          "qualityTier": "HIGH",
+          "configuredSubdivision": 4,
+          "currentSubdivisions": 4,
+          "vertexCount": 2562,
+          "expectedVertexCount": 2562,
+          "triangleCount": 5120,
+          "expectedTriangleCount": 5120,
+          "geometryFingerprintSha256": "a0f23152788f37a1111db7830627ad4290fbd6c7ab42ba2d51ff7d43d8bc0131",
+          "geometryStateValid": true,
+          "status": "PASS"
+        },
+        {
+          "runIndex": 2,
+          "qualityTier": "HIGH",
+          "configuredSubdivision": 4,
+          "currentSubdivisions": 4,
+          "vertexCount": 2562,
+          "expectedVertexCount": 2562,
+          "triangleCount": 5120,
+          "expectedTriangleCount": 5120,
+          "geometryFingerprintSha256": "a0f23152788f37a1111db7830627ad4290fbd6c7ab42ba2d51ff7d43d8bc0131",
+          "geometryStateValid": true,
+          "status": "PASS"
+        },
+        {
+          "runIndex": 3,
+          "qualityTier": "HIGH",
+          "configuredSubdivision": 4,
+          "currentSubdivisions": 4,
+          "vertexCount": 2562,
+          "expectedVertexCount": 2562,
+          "triangleCount": 5120,
+          "expectedTriangleCount": 5120,
+          "geometryFingerprintSha256": "a0f23152788f37a1111db7830627ad4290fbd6c7ab42ba2d51ff7d43d8bc0131",
+          "geometryStateValid": true,
+          "status": "PASS"
+        }
+      ]
+    },
+    "PF04_API36_AVD_BASELINE": {
+      "status": "FAIL",
+      "apiLevel": 36,
+      "model": "sdk_gphone64_x86_64",
+      "renderBackend": "SOFTWARE_RENDER",
+      "videoDurationSeconds": 60.197322,
+      "videoCaptureValidation": {
+        "captureNote": "This is the actual API36 SwiftShader-rendered Tab 3 video. The unmodified P0_4 gates are reported as measured; a frame-density failure remains a failure and is not waived. A second screenrecord is not started because the API36 SwiftShader recorder was observed to abort with UBSan sub-overflow and disconnect the AVD storage endpoint.",
+        "captureSource": "API36_TAB3_CONTINUOUS_20S_MOTION_VIDEO",
+        "captureSourcePath": "p0_3_evidence/yujian_tab3/AI_ORB_DEMO_TAB3_FINAL_20S.mp4",
+        "evidenceClass": "UNKNOWN",
+        "gates": {
+          "frameContentChanges": true,
+          "minimumDuration": true,
+          "minimumEffectiveFrameRate": false,
+          "minimumEncodedDecodedFrameCount": false,
+          "noDuplicatedStaticFrames": false,
+          "noFreezeOverMaximumPtsGap": false,
+          "passthroughFrameCountMatchesProbe": true,
+          "sourceVideoExists": true
+        },
+        "generatedAtUtc": "2026-11-24T10:58:58.665925+00:00",
+        "hardwareGpuClaim": "NOT_CLAIMED",
+        "limitations": [
+          "Core rotation and five Resident trajectories require a frame-dense video or a per-frame runtime telemetry trace.",
+          "Software AVD evidence does not establish hardware GPU or physical-device performance."
+        ],
+        "runtimeTelemetryContext": {
+          "apkSha256": "d43d087d4cf59b34323853c48f9dbf2fb96f8051f15ea1c8f64c1f7e89954714",
+          "buildSha": "fb04598709a282d3818745c07b0a71897cccfd66",
+          "coreAngleDeg": 39.806,
+          "coreAngularVelDegPerSec": null,
+          "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+          "note": "This is capture-time context, not a per-video-frame motion trace.",
+          "renderingBackend": null,
+          "source": "/home/runner/work/AI-Orb-Demo/AI-Orb-Demo/p0_3_evidence/yujian_tab3/captures/RUNTIME_TELEMETRY.json"
+        },
+        "schema": "AI_ORB_P04_VIDEO_CAPTURE_REPORT_1_0",
+        "status": "FAIL",
+        "stream": {
+          "averageFrameRate": "8820000/5417759",
+          "codec": "h264",
+          "consecutiveDuplicateFrameCount": 7,
+          "consecutiveDuplicateFrameRatio": 0.07216494845360824,
+          "declaredFrameCount": 98,
+          "durationSeconds": 60.197322,
+          "effectiveDecodedFramesPerSecond": 1.627979397488812,
+          "ffmpegFrameRateDuplicationUsedForCounting": false,
+          "ffprobeDecodedFrameCount": 98,
+          "height": 720,
+          "maximumPtsIntervalSeconds": 1.5679999999999978,
+          "meanAbsoluteRgbDifferenceByConsecutiveFrame": [
+            0.19538194444444446,
+            0.4010866769547325,
+            0.3610069444444444,
+            0.46804398148148146,
+            0.5874710648148148,
+            0.30343942901234566,
+            0.4216872427983539,
+            0.4462988683127572,
+            0.022933384773662552,
+            0.35037872942386833,
+            0.3328768004115226,
+            0.34106738683127574,
+            0.3348315329218107,
+            0.3316383744855967,
+            0.32926118827160494,
+            0.33605838477366257,
+            0.3262583590534979,
+            0.33064621913580244,
+            0.3245415380658436,
+            0.32556520061728395,
+            0.458954475308642,
+            0.2584497170781893,
+            0.39060185185185187,
+            0.2578594393004115,
+            0.3862866512345679,
+            0.2631970164609054,
+            76.9464274691358,
+            0.005818544238683127,
+            0.0,
+            119.28798418209877,
+            0.015320216049382716,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            181.65118505658435,
+            0.08506365740740741,
+            0.06349922839506172,
+            0.023234953703703702,
+            0.00018968621399176953,
+            8.487654320987654e-05,
+            7.716049382716049e-05,
+            7.716049382716049e-05,
+            7.716049382716049e-05,
+            7.716049382716049e-05,
+            0.18347865226337448,
+            0.1850173611111111,
+            0.1860352366255144,
+            0.00034593621399176954,
+            0.0021784979423868315,
+            0.18461548353909465,
+            0.18740805041152264,
+            0.18699395576131686,
+            0.18745048868312758,
+            0.18675154320987655,
+            0.18631944444444445,
+            0.1847318672839506,
+            0.18518518518518517,
+            0.05560120884773662,
+            0.13093106995884773,
+            0.1863085133744856,
+            0.056733539094650204,
+            0.13132137345679012,
+            0.18533629115226338,
+            0.18490483539094651,
+            0.185019933127572,
+            0.18553047839506173,
+            0.18309477880658437,
+            0.1314499742798354,
+            0.056158050411522636,
+            0.18564043209876543,
+            0.18607060185185184,
+            0.18544624485596709,
+            0.1851980452674897,
+            0.18521926440329217,
+            0.1841358024691358,
+            0.18474729938271606,
+            0.18499485596707818,
+            0.18625835905349794,
+            0.13081532921810698,
+            0.05564107510288066,
+            0.18527006172839505,
+            0.18589699074074073,
+            0.05620884773662552,
+            0.13080761316872427,
+            0.001819701646090535,
+            0.1853542952674897,
+            0.1315380658436214,
+            0.055634002057613166,
+            0.13055491255144033,
+            0.05605774176954732,
+            0.187485853909465,
+            0.186141975308642,
+            0.18481352880658436,
+            0.1858005401234568
+          ],
+          "passthroughDecodedFrameCount": 98,
+          "pixelFormat": "yuv420p",
+          "ptsIntervalsSeconds": [
+            0.117811,
+            0.654045,
+            0.7830769999999999,
+            0.7558670000000001,
+            0.8032330000000001,
+            1.0832449999999998,
+            0.7446780000000004,
+            0.8038879999999997,
+            0.9646670000000004,
+            0.11442199999999936,
+            0.6418670000000004,
+            0.7563439999999995,
+            0.7592340000000011,
+            0.7795999999999985,
+            0.8937780000000011,
+            0.6880659999999992,
+            0.7069109999999998,
+            0.815767000000001,
+            0.8654220000000006,
+            0.643656,
+            0.8543779999999987,
+            0.961844000000001,
+            0.22595600000000005,
+            1.5679999999999978,
+            1.1471000000000018,
+            0.02686599999999828,
+            0.06605599999999967,
+            0.023078000000001708,
+            0.10594400000000093,
+            0.028199999999998226,
+            0.007156000000001939,
+            0.017676999999999055,
+            0.040023000000001474,
+            0.02203299999999686,
+            0.029189000000002352,
+            0.052689000000000874,
+            0.05207699999999704,
+            0.026900000000001256,
+            0.01466699999999932,
+            0.05788899999999941,
+            0.03051100000000062,
+            0.036622000000001265,
+            0.012522999999998063,
+            0.027855000000002406,
+            0.03095599999999976,
+            0.06204400000000021,
+            0.0679559999999988,
+            0.2260440000000017,
+            0.9997219999999984,
+            1.0061560000000007,
+            0.01977799999999874,
+            0.1399000000000008,
+            0.8376659999999987,
+            0.992756,
+            1.0034550000000024,
+            0.9975120000000004,
+            1.001776999999997,
+            0.9960110000000029,
+            1.0034339999999986,
+            1.0007659999999987,
+            1.0079449999999994,
+            0.013067000000003048,
+            0.9790549999999953,
+            1.005422000000003,
+            0.02631099999999975,
+            0.965133999999999,
+            1.0067220000000034,
+            0.9950890000000001,
+            1.0012439999999998,
+            1.0032110000000003,
+            1.0012339999999966,
+            0.025477999999999668,
+            0.9680329999999984,
+            1.0033110000000036,
+            0.9988329999999976,
+            0.9979560000000021,
+            1.001854999999999,
+            1.0021449999999987,
+            0.9987780000000015,
+            0.997911000000002,
+            0.9957780000000014,
+            1.010432999999999,
+            0.007654999999999745,
+            0.9913449999999955,
+            0.9961550000000017,
+            1.0118890000000036,
+            0.03094499999999556,
+            0.12398900000000168,
+            0.8370889999999989,
+            1.001888000000001,
+            0.027745000000003017,
+            0.9673439999999971,
+            0.029778000000000304,
+            0.9699889999999982,
+            0.9962890000000044,
+            0.9968219999999945,
+            1.0033560000000037
+          ],
+          "ptsSeconds": [
+            0.0,
+            0.117811,
+            0.771856,
+            1.554933,
+            2.3108,
+            3.114033,
+            4.197278,
+            4.941956,
+            5.745844,
+            6.710511,
+            6.824933,
+            7.4668,
+            8.223144,
+            8.982378,
+            9.761978,
+            10.655756,
+            11.343822,
+            12.050733,
+            12.8665,
+            13.731922,
+            14.375578,
+            15.229956,
+            16.1918,
+            16.417756,
+            17.985756,
+            19.132856,
+            19.159722,
+            19.225778,
+            19.248856,
+            19.3548,
+            19.383,
+            19.390156,
+            19.407833,
+            19.447856,
+            19.469889,
+            19.499078,
+            19.551767,
+            19.603844,
+            19.630744,
+            19.645411,
+            19.7033,
+            19.733811,
+            19.770433,
+            19.782956,
+            19.810811,
+            19.841767,
+            19.903811,
+            19.971767,
+            20.197811,
+            21.197533,
+            22.203689,
+            22.223467,
+            22.363367,
+            23.201033,
+            24.193789,
+            25.197244,
+            26.194756,
+            27.196533,
+            28.192544,
+            29.195978,
+            30.196744,
+            31.204689,
+            31.217756,
+            32.196811,
+            33.202233,
+            33.228544,
+            34.193678,
+            35.2004,
+            36.195489,
+            37.196733,
+            38.199944,
+            39.201178,
+            39.226656,
+            40.194689,
+            41.198,
+            42.196833,
+            43.194789,
+            44.196644,
+            45.198789,
+            46.197567,
+            47.195478,
+            48.191256,
+            49.201689,
+            49.209344,
+            50.200689,
+            51.196844,
+            52.208733,
+            52.239678,
+            52.363667,
+            53.200756,
+            54.202644,
+            54.230389,
+            55.197733,
+            55.227511,
+            56.1975,
+            57.193789,
+            58.190611,
+            59.193967
+          ],
+          "reportedFrameRate": "8/3",
+          "uniqueDecodedFrameCount": 90,
+          "width": 720
+        },
+        "strictP04GateStatus": "FAIL",
+        "thresholds": {
+          "maximumConsecutiveDuplicateRatio": 0.05,
+          "maximumPtsGapSeconds": 0.5,
+          "minimumDecodedFrames": 400,
+          "minimumEffectiveFps": 20.0,
+          "minimumSeconds": 20.0
+        },
+        "video": "/home/runner/work/AI-Orb-Demo/AI-Orb-Demo/p0_3_evidence/MOTION_20S.mp4",
+        "videoBytes": 557146,
+        "videoSha256": "4f1fae9ca9a8030754a221efade7012dc9d25bc48338ec149f0e881e51f3139c"
+      },
+      "runCount": 3,
+      "installedApkSha256": "d43d087d4cf59b34323853c48f9dbf2fb96f8051f15ea1c8f64c1f7e89954714",
+      "installedBaseApkSha256": "d43d087d4cf59b34323853c48f9dbf2fb96f8051f15ea1c8f64c1f7e89954714",
+      "avdEnvironmentSha256": "691b52635b1ce9452cebd9f35d8cc7bb8c2429206d20d0e6805780ff58848586",
+      "avdConfigSha256": "e94aa30a30860b007c4e648996b244c729b4f07167af2954b8e02a48cdb2ca00"
+    },
+    "PF05_REPEATABILITY": {
+      "schema": "AI_ORB_P0_3_PF05_REPEATABILITY_REPORT_1_0",
+      "status": "PASS",
+      "runCount": 3,
+      "independentColdStarts": true,
+      "sameConditions": true,
+      "deterministicRuntimeFieldsIdentical": true,
+      "perModeUniformAndConfigEvidenceIdentical": true,
+      "identicalImageHashesAcrossRuns": {
+        "CORE_ONLY_TRANSPARENT.png": true,
+        "CAVITY_ONLY.png": true,
+        "FLUID_VOLUME_ONLY.png": true,
+        "GLASS_ONLY.png": true,
+        "RESIDENTS_ONLY.png": true,
+        "FULL_RENDER.png": true,
+        "BLOOM_OFF.png": true,
+        "PRE_TONEMAP.png": true,
+        "POST_TONEMAP.png": true
+      },
+      "allImageHashesIdentical": true,
+      "metricVariance": {
+        "coreSilhouette.iou": {
+          "samples": [
+            0.43218991177406124,
+            0.43218991177406124,
+            0.43218991177406124
+          ],
+          "mean": 0.43218991177406124,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.centerErrorPixels": {
+          "samples": [
+            47.73912922288086,
+            47.73912922288086,
+            47.73912922288086
+          ],
+          "mean": 47.73912922288086,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.centerErrorFrameWidth": {
+          "samples": [
+            0.03806948103897995,
+            0.03806948103897995,
+            0.03806948103897995
+          ],
+          "mean": 0.03806948103897995,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.centerErrorD": {
+          "samples": [
+            0.047834798820521905,
+            0.047834798820521905,
+            0.047834798820521905
+          ],
+          "mean": 0.047834798820521905,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.diameterRelativeError": {
+          "samples": [
+            0.34468937875751504,
+            0.34468937875751504,
+            0.34468937875751504
+          ],
+          "mean": 0.34468937875751504,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.referenceDiameterPixels": {
+          "samples": [
+            998.0,
+            998.0,
+            998.0
+          ],
+          "mean": 998.0,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.candidateDiameterPixels": {
+          "samples": [
+            654.0,
+            654.0,
+            654.0
+          ],
+          "mean": 654.0,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreSilhouette.alphaThreshold": {
+          "samples": [
+            8.0,
+            8.0,
+            8.0
+          ],
+          "mean": 8.0,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "materialArea.EMERALD_FOLD.relativeError": {
+          "samples": [
+            1.2755296842237036,
+            1.2755296842237036,
+            1.2755296842237036
+          ],
+          "mean": 1.2755296842237036,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "materialArea.SAPPHIRE_VALLEY.relativeError": {
+          "samples": [
+            0.44234237084374706,
+            0.44234237084374706,
+            0.44234237084374706
+          ],
+          "mean": 0.44234237084374706,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "materialArea.AQUA_LIQUID.relativeError": {
+          "samples": [
+            0.9914589376117134,
+            0.9914589376117134,
+            0.9914589376117134
+          ],
+          "mean": 0.9914589376117134,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "materialCentroidErrorD.EMERALD_FOLD": {
+          "samples": [
+            0.02616002283566841,
+            0.02616002283566841,
+            0.02616002283566841
+          ],
+          "mean": 0.02616002283566841,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "materialCentroidErrorD.SAPPHIRE_VALLEY": {
+          "samples": [
+            0.08076310511594131,
+            0.08076310511594131,
+            0.08076310511594131
+          ],
+          "mean": 0.08076310511594131,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "materialCentroidErrorD.AQUA_LIQUID": {
+          "samples": [
+            0.2577404790316559,
+            0.2577404790316559,
+            0.2577404790316559
+          ],
+          "mean": 0.2577404790316559,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.OUTER_GLASS_RIM.ssim": {
+          "samples": [
+            0.0037727446190971513,
+            0.0037727446190971513,
+            0.0037727446190971513
+          ],
+          "mean": 0.0037727446190971513,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.OUTER_GLASS_RIM.deltaE2000Median": {
+          "samples": [
+            57.96843338012695,
+            57.96843338012695,
+            57.96843338012695
+          ],
+          "mean": 57.96843338012695,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.EMERALD_FOLD.ssim": {
+          "samples": [
+            0.19810224755499117,
+            0.19810224755499117,
+            0.19810224755499117
+          ],
+          "mean": 0.19810224755499117,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.EMERALD_FOLD.deltaE2000Median": {
+          "samples": [
+            32.310081481933594,
+            32.310081481933594,
+            32.310081481933594
+          ],
+          "mean": 32.310081481933594,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.SAPPHIRE_VALLEY.ssim": {
+          "samples": [
+            0.32709527632407215,
+            0.32709527632407215,
+            0.32709527632407215
+          ],
+          "mean": 0.32709527632407215,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.SAPPHIRE_VALLEY.deltaE2000Median": {
+          "samples": [
+            25.96674346923828,
+            25.96674346923828,
+            25.96674346923828
+          ],
+          "mean": 25.96674346923828,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.AQUA_LIQUID.ssim": {
+          "samples": [
+            0.28925222291686464,
+            0.28925222291686464,
+            0.28925222291686464
+          ],
+          "mean": 0.28925222291686464,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.AQUA_LIQUID.deltaE2000Median": {
+          "samples": [
+            25.594778060913086,
+            25.594778060913086,
+            25.594778060913086
+          ],
+          "mean": 25.594778060913086,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.EMBEDDED_CRYSTAL_LENS.ssim": {
+          "samples": [
+            0.2695316482565326,
+            0.2695316482565326,
+            0.2695316482565326
+          ],
+          "mean": 0.2695316482565326,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.EMBEDDED_CRYSTAL_LENS.deltaE2000Median": {
+          "samples": [
+            31.984174728393555,
+            31.984174728393555,
+            31.984174728393555
+          ],
+          "mean": 31.984174728393555,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.GOLD_CAUSTIC_HIGHLIGHTS.ssim": {
+          "samples": [
+            0.02498397702057292,
+            0.02498397702057292,
+            0.02498397702057292
+          ],
+          "mean": 0.02498397702057292,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "coreColorRegions.GOLD_CAUSTIC_HIGHLIGHTS.deltaE2000Median": {
+          "samples": [
+            75.71257019042969,
+            75.71257019042969,
+            75.71257019042969
+          ],
+          "mean": 75.71257019042969,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "fullSceneColor.ssim": {
+          "samples": [
+            0.462767449159689,
+            0.462767449159689,
+            0.462767449159689
+          ],
+          "mean": 0.462767449159689,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "fullSceneColor.deltaE2000Median": {
+          "samples": [
+            13.037932395935059,
+            13.037932395935059,
+            13.037932395935059
+          ],
+          "mean": 13.037932395935059,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "residentPath.RESIDENT_FRONT_CYAN.edgeF1": {
+          "samples": [
+            0.12188551295620637,
+            0.12188551295620637,
+            0.12188551295620637
+          ],
+          "mean": 0.12188551295620637,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "residentPath.RESIDENT_FRONT_GOLD.edgeF1": {
+          "samples": [
+            0.13130290361827548,
+            0.13130290361827548,
+            0.13130290361827548
+          ],
+          "mean": 0.13130290361827548,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        },
+        "residentPath.RESIDENT_BACK_GREEN_GOLD.edgeF1": {
+          "samples": [
+            0.1550017355865096,
+            0.1550017355865096,
+            0.1550017355865096
+          ],
+          "mean": 0.1550017355865096,
+          "stddev": 0.0,
+          "range": 0.0,
+          "threeSigma": 0.0
+        }
+      },
+      "metricNoiseRule": "Future per-round error reduction must exceed 3x this baseline standard deviation.",
+      "assetSha256": {
+        "assets/orb_v3/volume/fluid_color_z00.webp": "e484debced8ddf2b2dd974d0d533eda810e1d7432a17832ef3634a7e736a3c0c",
+        "assets/orb_v3/volume/fluid_color_z01.webp": "0e74176fa474e9de9e7d01b2998cf7ed161fb0e2e00725efcc4db53e631c3795",
+        "assets/orb_v3/volume/fluid_color_z02.webp": "a5fe6a01fd5fe0731b2c5917d3f154ffe301fdf89651cb5f36e71b9afa509dbe",
+        "assets/orb_v3/volume/fluid_color_z03.webp": "dc78e2020854b4c5b00d3926d3d43ef14c37da273402b57a565a4c13e0c7f2d7",
+        "assets/orb_v3/volume/fluid_color_z04.webp": "ae2eafe37638f691dc1556ea4fd50853affe70cac06541f036dd8c7257fe0499",
+        "assets/orb_v3/volume/fluid_color_z05.webp": "27a8d63bd402c57a8f085a0db63ed91d18fa70ea081d2d25ab6b7b2161d13d68",
+        "assets/orb_v3/volume/fluid_color_z06.webp": "240e075c1b5bc0391d4ae693851b1756c023f2540486cd3a1ad43250301aafef",
+        "assets/orb_v3/volume/fluid_color_z07.webp": "ce08f2e791ddae88401e6e837f559c9f17bf4d24f05ac2172f84cae5be56e3ee",
+        "assets/orb_v3/volume/fluid_color_z08.webp": "e8798b0fb13692efc2fa171676c4dc57fe7b3803a0ad642c16329db9b69b0694",
+        "assets/orb_v3/volume/fluid_color_z09.webp": "b1983f0cd691044d3286fd4b35ab27362341db948c1a98b5557ac1fc4a385741",
+        "assets/orb_v3/volume/fluid_color_z10.webp": "64b44ee259b1975a900aea78d5278bf853e0db5a09e0a9ced07486304cba459e",
+        "assets/orb_v3/volume/fluid_color_z11.webp": "e046fbbb5c1f664bbbab75d1ae577e781a14b7a3e84b13ab140e6d2314f0d62f",
+        "assets/orb_v3/volume/fluid_color_z12.webp": "763124282eaf6e149054364b6ea3e0e510ff80619fab488ce62aeb6d4e222f8a",
+        "assets/orb_v3/volume/fluid_color_z13.webp": "9b1f8ad537b8d39a025b460f96beb846aef7aaaf4d0cc4568c8f4fb0f8f8d9a7",
+        "assets/orb_v3/volume/fluid_color_z14.webp": "7dc29dd3f5b622bf9225c471dde56288edb7a82690712531f79ba67b922454c7",
+        "assets/orb_v3/volume/fluid_color_z15.webp": "9fa0df3c950415a74468cb1e01ca569dbd757bc18b4105b8d4c8ecac221030e9",
+        "assets/orb_v3/volume/fluid_color_z16.webp": "547447d73e40a48112b6900ed79c8c350fa332571bb8491280dd47dfc9132841",
+        "assets/orb_v3/volume/fluid_color_z17.webp": "fb8874cb36b6dad2ec4ca8947a5524b37b0fd8ac28779efb969a793f6b0c759a",
+        "assets/orb_v3/volume/fluid_color_z18.webp": "d72c156fde525872d7c4adf1f64500bf16a178a53b3558bcb6a2050308d035fd",
+        "assets/orb_v3/volume/fluid_color_z19.webp": "57d329fbd514fa8db5cd4f6242ce9942faa4d960ea7e334e2b572c5ac4127a72",
+        "assets/orb_v3/volume/fluid_color_z20.webp": "8549ca934945cf9dca8b471a2f0d36dce58ee665f4424366145adcc07f7489fb",
+        "assets/orb_v3/volume/fluid_color_z21.webp": "7db20cc5c1713844c38a06781dc60a4cfc7e2ac4f3d4a82b7d3a81f75dc9c8e5",
+        "assets/orb_v3/volume/fluid_color_z22.webp": "0dc499a7f873e2648ad112440212361fb51108ef8e338c1ab37683edcbce6c26",
+        "assets/orb_v3/volume/fluid_color_z23.webp": "990f617ca4b17211b69226ca094d334f66da7ea02afd808c98486f114800d812",
+        "assets/orb_v3/volume/fluid_color_z24.webp": "baf050809fbe56c4e2c31b03d8b3a2929c77d7a8e027a5403ddab2e5f041aefa",
+        "assets/orb_v3/volume/fluid_color_z25.webp": "c0963b2e848ab070ac75e8e6202ab29004acfc66e1710f01767fd45cde449052",
+        "assets/orb_v3/volume/fluid_color_z26.webp": "c94a61b6da2df4e2d7e5f192b6a2a1bc2937fc873a70491d6018d0e86625c36f",
+        "assets/orb_v3/volume/fluid_color_z27.webp": "95bfda3135fec3b3ed47e8ec3fdb99d79e539ddeea78f33087ca0c4fdd9c9aa8",
+        "assets/orb_v3/volume/fluid_color_z28.webp": "2d82e1fcf40502f139ac62d97f0b59f1961e6f0feeb8f4f4a59a4e8eae16c43c",
+        "assets/orb_v3/volume/fluid_color_z29.webp": "92784cee073c09bce70863ede80a97056a5ad5cf201492fc56abd5be83a272e0",
+        "assets/orb_v3/volume/fluid_color_z30.webp": "bc3d925a247036a67183ee846d876b57963da936219e0880d39f9a0a3de14bae",
+        "assets/orb_v3/volume/fluid_color_z31.webp": "5a0e20c709bccd1c369ee3899c852469e62171845b14a8d0e7aa959c9a9aaa38",
+        "assets/orb_v3/maps/emerald_distribution.webp": "722ed270e1979f558c288d912edd5754ed3db05cb3b026a3dfbbef6c6ebc2cba",
+        "assets/orb_v3/optics/caustics.webp": "fe87aa5612d64faf1d6081c97eabbbf1cefd37f54c7d2de5f78d06bb1833a9ab",
+        "assets/orb_v3/optics/glass_environment.webp": "0f4e50d174d50474ce53bac6d4673d1ac6182c712b93819a823ac2615031ef3a"
+      },
+      "roiMaskFreezeManifestSha256": "e05b630b734204105d752dda3fe61cb34a8c9ed4d2bee08f5dc41d460b3b092f",
+      "roiMaskSha256": {
+        "AQUA_LIQUID": "30a3b237db9ad9bbba424cbbb63bbec45c9d43fc84df5ad66ef42413edb1e8a7",
+        "BACKGROUND_BOKEH": "6768e9669dea0b7c113fe0023f41f2e462efb75b22750b938c10d952695a4476",
+        "CORE_SILHOUETTE": "b90907983d33cb4b2e0963b8d6e0242f0998eb065920380085138dc03f79c1ed",
+        "DROPLETS_AND_PARTICLES": "4d8912c3e78dc976ef0f6f9ce6d71ce87b32423e78e6995b3f22a01e51bcbc8f",
+        "EMBEDDED_CRYSTAL_LENS": "d731801838b63038de7e6081357f52268907e2d3e002738a725a7b002277d016",
+        "EMERALD_FOLD": "422d422a3103731d26e8cd7b8ea2c5b9201aa2fd1f882146fca0b2eec275b868",
+        "GOLD_CAUSTIC_HIGHLIGHTS": "b4d35dd3af6654b680f2c509c0c209190ef55b1c347b8ba445a7521b1bc16598",
+        "OUTER_GLASS_RIM": "339f2fba0dec74bf1fb2f3eaa2f1140e38679b1bd066303207264c498d4c18ba",
+        "RESIDENT_BACK_GREEN_GOLD": "2dd38c84caac6849c05b0b18a04df4a928ccd06a04b5e4d416fe441d14aa701a",
+        "RESIDENT_FRONT_CYAN": "5debbbb887fba96df20287fa83b95cdb4d4ec85a1ae31f0ee7e25cff6f0e777e",
+        "RESIDENT_FRONT_GOLD": "94897a93e78517db875eb802030b7a8dd2375f6f296674ba173b13707f6970de",
+        "SAPPHIRE_VALLEY": "854852fad959fded623c4975dbde4323c383d89e322ebd409db5f07cdbc36da8"
+      },
+      "avdEnvironmentSha256": "691b52635b1ce9452cebd9f35d8cc7bb8c2429206d20d0e6805780ff58848586",
+      "avdConfigSha256": "e94aa30a30860b007c4e648996b244c729b4f07167af2954b8e02a48cdb2ca00",
+      "systemPropertiesSha256": "684332fece9b608f7be87f45618f52a5753acdad3f6580a8a650591382e26e60",
+      "runs": [
+        {
+          "runIndex": 1,
+          "buildSha": "fb04598709a282d3818745c07b0a71897cccfd66",
+          "apkSha256": "d43d087d4cf59b34323853c48f9dbf2fb96f8051f15ea1c8f64c1f7e89954714",
+          "androidApiLevel": 36,
+          "renderBackend": "SOFTWARE_RENDER",
+          "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+          "shaderSourceSha256": "4fc2be7ecf52b94c44e7a25b8472c959b100141f8622e3abb6626ff96bc26014",
+          "geometryFingerprintSha256": "a0f23152788f37a1111db7830627ad4290fbd6c7ab42ba2d51ff7d43d8bc0131",
+          "snapshotId": "v32_snap_20261124T104318918Z",
+          "cameraConfigHash": "99db4aab6fdcbae4b5e73a41caac3f496f221ff5bda383658d21f5f9a8c68d92",
+          "modelTransformHash": "662abecadadce782bc4108ea33c8749b67884cec236ab4166b9c6d09ead1ea36",
+          "imageSha256": {
+            "CORE_ONLY_TRANSPARENT.png": "1563f52a0973b9a7c55e199a5316126aaac832d980d45833d3afc26df28aadb7",
+            "CAVITY_ONLY.png": "dc0e8258faa0fc93ff144fc319e42389dea19ad4eb4d9687cb1a19ec2cf09fe5",
+            "FLUID_VOLUME_ONLY.png": "9130224b5c401e0607bd7d566f9c3331ed35b94554ca153c6adf3e204c989fb6",
+            "GLASS_ONLY.png": "52c0a763087f6d12ce909f03533c41c32d0a81147d2dfc8eea7a72af3f45c450",
+            "RESIDENTS_ONLY.png": "06a9129d8b9f78acdbbe15f5b6eadced09742445671db617a7fb6785cdc5cbb8",
+            "FULL_RENDER.png": "c360751dd2a994f05684bdff621810c818e3d2b895eb15430f14d52fd37ef8d1",
+            "BLOOM_OFF.png": "840c27a70a7ece0fde6dae6cf494d026a0374c08f29f7d323f25cdf84920539d",
+            "PRE_TONEMAP.png": "a21491f2ebc10442c146260ef578ff732763af468b5b1070e09a2a40c4d28428",
+            "POST_TONEMAP.png": "c360751dd2a994f05684bdff621810c818e3d2b895eb15430f14d52fd37ef8d1"
+          },
+          "captureFrameStats": {
+            "fps": 1,
+            "frameMsP50": 975.725,
+            "frameMsP95": 8197.617,
+            "sampleCount": 27,
+            "hasSufficientSamples": true,
+            "gpuFrameTimeMs": null,
+            "gpuFrameTimeStatus": "UNAVAILABLE",
+            "sourceNote": "Capture-time Android frame telemetry; 20-second motion video and gfxinfo remain separate evidence."
+          }
+        },
+        {
+          "runIndex": 2,
+          "buildSha": "fb04598709a282d3818745c07b0a71897cccfd66",
+          "apkSha256": "d43d087d4cf59b34323853c48f9dbf2fb96f8051f15ea1c8f64c1f7e89954714",
+          "androidApiLevel": 36,
+          "renderBackend": "SOFTWARE_RENDER",
+          "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+          "shaderSourceSha256": "4fc2be7ecf52b94c44e7a25b8472c959b100141f8622e3abb6626ff96bc26014",
+          "geometryFingerprintSha256": "a0f23152788f37a1111db7830627ad4290fbd6c7ab42ba2d51ff7d43d8bc0131",
+          "snapshotId": "v32_snap_20261124T104704474Z",
+          "cameraConfigHash": "99db4aab6fdcbae4b5e73a41caac3f496f221ff5bda383658d21f5f9a8c68d92",
+          "modelTransformHash": "662abecadadce782bc4108ea33c8749b67884cec236ab4166b9c6d09ead1ea36",
+          "imageSha256": {
+            "CORE_ONLY_TRANSPARENT.png": "1563f52a0973b9a7c55e199a5316126aaac832d980d45833d3afc26df28aadb7",
+            "CAVITY_ONLY.png": "dc0e8258faa0fc93ff144fc319e42389dea19ad4eb4d9687cb1a19ec2cf09fe5",
+            "FLUID_VOLUME_ONLY.png": "9130224b5c401e0607bd7d566f9c3331ed35b94554ca153c6adf3e204c989fb6",
+            "GLASS_ONLY.png": "52c0a763087f6d12ce909f03533c41c32d0a81147d2dfc8eea7a72af3f45c450",
+            "RESIDENTS_ONLY.png": "06a9129d8b9f78acdbbe15f5b6eadced09742445671db617a7fb6785cdc5cbb8",
+            "FULL_RENDER.png": "c360751dd2a994f05684bdff621810c818e3d2b895eb15430f14d52fd37ef8d1",
+            "BLOOM_OFF.png": "840c27a70a7ece0fde6dae6cf494d026a0374c08f29f7d323f25cdf84920539d",
+            "PRE_TONEMAP.png": "a21491f2ebc10442c146260ef578ff732763af468b5b1070e09a2a40c4d28428",
+            "POST_TONEMAP.png": "c360751dd2a994f05684bdff621810c818e3d2b895eb15430f14d52fd37ef8d1"
+          },
+          "captureFrameStats": {
+            "fps": 1,
+            "frameMsP50": 951.769,
+            "frameMsP95": 7288.65,
+            "sampleCount": 26,
+            "hasSufficientSamples": true,
+            "gpuFrameTimeMs": null,
+            "gpuFrameTimeStatus": "UNAVAILABLE",
+            "sourceNote": "Capture-time Android frame telemetry; 20-second motion video and gfxinfo remain separate evidence."
+          }
+        },
+        {
+          "runIndex": 3,
+          "buildSha": "fb04598709a282d3818745c07b0a71897cccfd66",
+          "apkSha256": "d43d087d4cf59b34323853c48f9dbf2fb96f8051f15ea1c8f64c1f7e89954714",
+          "androidApiLevel": 36,
+          "renderBackend": "SOFTWARE_RENDER",
+          "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+          "shaderSourceSha256": "4fc2be7ecf52b94c44e7a25b8472c959b100141f8622e3abb6626ff96bc26014",
+          "geometryFingerprintSha256": "a0f23152788f37a1111db7830627ad4290fbd6c7ab42ba2d51ff7d43d8bc0131",
+          "snapshotId": "v32_snap_20261124T105028141Z",
+          "cameraConfigHash": "99db4aab6fdcbae4b5e73a41caac3f496f221ff5bda383658d21f5f9a8c68d92",
+          "modelTransformHash": "662abecadadce782bc4108ea33c8749b67884cec236ab4166b9c6d09ead1ea36",
+          "imageSha256": {
+            "CORE_ONLY_TRANSPARENT.png": "1563f52a0973b9a7c55e199a5316126aaac832d980d45833d3afc26df28aadb7",
+            "CAVITY_ONLY.png": "dc0e8258faa0fc93ff144fc319e42389dea19ad4eb4d9687cb1a19ec2cf09fe5",
+            "FLUID_VOLUME_ONLY.png": "9130224b5c401e0607bd7d566f9c3331ed35b94554ca153c6adf3e204c989fb6",
+            "GLASS_ONLY.png": "52c0a763087f6d12ce909f03533c41c32d0a81147d2dfc8eea7a72af3f45c450",
+            "RESIDENTS_ONLY.png": "06a9129d8b9f78acdbbe15f5b6eadced09742445671db617a7fb6785cdc5cbb8",
+            "FULL_RENDER.png": "c360751dd2a994f05684bdff621810c818e3d2b895eb15430f14d52fd37ef8d1",
+            "BLOOM_OFF.png": "840c27a70a7ece0fde6dae6cf494d026a0374c08f29f7d323f25cdf84920539d",
+            "PRE_TONEMAP.png": "a21491f2ebc10442c146260ef578ff732763af468b5b1070e09a2a40c4d28428",
+            "POST_TONEMAP.png": "c360751dd2a994f05684bdff621810c818e3d2b895eb15430f14d52fd37ef8d1"
+          },
+          "captureFrameStats": {
+            "fps": 1,
+            "frameMsP50": 818.828,
+            "frameMsP95": 7377.481,
+            "sampleCount": 26,
+            "hasSufficientSamples": true,
+            "gpuFrameTimeMs": null,
+            "gpuFrameTimeStatus": "UNAVAILABLE",
+            "sourceNote": "Capture-time Android frame telemetry; 20-second motion video and gfxinfo remain separate evidence."
+          }
+        }
+      ]
+    }
+  },
+  "preflightGates": {
+    "PF01_SEMANTIC_ROI_MASKS": "PASS",
+    "PF02_RAYMARCH_STEPS_RUNTIME_READBACK": "PASS",
+    "PF03_RUNTIME_GEOMETRY": "PASS",
+    "PF04_API36_AVD_BASELINE": "FAIL",
+    "PF05_REPEATABILITY": "PASS"
+  },
+  "hardwareGpuStatus": "PENDING_REAL_DEVICE_GPU",
+  "visualFidelityStatus": "PENDING_REAL_DEVICE_VISUAL_ACCEPTANCE",
+  "avdEvidenceDir": "/home/runner/work/AI-Orb-Demo/AI-Orb-Demo/p0_3_evidence",
+  "visualGateStatus": "FAIL"
+}

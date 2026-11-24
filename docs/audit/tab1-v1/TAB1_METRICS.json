@@ -1,0 +1,194 @@
+{
+  "schema": "AI_ORB_TAB1_AUDIT_METRICS_V1",
+  "auditStatus": "BLOCKED_WITH_EXACT_EVIDENCE",
+  "measurementStatus": "METRIC_VALIDATION_PASS",
+  "visualGateStatus": "FAIL",
+  "interpretation": "METRIC_VALIDATION_PASS means the measurement pipeline/input identity was validated; it does not mean visual gates passed.",
+  "baseline": {
+    "gitHead": "fb04598709a282d3818745c07b0a71897cccfd66",
+    "apkSha256": "d43d087d4cf59b34323853c48f9dbf2fb96f8051f15ea1c8f64c1f7e89954714",
+    "captureSnapshotId": "v32_snap_20261124T104318918Z",
+    "cameraConfigHash": "99db4aab6fdcbae4b5e73a41caac3f496f221ff5bda383658d21f5f9a8c68d92",
+    "contractSha256": "aa0729887570db4a0da0d3fb7a629a1a7273666ba0c7ab129b60d70bfdee9170",
+    "REF_A_SHA256": "2773e4628ff6132605314693742488542c3e70fd04b581d8825dd13cea0067ee",
+    "REF_B_SHA256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
+    "backend": "SOFTWARE_RENDER",
+    "glRenderer": "Android Emulator OpenGL ES Translator (Google SwiftShader)",
+    "apiLevel": 36,
+    "size": [
+      1254,
+      1254
+    ]
+  },
+  "thresholds": {
+    "fullSceneSSIMMin": 0.82,
+    "fullSceneDeltaE2000MedianMax": 8,
+    "fullSceneDeltaE2000P90Max": 15,
+    "coreSilhouetteIoUMin": 0.95,
+    "coreCenterErrorDMax": 0.01,
+    "coreDiameterRelativeErrorMax": 0.02,
+    "materialAreaRelativeErrorMax": 0.15,
+    "materialCentroidErrorDMax": 0.04,
+    "residentEdgeF1Min": 0.85
+  },
+  "REF_B_fullScene": {
+    "deltaE2000Median": 13.037932395935059,
+    "deltaE2000P90": 36.19590759277344,
+    "roiPixels": 1572516,
+    "ssim": 0.462767449159689
+  },
+  "REF_A_isolatedCoreSilhouette": {
+    "alphaThreshold": 8,
+    "candidateBBoxXYXYExclusive": [
+      290,
+      248,
+      944,
+      902
+    ],
+    "candidateDiameterPixels": 654,
+    "centerErrorD": 0.047834798820521905,
+    "centerErrorFrameWidth": 0.03806948103897995,
+    "centerErrorPixels": 47.73912922288086,
+    "diameterRelativeError": 0.34468937875751504,
+    "iou": 0.43218991177406124,
+    "referenceBBoxXYXYExclusive": [
+      128,
+      123,
+      1126,
+      1119
+    ],
+    "referenceDiameterPixels": 998
+  },
+  "REF_A_materialArea": {
+    "AQUA_LIQUID": {
+      "candidatePixels": 798,
+      "relativeError": 0.9914589376117134,
+      "targetPixels": 93431
+    },
+    "EMERALD_FOLD": {
+      "candidatePixels": 218130,
+      "relativeError": 1.2755296842237036,
+      "targetPixels": 95859
+    },
+    "SAPPHIRE_VALLEY": {
+      "candidatePixels": 17627,
+      "relativeError": 0.44234237084374706,
+      "targetPixels": 31609
+    }
+  },
+  "REF_A_materialCentroidErrorD": {
+    "AQUA_LIQUID": 0.2577404790316559,
+    "EMERALD_FOLD": 0.02616002283566841,
+    "SAPPHIRE_VALLEY": 0.08076310511594131
+  },
+  "REF_A_coreColorRegions": {
+    "AQUA_LIQUID": {
+      "deltaE2000Median": 25.594778060913086,
+      "deltaE2000P90": 77.66429901123047,
+      "roiPixels": 93431,
+      "ssim": 0.28925222291686464
+    },
+    "EMBEDDED_CRYSTAL_LENS": {
+      "deltaE2000Median": 31.984174728393555,
+      "deltaE2000P90": 68.12043762207031,
+      "roiPixels": 158725,
+      "ssim": 0.2695316482565326
+    },
+    "EMERALD_FOLD": {
+      "deltaE2000Median": 32.310081481933594,
+      "deltaE2000P90": 75.05998229980469,
+      "roiPixels": 95859,
+      "ssim": 0.19810224755499117
+    },
+    "GOLD_CAUSTIC_HIGHLIGHTS": {
+      "deltaE2000Median": 75.71257019042969,
+      "deltaE2000P90": 95.57786560058594,
+      "roiPixels": 69218,
+      "ssim": 0.02498397702057292
+    },
+    "OUTER_GLASS_RIM": {
+      "deltaE2000Median": 57.96843338012695,
+      "deltaE2000P90": 98.00999450683594,
+      "roiPixels": 173825,
+      "ssim": 0.0037727446190971513
+    },
+    "SAPPHIRE_VALLEY": {
+      "deltaE2000Median": 25.96674346923828,
+      "deltaE2000P90": 47.43807601928711,
+      "roiPixels": 31609,
+      "ssim": 0.32709527632407215
+    }
+  },
+  "REF_B_residentSemanticGroups": {
+    "RESIDENT_BACK_GREEN_GOLD": {
+      "edgeF1": 0.1550017355865096,
+      "edgePrecision6px": 0.08460970437326511,
+      "pathRecall6px": 0.9224189413915712
+    },
+    "RESIDENT_FRONT_CYAN": {
+      "edgeF1": 0.12188551295620637,
+      "edgePrecision6px": 0.06582257156749761,
+      "pathRecall6px": 0.8220411790845801
+    },
+    "RESIDENT_FRONT_GOLD": {
+      "edgeF1": 0.13130290361827548,
+      "edgePrecision6px": 0.08164166313183341,
+      "pathRecall6px": 0.33519842887316115
+    }
+  },
+  "assetAlphaStatistics": {
+    "source": "local exact-HEAD 32 lossless WebP slices decoded to RGBA by Pillow",
+    "shapeZ_Y_X": [
+      32,
+      256,
+      256
+    ],
+    "voxelCount": 2097152,
+    "percentiles": {
+      "p10": 0.0,
+      "p50": 0.0,
+      "p75": 0.054901961237192154,
+      "p90": 0.2980392277240753,
+      "p95": 0.4274509847164154,
+      "p99": 0.9176470637321472
+    },
+    "alphaGt0_14Ratio": 0.2149944305419922,
+    "alphaZeroRatio": 0.5387978553771973
+  },
+  "runtime": {
+    "shaderProgramId": 6,
+    "shaderSourceSha256": "4fc2be7ecf52b94c44e7a25b8472c959b100141f8622e3abb6626ff96bc26014",
+    "volumeLoadState": "LOADED",
+    "uVolumeLoaded": 1,
+    "volumeDimensions": "256x256x32",
+    "volumeInternalFormat": "GL_SRGB8_ALPHA8",
+    "volumeIsSrgb": true,
+    "gpuTextureObjectsValid": true,
+    "configuredRaymarchSteps": 48,
+    "effectiveRaymarchSteps": 20,
+    "densityScale": 2.2664,
+    "coreTransparency": 0.9,
+    "foldActiveRatio": 0.413,
+    "resolution": "1254x1254",
+    "FBO": "COMPLETE",
+    "GL": "GL_NO_ERROR"
+  },
+  "preflightGates": {
+    "PF01_SEMANTIC_ROI_MASKS": "PASS",
+    "PF02_RAYMARCH_STEPS_RUNTIME_READBACK": "PASS",
+    "PF03_RUNTIME_GEOMETRY": "PASS",
+    "PF04_API36_AVD_BASELINE": "FAIL",
+    "PF05_REPEATABILITY": "PASS"
+  },
+  "repeatability": {
+    "coldRuns": 3,
+    "allImageHashesIdentical": true,
+    "metricStddev": 0.0
+  },
+  "scopeNotes": [
+    "REF_B is primary full-scene comparison; REF_A metrics are isolated-Core diagnostics.",
+    "No image registration/translation/scale/warp was applied.",
+    "All API36 images are SwiftShader software GLES, not hardware GPU evidence.",
+    "Core diameter 654px vs REF_B derived full-scene target 652px is a scale sanity check only, not a frozen silhouette pass."
+  ]
+}
