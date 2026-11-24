@@ -46,6 +46,12 @@ jobs:
       - name: P0_3_STATIC_PREFLIGHT
         run: python3 tools/orb-v3-generator/p0_3/validate_static_preflight.py
 
+      - name: P0_4_METRIC_CONTRACT
+        run: python3 tools/orb-v3-generator/p0_3/test_metric_contract.py
+
+      - name: P0_4_VIDEO_CAPTURE_CONTRACT
+        run: python3 tools/orb-v3-generator/p0_3/test_p04_video_capture.py
+
       - name: MASTER_LOCK
         run: |
           python3 - <<'PY'
@@ -585,13 +591,13 @@ jobs:
             "captureViewport": "1254x1254",
             "videoSize": "720x720",
             "bitRate": 4000000,
-            "deviceTimeLimitSeconds": 60,
+            "deviceTimeLimitSeconds": 24,
             "hostTimeoutSeconds": 600
           }
           JSON
           set +e
           timeout --foreground --signal=TERM --kill-after=15s 600s adb shell screenrecord \
-            --size 720x720 --bit-rate 4000000 --time-limit 60 /sdcard/MOTION_20S.mp4 \
+            --size 720x720 --bit-rate 4000000 --time-limit 24 /sdcard/MOTION_20S.mp4 \
             > p0_3_evidence/api36_avd/logs/screenrecord.log 2>&1
           SCREENRECORD_RC=$?
           set -e
@@ -602,21 +608,10 @@ jobs:
           adb pull /sdcard/MOTION_20S.mp4 p0_3_evidence/MOTION_20S.mp4
           ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 p0_3_evidence/MOTION_20S.mp4 > p0_3_evidence/motion_duration_seconds.txt
           test -s p0_3_evidence/MOTION_20S.mp4
-          python3 - <<'PY'
-          import subprocess
-          from pathlib import Path
-          video = Path("p0_3_evidence/MOTION_20S.mp4")
-          frames = Path("p0_3_evidence/motion_frames")
-          frames.mkdir(parents=True, exist_ok=True)
-          for second in (0, 4, 8, 12, 16, 20):
-              target = frames / f"MOTION_{second}S.png"
-              subprocess.run([
-                  "ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
-                  "-ss", str(second), "-i", str(video), "-frames:v", "1", str(target)
-              ], check=True)
-              if not target.is_file() or target.stat().st_size < 1024:
-                  raise SystemExit(f"Motion video frame at {second}s is missing or too small")
-          PY
+          python3 tools/orb-v3-generator/p0_3/validate_p04_motion_capture.py \
+            --video p0_3_evidence/MOTION_20S.mp4 \
+            --output p0_3_evidence/P04_VIDEO_CAPTURE_REPORT.json \
+            --telemetry p0_3_evidence/latest_capture/RUNTIME_TELEMETRY.json
           adb logcat -b all -d > p0_3_evidence/api36_avd/logs/logcat.txt
           { grep -Eni 'GL error|GL_INVALID|GL_OUT_OF_MEMORY|shader compile failed|V3_ASSET_ERROR|FATAL EXCEPTION|ANR in' p0_3_evidence/api36_avd/logs/logcat.txt || true; } > p0_3_evidence/api36_avd/logs/gl_errors.txt
           adb shell dumpsys activity > p0_3_evidence/api36_avd/logs/activity_dump.txt
@@ -643,6 +638,14 @@ jobs:
             --expected-apk exact-head/AI-Orb-Demo-V4.2-Core-Fidelity-Final-debug.apk \
             --expected-head "$EXPECTED_HEAD_SHA"
 
+      - name: P0_4_METRIC_VALIDATION
+        run: |
+          python3 tools/orb-v3-generator/p0_3/validate_p04_metrics.py \
+            --evidence-dir p0_3_evidence/repeats/baseline_1 \
+            --historical-report docs/p0_3/VISUAL_DIFF_REPORT.json \
+            --output docs/p0_3/P04_METRIC_VALIDATION_REPORT.json \
+            --expected-head "${{ github.event.pull_request.head.sha || github.sha }}"
+
       - name: Upload API36 baseline and PF05 evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -658,4 +661,5 @@ jobs:
             docs/p0_3/VISUAL_DIFF_REPORT.json
             docs/p0_3/VISUAL_DIFF_CONTACT_SHEET.png
             docs/p0_3/VISUAL_DIFF_HEATMAPS/**
+            docs/p0_3/P04_METRIC_VALIDATION_REPORT.json
           if-no-files-found: warn

@@ -28,6 +28,10 @@ from video_duration import parse_video_duration
 ROOT = Path(__file__).resolve().parents[3]
 P0 = ROOT / "docs/p0_3"
 SIZE = (1254, 1254)
+# REF_A and CORE_ONLY captures carry alpha. Compare both on the same canonical
+# opaque background so undefined RGB values under alpha=0 cannot affect SSIM or
+# Delta E. Black matches the transparent clear used by the frozen core capture.
+CORE_COMPOSITE_BACKGROUND_SRGB = (0, 0, 0)
 REQUIRED_IMAGES = [
     "CORE_ONLY_TRANSPARENT.png", "CAVITY_ONLY.png", "FLUID_VOLUME_ONLY.png", "GLASS_ONLY.png",
     "RESIDENTS_ONLY.png", "FULL_RENDER.png", "BLOOM_OFF.png", "PRE_TONEMAP.png", "POST_TONEMAP.png",
@@ -117,6 +121,9 @@ def build_api36_evidence_archive(evidence: Path, first_manifest: dict, first_tel
 
     if (evidence / "MOTION_20S.mp4").is_file():
         shutil.copy2(evidence / "MOTION_20S.mp4", video_root / "continuous_20s.mp4")
+    motion_report = evidence / "P04_VIDEO_CAPTURE_REPORT.json"
+    if motion_report.is_file():
+        shutil.copy2(motion_report, video_root / motion_report.name)
     motion_frames = evidence / "motion_frames"
     if motion_frames.is_dir():
         shutil.copytree(motion_frames, video_root / "frames", dirs_exist_ok=True)
@@ -182,6 +189,83 @@ def mask_centroid_error(candidate: np.ndarray, target: np.ndarray, diameter: flo
     return math.dist(a, b) / max(diameter, 1.0)
 
 
+def silhouette_metrics(candidate_alpha: np.ndarray, target_alpha: np.ndarray, threshold: int = 8) -> dict:
+    """Compare the contract's alpha>=8 silhouettes without any registration."""
+    candidate_silhouette = np.asarray(candidate_alpha) >= threshold
+    target_silhouette = np.asarray(target_alpha) >= threshold
+    if candidate_silhouette.shape != target_silhouette.shape:
+        raise ValueError("Silhouette arrays must have the same dimensions")
+    sil_intersection = int(np.count_nonzero(candidate_silhouette & target_silhouette))
+    sil_union = int(np.count_nonzero(candidate_silhouette | target_silhouette))
+    target_box, candidate_box = bbox(target_silhouette), bbox(candidate_silhouette)
+    target_center, candidate_center = centroid(target_silhouette), centroid(candidate_silhouette)
+    if not target_box or not candidate_box or not target_center or not candidate_center:
+        raise ValueError("Both silhouettes must contain visible pixels")
+    target_diameter = max(target_box[2] - target_box[0], target_box[3] - target_box[1])
+    candidate_diameter = max(candidate_box[2] - candidate_box[0], candidate_box[3] - candidate_box[1])
+    centers_px = math.dist(candidate_center, target_center)
+    return {
+        "iou": sil_intersection / max(sil_union, 1),
+        "centerErrorPixels": centers_px,
+        "centerErrorFrameWidth": centers_px / SIZE[0],
+        "centerErrorD": centers_px / max(target_diameter, 1),
+        "diameterRelativeError": abs(candidate_diameter - target_diameter) / max(target_diameter, 1),
+        "referenceDiameterPixels": target_diameter,
+        "candidateDiameterPixels": candidate_diameter,
+        "referenceBBoxXYXYExclusive": list(target_box),
+        "candidateBBoxXYXYExclusive": list(candidate_box),
+        "alphaThreshold": threshold,
+    }
+
+
+def srgb_to_linear(srgb: np.ndarray) -> np.ndarray:
+    srgb = np.asarray(srgb, dtype=np.float32)
+    return np.where(srgb <= 0.04045, srgb / 12.92, ((srgb + 0.055) / 1.055) ** 2.4)
+
+
+def linear_to_srgb(linear: np.ndarray) -> np.ndarray:
+    linear = np.clip(np.asarray(linear, dtype=np.float32), 0.0, 1.0)
+    return np.where(linear <= 0.0031308, linear * 12.92, 1.055 * (linear ** (1.0 / 2.4)) - 0.055)
+
+
+def composite_rgba_on_fixed_srgb_background(
+    image_rgba: np.ndarray,
+    background_srgb: tuple[int, int, int] = CORE_COMPOSITE_BACKGROUND_SRGB,
+) -> np.ndarray:
+    """Composite straight-alpha sRGB RGBA onto a fixed background in linear light."""
+    rgba = np.asarray(image_rgba)
+    if rgba.ndim != 3 or rgba.shape[2] != 4:
+        raise ValueError("Expected an HxWx4 RGBA image")
+    if any(channel < 0 or channel > 255 for channel in background_srgb):
+        raise ValueError("Background sRGB channels must be in 0..255")
+    fg_srgb = rgba[:, :, :3].astype(np.float32) / 255.0
+    alpha = rgba[:, :, 3:4].astype(np.float32) / 255.0
+    bg_srgb = np.asarray(background_srgb, dtype=np.float32).reshape((1, 1, 3)) / 255.0
+    composited_linear = srgb_to_linear(fg_srgb) * alpha + srgb_to_linear(bg_srgb) * (1.0 - alpha)
+    return np.clip(np.rint(linear_to_srgb(composited_linear) * 255.0), 0, 255).astype(np.uint8)
+
+
+def roi_color_metrics(reference: np.ndarray, candidate: np.ndarray, roi: np.ndarray) -> dict:
+    """Apply the frozen SSIM / CIEDE2000 definitions to already comparable RGB images."""
+    if reference.shape != candidate.shape or reference.ndim != 3 or reference.shape[2] != 3:
+        raise ValueError("Reference and candidate must be same-size RGB images")
+    if roi.shape != reference.shape[:2]:
+        raise ValueError("ROI mask must match the RGB image dimensions")
+    _, ssim_map = structural_similarity(reference, candidate, channel_axis=2, data_range=255, full=True)
+    if ssim_map.ndim == 3:
+        ssim_map = np.mean(ssim_map, axis=2)
+    ref_lab = rgb2lab(reference.astype(np.float32) / 255.0)
+    candidate_lab = rgb2lab(candidate.astype(np.float32) / 255.0)
+    delta = deltaE_ciede2000(ref_lab, candidate_lab)
+    vals = delta[roi]
+    return {
+        "ssim": float(np.mean(ssim_map[roi])) if np.any(roi) else None,
+        "deltaE2000Median": float(np.median(vals)) if vals.size else None,
+        "deltaE2000P90": float(np.percentile(vals, 90)) if vals.size else None,
+        "roiPixels": int(np.count_nonzero(roi)),
+    }
+
+
 def color_masks(image_rgba: np.ndarray) -> dict[str, np.ndarray]:
     rgb = image_rgba[:, :, :3].astype(np.float32)
     hsv = np.asarray(Image.fromarray(image_rgba[:, :, :3], "RGB").convert("HSV"))
@@ -202,16 +286,7 @@ def metric_set(capture_dir: Path) -> dict:
     full = load_rgba(capture_dir / "FULL_RENDER.png")
     target_rgba = np.asarray(Image.open(P0 / "references/REF_A_CORE_CRYSTAL_RGBA.png").convert("RGBA"))
     target_scene = np.asarray(Image.open(P0 / "references/REF_B_FULL_SCENE_RGB.png").convert("RGB"))
-    target_silhouette = target_rgba[:, :, 3] >= 8
-    candidate_silhouette = core[:, :, 3] >= 8
-    sil_intersection = int(np.count_nonzero(candidate_silhouette & target_silhouette))
-    sil_union = int(np.count_nonzero(candidate_silhouette | target_silhouette))
-    target_box, candidate_box = bbox(target_silhouette), bbox(candidate_silhouette)
-    target_center, candidate_center = centroid(target_silhouette), centroid(candidate_silhouette)
-    assert target_box and candidate_box and target_center and candidate_center
-    target_diameter = max(target_box[2] - target_box[0], target_box[3] - target_box[1])
-    candidate_diameter = max(candidate_box[2] - candidate_box[0], candidate_box[3] - candidate_box[1])
-    centers_px = math.dist(candidate_center, target_center)
+    silhouette = silhouette_metrics(core[:, :, 3], target_rgba[:, :, 3])
     candidate_classes = color_masks(core)
     area_errors, centroid_errors = {}, {}
     for region_id, candidate in candidate_classes.items():
@@ -223,27 +298,12 @@ def metric_set(capture_dir: Path) -> dict:
             "candidatePixels": candidate_area,
             "relativeError": abs(candidate_area - target_area) / max(target_area, 1),
         }
-        centroid_errors[region_id] = mask_centroid_error(candidate, target, target_diameter)
+        centroid_errors[region_id] = mask_centroid_error(candidate, target, silhouette["referenceDiameterPixels"])
 
-    ref_a_rgb = target_rgba[:, :, :3]
-    core_rgb = core[:, :, :3]
+    ref_a_rgb = composite_rgba_on_fixed_srgb_background(target_rgba)
+    core_rgb = composite_rgba_on_fixed_srgb_background(core)
     ref_b_rgb = target_scene
     full_rgb = full[:, :, :3]
-
-    def roi_color_metrics(reference: np.ndarray, candidate: np.ndarray, roi: np.ndarray) -> dict:
-        _, ssim_map = structural_similarity(reference, candidate, channel_axis=2, data_range=255, full=True)
-        if ssim_map.ndim == 3:
-            ssim_map = np.mean(ssim_map, axis=2)
-        ref_lab = rgb2lab(reference.astype(np.float32) / 255.0)
-        candidate_lab = rgb2lab(candidate.astype(np.float32) / 255.0)
-        delta = deltaE_ciede2000(ref_lab, candidate_lab)
-        vals = delta[roi]
-        return {
-            "ssim": float(np.mean(ssim_map[roi])) if np.any(roi) else None,
-            "deltaE2000Median": float(np.median(vals)) if vals.size else None,
-            "deltaE2000P90": float(np.percentile(vals, 90)) if vals.size else None,
-            "roiPixels": int(np.count_nonzero(roi)),
-        }
 
     color_roi_ids = ["OUTER_GLASS_RIM", "EMERALD_FOLD", "SAPPHIRE_VALLEY", "AQUA_LIQUID", "EMBEDDED_CRYSTAL_LENS", "GOLD_CAUSTIC_HIGHLIGHTS"]
     core_rois = {region: roi_color_metrics(ref_a_rgb, core_rgb, load_mask(region)) for region in color_roi_ids}
@@ -274,18 +334,14 @@ def metric_set(capture_dir: Path) -> dict:
         resident_metrics[region] = {"edgePrecision6px": precision, "pathRecall6px": recall, "edgeF1": 2 * precision * recall / max(precision + recall, 1e-12)}
 
     return {
-        "coreSilhouette": {
-            "iou": sil_intersection / max(sil_union, 1),
-            "centerErrorPixels": centers_px,
-            "centerErrorFrameWidth": centers_px / SIZE[0],
-            "centerErrorD": centers_px / target_diameter,
-            "diameterRelativeError": abs(candidate_diameter - target_diameter) / target_diameter,
-            "referenceDiameterPixels": target_diameter,
-            "candidateDiameterPixels": candidate_diameter,
-        },
+        "coreSilhouette": silhouette,
         "materialArea": area_errors,
         "materialCentroidErrorD": centroid_errors,
         "coreColorRegions": core_rois,
+        "coreColorComparison": {
+            "alphaComposite": "straight-alpha sRGB composited in linear light",
+            "backgroundSrgb": list(CORE_COMPOSITE_BACKGROUND_SRGB),
+        },
         "fullSceneColor": full_scene_metrics,
         "residentPath": resident_metrics,
     }
@@ -298,13 +354,19 @@ def make_diff_images(reference_path: Path, candidate_path: Path, label: str) -> 
         ref = ref.resize(SIZE, Image.Resampling.LANCZOS)
     if candidate.size != SIZE:
         candidate = candidate.resize(SIZE, Image.Resampling.LANCZOS)
-    diff = np.abs(np.asarray(ref).astype(np.int16) - np.asarray(candidate).astype(np.int16))
-    heat = np.clip(diff[:, :, :3].max(axis=2) * 3, 0, 255).astype(np.uint8)
+    if label == "core":
+        ref_rgb = composite_rgba_on_fixed_srgb_background(np.asarray(ref))
+        candidate_rgb = composite_rgba_on_fixed_srgb_background(np.asarray(candidate))
+    else:
+        ref_rgb = np.asarray(ref.convert("RGB"))
+        candidate_rgb = np.asarray(candidate.convert("RGB"))
+    diff = np.abs(ref_rgb.astype(np.int16) - candidate_rgb.astype(np.int16))
+    heat = np.clip(diff.max(axis=2) * 3, 0, 255).astype(np.uint8)
     heat_rgb = np.zeros((SIZE[1], SIZE[0], 3), dtype=np.uint8)
     heat_rgb[:, :, 0] = heat
     heat_rgb[:, :, 1] = np.clip(255 - heat * 0.35, 0, 255).astype(np.uint8)
     heat_rgb[:, :, 2] = np.clip(255 - heat * 0.7, 0, 255).astype(np.uint8)
-    return ref.convert("RGB"), candidate.convert("RGB"), Image.fromarray(heat_rgb)
+    return Image.fromarray(ref_rgb), Image.fromarray(candidate_rgb), Image.fromarray(heat_rgb)
 
 
 def main() -> None:
@@ -528,12 +590,13 @@ def main() -> None:
     api = (evidence / "android_api.txt").read_text().strip() if (evidence / "android_api.txt").exists() else "UNKNOWN"
     duration_path = evidence / "motion_duration_seconds.txt"
     video_duration = parse_video_duration(duration_path.read_text()) if duration_path.exists() else 0.0
+    motion_report_path = evidence / "P04_VIDEO_CAPTURE_REPORT.json"
+    motion_report = json.loads(motion_report_path.read_text()) if motion_report_path.is_file() else {}
+    motion_gate_pass = motion_report.get("status") == "PASS"
     if api != "36":
         raise ValueError(f"Expected API 36 AVD, got {api}")
     if not (evidence / "MOTION_20S.mp4").is_file() or (evidence / "MOTION_20S.mp4").stat().st_size == 0:
         raise ValueError("PF04 motion video is missing or empty")
-    if video_duration < 20.0:
-        raise ValueError(f"Motion video is shorter than 20 seconds: {video_duration}")
     environment = json.loads((evidence / "api36_avd/environment.json").read_text())
     avd_config_path = evidence / "api36_avd/avd_config.ini"
     system_properties_path = evidence / "api36_avd/system_properties.txt"
@@ -749,7 +812,7 @@ def main() -> None:
         "PF01_SEMANTIC_ROI_MASKS": "PASS",
         "PF02_RAYMARCH_STEPS_RUNTIME_READBACK": pf02["status"],
         "PF03_RUNTIME_GEOMETRY": pf03["status"],
-        "PF04_API36_AVD_BASELINE": "PASS" if api == "36" and video_duration >= 20 and len(result["runs"]) == 3 else "FAIL",
+        "PF04_API36_AVD_BASELINE": "PASS" if api == "36" and motion_gate_pass and len(result["runs"]) == 3 else "FAIL",
         "PF05_REPEATABILITY": pf05["status"],
     }
     preflight_ready = all(status == "PASS" for status in pf_statuses.values())
@@ -772,6 +835,7 @@ def main() -> None:
         "apiLevel": int(api),
         "renderBackend": baseline_manifest["renderBackend"],
         "videoDurationSeconds": video_duration,
+        "videoCaptureValidation": motion_report,
         "runCount": len(result["runs"]),
     }
     source_checks["PF05_REPEATABILITY_NOISE"] = {
@@ -799,6 +863,7 @@ def main() -> None:
                 "model": (evidence / "avd_model.txt").read_text().strip(),
                 "renderBackend": baseline_manifest["renderBackend"],
                 "videoDurationSeconds": video_duration,
+                "videoCaptureValidation": motion_report,
                 "runCount": len(result["runs"]),
                 "installedApkSha256": installed_apk_record["apkSha256"],
                 "installedBaseApkSha256": installed_apk_record["installedBaseApkSha256"],
@@ -857,7 +922,7 @@ def main() -> None:
     print(f"[P0_3_PF01 PASS] 13 regions / 12 masks; freeze={roi_freeze_sha}")
     print(f"[P0_3_PF02 {pf02['status']}] actual linked-program Uniform readback; backend={baseline_manifest['renderBackend']}; steps={baseline_manifest['effectiveRaymarchSteps']}")
     print(f"[P0_3_PF03 {pf03['status']}] measured subdivision={baseline_manifest['geometry']['currentSubdivisions']}; vertices={baseline_manifest['geometry']['vertexCount']}; triangles={baseline_manifest['geometry']['triangleCount']}")
-    print(f"[P0_3_PF04 {pf_statuses['PF04_API36_AVD_BASELINE']}] API {api}; backend={baseline_manifest['renderBackend']}; video={video_duration:.2f}s")
+    print(f"[P0_3_PF04 {pf_statuses['PF04_API36_AVD_BASELINE']}] API {api}; backend={baseline_manifest['renderBackend']}; video={video_duration:.2f}s; decodedFrames={motion_report.get('stream', {}).get('ffprobeDecodedFrameCount', 'UNAVAILABLE')}")
     print(f"[P0_3_PF05 {pf05['status']}] three cold starts; identical conditions={pf05['sameConditions']}; all hashes identical={pf05['allImageHashesIdentical']}")
     print(f"[P0_3_PREFLIGHT {'READY_FOR_ROUND_1' if preflight_ready else 'BLOCKED'}] visualGate={result['visualGateStatus']}; hardware GPU remains separate")
     print(f"[P0_3_API36_EVIDENCE] {api_zip} ({api_zip.stat().st_size} bytes)")

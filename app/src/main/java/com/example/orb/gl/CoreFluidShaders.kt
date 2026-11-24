@@ -890,6 +890,12 @@ void main() {
     refractedBack.r = texture(uRefractionTex, sampleUvR).r * invHdr;
     refractedBack.g = texture(uRefractionTex, sampleUvG).g * invHdr;
     refractedBack.b = texture(uRefractionTex, sampleUvB).b * invHdr;
+    // The isolated transparent-core capture has no external scene behind the lens.
+    // Treating its zero-alpha refraction target as black was cutting a dark closed oval
+    // into the fluid and making the embedded lens read as a detached eye. Use the actual
+    // refraction-target coverage to gate only background-transmission terms; the internal
+    // volume and its lighting remain visible when the capture backdrop is transparent.
+    float refractionCoverage = clamp(texture(uRefractionTex, sampleUvG).a, 0.0, 1.0);
 
     // Quality-adaptive V3 steps: LOW=16, MEDIUM=32, HIGH=48
     int steps = clamp(uRaymarchSteps, 12, 48);
@@ -1185,7 +1191,7 @@ void main() {
     float cavityBgScale = mix(1.0, taskTrans, 0.72);
     vec3 clearCavityCol = refractedBack * vec3(0.92, 0.99, 1.02) * cavityBgScale
                         + vec3(0.001, 0.012, 0.021) * domeCyanSheen;
-    interiorCol = mix(interiorCol, clearCavityCol, airCavity * 0.92);
+    interiorCol = mix(interiorCol, clearCavityCol, airCavity * 0.92 * refractionCoverage);
 
     // Smooth Candidate B embedded crystal lens refraction rim + localized 10:30 sunlit golden penetration
     if (hitCrystalLens) {
@@ -1195,7 +1201,7 @@ void main() {
         float lensF0 = pow((uInterfaceIor.z - uInterfaceIor.y) / max(uInterfaceIor.z + uInterfaceIor.y, 1e-4), 2.0);
         float lensFresnel = lensF0 + (1.0 - lensF0) * pow(1.0 - lensNdotV, 5.0);
         float lensInterface = lensPocketMask * smoothstep(0.015, 0.14, lensThickness);
-        float lensClearBg = lensInterface * (0.28 + 0.22 * airCavity);
+        float lensClearBg = lensInterface * (0.28 + 0.22 * airCavity) * refractionCoverage;
         vec3 lensCrystalTrans = refractedBack * vec3(0.88, 0.98, 1.06) * cavityBgScale
                               + vec3(0.004, 0.036, 0.068) * uLensParams.y * lensPocketMask;
         interiorCol = mix(interiorCol, lensCrystalTrans, clamp(lensClearBg * 0.58, 0.0, 0.68));
