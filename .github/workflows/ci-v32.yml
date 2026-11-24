@@ -638,8 +638,11 @@ jobs:
               exit 1
             }
           done
-          adb pull "/sdcard/Android/data/$APP_ID/files/p0_3_repeatability" p0_3_evidence/repeats
-          adb pull "/sdcard/Android/data/$APP_ID/files/v42_fidelity_evidence" p0_3_evidence/latest_capture
+          mkdir -p p0_3_evidence/repeats p0_3_evidence/latest_capture
+          adb exec-out run-as "$APP_ID" sh -c 'cd files && tar -cf - p0_3_repeatability' \
+            | tar -xf - --strip-components=1 -C p0_3_evidence/repeats
+          adb exec-out run-as "$APP_ID" sh -c 'cd files && tar -cf - v42_fidelity_evidence' \
+            | tar -xf - --strip-components=1 -C p0_3_evidence/latest_capture
           if adb shell pidof "$APP_ID" | tr -d '\r' | tee p0_3_evidence/api36_avd/logs/application_pid_after_baselines.txt | grep -Eq '^[0-9]+$'; then
             echo "PROCESS_REMAINS_RUNNING_AFTER_INSTRUMENTATION" > p0_3_evidence/api36_avd/logs/application_lifecycle_after_baselines.txt
           else
@@ -660,7 +663,9 @@ jobs:
             "$APP_ID.test/androidx.test.runner.AndroidJUnitRunner" \
             | tee "$OUT/logs/tab3_layer_instrumentation.txt"
           grep -q 'OK (1 test)' "$OUT/logs/tab3_layer_instrumentation.txt"
-          adb pull "/sdcard/Android/data/$APP_ID/files/tab3_hybrid" "$OUT/captures"
+          mkdir -p "$OUT/captures"
+          adb exec-out run-as "$APP_ID" sh -c 'cd files && tar -cf - tab3_hybrid' \
+            | tar -xf - --strip-components=1 -C "$OUT/captures"
           test -s "$OUT/captures/TAB1_NATIVE_ORB_GPU.png"
           test -s "$OUT/captures/TAB3_HYBRID_ORB_GPU.png"
           test -s "$OUT/captures/YUJIAN_CORE_ONLY_SOURCE_SHADER_GPU.png"
@@ -685,7 +690,7 @@ jobs:
           OUT=p0_3_evidence/yujian_tab3
           mkdir -p "$OUT/logs"
           adb shell am force-stop "$APP_ID"
-          adb shell rm -f "/sdcard/Android/data/$APP_ID/files/tab3_hybrid/TAB3_MOTION_STARTED"
+          adb shell run-as "$APP_ID" rm -f files/tab3_hybrid/TAB3_MOTION_STARTED
           timeout 900s adb shell am instrument -w -r \
             -e class com.example.YuJianHybridTab3Api36Test#thirdTabKeepsTheSharedCoreClockMovingForTwentySeconds \
             "$APP_ID.test/androidx.test.runner.AndroidJUnitRunner" \
@@ -693,7 +698,7 @@ jobs:
           TEST_PID=$!
           MARKER_READY=0
           for attempt in $(seq 1 120); do
-            if adb shell test -f "/sdcard/Android/data/$APP_ID/files/tab3_hybrid/TAB3_MOTION_STARTED"; then
+            if adb shell run-as "$APP_ID" test -f files/tab3_hybrid/TAB3_MOTION_STARTED; then
               MARKER_READY=1
               break
             fi
@@ -710,7 +715,7 @@ jobs:
           wait "$TEST_PID"
           cat "$OUT/logs/tab3_motion_instrumentation.txt"
           grep -q 'OK (1 test)' "$OUT/logs/tab3_motion_instrumentation.txt"
-          adb pull "/sdcard/Android/data/$APP_ID/files/tab3_hybrid/TAB3_MOTION_20S_RUNTIME.json" "$OUT/captures/TAB3_MOTION_20S_RUNTIME.json"
+          adb exec-out run-as "$APP_ID" cat files/tab3_hybrid/TAB3_MOTION_20S_RUNTIME.json > "$OUT/captures/TAB3_MOTION_20S_RUNTIME.json"
           adb pull /sdcard/AI_ORB_DEMO_TAB3_FINAL_20S.mp4 "$OUT/AI_ORB_DEMO_TAB3_FINAL_20S.mp4"
           python3 tools/orb-yujian-tab3/validate_runtime_evidence.py \
             --evidence-dir "$OUT/captures" \
@@ -852,8 +857,11 @@ jobs:
         shell: bash
         run: |
           mkdir -p p0_3_evidence/api36_avd/logs
-          adb pull "/sdcard/Android/data/$APP_ID/files/v42_fidelity_evidence" p0_3_evidence/api36_avd/failure_evidence 2>&1 || true
-          adb pull "/sdcard/Android/data/$APP_ID/files/p0_3_repeatability" p0_3_evidence/api36_avd/failure_repeatability 2>&1 || true
+          mkdir -p p0_3_evidence/api36_avd/failure_evidence p0_3_evidence/api36_avd/failure_repeatability
+          adb exec-out run-as "$APP_ID" sh -c 'cd files && tar -cf - v42_fidelity_evidence' 2>/dev/null \
+            | tar -xf - --strip-components=1 -C p0_3_evidence/api36_avd/failure_evidence 2>/dev/null || true
+          adb exec-out run-as "$APP_ID" sh -c 'cd files && tar -cf - p0_3_repeatability' 2>/dev/null \
+            | tar -xf - --strip-components=1 -C p0_3_evidence/api36_avd/failure_repeatability 2>/dev/null || true
           adb devices -l > p0_3_evidence/api36_avd/adb_devices_after_failure.txt 2>&1 || true
           adb logcat -b all -d > p0_3_evidence/api36_avd/logs/logcat_after_failure.txt 2>&1 || true
           adb shell dumpsys activity > p0_3_evidence/api36_avd/logs/activity_after_failure.txt 2>&1 || true

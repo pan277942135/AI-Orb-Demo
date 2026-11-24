@@ -28,8 +28,11 @@ class P0_3Api36EvidenceTest {
       ?: error("Pass instrumentation argument -e p0_3Run 1|2|3")
     require(runIndex in 1..3) { "Pass instrumentation argument -e p0_3Run 1|2|3" }
     val context = InstrumentationRegistryProvider.targetContext(composeRule.activity)
-    val evidenceDir = OrbGpuReferenceCapture.resolveEvidenceDir(context)
-    val repeatRoot = File(context.getExternalFilesDir(null) ?: context.filesDir, "p0_3_repeatability")
+    // Instrumentation evidence stays in app-private storage. API 36 AVD external
+    // app-specific storage intermittently rejects large PNG writes with EACCES.
+    // The production UI capture path still uses resolveEvidenceDir() unchanged.
+    val evidenceDir = File(context.filesDir, OrbGpuReferenceCapture.EVIDENCE_DIR_NAME)
+    val repeatRoot = File(context.filesDir, "p0_3_repeatability")
     repeatRoot.mkdirs()
 
     evidenceDir.walkBottomUp().forEach { file ->

@@ -37,7 +37,7 @@ class YuJianHybridTab3Api36Test {
     val scene = requireNotNull(composeRule.activity.sceneForInstrumentation())
     val contextCount = scene.glContextInitCount
 
-    val evidenceDir = File(composeRule.activity.getExternalFilesDir(null), "tab3_hybrid").apply { mkdirs() }
+    val evidenceDir = File(composeRule.activity.filesDir, "tab3_hybrid").apply { mkdirs() }
     composeRule.activity.setSceneForInstrumentation(
       OrbSceneMode.ORB_ONLY, RenderDebugMode.REFERENCE_LOCKED_FRAME, paused = true,
     )
@@ -163,7 +163,7 @@ class YuJianHybridTab3Api36Test {
     }
     val before = scene.latestTelemetry
     val started = SystemClock.elapsedRealtime()
-    val evidenceDir = File(composeRule.activity.getExternalFilesDir(null), "tab3_hybrid").apply { mkdirs() }
+    val evidenceDir = File(composeRule.activity.filesDir, "tab3_hybrid").apply { mkdirs() }
     File(evidenceDir, "TAB3_MOTION_STARTED").writeText("${System.currentTimeMillis()}\n")
     SystemClock.sleep(20_500)
     val elapsedMs = SystemClock.elapsedRealtime() - started
