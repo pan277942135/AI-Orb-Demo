@@ -1,6 +1,7 @@
 package com.example
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -41,7 +42,7 @@ class YuJianHybridTab3Api36Test {
     composeRule.activity.setSceneForInstrumentation(
       OrbSceneMode.ORB_ONLY, RenderDebugMode.REFERENCE_LOCKED_FRAME, paused = true,
     )
-    composeRule.waitUntil(timeoutMillis = 30_000) {
+    awaitTelemetry(scene, "Tab 1 reference-locked frame") {
       scene.latestTelemetry.activeRenderMode == RenderDebugMode.REFERENCE_LOCKED_FRAME
     }
     val nativeSnapshot = scene.latestTelemetry
@@ -49,7 +50,7 @@ class YuJianHybridTab3Api36Test {
     composeRule.activity.setSceneForInstrumentation(
       OrbSceneMode.ORB_ONLY, RenderDebugMode.RIBBONS_ONLY, paused = true,
     )
-    composeRule.waitUntil(timeoutMillis = 30_000) {
+    awaitTelemetry(scene, "Tab 1 residents frame") {
       scene.latestTelemetry.activeRenderMode == RenderDebugMode.RIBBONS_ONLY
     }
     val nativeOuterSnapshot = scene.latestTelemetry
@@ -60,13 +61,13 @@ class YuJianHybridTab3Api36Test {
     composeRule.activity.setSceneForInstrumentation(
       OrbSceneMode.ORB_ONLY, RenderDebugMode.REFERENCE_LOCKED_FRAME, paused = true,
     )
-    composeRule.waitUntil(timeoutMillis = 30_000) {
+    awaitTelemetry(scene, "Tab 1 reference-locked frame restore") {
       scene.latestTelemetry.activeRenderMode == RenderDebugMode.REFERENCE_LOCKED_FRAME
     }
 
     composeRule.onNodeWithTag("tab_yujian_ai_orb").performClick()
     composeRule.onNodeWithTag("yujian_hybrid_badge").assertIsDisplayed()
-    composeRule.waitUntil(timeoutMillis = 30_000) {
+    awaitTelemetry(scene, "Tab 3 core and outer field activation") {
       val telemetry = scene.latestTelemetry
       telemetry.coreRendererMode == OrbCoreMode.YUJIAN_CORE &&
         telemetry.yujianCoreStatus == "RENDERED" &&
@@ -104,7 +105,7 @@ class YuJianHybridTab3Api36Test {
     composeRule.activity.setSceneForInstrumentation(
       OrbSceneMode.YUJIAN_HYBRID, RenderDebugMode.REFERENCE_LOCKED_FRAME, paused = true,
     )
-    composeRule.waitUntil(timeoutMillis = 30_000) {
+    awaitTelemetry(scene, "Tab 3 reference-locked frame") {
       scene.latestTelemetry.coreRendererMode == OrbCoreMode.YUJIAN_CORE &&
         scene.latestTelemetry.activeRenderMode == RenderDebugMode.REFERENCE_LOCKED_FRAME &&
         scene.latestTelemetry.yujianCoreStatus == "RENDERED"
@@ -118,7 +119,7 @@ class YuJianHybridTab3Api36Test {
     composeRule.activity.setSceneForInstrumentation(
       OrbSceneMode.YUJIAN_HYBRID, RenderDebugMode.CORE_ONLY_TRANSPARENT, paused = true,
     )
-    composeRule.waitUntil(timeoutMillis = 30_000) {
+    awaitTelemetry(scene, "Tab 3 transparent core frame") {
       scene.latestTelemetry.activeRenderMode == RenderDebugMode.CORE_ONLY_TRANSPARENT &&
         scene.latestTelemetry.yujianCoreStatus == "RENDERED"
     }
@@ -127,7 +128,7 @@ class YuJianHybridTab3Api36Test {
     composeRule.activity.setSceneForInstrumentation(
       OrbSceneMode.YUJIAN_HYBRID, RenderDebugMode.RIBBONS_ONLY, paused = true,
     )
-    composeRule.waitUntil(timeoutMillis = 30_000) {
+    awaitTelemetry(scene, "Tab 3 residents frame") {
       scene.latestTelemetry.activeRenderMode == RenderDebugMode.RIBBONS_ONLY
         && scene.latestTelemetry.outerOpticalStatus == "RENDERED"
     }
@@ -138,7 +139,7 @@ class YuJianHybridTab3Api36Test {
       capture("TAB3_OUTER_RESIDENTS_GPU_R${index + 1}.png", evidenceDir, scene.latestTelemetry)
     }
     composeRule.activity.setSceneForInstrumentation(OrbSceneMode.YUJIAN_HYBRID, RenderDebugMode.FULL_RENDER)
-    composeRule.waitUntil(timeoutMillis = 30_000) {
+    awaitTelemetry(scene, "Tab 3 full render restore") {
       scene.latestTelemetry.activeRenderMode == RenderDebugMode.FULL_RENDER &&
         scene.latestTelemetry.yujianCoreStatus == "RENDERED" &&
         scene.latestTelemetry.outerOpticalStatus == "RENDERED"
@@ -147,7 +148,9 @@ class YuJianHybridTab3Api36Test {
     composeRule.onNodeWithTag("tab_task_perimeter").performClick()
     composeRule.onNodeWithTag("tab_ai_orb").performClick()
     composeRule.onNodeWithTag("tab_yujian_ai_orb").performClick()
-    composeRule.waitUntil(timeoutMillis = 30_000) { scene.latestTelemetry.yujianCoreFrameCount > hybridTelemetry.yujianCoreFrameCount }
+    awaitTelemetry(scene, "Tab 3 frame resumes after tab switching") {
+      scene.latestTelemetry.yujianCoreFrameCount > hybridTelemetry.yujianCoreFrameCount
+    }
     assertEquals(contextCount, scene.glContextInitCount)
     writeRuntimeManifest(evidenceDir, scene.latestTelemetry, contextCount)
   }
@@ -156,7 +159,7 @@ class YuJianHybridTab3Api36Test {
   fun thirdTabKeepsTheSharedCoreClockMovingForTwentySeconds() {
     composeRule.onNodeWithTag("tab_yujian_ai_orb").performClick()
     val scene = requireNotNull(composeRule.activity.sceneForInstrumentation())
-    composeRule.waitUntil(timeoutMillis = 30_000) {
+    awaitTelemetry(scene, "Tab 3 initial core frame") {
       scene.latestTelemetry.coreRendererMode == OrbCoreMode.YUJIAN_CORE &&
         scene.latestTelemetry.yujianCoreStatus == "RENDERED" &&
         scene.latestTelemetry.yujianCoreFrameCount > 0L
@@ -183,6 +186,20 @@ class YuJianHybridTab3Api36Test {
       .put("glRenderer", after.glRenderer)
       .put("status", "PASS")
     File(evidenceDir, "TAB3_MOTION_20S_RUNTIME.json").writeText(motion.toString(2) + "\n")
+  }
+
+  private fun awaitTelemetry(
+    scene: com.example.orb.scene.AIOrbScene,
+    description: String,
+    condition: () -> Boolean,
+  ) {
+    try {
+      // SwiftShader may take substantially longer than a device GPU to produce the
+      // first full-resolution frame after a scene-mode change.
+      composeRule.waitUntil(timeoutMillis = 90_000, condition = condition)
+    } catch (timeout: ComposeTimeoutException) {
+      throw AssertionError("Timed out waiting for $description; latestTelemetry=${scene.latestTelemetry}", timeout)
+    }
   }
 
   private fun capture(name: String, outputDir: File, telemetry: com.example.orb.scene.AIOrbTelemetry) {
