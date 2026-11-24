@@ -187,6 +187,10 @@ class YuJianHybridTab3Api36Test {
       .put("glRenderer", after.glRenderer)
       .put("status", "PASS")
     File(evidenceDir, "TAB3_MOTION_20S_RUNTIME.json").writeText(motion.toString(2) + "\n")
+    // The motion capture runs in a fresh instrumentation process after the layer
+    // capture. Refresh the runtime manifest from this same run so the combined
+    // evidence cannot accidentally pair current motion data with stale telemetry.
+    writeRuntimeManifest(evidenceDir, after, scene.glContextInitCount)
   }
 
   private fun awaitTelemetry(
