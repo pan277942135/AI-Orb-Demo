@@ -27,7 +27,9 @@ data class MasterFidelityV32(
   val outerGlass: OuterGlassFit,
   val innerCavity: InnerCavityFit,
   val fluidVolume: FluidVolumeFit,
+  val emeraldFolds: EmeraldFoldsFit,
   val sapphireValleys: SapphireValleysFit,
+  val aquaRegion: AquaRegionFit,
   val caustics: CausticsFit,
   val residentC01: ResidentCurveFit,
   val residentA01: ResidentCurveFit,
@@ -90,28 +92,44 @@ data class MasterFidelityV32(
     val width: Int = 256,
     val height: Int = 256,
     val depth: Int = 32,
-    val densityScale: Float = 1.686f,
-    val baseDensity: Float = 0.032f,
+    val densityScale: Float = 2.2664f,
+    val densityScaleMin: Float = 0.8f,
+    val densityScaleMax: Float = 2.4f,
+    val baseDensity: Float = 0.0254f,
     val foldCount: Int = 3,
-    val foldIso: Float = 0.18f,
-    val foldThickness: Float = 0.11f,
+    val foldIso: Float = 0.2008f,
+    val foldThickness: Float = 0.206f,
     val foldNormalPerturbation: Float = 0.34f,
     val foldRefraction: Float = 0.22f,
     val foldSpecularGain: Float = 0.42f,
   )
 
+  data class EmeraldFoldsFit(
+    val emeraldFoldGain: Float = 1.05f,
+    val emeraldAnchorWeight: Float = 1.4974f,
+    val emeraldGreenBoost: Float = 0.8228f,
+    val emeraldThreshold: Float = 0.2248f,
+  )
+
   data class SapphireValleysFit(
-    val sapphireAbsorptionGain: Float = 0.1805f,
-    val sapphireAnchorWeight: Float = 1.534f,
-    val sapphireDepthDarken: Float = 0.452f,
+    val sapphireAbsorptionGain: Float = 0.2582f,
+    val sapphireAnchorWeight: Float = 1.3078f,
+    val sapphireDepthDarken: Float = 0.809f,
     val beerLambertR: Float = 2.6f,
     val beerLambertG: Float = 0.92f,
     val beerLambertB: Float = 0.42f,
   )
 
+  data class AquaRegionFit(
+    val aquaDensityGain: Float = 0.16f,
+    val aquaAnchorWeight: Float = 1.0768f,
+    val aquaBrightnessGain: Float = 0.669f,
+    val aquaUpperGateY: Float = 0.1345f,
+  )
+
   data class CausticsFit(
     val causticIntensity: Float = 0.56f,
-    val causticDecoupleWeight: Float = 0.12f,
+    val causticDecoupleWeight: Float = 0.1395f,
     val upperGoldCausticGain: Float = 0.44f,
   )
 
@@ -161,6 +179,19 @@ data class MasterFidelityV32(
       appendLine("    \"coreShellScale\": ${f(camera.coreShellScale)},")
       appendLine("    \"ribbonHugScale\": ${f(camera.ribbonHugScale)}")
       appendLine("  },")
+      appendLine("  \"glassOptics\": {")
+      appendLine("    \"iorAir\": ${f(innerCavity.iorAir)},")
+      appendLine("    \"iorWater\": ${f(innerCavity.iorWater)},")
+      appendLine("    \"iorCrystal\": ${f(innerCavity.iorCrystal)},")
+      appendLine("    \"iorGlass\": ${f(outerGlass.iorGlass)},")
+      appendLine("    \"glassWallThickness\": ${f(outerGlass.glassWallThickness)},")
+      appendLine("    \"fresnelPower\": ${f(outerGlass.fresnelPower)},")
+      appendLine("    \"fresnelGain\": ${f(outerGlass.fresnelGain)},")
+      appendLine("    \"razorRimGain\": ${f(outerGlass.razorRimGain)},")
+      appendLine("    \"innerRingGain\": ${f(outerGlass.innerRingGain)},")
+      appendLine("    \"grooveDarkening\": ${f(outerGlass.grooveDarkening)},")
+      appendLine("    \"environmentReflectionCap\": ${f(outerGlass.envReflectionCap)}")
+      appendLine("  },")
       appendLine("  \"crystalLens\": {")
       appendLine("    \"center\": [${f(innerCavity.lensCenterX)}, ${f(innerCavity.lensCenterY)}, ${f(innerCavity.lensCenterZ)}],")
       appendLine("    \"radii\": [${f(innerCavity.lensRadiusX)}, ${f(innerCavity.lensRadiusY)}, ${f(innerCavity.lensRadiusZ)}],")
@@ -174,6 +205,26 @@ data class MasterFidelityV32(
       appendLine("    \"foldRefraction\": ${f(fluidVolume.foldRefraction)},")
       appendLine("    \"foldSpecularGain\": ${f(fluidVolume.foldSpecularGain)},")
       appendLine("    \"beerLambert\": [${f(sapphireValleys.beerLambertR)}, ${f(sapphireValleys.beerLambertG)}, ${f(sapphireValleys.beerLambertB)}]")
+      appendLine("  },")
+      appendLine("  \"volumeParameters\": {")
+      appendLine("    \"dimensions\": [${fluidVolume.width}, ${fluidVolume.height}, ${fluidVolume.depth}],")
+      appendLine("    \"densityScale\": ${f(fluidVolume.densityScale)},")
+      appendLine("    \"densityScaleRange\": [${f(fluidVolume.densityScaleMin)}, ${f(fluidVolume.densityScaleMax)}],")
+      appendLine("    \"baseDensity\": ${f(fluidVolume.baseDensity)},")
+      appendLine("    \"foldIso\": ${f(fluidVolume.foldIso)},")
+      appendLine("    \"foldThickness\": ${f(fluidVolume.foldThickness)},")
+      appendLine("    \"emeraldFoldGain\": ${f(emeraldFolds.emeraldFoldGain)},")
+      appendLine("    \"emeraldAnchorWeight\": ${f(emeraldFolds.emeraldAnchorWeight)},")
+      appendLine("    \"emeraldGreenBoost\": ${f(emeraldFolds.emeraldGreenBoost)},")
+      appendLine("    \"emeraldThreshold\": ${f(emeraldFolds.emeraldThreshold)},")
+      appendLine("    \"sapphireAbsorptionGain\": ${f(sapphireValleys.sapphireAbsorptionGain)},")
+      appendLine("    \"sapphireAnchorWeight\": ${f(sapphireValleys.sapphireAnchorWeight)},")
+      appendLine("    \"sapphireDepthDarken\": ${f(sapphireValleys.sapphireDepthDarken)},")
+      appendLine("    \"aquaDensityGain\": ${f(aquaRegion.aquaDensityGain)},")
+      appendLine("    \"aquaAnchorWeight\": ${f(aquaRegion.aquaAnchorWeight)},")
+      appendLine("    \"aquaBrightnessGain\": ${f(aquaRegion.aquaBrightnessGain)},")
+      appendLine("    \"aquaUpperGateY\": ${f(aquaRegion.aquaUpperGateY)},")
+      appendLine("    \"causticDecoupleWeight\": ${f(caustics.causticDecoupleWeight)}")
       appendLine("  },")
       appendLine("  \"ribbonOptics\": {")
       appendLine("    \"goldWallsGain\": ${f(lighting.goldWallsGain)},")
@@ -204,7 +255,9 @@ data class MasterFidelityV32(
       outerGlass = OuterGlassFit(),
       innerCavity = InnerCavityFit(),
       fluidVolume = FluidVolumeFit(),
+      emeraldFolds = EmeraldFoldsFit(),
       sapphireValleys = SapphireValleysFit(),
+      aquaRegion = AquaRegionFit(),
       caustics = CausticsFit(),
       residentC01 = ResidentCurveFit(
         code = "C01",
@@ -369,6 +422,9 @@ data class MasterFidelityV32(
         }
       }
 
+      fun fBound(section: JSONObject, key: String, bound: String, fallback: Float): Float =
+        section.optJSONObject(key)?.optDouble(bound, fallback.toDouble())?.toFloat() ?: fallback
+
       fun parseVec3List(arr: JSONArray): List<Vec3> = List(arr.length()) { i ->
         val p = arr.getJSONArray(i)
         Vec3(p.getDouble(0).toFloat(), p.getDouble(1).toFloat(), p.getDouble(2).toFloat())
@@ -399,7 +455,9 @@ data class MasterFidelityV32(
       val glass = root.getJSONObject("outerGlass")
       val cav = root.getJSONObject("innerCavity")
       val vol = root.getJSONObject("fluidVolume")
+      val em = root.getJSONObject("emeraldFolds")
       val sap = root.getJSONObject("sapphireValleys")
+      val aqua = root.getJSONObject("aquaRegion")
       val cau = root.getJSONObject("caustics")
       val lgt = root.getJSONObject("lighting")
       val post = root.getJSONObject("postProcessing")
@@ -461,6 +519,8 @@ data class MasterFidelityV32(
           height = iParam(vol, "height", d.fluidVolume.height),
           depth = iParam(vol, "depth", d.fluidVolume.depth),
           densityScale = fParam(vol, "densityScale", d.fluidVolume.densityScale),
+          densityScaleMin = fBound(vol, "densityScale", "min", d.fluidVolume.densityScaleMin),
+          densityScaleMax = fBound(vol, "densityScale", "max", d.fluidVolume.densityScaleMax),
           baseDensity = fParam(vol, "baseDensity", d.fluidVolume.baseDensity),
           foldCount = iParam(vol, "foldCount", d.fluidVolume.foldCount),
           foldIso = fParam(vol, "foldIso", d.fluidVolume.foldIso),
@@ -469,6 +529,12 @@ data class MasterFidelityV32(
           foldRefraction = fParam(vol, "foldRefraction", d.fluidVolume.foldRefraction),
           foldSpecularGain = fParam(vol, "foldSpecularGain", d.fluidVolume.foldSpecularGain),
         ),
+        emeraldFolds = EmeraldFoldsFit(
+          emeraldFoldGain = fParam(em, "emeraldFoldGain", d.emeraldFolds.emeraldFoldGain),
+          emeraldAnchorWeight = fParam(em, "emeraldAnchorWeight", d.emeraldFolds.emeraldAnchorWeight),
+          emeraldGreenBoost = fParam(em, "emeraldGreenBoost", d.emeraldFolds.emeraldGreenBoost),
+          emeraldThreshold = fParam(em, "emeraldThreshold", d.emeraldFolds.emeraldThreshold),
+        ),
         sapphireValleys = SapphireValleysFit(
           sapphireAbsorptionGain = fParam(sap, "sapphireAbsorptionGain", d.sapphireValleys.sapphireAbsorptionGain),
           sapphireAnchorWeight = fParam(sap, "sapphireAnchorWeight", d.sapphireValleys.sapphireAnchorWeight),
@@ -476,6 +542,12 @@ data class MasterFidelityV32(
           beerLambertR = fParam(sap, "beerLambertR", d.sapphireValleys.beerLambertR),
           beerLambertG = fParam(sap, "beerLambertG", d.sapphireValleys.beerLambertG),
           beerLambertB = fParam(sap, "beerLambertB", d.sapphireValleys.beerLambertB),
+        ),
+        aquaRegion = AquaRegionFit(
+          aquaDensityGain = fParam(aqua, "aquaDensityGain", d.aquaRegion.aquaDensityGain),
+          aquaAnchorWeight = fParam(aqua, "aquaAnchorWeight", d.aquaRegion.aquaAnchorWeight),
+          aquaBrightnessGain = fParam(aqua, "aquaBrightnessGain", d.aquaRegion.aquaBrightnessGain),
+          aquaUpperGateY = fParam(aqua, "aquaUpperGateY", d.aquaRegion.aquaUpperGateY),
         ),
         caustics = CausticsFit(
           causticIntensity = fParam(cau, "causticIntensity", d.caustics.causticIntensity),

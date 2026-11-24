@@ -124,6 +124,93 @@ class AIOrbV32ReferenceFittingTest {
   }
 
   @Test
+  fun v32_11_masterVolumeParametersMatchFallbackRuntimeAndShaderContract() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val loaded = MasterFidelityV32.loadFromAssets(context.assets)
+    val fallback = MasterFidelityV32.Default
+    val cfg = AIOrbConfig.Default
+    val root = projectRoot()
+    val json = JSONObject(File(root, "app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json").readText())
+
+    fun assertParam(section: String, key: String, runtime: Float, fallbackValue: Float) {
+      val fitted = json.getJSONObject(section).getJSONObject(key).getDouble("fittedValue").toFloat()
+      assertEquals("$section.$key JSON vs loaded", fitted, runtime, 1e-4f)
+      assertEquals("$section.$key JSON vs fallback", fitted, fallbackValue, 1e-4f)
+    }
+    assertParam("outerGlass", "iorGlass", loaded.outerGlass.iorGlass, fallback.outerGlass.iorGlass)
+    assertParam("outerGlass", "glassWallThickness", loaded.outerGlass.glassWallThickness, fallback.outerGlass.glassWallThickness)
+    assertParam("outerGlass", "fresnelPower", loaded.outerGlass.fresnelPower, fallback.outerGlass.fresnelPower)
+    assertParam("innerCavity", "iorAir", loaded.innerCavity.iorAir, fallback.innerCavity.iorAir)
+    assertParam("innerCavity", "iorWater", loaded.innerCavity.iorWater, fallback.innerCavity.iorWater)
+    assertParam("innerCavity", "iorCrystal", loaded.innerCavity.iorCrystal, fallback.innerCavity.iorCrystal)
+    assertParam("fluidVolume", "densityScale", loaded.fluidVolume.densityScale, fallback.fluidVolume.densityScale)
+    assertParam("fluidVolume", "baseDensity", loaded.fluidVolume.baseDensity, fallback.fluidVolume.baseDensity)
+    assertParam("fluidVolume", "foldIso", loaded.fluidVolume.foldIso, fallback.fluidVolume.foldIso)
+    assertParam("fluidVolume", "foldThickness", loaded.fluidVolume.foldThickness, fallback.fluidVolume.foldThickness)
+    assertParam("fluidVolume", "foldNormalPerturbation", loaded.fluidVolume.foldNormalPerturbation, fallback.fluidVolume.foldNormalPerturbation)
+    assertParam("fluidVolume", "foldRefraction", loaded.fluidVolume.foldRefraction, fallback.fluidVolume.foldRefraction)
+    assertParam("fluidVolume", "foldSpecularGain", loaded.fluidVolume.foldSpecularGain, fallback.fluidVolume.foldSpecularGain)
+    assertParam("sapphireValleys", "sapphireAbsorptionGain", loaded.sapphireValleys.sapphireAbsorptionGain, fallback.sapphireValleys.sapphireAbsorptionGain)
+    assertParam("sapphireValleys", "sapphireAnchorWeight", loaded.sapphireValleys.sapphireAnchorWeight, fallback.sapphireValleys.sapphireAnchorWeight)
+    assertParam("sapphireValleys", "sapphireDepthDarken", loaded.sapphireValleys.sapphireDepthDarken, fallback.sapphireValleys.sapphireDepthDarken)
+    assertParam("sapphireValleys", "beerLambertR", loaded.sapphireValleys.beerLambertR, fallback.sapphireValleys.beerLambertR)
+    assertParam("sapphireValleys", "beerLambertG", loaded.sapphireValleys.beerLambertG, fallback.sapphireValleys.beerLambertG)
+    assertParam("sapphireValleys", "beerLambertB", loaded.sapphireValleys.beerLambertB, fallback.sapphireValleys.beerLambertB)
+    assertParam("emeraldFolds", "emeraldFoldGain", loaded.emeraldFolds.emeraldFoldGain, fallback.emeraldFolds.emeraldFoldGain)
+    assertParam("emeraldFolds", "emeraldAnchorWeight", loaded.emeraldFolds.emeraldAnchorWeight, fallback.emeraldFolds.emeraldAnchorWeight)
+    assertParam("emeraldFolds", "emeraldGreenBoost", loaded.emeraldFolds.emeraldGreenBoost, fallback.emeraldFolds.emeraldGreenBoost)
+    assertParam("emeraldFolds", "emeraldThreshold", loaded.emeraldFolds.emeraldThreshold, fallback.emeraldFolds.emeraldThreshold)
+    assertParam("aquaRegion", "aquaDensityGain", loaded.aquaRegion.aquaDensityGain, fallback.aquaRegion.aquaDensityGain)
+    assertParam("aquaRegion", "aquaAnchorWeight", loaded.aquaRegion.aquaAnchorWeight, fallback.aquaRegion.aquaAnchorWeight)
+    assertParam("aquaRegion", "aquaBrightnessGain", loaded.aquaRegion.aquaBrightnessGain, fallback.aquaRegion.aquaBrightnessGain)
+    assertParam("aquaRegion", "aquaUpperGateY", loaded.aquaRegion.aquaUpperGateY, fallback.aquaRegion.aquaUpperGateY)
+    assertParam("caustics", "causticDecoupleWeight", loaded.caustics.causticDecoupleWeight, fallback.caustics.causticDecoupleWeight)
+    assertEquals(1.0f, cfg.densityScaleMultiplier, 0f)
+
+    val effective = (loaded.fluidVolume.densityScale * cfg.densityScaleMultiplier)
+      .coerceIn(loaded.fluidVolume.densityScaleMin, loaded.fluidVolume.densityScaleMax)
+    assertEquals("Default runtime density equals Master fitted density", loaded.fluidVolume.densityScale, effective, 0f)
+
+    val runtimeSummary = JSONObject(loaded.toRuntimeSummaryJson())
+    val runtimeGlass = runtimeSummary.getJSONObject("glassOptics")
+    assertEquals(loaded.outerGlass.iorGlass.toDouble(), runtimeGlass.getDouble("iorGlass"), 1e-4)
+    assertEquals(loaded.outerGlass.glassWallThickness.toDouble(), runtimeGlass.getDouble("glassWallThickness"), 1e-4)
+    val runtimeFold = runtimeSummary.getJSONObject("foldOptics")
+    assertEquals(loaded.fluidVolume.foldNormalPerturbation.toDouble(), runtimeFold.getDouble("foldNormalPerturbation"), 1e-4)
+    assertEquals(loaded.sapphireValleys.beerLambertR.toDouble(), runtimeFold.getJSONArray("beerLambert").getDouble(0), 1e-4)
+    val runtimeVolume = runtimeSummary.getJSONObject("volumeParameters")
+    assertEquals(effective.toDouble(), runtimeVolume.getDouble("densityScale"), 1e-4)
+    assertEquals(loaded.fluidVolume.foldThickness.toDouble(), runtimeVolume.getDouble("foldThickness"), 1e-4)
+    assertEquals(loaded.sapphireValleys.sapphireAbsorptionGain.toDouble(), runtimeVolume.getDouble("sapphireAbsorptionGain"), 1e-4)
+    assertEquals(loaded.emeraldFolds.emeraldAnchorWeight.toDouble(), runtimeVolume.getDouble("emeraldAnchorWeight"), 1e-4)
+    assertEquals(loaded.aquaRegion.aquaDensityGain.toDouble(), runtimeVolume.getDouble("aquaDensityGain"), 1e-4)
+    assertEquals(loaded.caustics.causticDecoupleWeight.toDouble(), runtimeVolume.getDouble("causticDecoupleWeight"), 1e-4)
+
+    val shader = CoreFluidShaders.CORE_GLASS_FRAG
+    val renderer = File(root, "app/src/main/java/com/example/orb/scene/OrbFluidVolumeRenderer.kt").readText()
+    assertTrue(renderer.contains("vol.densityScale * config.densityScaleMultiplier"))
+    assertTrue(renderer.contains("prog.setVec2(\"uDensityRange\", vol.densityScaleMin, vol.densityScaleMax)"))
+    assertTrue(shader.contains("float densityScale = clamp(uDensityScale, uDensityRange.x, uDensityRange.y)"))
+    assertTrue(shader.contains("float sigma = localDensity * densityScale * segDt"))
+    assertTrue("Refraction must use Master air/glass IOR", shader.contains("refract(-V, safeN, etaAirGlass)"))
+    assertTrue("The glass/water wall must use Master glass/water IOR", shader.contains("uGlassOptics.x / max(uInterfaceIor.y, 1.0001)"))
+    assertTrue("Fold normals must use the deformed texture coordinate", shader.contains("estimateFluidFoldNormal(deformedSamplePos, radialCore, densityGradientMagnitude)"))
+    assertTrue("Fold refraction must resample the same deformed volume field", shader.contains("deformedSamplePos - foldN * (0.022 * uFoldOptics.z)"))
+    assertTrue("Caustics must integrate multiple actual ray depths", shader.contains("causticA * 0.24 + causticB * 0.46 + causticC * 0.30"))
+    assertTrue("Glass wall thickness must be sent from the Master", renderer.contains("glass.glassWallThickness"))
+    assertTrue("Glass Fresnel controls must be sent from the Master", renderer.contains("glass.fresnelPower") && renderer.contains("glass.fresnelGain"))
+    assertTrue("Glass structure Uniform must be present", renderer.contains("\"uGlassStructure\""))
+    assertTrue("All IOR values must be sent from the Master", renderer.contains("prog.setVec3(\"uInterfaceIor\", cav.iorAir, cav.iorWater, cav.iorCrystal)"))
+
+    val missing = JSONObject(json.toString())
+    val density = missing.getJSONObject("fluidVolume").getJSONObject("densityScale")
+    density.remove("fittedValue")
+    density.remove("default")
+    val fallbackLoad = MasterFidelityV32.parseJson(missing.toString())
+    assertEquals("Missing Master value must use valid Kotlin fallback", fallback.fluidVolume.densityScale, fallbackLoad.fluidVolume.densityScale, 0f)
+  }
+
+  @Test
   fun v32_04_stageACameraAndStageEOpticsHardGatesPassInVisualLoss() {
     val root = projectRoot()
     val lossJson = JSONObject(File(root, "docs/v3/AI_ORB_V3_2_VISUAL_LOSS.json").readText(Charsets.UTF_8))
@@ -172,13 +259,19 @@ class AIOrbV32ReferenceFittingTest {
     assertTrue(coreFrag.contains("float crystalLensPhi(vec3 p)"))
     assertTrue(coreFrag.contains("vec3 crystalLensNormal(vec3 p)"))
     assertTrue(coreFrag.contains("bool intersectCrystalLens("))
+    assertTrue(coreFrag.contains("float refractionCoverage = clamp(texture(uRefractionTex, sampleUvG).a, 0.0, 1.0)"))
+    assertTrue(coreFrag.contains("airCavity * 0.92 * refractionCoverage"))
+    assertTrue(coreFrag.contains("* refractionCoverage;"))
     assertTrue(coreFrag.contains("if (uDebugMode == 9)"))
     assertEquals(9, RenderDebugMode.CAVITY_ONLY.shaderModeId)
     assertTrue(RenderDebugMode.CAVITY_ONLY.isCoreIsolated)
 
     // Active-surface analytical 3D fluid fold normal lighting & V3.2 fitted uniforms
     assertTrue(coreFrag.contains("vec3 estimateFluidFoldNormal("))
-    assertTrue(coreFrag.contains("if (localDensity > 0.14 && uFoldOptics.x > 0.01)"))
+    assertTrue(coreFrag.contains("if (localDensity > 0.035 && uFoldOptics.x > 0.01)"))
+    assertTrue(coreFrag.contains("(axp - axm) / (4.0 * eps.x)"))
+    assertTrue(coreFrag.contains("-(ayp - aym) / (4.0 * eps.y)"))
+    assertTrue(coreFrag.contains("(azp - azm) / (4.0 * eps.z)"))
     assertTrue(coreFrag.contains("uniform vec3 uLensCenter;"))
     assertTrue(coreFrag.contains("uniform vec3 uLensRadii;"))
     assertTrue(coreFrag.contains("uniform vec4 uLensParams;"))
@@ -256,16 +349,24 @@ class AIOrbV32ReferenceFittingTest {
     val pngTopDown = OrbGpuReferenceCapture.flipRgbaVertically(glBottomUp, width, height)
     assertArrayEquals(row2 + row1 + row0, pngTopDown)
 
-    // Verify all 6 required GPU PNG files and 3 required JSON evidence files
+    // Verify all nine frozen contract capture modes plus production diagnostics.
     val pngNames = OrbGpuReferenceCapture.CAPTURE_STEPS.map { it.fileName }
     assertEquals(
       listOf(
+        "CORE_ONLY_TRANSPARENT.png",
+        "CAVITY_ONLY.png",
+        "FLUID_VOLUME_ONLY.png",
+        "GLASS_ONLY.png",
+        "RESIDENTS_ONLY.png",
+        "FULL_RENDER.png",
+        "BLOOM_OFF.png",
+        "PRE_TONEMAP.png",
+        "POST_TONEMAP.png",
         "REFERENCE_LOCKED_FRAME_GPU.png",
-        "CAVITY_ONLY_GPU.png",
-        "FLUID_VOLUME_ONLY_GPU.png",
         "RIBBONS_ONLY_GPU.png",
-        "GLASS_ONLY_GPU.png",
-        "FULL_RENDER_GPU.png",
+        "CAUSTICS_ONLY_GPU.png",
+        "FOLD_NORMAL_GPU.png",
+        "VOLUME_DEPTH_GPU.png",
       ),
       pngNames,
     )
@@ -274,6 +375,8 @@ class AIOrbV32ReferenceFittingTest {
         "RUNTIME_RENDER_CONFIG.json",
         "GPU_TELEMETRY.json",
         "BUILD_FINGERPRINT.json",
+        "RUNTIME_TELEMETRY.json",
+        "CAPTURE_MANIFEST.json",
       ),
       OrbGpuReferenceCapture.EXPECTED_JSON_FILES,
     )
@@ -291,10 +394,56 @@ class AIOrbV32ReferenceFittingTest {
     val telJson = JSONObject(OrbGpuReferenceCapture.buildGpuTelemetryJson(tel, 1080, 2400))
     assertEquals("TestVendor", telJson.getString("glVendor"))
     assertEquals("TestGPU", telJson.getString("glRenderer"))
+    assertTrue(telJson.has("buildSha"))
+    assertTrue(telJson.has("shaderSourceSha256"))
+    assertTrue(telJson.has("uVolumeLoaded"))
+    assertTrue(telJson.has("gpuTextureObjectsValid"))
+    assertTrue(telJson.has("volumeInternalFormat"))
+    assertTrue(telJson.has("foldActiveRatio"))
+    assertTrue(telJson.has("glErrorPass"))
+    assertTrue(telJson.has("uniformStateValid"))
+    assertTrue(telJson.has("geometrySubdivisions"))
+    assertTrue(telJson.has("geometryFingerprintSha256"))
+
+    val manifestJson = JSONObject(OrbGpuReferenceCapture.buildCaptureManifestJson(
+      AIOrbConfig.Default,
+      tel,
+      1080,
+      2400,
+      snapshot = null,
+      capturedPngSha256 = pngNames.associateWith { "test-sha" },
+      framebufferComplete = true,
+      glErrorCode = 0,
+    ))
+    assertEquals("AI_ORB_P0_3_CAPTURE_MANIFEST_1_0", manifestJson.getString("schema"))
+    assertEquals("HARDWARE_GPU", manifestJson.getString("renderBackend"))
+    assertEquals(OrbGpuReferenceCapture.CAPTURE_STEPS.size, manifestJson.getJSONArray("frames").length())
+    assertTrue(manifestJson.getJSONObject("geometry").has("geometryFingerprintSha256"))
 
     val fpJson = JSONObject(OrbGpuReferenceCapture.buildFingerprintJson(fidelity, tel))
     assertEquals(MasterFidelityV32.EXPECTED_MASTER_SHA256, fpJson.getString("referenceMasterSha256"))
-    assertEquals(6, fpJson.getJSONArray("capturedPngFiles").length())
+    assertEquals(OrbGpuReferenceCapture.CAPTURE_STEPS.size, fpJson.getJSONArray("capturedPngFiles").length())
+    val runtimeJson = JSONObject(OrbGpuReferenceCapture.buildRuntimeRenderConfigJson(
+      AIOrbConfig.Default, fidelity, 1080, 2400,
+    ))
+    assertEquals(
+      "FOLD_NORMAL",
+      runtimeJson.getJSONObject("captureStepModes").getString("FOLD_NORMAL_GPU.png"),
+    )
+  }
+
+  @Test
+  fun v32_captureReadbackRejectsAFrameWhenAsyncStepAdvancesAfterModeSelection() {
+    val cavityStep = OrbGpuReferenceCapture.CAPTURE_STEPS.indexOfFirst { it.mode == RenderDebugMode.CAVITY_ONLY }
+    val fluidStep = OrbGpuReferenceCapture.CAPTURE_STEPS.indexOfFirst { it.mode == RenderDebugMode.FLUID_VOLUME_ONLY }
+    assertTrue(cavityStep >= 0 && fluidStep == cavityStep + 1)
+    assertFalse(
+      "A CAVITY_ONLY frame must not be mislabeled as the next FLUID_VOLUME_ONLY capture",
+      OrbGpuReferenceCapture.isExpectedRenderedMode(fluidStep, RenderDebugMode.CAVITY_ONLY),
+    )
+    assertTrue(
+      OrbGpuReferenceCapture.isExpectedRenderedMode(fluidStep, RenderDebugMode.FLUID_VOLUME_ONLY),
+    )
   }
 
   @Test

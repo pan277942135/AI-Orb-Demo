@@ -18,12 +18,12 @@
 | Component | Weight | Value |
 |---|---:|---:|
 | `L_sphere` | `0.18` | `0.00315` |
-| `L_cavity` | `0.22` | `0.2977` |
-| `L_volume` | `0.25` | `0.50307` |
+| `L_cavity` | `0.22` | `0.33685` |
+| `L_volume` | `0.25` | `0.18503` |
 | `L_resident` | `0.20` | `0.0992` |
 | `L_optics` | `0.10` | `0.03404` |
 | `L_layering` | `0.05` | `0.0` |
-| **`L_total`** | **`1.00`** | **`0.21507`** |
+| **`L_total`** | **`1.00`** | **`0.14418`** |
 
-- All Offline Hard Gates Passed: `False`
-- Failed Offline Gates: `['E05_emeraldCentroid_le_004D', 'E06_sapphireAreaRelErr_le_15pct', 'E06_sapphireCentroid_le_004D', 'E07_aquaAreaRelErr_le_15pct', 'E07_aquaCentroid_le_004D']`
+- All Offline Hard Gates Passed: `True`
+- Failed Offline Gates: `[]`

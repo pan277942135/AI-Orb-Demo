@@ -2,6 +2,7 @@ package com.example
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.test.core.app.ApplicationProvider
 import com.example.orb.config.AIOrbConfig
 import com.example.orb.config.RenderDebugMode
@@ -19,7 +20,6 @@ import com.example.orb.v3.OrbGpuReferenceCapture
 import com.example.orb.v3.OrbV3AssetManifest
 import java.io.File
 import java.io.FileOutputStream
-import java.nio.ByteBuffer
 import kotlin.math.abs
 import kotlin.math.sqrt
 import org.json.JSONObject
@@ -42,7 +42,7 @@ import org.robolectric.annotation.GraphicsMode
  *    zero legacy `visualBoundRadius = 1.36f` divergence)
  *  - Unified Crystal Lens Geometry (Python/GLSL/Kotlin `ASYM_SHEAR = 0.08`, SDF residuals `< 1e-5`,
  *    analytic normal vs central-difference normal parity, grazing angle safety)
- *  - 6-Frame `OrbGpuCaptureSnapshot` identity (all 6 capture steps lock identical camera/transform/phase
+ *  - Frozen `OrbGpuCaptureSnapshot` identity (all capture steps lock identical camera/transform/phase
  *    without stepping live `motionController`, then cleanly resume with zero jump)
  *  - PNG vertical Y-flip, write, re-decode round-trip, and per-PNG SHA-256 integrity
  *  - Real `FrameTelemetryStatsTracker` (real measured FPS, sorted P50/P95, `gpuFrameTimeStatus == UNAVAILABLE`)
@@ -143,7 +143,7 @@ class AIOrbV32ClosureContractTest {
   }
 
   @Test
-  fun closure_03_sixFrameCaptureSnapshotIdentityAndMotionPreservation() {
+  fun closure_03_fullCaptureSnapshotIdentityAndMotionPreservation() {
     val capture = OrbGpuReferenceCapture()
     val ctrl = AIOrbMotionController()
     val fidelity = MasterFidelityV32.Default
@@ -153,7 +153,7 @@ class AIOrbV32ClosureContractTest {
     val simTimeBeforeCapture = ctrl.currentTimeSec
     assertTrue(simTimeBeforeCapture > 0.99)
 
-    val outDir = createTempDir(prefix = "v32_cap_snap_test_")
+    val outDir = kotlin.io.path.createTempDirectory("v32_cap_snap_test_").toFile()
     try {
       assertTrue(capture.requestCapture(outDir) {})
 
@@ -199,11 +199,20 @@ class AIOrbV32ClosureContractTest {
     // Flipping twice restores original buffer identically
     assertArrayEquals(rgba, OrbGpuReferenceCapture.flipRgbaVertically(flipped, w, h))
 
-    val tmpDir = createTempDir(prefix = "v32_png_roundtrip_")
+    val tmpDir = kotlin.io.path.createTempDirectory("v32_png_roundtrip_").toFile()
     try {
       val pngFile = File(tmpDir, "FULL_RENDER_GPU.png")
       val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-      bmp.copyPixelsFromBuffer(ByteBuffer.wrap(flipped))
+      val roundTripRgba = flipped.copyOf().apply {
+        // Use one fully opaque marker to test channel order without premultiplied-alpha
+        // quantization from arbitrary low-alpha fixture bytes.
+        this[0] = 0x22
+        this[1] = 0x44
+        this[2] = 0xCC.toByte()
+        this[3] = 0xFF.toByte()
+      }
+      val argb = OrbGpuReferenceCapture.rgbaBytesToArgb(roundTripRgba)
+      bmp.setPixels(argb, 0, w, 0, 0, w, h)
       FileOutputStream(pngFile).use { fos ->
         assertTrue(bmp.compress(Bitmap.CompressFormat.PNG, 100, fos))
       }
@@ -212,6 +221,16 @@ class AIOrbV32ClosureContractTest {
       val sha = OrbGpuReferenceCapture.verifyWrittenPngAndSha256(pngFile, w, h)
       assertEquals(64, sha.length)
       assertEquals(MasterFidelityV32.sha256Hex(pngFile.readBytes()), sha)
+      val decodedPng = BitmapFactory.decodeFile(pngFile.absolutePath)
+      assertEquals("RGBA red/blue channels must survive PNG conversion in the same order", argb[0], decodedPng.getPixel(0, 0))
+      decodedPng.recycle()
+
+      val activationPng = File(tmpDir, "FOLD_NORMAL_GPU.png")
+      val activationBitmap = Bitmap.createBitmap(2, 1, Bitmap.Config.ARGB_8888)
+      activationBitmap.setPixels(intArrayOf(0xff000000.toInt(), 0xffba80ff.toInt()), 0, 2, 0, 0, 2, 1)
+      FileOutputStream(activationPng).use { fos -> assertTrue(activationBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)) }
+      activationBitmap.recycle()
+      assertEquals(0.5f, OrbGpuReferenceCapture.measureFoldActiveRatio(activationPng)!!, 0.01f)
 
       // Verify JSON builders serialize snapshot hashes, real telemetry, and per-PNG SHA map
       val ctrl = AIOrbMotionController()

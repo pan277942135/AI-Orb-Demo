@@ -52,6 +52,7 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
   GPU_ONLY(0, "GPU Only"),
   REFERENCE_ONLY(0, "Reference Only"),
   CORE_ONLY(0, "Core Only"),
+  CORE_ONLY_TRANSPARENT(0, "Core Only Transparent"),
   CORE_ROTATION_ONLY(0, "Core Rotation"),
   CORE_GLASS_ONLY(5, "Core Glass"),
   FLUID_VOLUME_ONLY(7, "Fluid Volume"),
@@ -62,15 +63,20 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
   CAVITY_ONLY(9, "Cavity Only"),
   CAUSTICS_ONLY(4, "Caustics Only"),
   GLASS_ONLY(5, "Glass Only"),
+  RESIDENTS_ONLY(0, "Residents Only"),
   RIBBONS_ONLY(0, "Ribbons Only"),
   OPTICS_ONLY(0, "Optics Only"),
   DEPTH_DEBUG(6, "Depth Debug"),
   BLOOM_OFF(0, "Bloom Off"),
+  FOLD_NORMAL(10, "Fold Normal"),
+  PRE_TONEMAP(0, "Pre Tonemap"),
+  POST_TONEMAP(0, "Post Tonemap"),
   ;
 
   val isCoreIsolated: Boolean
     get() = this == CORE_ROTATION_ONLY ||
       this == CORE_ONLY ||
+      this == CORE_ONLY_TRANSPARENT ||
       this == CORE_GLASS_ONLY ||
       this == FLUID_VOLUME_ONLY ||
       this == VOLUME_DEPTH ||
@@ -79,13 +85,14 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
       this == MENISCUS_DEBUG ||
       this == CAVITY_ONLY ||
       this == CAUSTICS_ONLY ||
-      this == GLASS_ONLY
+      this == GLASS_ONLY ||
+      this == FOLD_NORMAL
 
   val locksReferenceFrame: Boolean
     get() = this == REFERENCE_LOCKED_FRAME
 
   val locksCameraAndOuterShell: Boolean
-    get() = this == CORE_ROTATION_ONLY || this == REFERENCE_LOCKED_FRAME
+    get() = this == CORE_ROTATION_ONLY || this == CORE_ONLY_TRANSPARENT || this == REFERENCE_LOCKED_FRAME
 }
 
 enum class OrbSceneMode {
@@ -104,7 +111,8 @@ data class AIOrbConfig(
   val refraction: Float = 0.76f,
   val fluidSpeed: Float = 1.0f,
   val fluidIntensity: Float = 1.08f,
-  val densityScale: Float = 1.65f,
+  /** Relative multiplier on the Master fitted density; 1.0 leaves the fitted value unchanged. */
+  val densityScaleMultiplier: Float = 1.0f,
   val ribbonCount: Int = 5,
   val ribbonWidth: Float = 1.0f,
   val ribbonSpeed: Float = 1.0f,
@@ -144,7 +152,7 @@ data class AIOrbConfig(
       appendLine("  \"refraction\": ${f(refraction)},")
       appendLine("  \"fluidSpeed\": ${f(fluidSpeed)},")
       appendLine("  \"fluidIntensity\": ${f(fluidIntensity)},")
-      appendLine("  \"densityScale\": ${f(densityScale)},")
+      appendLine("  \"densityScaleMultiplier\": ${f(densityScaleMultiplier)},")
       appendLine("  \"ribbonCount\": $ribbonCount,")
       appendLine("  \"ribbonWidth\": ${f(ribbonWidth)},")
       appendLine("  \"ribbonSpeed\": ${f(ribbonSpeed)},")
@@ -162,6 +170,8 @@ data class AIOrbConfig(
     const val MIN_RIBBON_COUNT = 2
     const val MAX_RIBBON_COUNT = 10
     const val CANONICAL_RESIDENT_COUNT = 5
+    const val MIN_DENSITY_SCALE_MULTIPLIER = 0.5f
+    const val MAX_DENSITY_SCALE_MULTIPLIER = 1.5f
     val Default = AIOrbConfig()
   }
 }

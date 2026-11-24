@@ -9,6 +9,7 @@ import com.example.orb.gl.CoreFluidShaders
 import com.example.orb.scene.AIOrbScene
 import com.example.orb.v3.OrbV3AssetManifest
 import com.example.orb.v3.OrbWebpAssetLoader
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -29,6 +30,15 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [36])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class AIOrbV3VolumeShaderAndLoaderTest {
+
+  private fun projectRoot(): File {
+    var dir = File(System.getProperty("user.dir") ?: ".").canonicalFile
+    while (!File(dir, "settings.gradle.kts").exists()) {
+      dir = dir.parentFile ?: break
+    }
+    assertTrue("Could not locate project root", File(dir, "settings.gradle.kts").exists())
+    return dir
+  }
 
   @Test
   fun androidAssetManagerLoadsV3ManifestAndDecodesAll35LosslessWebpAssets() {
@@ -100,17 +110,23 @@ class AIOrbV3VolumeShaderAndLoaderTest {
     assertTrue(frag.contains("texture(uFluidDetailMap,"))
     assertTrue(frag.contains("texture(uCausticsMap,"))
     assertTrue(frag.contains("texture(uGlassEnvMap,"))
+    assertTrue(frag.contains("traceBackgroundUv("))
+    assertTrue(frag.contains("refract(rayDir, -normalize(innerExit)"))
+    assertFalse("sRGB texture-unit output must not be gamma-expanded again", frag.contains("if (uCausticsIsSrgb > 0)"))
+    assertFalse(frag.contains("uFluidDetailIsSrgb"))
 
     // True independent 3D Core Rotation + bounded 3D curl + Beer-Lambert Front-to-Back accumulation
     assertTrue(frag.contains("mat3 invCoreRot = transpose(uCoreRotMat);"))
     assertTrue(frag.contains("computeVolumeCurl("))
-    assertTrue(frag.contains("accumColor += (1.0 - accumAlpha)"))
+    assertTrue(frag.contains("accumColor += volumeTransmittance * litSample * (vec3(1.0) - segmentTransmittance)"))
+    assertTrue(frag.contains("volumeTransmittance *= segmentTransmittance"))
     assertTrue(frag.contains("accumAlpha += (1.0 - accumAlpha)"))
     assertTrue(frag.contains("if (i > steps || accumAlpha > 0.96) break;"))
 
     // V3 Diagnostic isolation shader branches
     assertTrue(frag.contains("if (uDebugMode == 7)")) // FLUID_VOLUME_ONLY
     assertTrue(frag.contains("if (uDebugMode == 8)")) // VOLUME_DEPTH
+    assertTrue(frag.contains("if (uDebugMode == 10)")) // FOLD_NORMAL
     assertTrue(frag.contains("(uDebugMode == 5)"))    // CORE_GLASS_ONLY / GLASS_ONLY
 
     // Confirm V2 broad front-right specular blob (`specWarm`) was permanently eliminated
@@ -144,6 +160,21 @@ class AIOrbV3VolumeShaderAndLoaderTest {
     val v3VolOnly = AIOrbScene.activeRenderPassesV3(RenderDebugMode.FLUID_VOLUME_ONLY)
     assertTrue(v3VolOnly.none { it.contains("RIBBON") })
     assertTrue(v3VolOnly.contains("PASS_6_V3_WEBP_3D_VOLUME_RAYMARCH_AND_CRYSTAL_GLASS_SHELL"))
+
+    val root = projectRoot()
+    val source = File(root, "app/src/main/java/com/example/orb/scene/AIOrbScene.kt").readText()
+    assertTrue("Production FULL_RENDER must wait for all 4 uploaded volume textures", source.contains("productionFrameMode && !core.isVolumeReady"))
+    assertTrue("GPU evidence must wait for installed APK SHA", source.contains("GPU_CAPTURE_BLOCKED_APK_FINGERPRINT_PENDING"))
+    assertTrue("Context loss must invalidate the cached volume state", source.contains("core.markGlContextLost()"))
+    val loader = File(root, "app/src/main/java/com/example/orb/v3/OrbVolumeTexture3D.kt").readText()
+    assertTrue("Production readiness must require actual GLES texture objects", loader.contains("it > 0 && GLES30.glIsTexture(it)"))
+    assertTrue(loader.contains("telemetry.gpuTextureObjectsValid"))
+    val shaderUtils = File(root, "app/src/main/java/com/example/orb/gl/ShaderUtils.kt").readText()
+    assertTrue("Runtime telemetry must read back the linked GL uniform state", shaderUtils.contains("GLES30.glGetUniformiv(programId, loc, value, 0)"))
+    assertTrue(shaderUtils.contains("GLES30.glGetUniformfv(programId, loc, value, 0)"))
+    val capture = File(root, "app/src/main/java/com/example/orb/v3/OrbGpuReferenceCapture.kt").readText()
+    assertTrue(capture.contains("Production shader read back uVolumeLoaded="))
+    assertTrue(capture.contains("Production Density / Transparency / Raymarch uniforms did not match"))
 
     assertTrue(AIOrbConfig.Default.toJson().contains("\"version\": \"V3_WEBP_3D_VOLUME_HYBRID\""))
   }

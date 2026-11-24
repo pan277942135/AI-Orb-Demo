@@ -31,6 +31,7 @@ Covers:
 from __future__ import annotations
 
 import json
+import hashlib
 import math
 import random
 import shutil
@@ -49,9 +50,9 @@ for _p in (GEN_DIR, FITTING_DIR):
         sys.path.insert(0, str(_p))
 
 from canonical_fluid_volume import (
-    VOL_D,
-    VOL_H,
-    VOL_W,
+    DEPTH as VOL_D,
+    HEIGHT as VOL_H,
+    WIDTH as VOL_W,
     decode_webp_volume_3d,
     evaluate_canonical_voxel,
     extract_volume_params,
@@ -63,6 +64,7 @@ from cavity_geometry_fitter import (
     crystal_lens_phi,
     intersect_crystal_lens,
 )
+from p0_3.video_duration import parse_video_duration
 
 
 def assert_true(cond: bool, msg: str) -> None:
@@ -75,6 +77,16 @@ def test_1_canonical_volume_algorithm_and_webp_roundtrip() -> None:
     vol_dir = ROOT / "app/src/main/assets/orb_v3/volume"
     cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
     params = extract_volume_params(cfg)
+    regions = json.loads((GEN_DIR / "reference" / "REFERENCE_VISUAL_REGIONS.json").read_text(encoding="utf-8"))
+    grid_n = int(regions["gridSpec"]["size"])
+    ref_grids = {
+        key: regions["interiorRegions"][key]["spatialGrid32x32"]
+        for key in ("E05_emerald", "E06_sapphire", "E07_aqua", "E08_caustics")
+    }
+    master_rgb = {
+        key: regions["interiorRegions"][key]["meanSrgb"]
+        for key in ("E05_emerald", "E06_sapphire", "E07_aqua")
+    }
 
     # Verify volume_structure_fitter and generate_orb_volume both bind to canonical_fluid_volume
     fitter_src = (FITTING_DIR / "volume_structure_fitter.py").read_text(encoding="utf-8")
@@ -101,15 +113,17 @@ def test_1_canonical_volume_algorithm_and_webp_roundtrip() -> None:
         ("outer_rim", 232, 128, 16),
     ]
 
-    tested_slices: dict[int, bytes] = {}
     max_quant_err = 0.0
+    tested_slices: dict[int, bytes] = {}
     for label, ix, iy, iz in probes:
         x = ((ix + 0.5) / VOL_W) * 2.0 - 1.0
         y = 1.0 - ((iy + 0.5) / VOL_H) * 2.0
         z = ((iz + 0.5) / VOL_D) * 2.0 - 1.0
 
         # 1) Canonical analytical voxel evaluation
-        rf, gf, bf, af = evaluate_canonical_voxel(x, y, z, params)
+        rf, gf, bf, af, _ridge = evaluate_canonical_voxel(
+            x, y, z, ref_grids, master_rgb, params, grid_n
+        )
         exp_rgba = (
             max(0, min(255, int(round(rf * 255.0)))),
             max(0, min(255, int(round(gf * 255.0)))),
@@ -119,9 +133,12 @@ def test_1_canonical_volume_algorithm_and_webp_roundtrip() -> None:
 
         # 2) Canonical slice renderer (used 1:1 by generate_orb_volume.py)
         if iz not in tested_slices:
-            tested_slices[iz] = render_canonical_slice_rgba(iz, params)
+            tested_slices[iz] = render_canonical_slice_rgba(
+                iz, ref_grids, master_rgb, params, grid_n=grid_n
+            )
+        generated_slice = tested_slices[iz]
         off = (iy * VOL_W + ix) * 4
-        gen_rgba = tuple(tested_slices[iz][off : off + 4])
+        gen_rgba = tuple(generated_slice[off : off + 4])
         assert_true(
             gen_rgba == exp_rgba,
             f"Canonical vs Generator mismatch at {label} ({ix},{iy},{iz}): {gen_rgba} != {exp_rgba}",
@@ -144,10 +161,105 @@ def test_1_canonical_volume_algorithm_and_webp_roundtrip() -> None:
                 f"RGBA8 quantization error {err:.6f} exceeded bound at {label}",
             )
 
-    print(
-        f"[test_1_canonical_volume] PASS: {len(probes)} 3D probes exact 0-byte Lossless WebP match, "
-        f"maxQuantErr={max_quant_err:.6f}"
+    # Exhaustive 256x256x32 verification: canonical analytical field -> renderer -> decoded VP8L RGBA.
+    # Compare each byte, and retain per-slice SHA/length evidence for review and CI artifacts.
+    pixel_slices: list[dict[str, Any]] = []
+    for iz in range(VOL_D):
+        generated = render_canonical_slice_rgba(
+            iz, ref_grids, master_rgb, params, width=VOL_W, height=VOL_H,
+            depth=VOL_D, grid_n=grid_n,
+        )
+        decoded = disk_slices[iz]
+        if generated != decoded:
+            mismatch = next(i for i, (a, b) in enumerate(zip(generated, decoded)) if a != b)
+            raise AssertionError(
+                f"Full RGBA mismatch in z={iz}: byte {mismatch}, generated={generated[mismatch]}, decoded={decoded[mismatch]}"
+            )
+        generated_sha = hashlib.sha256(generated).hexdigest()
+        decoded_sha = hashlib.sha256(decoded).hexdigest()
+        assert_true(generated_sha == decoded_sha, f"Slice z={iz} decoded RGBA SHA mismatch")
+        pixel_slices.append({
+            "zIndex": iz,
+            "width": VOL_W,
+            "height": VOL_H,
+            "decodedBytes": len(decoded),
+            "generatedRgbaSha256": generated_sha,
+            "decodedRgbaSha256": decoded_sha,
+            "byteIdentical": True,
+        })
+        print(f"  [full RGBA PASS] z={iz:02d} bytes={len(decoded)} sha256={decoded_sha}")
+
+    closure = {
+        "schemaVersion": "AI_ORB_V32_CANONICAL_VOLUME_PIXEL_CLOSURE_1_0",
+        "dimensions": f"{VOL_W}x{VOL_H}x{VOL_D}",
+        "voxelCount": VOL_W * VOL_H * VOL_D,
+        "totalRgbaBytes": sum(item["decodedBytes"] for item in pixel_slices),
+        "comparison": "CANONICAL_FIELD == GENERATED_RGBA == DECODED_LOSSLESS_WEBP_RGBA",
+        "allBytesIdentical": len(pixel_slices) == VOL_D and all(s["byteIdentical"] for s in pixel_slices),
+        "maxFloatToRgba8QuantizationError": max_quant_err,
+        "slices": pixel_slices,
+    }
+    (FITTING_DIR / "CANONICAL_VOLUME_PIXEL_CLOSURE.json").write_text(
+        json.dumps(closure, indent=2) + "\n", encoding="utf-8"
     )
+    print(
+        f"[test_1_canonical_volume] PASS: {len(probes)} probes + {VOL_W * VOL_H * VOL_D:,} voxels, "
+        f"all {VOL_D} decoded Lossless WebP slices byte-identical; maxQuantErr={max_quant_err:.6f}"
+    )
+
+
+def test_1a_smoothstep_contract() -> None:
+    from canonical_fluid_volume import inverse_smoothstep, smoothstep
+
+    eps = 1e-12
+    for i in range(101):
+        x = i / 100.0
+        up = smoothstep(0.2, 0.8, x)
+        down = inverse_smoothstep(0.2, 0.8, x)
+        assert_true(math.isfinite(up) and math.isfinite(down), "smoothstep output must be finite")
+        if i:
+            prev_x = (i - 1) / 100.0
+            assert_true(up >= smoothstep(0.2, 0.8, prev_x) - eps, "smoothstep must be monotone increasing")
+            assert_true(down <= inverse_smoothstep(0.2, 0.8, prev_x) + eps, "inverse smoothstep must be monotone decreasing")
+    assert_true(smoothstep(0.2, 0.8, 0.2) == 0.0, "forward lower endpoint")
+    assert_true(abs(smoothstep(0.2, 0.8, 0.5) - 0.5) < eps, "forward midpoint")
+    assert_true(smoothstep(0.2, 0.8, 0.8) == 1.0, "forward upper endpoint")
+    assert_true(inverse_smoothstep(0.2, 0.8, 0.2) == 1.0, "inverse lower endpoint")
+    assert_true(abs(inverse_smoothstep(0.2, 0.8, 0.5) - 0.5) < eps, "inverse midpoint")
+    assert_true(inverse_smoothstep(0.2, 0.8, 0.8) == 0.0, "inverse upper endpoint")
+    for invalid in (float("nan"), float("inf"), float("-inf")):
+        assert_true(smoothstep(0.2, 0.8, invalid) == 0.0, "non-finite x must be safely rejected")
+        assert_true(inverse_smoothstep(0.2, 0.8, invalid) == 1.0, "inverse non-finite x policy must match")
+    try:
+        smoothstep(0.8, 0.2, 0.5)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("base smoothstep must reject reversed intervals")
+    print("[test_1a_smoothstep] PASS: ordered bounds, monotonicity, endpoints, midpoint, NaN/Infinity")
+
+
+def test_1b_shared_haze_classifier_contract() -> None:
+    from visual_metrics import is_upper_dome_grey_white_haze
+
+    assert_true(is_upper_dome_grey_white_haze(0.19, 210, 210, 210, False), "bright neutral upper pixel must classify as haze")
+    assert_true(not is_upper_dome_grey_white_haze(0.18, 210, 210, 210, False), "haze lower boundary is exclusive")
+    assert_true(not is_upper_dome_grey_white_haze(0.19, 210, 210, 210, True), "localized flare must be excluded")
+    assert_true(not is_upper_dome_grey_white_haze(0.19, 210, 210, 100, False), "saturated pixel must not classify as haze")
+    assert_true(not is_upper_dome_grey_white_haze(0.19, 135, 135, 135, False), "luma threshold is strict")
+    print("[test_1b_haze_classifier] PASS: shared upper region, flare exclusion, luma, saturation")
+
+
+def test_1c_motion_video_duration_parser() -> None:
+    assert_true(parse_video_duration("20.0\n") == 20.0, "valid ffprobe duration must be parsed")
+    for invalid in ("N/A", "", "nan", "inf", "-1"):
+        try:
+            parse_video_duration(invalid)
+        except ValueError as exc:
+            assert_true("motion video duration" in str(exc), "invalid duration needs an actionable error")
+        else:
+            raise AssertionError(f"invalid video duration must fail closed: {invalid!r}")
+    print("[test_1c_video_duration] PASS: numeric ffprobe duration accepted; N/A/non-finite/negative rejected")
 
 
 def test_2_crystal_lens_geometry_consistency() -> None:
@@ -384,6 +496,9 @@ def test_3_ten_negative_ci_gate_tests() -> None:
 
 
 def main() -> int:
+    test_1a_smoothstep_contract()
+    test_1b_shared_haze_classifier_contract()
+    test_1c_motion_video_duration_parser()
     test_1_canonical_volume_algorithm_and_webp_roundtrip()
     test_2_crystal_lens_geometry_consistency()
     test_3_ten_negative_ci_gate_tests()

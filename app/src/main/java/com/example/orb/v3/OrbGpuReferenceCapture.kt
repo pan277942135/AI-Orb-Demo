@@ -11,6 +11,7 @@ import com.example.orb.gl.CoreFluidShaders
 import com.example.orb.gl.RibbonOpticsShaders
 import com.example.orb.scene.AIOrbMotionSnapshot
 import com.example.orb.scene.AIOrbTelemetry
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
@@ -20,6 +21,9 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.Executors
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+import kotlin.math.pow
 
 data class GpuCaptureStep(
   val fileName: String,
@@ -43,9 +47,8 @@ data class GpuCaptureProgress(
 )
 
 /**
- * Frozen, immutable capture state shared identically across ALL 6 GPU evidence frames
- * (`REFERENCE_LOCKED_FRAME`, `CAVITY_ONLY`, `FLUID_VOLUME_ONLY`, `RIBBONS_ONLY`,
- * `GLASS_ONLY`, `FULL_RENDER`), guaranteeing pixel-exact camera, viewport, object
+ * Frozen, immutable capture state shared identically across all GPU evidence frames,
+ * guaranteeing pixel-exact camera, viewport, object
  * transform, and rotation-phase alignment with zero inter-frame drift.
  */
 data class OrbGpuCaptureSnapshot(
@@ -115,11 +118,22 @@ data class OrbGpuCaptureSnapshot(
   }
 }
 
+/** Per-mode values captured from the actual production render pass and framebuffer readback. */
+data class GpuCapturedFrameEvidence(
+  val config: AIOrbConfig,
+  val telemetry: AIOrbTelemetry,
+  val width: Int,
+  val height: Int,
+  val framebufferComplete: Boolean,
+  val glErrorCode: Int,
+  val capturedAtUtc: String,
+)
+
 /**
  * Gate 4 Production GLES 3.0 GPU Frame & Evidence Exporter.
  *
  * Driven directly from `AIOrbScene.onDrawFrame()` on the real GL thread:
- * - Locks ONE [OrbGpuCaptureSnapshot] across all 6 frames (identical camera, viewport, transform, phase)
+ * - Locks ONE [OrbGpuCaptureSnapshot] across every layer (identical camera, viewport, transform, phase)
  * - Verifies framebuffer completeness (`glCheckFramebufferStatus`) and `glGetError()` around `glReadPixels`
  * - Performs exact row-wise vertical Y-flip into lossless `Bitmap.Config.ARGB_8888` PNGs on an IO thread
  * - Re-decodes every written PNG to verify valid dimensions & computes exact per-PNG SHA-256 digests
@@ -133,11 +147,14 @@ class OrbGpuReferenceCapture {
   }
 
   private var active = false
+  private var capturePending = false
   private var stepIndex = 0
   private var outputDir: File? = null
   private var callback: ((GpuCaptureProgress) -> Unit)? = null
   private var frozenSnapshot: OrbGpuCaptureSnapshot? = null
   private val capturedPngSha256 = LinkedHashMap<String, String>(8)
+  private val capturedFrameEvidence = LinkedHashMap<String, GpuCapturedFrameEvidence>(CAPTURE_STEPS.size)
+  private var measuredFoldActiveRatio: Float? = null
 
   val isCapturing: Boolean
     get() = synchronized(lock) { active }
@@ -149,11 +166,14 @@ class OrbGpuReferenceCapture {
     synchronized(lock) {
       if (active) return false
       active = true
+      capturePending = false
       stepIndex = 0
       outputDir = outputDirectory
       callback = onProgress
       frozenSnapshot = null
       capturedPngSha256.clear()
+      capturedFrameEvidence.clear()
+      measuredFoldActiveRatio = null
     }
     onProgress(
       GpuCaptureProgress(
@@ -162,7 +182,7 @@ class OrbGpuReferenceCapture {
         totalSteps = CAPTURE_STEPS.size,
         currentFile = CAPTURE_STEPS.first().fileName,
         outputDirPath = outputDirectory.absolutePath,
-        statusMessage = "Starting 6-frame frozen-snapshot GPU capture...",
+        statusMessage = "Starting ${CAPTURE_STEPS.size}-frame frozen-snapshot GLES capture...",
       )
     )
     return true
@@ -177,8 +197,8 @@ class OrbGpuReferenceCapture {
   }
 
   /**
-   * Locks ONE [OrbGpuCaptureSnapshot] on step 0 and reuses the EXACT SAME snapshot
-   * across all 6 capture frames so every layer shares identical camera, transform, and phase.
+ * Locks ONE [OrbGpuCaptureSnapshot] on step 0 and reuses the EXACT SAME snapshot
+ * across all capture frames so every layer shares identical camera, transform, and phase.
    */
   fun getOrCreateFrozenSnapshot(
     surfaceWidth: Int,
@@ -219,13 +239,18 @@ class OrbGpuReferenceCapture {
     val idx: Int
     val activeSnap: OrbGpuCaptureSnapshot?
     synchronized(lock) {
-      if (!active || stepIndex !in CAPTURE_STEPS.indices) return
-      step = CAPTURE_STEPS[stepIndex]
+      if (!active || capturePending || stepIndex !in CAPTURE_STEPS.indices) return
+      val currentStep = CAPTURE_STEPS[stepIndex]
+      // The IO thread advances stepIndex after readback validation. It can do so between
+      // onDrawFrame selecting its override mode and this post-render callback. Never label
+      // pixels from the previous mode as the next capture step; skip that stale frame.
+      if (!isExpectedRenderedMode(stepIndex, config.debugMode)) return
+      step = currentStep
       dir = outputDir ?: return
       cb = callback
       idx = stepIndex
       activeSnap = snapshot ?: frozenSnapshot
-      stepIndex++
+      capturePending = true
     }
 
     val w = surfaceWidth.coerceAtLeast(1)
@@ -256,12 +281,13 @@ class OrbGpuReferenceCapture {
       try {
         check(fboComplete) { "Framebuffer incomplete before glReadPixels (status=0x${fboStatus.toString(16)})" }
         check(readError == GLES30.GL_NO_ERROR) { "glReadPixels failed with GL error 0x${readError.toString(16)}" }
+        check(telemetry.glError == "GL_NO_ERROR") { "Core rendering reported ${telemetry.glError} in ${telemetry.glErrorPass}" }
         check(rawRgba.size == byteCount) { "Unexpected pixel buffer size ${rawRgba.size} != $byteCount" }
 
         if (!dir.exists()) dir.mkdirs()
         val flipped = flipRgbaVertically(rawRgba, w, h)
         val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(flipped))
+        bitmap.setPixels(rgbaBytesToArgb(flipped), 0, w, 0, 0, w, h)
         val outFile = File(dir, step.fileName)
         FileOutputStream(outFile).use { fos ->
           val ok = bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
@@ -271,19 +297,51 @@ class OrbGpuReferenceCapture {
 
         // Re-decode written PNG to verify valid header, non-empty size, exact dimensions & SHA-256
         val pngSha = verifyWrittenPngAndSha256(outFile, expectedWidth = w, expectedHeight = h)
+        val foldRatio = if (step.fileName == FOLD_NORMAL_FILE) measureFoldActiveRatio(outFile) else null
         val shaMapSnapshot: Map<String, String> = synchronized(lock) {
           capturedPngSha256[step.fileName] = pngSha
+          capturedFrameEvidence[step.fileName] = GpuCapturedFrameEvidence(
+            config = config,
+            telemetry = telemetry,
+            width = w,
+            height = h,
+            framebufferComplete = fboComplete,
+            glErrorCode = readError,
+            capturedAtUtc = Companion.utcIsoNow(),
+          )
+          if (foldRatio != null) measuredFoldActiveRatio = foldRatio
+          check(stepIndex == idx) { "Capture sequence changed while ${step.fileName} was being validated" }
+          stepIndex++
+          capturePending = false
           LinkedHashMap(capturedPngSha256)
         }
 
         if (isLastStep) {
+          val finalTelemetry = telemetry.copy(
+            foldActiveRatio = measuredFoldActiveRatio,
+            foldActiveRatioStatus = if (measuredFoldActiveRatio == null) "NOT_MEASURED" else "MEAN_PER_VISIBLE_LIQUID_RAY_FROM_FOLD_NORMAL_GPU_PNG",
+          )
+          check(finalTelemetry.uVolumeLoaded == 1) { "Production shader read back uVolumeLoaded=${finalTelemetry.uVolumeLoaded}, expected 1" }
+          check(finalTelemetry.gpuTextureObjectsValid) { "One or more production GPU texture objects failed glIsTexture validation" }
+          check(finalTelemetry.uniformStateValid) { "Production Density / Transparency / Raymarch uniforms did not match the configured values" }
           File(dir, FILE_RUNTIME_RENDER_CONFIG).writeText(
             buildRuntimeRenderConfigJson(config, fidelity, w, h, activeSnap),
             Charsets.UTF_8,
           )
           File(dir, FILE_GPU_TELEMETRY).writeText(
-            buildGpuTelemetryJson(
-              telemetry = telemetry,
+            Companion.buildGpuTelemetryJson(
+              telemetry = finalTelemetry,
+              surfaceWidth = w,
+              surfaceHeight = h,
+              snapshot = activeSnap,
+              framebufferComplete = fboComplete,
+              glErrorCode = readError,
+            ),
+            Charsets.UTF_8,
+          )
+          File(dir, FILE_RUNTIME_TELEMETRY).writeText(
+            Companion.buildGpuTelemetryJson(
+              telemetry = finalTelemetry,
               surfaceWidth = w,
               surfaceHeight = h,
               snapshot = activeSnap,
@@ -293,16 +351,33 @@ class OrbGpuReferenceCapture {
             Charsets.UTF_8,
           )
           File(dir, FILE_BUILD_FINGERPRINT).writeText(
-            buildFingerprintJson(
+            Companion.buildFingerprintJson(
               fidelity = fidelity,
-              telemetry = telemetry,
+              telemetry = finalTelemetry,
               snapshot = activeSnap,
               capturedPngSha256 = shaMapSnapshot,
             ),
             Charsets.UTF_8,
           )
+          File(dir, FILE_CAPTURE_MANIFEST).writeText(
+            buildCaptureManifestJson(
+              config = config,
+              telemetry = finalTelemetry,
+              surfaceWidth = w,
+              surfaceHeight = h,
+              snapshot = activeSnap,
+              capturedPngSha256 = shaMapSnapshot,
+              frameEvidence = synchronized(lock) { LinkedHashMap(capturedFrameEvidence) },
+              framebufferComplete = fboComplete,
+              glErrorCode = readError,
+            ),
+            Charsets.UTF_8,
+          )
+          val sumsFile = writeEvidenceShaManifest(dir, shaMapSnapshot)
+          val zipFile = createEvidenceZip(dir, sumsFile)
           synchronized(lock) {
             active = false
+            capturePending = false
             frozenSnapshot = null
           }
           cb?.invoke(
@@ -312,7 +387,7 @@ class OrbGpuReferenceCapture {
               totalSteps = CAPTURE_STEPS.size,
               currentFile = step.fileName,
               outputDirPath = dir.absolutePath,
-              statusMessage = "Exported 6 verified GPU PNGs + 3 JSONs to ${dir.name}/",
+              statusMessage = "Exported ${CAPTURE_STEPS.size} verified GLES PNGs + runtime manifests + ${zipFile.name} (${zipFile.length()} bytes)",
             )
           )
         } else {
@@ -330,6 +405,7 @@ class OrbGpuReferenceCapture {
       } catch (e: Exception) {
         synchronized(lock) {
           active = false
+          capturePending = false
           frozenSnapshot = null
         }
         cb?.invoke(
@@ -349,30 +425,64 @@ class OrbGpuReferenceCapture {
   fun release() {
     synchronized(lock) {
       active = false
+      capturePending = false
       frozenSnapshot = null
+      capturedFrameEvidence.clear()
     }
     ioExecutor.shutdownNow()
   }
 
+  fun cancelForContextLoss() {
+    val cb = synchronized(lock) {
+      active = false
+      capturePending = false
+      frozenSnapshot = null
+      capturedFrameEvidence.clear()
+      callback
+    }
+    cb?.invoke(GpuCaptureProgress(
+      state = GpuCaptureState.FAILED,
+      totalSteps = CAPTURE_STEPS.size,
+      statusMessage = "Capture cancelled: EGL context was recreated; all texture IDs and frozen GL state were invalidated.",
+    ))
+  }
+
   companion object {
-    const val EVIDENCE_DIR_NAME = "v32_fidelity_evidence"
+    const val EVIDENCE_DIR_NAME = "v42_fidelity_evidence"
+    const val EVIDENCE_ZIP_NAME = "AI_ORB_V42_GPU_FIDELITY_EVIDENCE.zip"
+    const val FOLD_NORMAL_FILE = "FOLD_NORMAL_GPU.png"
     const val FILE_RUNTIME_RENDER_CONFIG = "RUNTIME_RENDER_CONFIG.json"
     const val FILE_GPU_TELEMETRY = "GPU_TELEMETRY.json"
     const val FILE_BUILD_FINGERPRINT = "BUILD_FINGERPRINT.json"
+    const val FILE_RUNTIME_TELEMETRY = "RUNTIME_TELEMETRY.json"
+    const val FILE_CAPTURE_MANIFEST = "CAPTURE_MANIFEST.json"
 
     val CAPTURE_STEPS: List<GpuCaptureStep> = listOf(
+      GpuCaptureStep("CORE_ONLY_TRANSPARENT.png", RenderDebugMode.CORE_ONLY_TRANSPARENT),
+      GpuCaptureStep("CAVITY_ONLY.png", RenderDebugMode.CAVITY_ONLY),
+      GpuCaptureStep("FLUID_VOLUME_ONLY.png", RenderDebugMode.FLUID_VOLUME_ONLY),
+      GpuCaptureStep("GLASS_ONLY.png", RenderDebugMode.GLASS_ONLY),
+      GpuCaptureStep("RESIDENTS_ONLY.png", RenderDebugMode.RESIDENTS_ONLY),
+      GpuCaptureStep("FULL_RENDER.png", RenderDebugMode.FULL_RENDER),
+      GpuCaptureStep("BLOOM_OFF.png", RenderDebugMode.BLOOM_OFF),
+      GpuCaptureStep("PRE_TONEMAP.png", RenderDebugMode.PRE_TONEMAP),
+      GpuCaptureStep("POST_TONEMAP.png", RenderDebugMode.POST_TONEMAP),
       GpuCaptureStep("REFERENCE_LOCKED_FRAME_GPU.png", RenderDebugMode.REFERENCE_LOCKED_FRAME),
-      GpuCaptureStep("CAVITY_ONLY_GPU.png", RenderDebugMode.CAVITY_ONLY),
-      GpuCaptureStep("FLUID_VOLUME_ONLY_GPU.png", RenderDebugMode.FLUID_VOLUME_ONLY),
       GpuCaptureStep("RIBBONS_ONLY_GPU.png", RenderDebugMode.RIBBONS_ONLY),
-      GpuCaptureStep("GLASS_ONLY_GPU.png", RenderDebugMode.GLASS_ONLY),
-      GpuCaptureStep("FULL_RENDER_GPU.png", RenderDebugMode.FULL_RENDER),
+      GpuCaptureStep("CAUSTICS_ONLY_GPU.png", RenderDebugMode.CAUSTICS_ONLY),
+      GpuCaptureStep(FOLD_NORMAL_FILE, RenderDebugMode.FOLD_NORMAL),
+      GpuCaptureStep("VOLUME_DEPTH_GPU.png", RenderDebugMode.VOLUME_DEPTH),
     )
+
+    internal fun isExpectedRenderedMode(stepIndex: Int, renderedMode: RenderDebugMode): Boolean =
+      stepIndex in CAPTURE_STEPS.indices && CAPTURE_STEPS[stepIndex].mode == renderedMode
 
     val EXPECTED_JSON_FILES: List<String> = listOf(
       FILE_RUNTIME_RENDER_CONFIG,
       FILE_GPU_TELEMETRY,
       FILE_BUILD_FINGERPRINT,
+      FILE_RUNTIME_TELEMETRY,
+      FILE_CAPTURE_MANIFEST,
     )
 
     fun resolveEvidenceDir(context: Context): File {
@@ -398,6 +508,19 @@ class OrbGpuReferenceCapture {
       return out
     }
 
+    /** Convert GL's byte-ordered RGBA pixels to Android's explicit ARGB integer contract. */
+    fun rgbaBytesToArgb(rgba: ByteArray): IntArray {
+      require(rgba.size % 4 == 0) { "RGBA byte array length must be divisible by 4" }
+      return IntArray(rgba.size / 4) { pixelIndex ->
+        val offset = pixelIndex * 4
+        val r = rgba[offset].toInt() and 0xff
+        val g = rgba[offset + 1].toInt() and 0xff
+        val b = rgba[offset + 2].toInt() and 0xff
+        val a = rgba[offset + 3].toInt() and 0xff
+        (a shl 24) or (r shl 16) or (g shl 8) or b
+      }
+    }
+
     /**
      * Verifies a written PNG file by re-decoding its bounds via [BitmapFactory], confirming
      * non-empty file size and exact [expectedWidth] x [expectedHeight], and returning its SHA-256.
@@ -410,12 +533,77 @@ class OrbGpuReferenceCapture {
       require(file.exists() && file.length() > 8L) {
         "Written PNG missing or empty: ${file.name}"
       }
-      val opts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-      BitmapFactory.decodeFile(file.absolutePath, opts)
-      require(opts.outWidth == expectedWidth && opts.outHeight == expectedHeight) {
-        "Decoded PNG dimensions mismatch for ${file.name}: ${opts.outWidth}x${opts.outHeight} != ${expectedWidth}x${expectedHeight}"
+      val decoded = BitmapFactory.decodeFile(file.absolutePath)
+        ?: error("Written PNG could not be decoded: ${file.name}")
+      try {
+        require(decoded.width == expectedWidth && decoded.height == expectedHeight) {
+          "Decoded PNG dimensions mismatch for ${file.name}: ${decoded.width}x${decoded.height} != ${expectedWidth}x${expectedHeight}"
+        }
+      } finally {
+        decoded.recycle()
       }
       return MasterFidelityV32.sha256Hex(file.readBytes())
+    }
+
+    /** Mean per-ray fold activation decoded from the red sRGB channel of the real diagnostic frame. */
+    fun measureFoldActiveRatio(file: File): Float? {
+      val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return null
+      try {
+        val row = IntArray(bitmap.width)
+        var activationSum = 0.0
+        var rayCount = 0L
+        for (y in 0 until bitmap.height) {
+          bitmap.getPixels(row, 0, bitmap.width, 0, y, bitmap.width, 1)
+          for (pixel in row) {
+            val red = (pixel ushr 16) and 0xff
+            val green = (pixel ushr 8) and 0xff
+            val blue = pixel and 0xff
+            // The isolated diagnostic clears the background to black. A non-black RGB
+            // value marks a visible ray with at least one density-bearing volume sample.
+            if (red + green + blue > 24) {
+              activationSum += (red / 255.0).pow(2.2)
+              rayCount++
+            }
+          }
+        }
+        return if (rayCount > 0L) (activationSum / rayCount).toFloat() else null
+      } finally {
+        bitmap.recycle()
+      }
+    }
+
+    private fun writeEvidenceShaManifest(dir: File, pngSha: Map<String, String>): File {
+      val lines = buildList {
+        pngSha.toSortedMap().forEach { (name, sha) -> add("$sha  $name") }
+        EXPECTED_JSON_FILES.sorted().forEach { name ->
+          val file = File(dir, name)
+          add("${MasterFidelityV32.sha256Hex(file.readBytes())}  $name")
+        }
+      }
+      return File(dir, "SHA256SUMS.txt").apply { writeText(lines.joinToString("\n", postfix = "\n"), Charsets.UTF_8) }
+    }
+
+    private fun createEvidenceZip(dir: File, shaManifest: File): File {
+      val zipFile = File(dir, EVIDENCE_ZIP_NAME)
+      val include = (CAPTURE_STEPS.map { it.fileName } + EXPECTED_JSON_FILES + shaManifest.name)
+        .map { File(dir, it) }
+      check(include.all { it.isFile }) { "Evidence ZIP is missing files: ${include.filterNot { it.isFile }.joinToString { it.name }}" }
+      ZipOutputStream(FileOutputStream(zipFile)).use { zip ->
+        val buffer = ByteArray(64 * 1024)
+        include.forEach { file ->
+          zip.putNextEntry(ZipEntry(file.name))
+          file.inputStream().buffered().use { input ->
+            while (true) {
+              val n = input.read(buffer)
+              if (n < 0) break
+              zip.write(buffer, 0, n)
+            }
+          }
+          zip.closeEntry()
+        }
+      }
+      check(zipFile.length() > 0L) { "Evidence ZIP was not written" }
+      return zipFile
     }
 
     fun buildRuntimeRenderConfigJson(
@@ -433,16 +621,154 @@ class OrbGpuReferenceCapture {
       )
       return buildString {
         appendLine("{")
-        appendLine("  \"schema\": \"AI_ORB_V3_2_RUNTIME_RENDER_CONFIG_1_1\",")
+      appendLine("  \"schema\": \"AI_ORB_V4_2_RUNTIME_RENDER_CONFIG_1_0\",")
         appendLine("  \"capturedAtUtc\": \"${utcIsoNow()}\",")
         appendLine("  \"snapshotId\": \"${esc(snapshot?.snapshotId ?: "UNBOUND")}\",")
         appendLine("  \"cameraConfigHash\": \"${esc(snapshot?.cameraConfigHash ?: camSnap.configHash)}\",")
         appendLine("  \"modelTransformHash\": \"${esc(snapshot?.modelTransformHash ?: "UNBOUND")}\",")
         appendLine("  \"surfaceWidth\": $surfaceWidth,")
         appendLine("  \"surfaceHeight\": $surfaceHeight,")
+        appendLine("  \"captureStepModes\": {")
+        CAPTURE_STEPS.forEachIndexed { index, step ->
+          val comma = if (index < CAPTURE_STEPS.lastIndex) "," else ""
+          appendLine("    \"${esc(step.fileName)}\": \"${step.mode.name}\"$comma")
+        }
+        appendLine("  },")
         appendLine("  \"cameraSnapshot\": ${camSnap.toJson().prependIndent("  ").trimStart()},")
         appendLine("  \"aiOrbConfig\": ${config.toJson().prependIndent("  ").trimStart()},")
         appendLine("  \"masterFidelityV32\": ${fidelity.toRuntimeSummaryJson().prependIndent("  ").trimStart()}")
+        append("}")
+      }
+    }
+
+    fun buildCaptureManifestJson(
+      config: AIOrbConfig,
+      telemetry: AIOrbTelemetry,
+      surfaceWidth: Int,
+      surfaceHeight: Int,
+      snapshot: OrbGpuCaptureSnapshot?,
+      capturedPngSha256: Map<String, String>,
+      frameEvidence: Map<String, GpuCapturedFrameEvidence> = emptyMap(),
+      framebufferComplete: Boolean,
+      glErrorCode: Int,
+    ): String {
+      fun esc(s: String): String = s.replace("\\", "\\\\").replace("\"", "\\\"")
+      fun uniformSnapshotJson(t: AIOrbTelemetry): String = JSONObject()
+        .put("uVolumeLoaded", t.uVolumeLoaded)
+        .put("uRaymarchSteps", t.raymarchSteps)
+        .put("uDebugMode", t.uDebugMode)
+        .put("uDensityScale", t.densityScale.takeIf { it.isFinite() } ?: JSONObject.NULL)
+        .put("uCoreTransparency", t.coreTransparency.takeIf { it.isFinite() } ?: JSONObject.NULL)
+        .put("uniformStateValid", t.uniformStateValid)
+        .toString()
+      fun motionSnapshotJson(motion: AIOrbMotionSnapshot?): String = motion?.let {
+        JSONObject()
+          .put("simTimeSec", it.simTimeSec)
+          .put("coreRotationAngleDeg", it.coreRotationAngleDeg)
+          .put("coreAngularVelocityDegPerSec", it.coreAngularVelocityDegPerSec)
+          .put("fluidPhase", it.fluidPhase)
+          .put("meniscusPhase", it.meniscusPhase)
+          .put("causticsPhase", it.causticsPhase)
+          .put("ribbonTimeSec", it.ribbonTimeSec)
+          .toString()
+      } ?: "null"
+      val densityJson = telemetry.densityScale.takeIf { it.isFinite() }
+        ?.let { String.format(Locale.US, "%.6f", it) } ?: "null"
+      val transparencyJson = telemetry.coreTransparency.takeIf { it.isFinite() }
+        ?.let { String.format(Locale.US, "%.6f", it) } ?: "null"
+      val requiredModes = listOf(
+        "CORE_ONLY_TRANSPARENT", "CAVITY_ONLY", "FLUID_VOLUME_ONLY", "GLASS_ONLY",
+        "RESIDENTS_ONLY", "FULL_RENDER", "BLOOM_OFF", "PRE_TONEMAP", "POST_TONEMAP",
+      )
+      val modeByFile = CAPTURE_STEPS.associate { it.fileName to it.mode.name }
+      val allFrameHashesPresent = CAPTURE_STEPS.all { capturedPngSha256[it.fileName]?.matches(Regex("[0-9a-f]{64}")) == true }
+      val requiredEvidencePresent = requiredModes.all { mode ->
+        CAPTURE_STEPS.firstOrNull { it.mode.name == mode }?.let { it.fileName in frameEvidence } == true
+      }
+      val allFrameRuntimeValid = CAPTURE_STEPS.all { step ->
+        val frame = frameEvidence[step.fileName] ?: return@all false
+        val coreExecuted = step.mode != RenderDebugMode.RESIDENTS_ONLY && step.mode != RenderDebugMode.RIBBONS_ONLY
+        frame.framebufferComplete && frame.glErrorCode == GLES30.GL_NO_ERROR &&
+          frame.telemetry.glError == "GL_NO_ERROR" &&
+          frame.width == surfaceWidth && frame.height == surfaceHeight &&
+          frame.config.debugMode == step.mode && frame.telemetry.geometryStateValid &&
+          (!coreExecuted || frame.telemetry.uniformStateValid)
+      }
+      val complete = framebufferComplete && glErrorCode == GLES30.GL_NO_ERROR && snapshot != null &&
+        telemetry.uVolumeLoaded == 1 && telemetry.gpuTextureObjectsValid && telemetry.uniformStateValid && telemetry.geometryStateValid &&
+        requiredModes.all { required -> CAPTURE_STEPS.any { it.mode.name == required } } &&
+        allFrameHashesPresent && requiredEvidencePresent && allFrameRuntimeValid
+      return buildString {
+        appendLine("{")
+        appendLine("  \"schema\": \"AI_ORB_P0_3_CAPTURE_MANIFEST_1_0\",")
+        appendLine("  \"status\": \"${if (complete) "COMPLETE" else "INCOMPLETE"}\",")
+        appendLine("  \"capturedAtUtc\": \"${utcIsoNow()}\",")
+        appendLine("  \"buildSha\": \"${esc(telemetry.buildSha)}\",")
+        appendLine("  \"apkSha256\": ${telemetry.apkSha256?.let { "\"${esc(it)}\"" } ?: "null"},")
+        appendLine("  \"renderBackend\": \"${if (telemetry.isSoftwareRenderer) "SOFTWARE_RENDER" else "HARDWARE_GPU"}\",")
+        appendLine("  \"isSoftwareRenderer\": ${telemetry.isSoftwareRenderer},")
+        appendLine("  \"glVendor\": \"${esc(telemetry.glVendor)}\",")
+        appendLine("  \"glRenderer\": \"${esc(telemetry.glRenderer)}\",")
+        appendLine("  \"glVersion\": \"${esc(telemetry.glVersion)}\",")
+        appendLine("  \"renderResolution\": \"${esc(telemetry.renderResolution)}\",")
+        appendLine("  \"surfaceWidth\": $surfaceWidth,")
+        appendLine("  \"surfaceHeight\": $surfaceHeight,")
+        appendLine("  \"qualityTier\": \"${config.quality.name}\",")
+        appendLine("  \"configuredRaymarchSteps\": ${telemetry.configuredRaymarchSteps},")
+        appendLine("  \"effectiveRaymarchSteps\": ${telemetry.effectiveRaymarchSteps},")
+        appendLine("  \"shaderProgramId\": ${telemetry.shaderProgramId},")
+        appendLine("  \"shaderSourceSha256\": \"${esc(telemetry.shaderSourceSha256)}\",")
+        appendLine("  \"actualUniformSnapshot\": {\"uVolumeLoaded\":${telemetry.uVolumeLoaded},\"uRaymarchSteps\":${telemetry.raymarchSteps},\"uDebugMode\":${telemetry.uDebugMode},\"uDensityScale\":$densityJson,\"uCoreTransparency\":$transparencyJson,\"uniformStateValid\":${telemetry.uniformStateValid}},")
+        appendLine("  \"snapshotId\": \"${esc(snapshot?.snapshotId ?: "UNBOUND")}\",")
+        appendLine("  \"cameraConfigHash\": \"${esc(snapshot?.cameraConfigHash ?: "UNBOUND")}\",")
+        appendLine("  \"modelTransformHash\": \"${esc(snapshot?.modelTransformHash ?: "UNBOUND")}\",")
+        appendLine("  \"cameraSnapshot\": ${snapshot?.camera?.toJson() ?: "null"},")
+        appendLine("  \"motionSnapshot\": ${motionSnapshotJson(snapshot?.motion)},")
+        appendLine("  \"volume\": {")
+        appendLine("    \"loadState\": \"${telemetry.volumeLoadState.name}\",")
+        appendLine("    \"uVolumeLoaded\": ${telemetry.uVolumeLoaded},")
+        appendLine("    \"all3DTexturesValid\": ${telemetry.gpuTextureObjectsValid},")
+        appendLine("    \"dimensions\": \"${esc(telemetry.volumeDimensions)}\",")
+        appendLine("    \"internalFormat\": \"${esc(telemetry.volumeInternalFormat)}\",")
+        appendLine("    \"textureIds\": [${telemetry.volumeTextureId},${telemetry.detailTextureId},${telemetry.causticsTextureId},${telemetry.glassEnvTextureId}]")
+        appendLine("  },")
+        appendLine("  \"geometry\": {")
+        appendLine("    \"icosphereSubdivisions\": ${telemetry.geometrySubdivisions},")
+        appendLine("    \"currentSubdivisions\": ${telemetry.currentSubdivisions},")
+        appendLine("    \"geometryStateValid\": ${telemetry.geometryStateValid},")
+        appendLine("    \"vertexCount\": ${telemetry.geometryVertexCount},")
+        appendLine("    \"triangleCount\": ${telemetry.geometryTriangleCount},")
+        appendLine("    \"geometryFingerprintSha256\": \"${esc(telemetry.geometryFingerprint)}\"")
+        appendLine("  },")
+        appendLine("  \"captureValidation\": {")
+        appendLine("    \"framebufferComplete\": $framebufferComplete,")
+        appendLine("    \"glErrorCode\": $glErrorCode,")
+        appendLine("    \"uniformStateValid\": ${telemetry.uniformStateValid},")
+        appendLine("    \"allRequiredModesPresent\": ${requiredModes.all { required -> CAPTURE_STEPS.any { it.mode.name == required } }},")
+        appendLine("    \"allRequiredModeEvidencePresent\": $requiredEvidencePresent,")
+        appendLine("    \"allFrameRuntimeValid\": $allFrameRuntimeValid,")
+        appendLine("    \"singleFrozenSnapshot\": ${snapshot != null},")
+        appendLine("    \"requiredModes\": [${requiredModes.joinToString(",") { "\"$it\"" }}]")
+        appendLine("  },")
+        appendLine("  \"frames\": [")
+        CAPTURE_STEPS.forEachIndexed { index, step ->
+          val comma = if (index == CAPTURE_STEPS.lastIndex) "" else ","
+          val sha = capturedPngSha256[step.fileName] ?: "MISSING"
+          val frame = frameEvidence[step.fileName]
+          val frameConfig = frame?.config ?: config.copy(debugMode = step.mode)
+          val frameTelemetry = frame?.telemetry ?: telemetry
+          val coreExecuted = step.mode != RenderDebugMode.RESIDENTS_ONLY && step.mode != RenderDebugMode.RIBBONS_ONLY
+          val configJson = JSONObject(frameConfig.toJson())
+            .put("isPaused", frameConfig.isPaused)
+            .put("renderDebugMode", frameConfig.debugMode.name)
+            .put("shaderDebugModeId", frameConfig.debugMode.shaderModeId)
+            .toString()
+          val uniformJson = if (coreExecuted && frame != null) uniformSnapshotJson(frameTelemetry) else "null"
+          val frameComplete = frame?.framebufferComplete ?: false
+          val frameGlError = frame?.glErrorCode ?: -1
+          appendLine("    {\"file\":\"${esc(step.fileName)}\",\"mode\":\"${modeByFile[step.fileName]}\",\"sha256\":\"$sha\",\"width\":${frame?.width ?: surfaceWidth},\"height\":${frame?.height ?: surfaceHeight},\"capturedAtUtc\":\"${esc(frame?.capturedAtUtc ?: "UNAVAILABLE")}\",\"modeConfig\":$configJson,\"coreShaderExecuted\":$coreExecuted,\"actualUniformSnapshot\":$uniformJson,\"runtime\":{\"qualityTier\":\"${esc(frameTelemetry.qualityTier)}\",\"isSoftwareRenderer\":${frameTelemetry.isSoftwareRenderer},\"configuredRaymarchSteps\":${frameTelemetry.configuredRaymarchSteps},\"effectiveRaymarchSteps\":${frameTelemetry.effectiveRaymarchSteps},\"shaderProgramId\":${frameTelemetry.shaderProgramId},\"shaderSourceSha256\":\"${esc(frameTelemetry.shaderSourceSha256)}\",\"glVendor\":\"${esc(frameTelemetry.glVendor)}\",\"glRenderer\":\"${esc(frameTelemetry.glRenderer)}\",\"glVersion\":\"${esc(frameTelemetry.glVersion)}\",\"volumeLoadState\":\"${frameTelemetry.volumeLoadState.name}\",\"all3DTexturesValid\":${frameTelemetry.gpuTextureObjectsValid},\"geometryStateValid\":${frameTelemetry.geometryStateValid},\"currentSubdivisions\":${frameTelemetry.currentSubdivisions},\"geometryFingerprintSha256\":\"${esc(frameTelemetry.geometryFingerprint)}\",\"glError\":\"${esc(frameTelemetry.glError)}\",\"framebufferComplete\":$frameComplete,\"readbackGlErrorCode\":$frameGlError},\"snapshotId\":\"${esc(snapshot?.snapshotId ?: "UNBOUND")}\",\"cameraConfigHash\":\"${esc(snapshot?.cameraConfigHash ?: "UNBOUND")}\",\"modelTransformHash\":\"${esc(snapshot?.modelTransformHash ?: "UNBOUND")}\"}$comma")
+        }
+        appendLine("  ]")
         append("}")
       }
     }
@@ -459,7 +785,7 @@ class OrbGpuReferenceCapture {
       fun f(v: Float): String = String.format(Locale.US, "%.3f", v)
       return buildString {
         appendLine("{")
-        appendLine("  \"schema\": \"AI_ORB_V3_2_GPU_TELEMETRY_1_1\",")
+        appendLine("  \"schema\": \"AI_ORB_V4_2_GPU_TELEMETRY_1_0\",")
         appendLine("  \"capturedAtUtc\": \"${utcIsoNow()}\",")
         appendLine("  \"snapshotId\": \"${esc(snapshot?.snapshotId ?: "UNBOUND")}\",")
         appendLine("  \"cameraConfigHash\": \"${esc(snapshot?.cameraConfigHash ?: "UNBOUND")}\",")
@@ -485,13 +811,44 @@ class OrbGpuReferenceCapture {
         appendLine("  \"glVendor\": \"${esc(telemetry.glVendor)}\",")
         appendLine("  \"glRenderer\": \"${esc(telemetry.glRenderer)}\",")
         appendLine("  \"glVersion\": \"${esc(telemetry.glVersion)}\",")
+        appendLine("  \"buildSha\": \"${esc(telemetry.buildSha)}\",")
+        appendLine("  \"apkSha256\": ${telemetry.apkSha256?.let { "\"${esc(it)}\"" } ?: "null"},")
+        appendLine("  \"shaderProgramId\": ${telemetry.shaderProgramId},")
+        appendLine("  \"shaderSourceSha256\": \"${esc(telemetry.shaderSourceSha256)}\",")
         appendLine("  \"eglVersion\": \"${esc(telemetry.eglVersion)}\",")
         appendLine("  \"volumeLoadState\": \"${telemetry.volumeLoadState.name}\",")
         appendLine("  \"volumeLoaded\": ${telemetry.volumeLoaded},")
+        appendLine("  \"uVolumeLoaded\": ${telemetry.uVolumeLoaded},")
+        appendLine("  \"gpuTextureObjectsValid\": ${telemetry.gpuTextureObjectsValid},")
         appendLine("  \"volumeDimensions\": \"${esc(telemetry.volumeDimensions)}\",")
+        appendLine("  \"volumeTextureId\": ${telemetry.volumeTextureId},")
+        appendLine("  \"detailTextureId\": ${telemetry.detailTextureId},")
+        appendLine("  \"causticsTextureId\": ${telemetry.causticsTextureId},")
+        appendLine("  \"glassEnvTextureId\": ${telemetry.glassEnvTextureId},")
+        appendLine("  \"volumeInternalFormat\": \"${esc(telemetry.volumeInternalFormat)}\",")
+        appendLine("  \"volumeIsSrgb\": ${telemetry.volumeIsSrgb},")
         appendLine("  \"webpDecodeMs\": ${f(telemetry.webpDecodeMs)},")
         appendLine("  \"texture3dUploadMs\": ${f(telemetry.texture3dUploadMs)},")
         appendLine("  \"gpuVolumeMemoryMiB\": ${f(telemetry.gpuVolumeMemoryMiB)},")
+        appendLine("  \"raymarchSteps\": ${telemetry.raymarchSteps},")
+        appendLine("  \"qualityTier\": \"${esc(telemetry.qualityTier)}\",")
+        appendLine("  \"configuredRaymarchSteps\": ${telemetry.configuredRaymarchSteps},")
+        appendLine("  \"effectiveRaymarchSteps\": ${telemetry.effectiveRaymarchSteps},")
+        appendLine("  \"actualUniformSnapshot\": {\"uVolumeLoaded\":${telemetry.uVolumeLoaded},\"uRaymarchSteps\":${telemetry.raymarchSteps},\"uDebugMode\":${telemetry.uDebugMode},\"uDensityScale\":${telemetry.densityScale.takeIf { it.isFinite() }?.let(::f) ?: "null"},\"uCoreTransparency\":${telemetry.coreTransparency.takeIf { it.isFinite() }?.let(::f) ?: "null"},\"uniformStateValid\":${telemetry.uniformStateValid}},")
+        appendLine("  \"densityScale\": ${telemetry.densityScale.takeIf { it.isFinite() }?.let(::f) ?: "null"},")
+        appendLine("  \"coreTransparency\": ${telemetry.coreTransparency.takeIf { it.isFinite() }?.let(::f) ?: "null"},")
+        appendLine("  \"uniformStateValid\": ${telemetry.uniformStateValid},")
+        appendLine("  \"foldActiveRatio\": ${telemetry.foldActiveRatio?.let(::f) ?: "null"},")
+        appendLine("  \"foldActiveRatioStatus\": \"${esc(telemetry.foldActiveRatioStatus)}\",")
+        appendLine("  \"renderResolution\": \"${esc(telemetry.renderResolution)}\",")
+        appendLine("  \"geometrySubdivisions\": ${telemetry.geometrySubdivisions},")
+        appendLine("  \"currentSubdivisions\": ${telemetry.currentSubdivisions},")
+        appendLine("  \"geometryStateValid\": ${telemetry.geometryStateValid},")
+        appendLine("  \"geometryVertexCount\": ${telemetry.geometryVertexCount},")
+        appendLine("  \"geometryTriangleCount\": ${telemetry.geometryTriangleCount},")
+        appendLine("  \"geometryFingerprintSha256\": \"${esc(telemetry.geometryFingerprint)}\",")
+        appendLine("  \"glError\": \"${esc(telemetry.glError)}\",")
+        appendLine("  \"glErrorPass\": \"${esc(telemetry.glErrorPass)}\",")
         appendLine("  \"deviceManufacturer\": \"${esc(Build.MANUFACTURER ?: "unknown")}\",")
         appendLine("  \"deviceModel\": \"${esc(Build.MODEL ?: "unknown")}\",")
         appendLine("  \"androidSdkInt\": ${Build.VERSION.SDK_INT}")
@@ -514,8 +871,10 @@ class OrbGpuReferenceCapture {
       )
       return buildString {
         appendLine("{")
-        appendLine("  \"schema\": \"AI_ORB_V3_2_BUILD_FINGERPRINT_1_1\",")
-        appendLine("  \"taskId\": \"AI_ORB_V32_FINAL_FIDELITY_CLOSURE_V2\",")
+        appendLine("  \"schema\": \"AI_ORB_V4_2_BUILD_FINGERPRINT_1_0\",")
+        appendLine("  \"taskId\": \"AI_ORB_DEMO_V42_CORE_REAL_GPU_FIDELITY_RECOVERY_P0\",")
+        appendLine("  \"buildSha\": \"${esc(telemetry.buildSha)}\",")
+        appendLine("  \"apkSha256\": ${telemetry.apkSha256?.let { "\"${esc(it)}\"" } ?: "null"},")
         appendLine("  \"capturedAtUtc\": \"${utcIsoNow()}\",")
         appendLine("  \"snapshotId\": \"${esc(snapshot?.snapshotId ?: "UNBOUND")}\",")
         appendLine("  \"cameraConfigHash\": \"${esc(snapshot?.cameraConfigHash ?: "UNBOUND")}\",")
@@ -529,6 +888,13 @@ class OrbGpuReferenceCapture {
         appendLine("  \"selectedVolumeDepth\": ${fidelity.selectedVolumeDepth},")
         appendLine("  \"glVendor\": \"${esc(telemetry.glVendor)}\",")
         appendLine("  \"glRenderer\": \"${esc(telemetry.glRenderer)}\",")
+        appendLine("  \"shaderProgramId\": ${telemetry.shaderProgramId},")
+        appendLine("  \"shaderSourceSha256\": \"${esc(telemetry.shaderSourceSha256)}\",")
+        appendLine("  \"uVolumeLoaded\": ${telemetry.uVolumeLoaded},")
+        appendLine("  \"gpuTextureObjectsValid\": ${telemetry.gpuTextureObjectsValid},")
+        appendLine("  \"uniformStateValid\": ${telemetry.uniformStateValid},")
+        appendLine("  \"volumeTextureId\": ${telemetry.volumeTextureId},")
+        appendLine("  \"volumeInternalFormat\": \"${esc(telemetry.volumeInternalFormat)}\",")
         appendLine("  \"capturedPngFiles\": [")
         CAPTURE_STEPS.forEachIndexed { i, step ->
           val comma = if (i < CAPTURE_STEPS.lastIndex) "," else ""

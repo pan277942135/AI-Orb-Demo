@@ -28,6 +28,7 @@ enum class OrbV3LoadState(val label: String) {
 data class OrbVolumeTelemetry(
   val loadState: OrbV3LoadState = OrbV3LoadState.UNINITIALIZED,
   val isLoaded: Boolean = false,
+  val gpuTextureObjectsValid: Boolean = false,
   val volumeWidth: Int = 256,
   val volumeHeight: Int = 256,
   val volumeDepth: Int = 32,
@@ -54,8 +55,8 @@ data class OrbVolumeTelemetry(
  * Texture Units & Independent Color-Space Contract (P0-6):
  * - Unit 0: `uRefractionTex` (FBO scene refraction snapshot, linear HDR)
  * - Unit 1: `uFluidVolume` (`GL_TEXTURE_3D`, 256x256x32 `GL_SRGB8_ALPHA8`, uniform `uFluidVolumeIsSrgb`)
- * - Unit 2: `uFluidDetailMap` (`GL_TEXTURE_2D`, 256x256 `GL_RGBA8` linear data, uniform `uFluidDetailIsSrgb`)
- * - Unit 3: `uCausticsMap` (`GL_TEXTURE_2D`, 256x256 `GL_RGBA8` linear data, uniform `uCausticsIsSrgb`)
+ * - Unit 2: `uFluidDetailMap` (`GL_TEXTURE_2D`, 256x256 `GL_RGBA8` linear data)
+ * - Unit 3: `uCausticsMap` (`GL_TEXTURE_2D`, 256x256 `GL_RGBA8` linear data)
  * - Unit 4: `uGlassEnvMap` (`GL_TEXTURE_2D`, 512x256 `GL_SRGB8_ALPHA8`, uniform `uGlassEnvIsSrgb`)
  */
 class OrbVolumeTexture3D {
@@ -79,6 +80,7 @@ class OrbVolumeTexture3D {
 
   val isReady: Boolean
     get() = telemetry.loadState == OrbV3LoadState.LOADED &&
+      telemetry.gpuTextureObjectsValid &&
       volumeTexId != 0 &&
       fluidDetailTexId != 0 &&
       causticsTexId != 0 &&
@@ -304,11 +306,15 @@ class OrbVolumeTexture3D {
       wrapS = GLES30.GL_REPEAT,
       wrapT = GLES30.GL_CLAMP_TO_EDGE,
     )
+    val textureObjectsValid = intArrayOf(volumeTexId, fluidDetailTexId, causticsTexId, glassEnvTexId)
+      .all { it > 0 && GLES30.glIsTexture(it) }
+    check(textureObjectsValid) { "V3_ASSET_ERROR: one or more uploaded GPU texture objects are invalid" }
 
     val uploadMs = (System.nanoTime() - uploadStart) * 1e-6f
     telemetry = OrbVolumeTelemetry(
       loadState = OrbV3LoadState.LOADED,
       isLoaded = true,
+      gpuTextureObjectsValid = textureObjectsValid,
       volumeWidth = decoded.volumeWidth,
       volumeHeight = decoded.volumeHeight,
       volumeDepth = decoded.volumeDepth,
@@ -387,8 +393,6 @@ class OrbVolumeTexture3D {
       program.setInt("uVolumeLoaded", 0)
       program.setInt("uFluidVolumeIsSrgb", 1)
       program.setInt("uGlassEnvIsSrgb", 1)
-      program.setInt("uCausticsIsSrgb", 0)
-      program.setInt("uFluidDetailIsSrgb", 0)
       return
     }
     GLES30.glActiveTexture(GLES30.GL_TEXTURE1)
@@ -410,8 +414,6 @@ class OrbVolumeTexture3D {
     program.setInt("uVolumeLoaded", 1)
     program.setInt("uFluidVolumeIsSrgb", if (telemetry.isSrgbFluidVolume) 1 else 0)
     program.setInt("uGlassEnvIsSrgb", if (telemetry.isSrgbGlassEnv) 1 else 0)
-    program.setInt("uCausticsIsSrgb", if (telemetry.isSrgbCaustics) 1 else 0)
-    program.setInt("uFluidDetailIsSrgb", if (telemetry.isSrgbFluidDetail) 1 else 0)
   }
 
   fun unbind() {
@@ -437,6 +439,28 @@ class OrbVolumeTexture3D {
     fluidDetailTexId = 0
     causticsTexId = 0
     glassEnvTexId = 0
+    telemetry = telemetry.copy(gpuTextureObjectsValid = false)
+  }
+
+  /**
+   * Called after the old EGL context is gone. Drop context-local names without issuing GL
+   * deletes and keep the decoded CPU buffers so the new context can upload the same assets.
+   */
+  fun markGlContextLost() {
+    volumeTexId = 0
+    fluidDetailTexId = 0
+    causticsTexId = 0
+    glassEnvTexId = 0
+    if (decodeFailureRef.get() == null) {
+      telemetry = telemetry.copy(
+        loadState = OrbV3LoadState.LOADING,
+        isLoaded = false,
+        gpuTextureObjectsValid = false,
+        uploadTimeMs = 0f,
+        gpuMemoryBytes = 0L,
+        statusMessage = "EGL context recreated; cached WebP data is waiting for texture re-upload.",
+      )
+    }
   }
 
   companion object {

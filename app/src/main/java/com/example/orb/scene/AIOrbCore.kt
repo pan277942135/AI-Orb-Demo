@@ -20,6 +20,9 @@ class AIOrbCore {
   val isVolumeReady: Boolean
     get() = volumeRenderer.isVolumeReady
 
+  val runtimeShaderState: OrbCoreRuntimeShaderState
+    get() = volumeRenderer.runtimeShaderState
+
   fun preloadAssetsAsync(assetManager: AssetManager?) {
     volumeRenderer.preloadAssetsAsync(assetManager)
   }
@@ -76,5 +79,9 @@ class AIOrbCore {
 
   fun release() {
     volumeRenderer.release()
+  }
+
+  fun markGlContextLost() {
+    volumeRenderer.markGlContextLost()
   }
 }

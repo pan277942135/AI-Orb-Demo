@@ -129,7 +129,7 @@ class TaskGpuEvidenceCapture {
         if (!dir.exists()) dir.mkdirs()
         val flipped = OrbGpuReferenceCapture.flipRgbaVertically(rawRgba, w, h)
         val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(flipped))
+        bitmap.setPixels(OrbGpuReferenceCapture.rgbaBytesToArgb(flipped), 0, w, 0, 0, w, h)
         FileOutputStream(File(dir, step.fileName)).use { fos ->
           bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
         }
@@ -182,6 +182,19 @@ class TaskGpuEvidenceCapture {
   fun release() {
     synchronized(lock) { active = false }
     ioExecutor.shutdownNow()
+  }
+
+  /** Abort pending readbacks before an EGL context is replaced; the renderer can be reused. */
+  fun cancelForContextLoss() {
+    val cb = synchronized(lock) {
+      active = false
+      callback
+    }
+    cb?.invoke(TaskGpuCaptureProgress(
+      state = TaskGpuCaptureState.FAILED,
+      totalSteps = CAPTURE_STEPS.size,
+      statusMessage = "Capture cancelled: EGL context was recreated.",
+    ))
   }
 
   companion object {

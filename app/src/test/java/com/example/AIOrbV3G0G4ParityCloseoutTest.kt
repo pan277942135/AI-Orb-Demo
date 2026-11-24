@@ -122,12 +122,16 @@ class AIOrbV3G0G4ParityCloseoutTest {
   fun test4_perTextureColorSpaceUniformsAndStrictV3ErrorState() {
     val frag = CoreFluidShaders.CORE_GLASS_FRAG
 
-    // P0-6: 4 independent per-texture sRGB/linear uniforms, zero shared uVolumeIsSrgb!
+    // The volume/environment need fallback gamma flags. sRGB texture sampling is
+    // already linearized by GL, so detail/caustics have no fake shader-side flags.
     assertFalse("Shared uVolumeIsSrgb uniform must be replaced by per-texture uniforms", frag.contains("uniform int uVolumeIsSrgb;"))
     assertTrue(frag.contains("uniform int uFluidVolumeIsSrgb;"))
     assertTrue(frag.contains("uniform int uGlassEnvIsSrgb;"))
-    assertTrue(frag.contains("uniform int uCausticsIsSrgb;"))
-    assertTrue(frag.contains("uniform int uFluidDetailIsSrgb;"))
+    assertFalse(frag.contains("uniform int uCausticsIsSrgb;"))
+    assertFalse(frag.contains("uniform int uFluidDetailIsSrgb;"))
+    assertTrue("Main sRGB textures rely on GL's automatic decode", frag.contains("Texture-unit sRGB formats are already linear on sampling"))
+    assertFalse("Fold brightness must not add an unconditional green haze baseline", frag.contains("(0.10 + 0.24 * foldSpec)"))
+    assertFalse("Lens outline must not use the independent Gaussian ring", frag.contains("lensWallRing"))
 
     // Verify diagnostic fallback vs explicit V3_ASSET_ERROR state distinction
     val tex3d = OrbVolumeTexture3D()

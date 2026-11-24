@@ -3,6 +3,9 @@ package com.example.orb.geometry
 import android.opengl.GLES30
 import com.example.orb.gl.GlBufferUtils
 import com.example.orb.gl.GlMesh
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.security.MessageDigest
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -34,6 +37,17 @@ data class Vec3(val x: Float, val y: Float, val z: Float) {
  * - Fullscreen screen-space quad
  */
 object OrbGeometryBuilder {
+
+  /** Closed-form geodesic icosphere counts, also used to assert runtime mesh telemetry. */
+  fun icosphereVertexCount(subdivisions: Int): Int {
+    require(subdivisions >= 0)
+    return 10 * (1 shl (2 * subdivisions)) + 2
+  }
+
+  fun icosphereTriangleCount(subdivisions: Int): Int {
+    require(subdivisions >= 0)
+    return 20 * (1 shl (2 * subdivisions))
+  }
 
   fun createFullscreenQuad(): GlMesh {
     val vertices = floatArrayOf(
@@ -159,7 +173,23 @@ object OrbGeometryBuilder {
     GLES30.glVertexAttribPointer(1, 3, GLES30.GL_FLOAT, false, 24, 12)
     GLES30.glBindVertexArray(0)
 
-    return GlMesh(vao[0], vbo[0], ebo[0], indices.size)
+    val fingerprintBuffer = ByteBuffer.allocate(interleaved.size * Int.SIZE_BYTES + indices.size * Int.SIZE_BYTES)
+      .order(ByteOrder.LITTLE_ENDIAN)
+    for (value in interleaved) fingerprintBuffer.putFloat(value)
+    for (value in indices) fingerprintBuffer.putInt(value)
+    val geometryFingerprint = MessageDigest.getInstance("SHA-256")
+      .digest(fingerprintBuffer.array())
+      .joinToString("") { "%02x".format(it.toInt() and 0xff) }
+    return GlMesh(
+      vao = vao[0],
+      vbo = vbo[0],
+      ebo = ebo[0],
+      indexCount = indices.size,
+      vertexCount = vertices.size,
+      triangleCount = faces.size,
+      subdivisionLevel = subdivisions,
+      geometryFingerprint = geometryFingerprint,
+    )
   }
 
   /**

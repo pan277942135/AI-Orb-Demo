@@ -5,6 +5,7 @@ import android.opengl.EGL14
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
+import com.example.BuildConfig
 import com.example.orb.config.AIOrbConfig
 import com.example.orb.config.OrbSceneMode
 import com.example.orb.config.RenderDebugMode
@@ -65,6 +66,37 @@ data class AIOrbTelemetry(
   val volumeLoadState: OrbV3LoadState = OrbV3LoadState.UNINITIALIZED,
   val volumeLoaded: Boolean = false,
   val volumeDimensions: String = "256x256x32",
+  val buildSha: String = BuildConfig.GIT_SHA,
+  val apkSha256: String? = null,
+  val shaderProgramId: Int = 0,
+  val shaderSourceSha256: String = "UNAVAILABLE",
+  val qualityTier: String = "UNKNOWN",
+  val configuredRaymarchSteps: Int = -1,
+  val effectiveRaymarchSteps: Int = -1,
+  val currentSubdivisions: Int = -1,
+  val geometryStateValid: Boolean = false,
+  val uVolumeLoaded: Int = -1,
+  val uDebugMode: Int = -1,
+  val gpuTextureObjectsValid: Boolean = false,
+  val volumeTextureId: Int = 0,
+  val detailTextureId: Int = 0,
+  val causticsTextureId: Int = 0,
+  val glassEnvTextureId: Int = 0,
+  val volumeInternalFormat: String = "UNAVAILABLE",
+  val volumeIsSrgb: Boolean = false,
+  val raymarchSteps: Int = -1,
+  val densityScale: Float = Float.NaN,
+  val coreTransparency: Float = Float.NaN,
+  val uniformStateValid: Boolean = false,
+  val foldActiveRatio: Float? = null,
+  val foldActiveRatioStatus: String = "NOT_MEASURED",
+  val renderResolution: String = "0x0",
+  val geometrySubdivisions: Int = -1,
+  val geometryVertexCount: Int = 0,
+  val geometryTriangleCount: Int = 0,
+  val geometryFingerprint: String = "UNAVAILABLE",
+  val glError: String = "GL_NO_ERROR",
+  val glErrorPass: String = "NONE",
   val webpDecodeMs: Float = 0f,
   val texture3dUploadMs: Float = 0f,
   val gpuVolumeMemoryMiB: Float = 0f,
@@ -126,6 +158,7 @@ class AIOrbScene(
   private val glContextInitCounter = AtomicInteger(0)
   private val webpLoadCounter = AtomicInteger(0)
   private val tabSwitchCounter = AtomicInteger(0)
+  private val apkSha256Ref = AtomicReference<String?>(null)
 
   val glContextInitCount: Int get() = glContextInitCounter.get()
   val webpLoadCount: Int get() = webpLoadCounter.get()
@@ -192,14 +225,42 @@ class AIOrbScene(
   }
 
   /**
-   * Triggers the Gate 4 one-click 6-frame production GLES 3.0 evidence capture
+   * Triggers the one-click production GLES 3.0 evidence capture for all required layers
    * directly on the active GL thread (zero Compose UI/status bar).
    */
   fun requestV32EvidenceExport(
     outputDir: File,
     onProgress: (GpuCaptureProgress) -> Unit,
   ): Boolean {
-    return gpuReferenceCapture.requestCapture(outputDir, onProgress)
+    if (configRef.get().sceneMode == OrbSceneMode.TASK_PERIMETER_DEMO) {
+      onProgress(GpuCaptureProgress(state = com.example.orb.v3.GpuCaptureState.FAILED, statusMessage = "V4.2 core capture is available only on Tab 1."))
+      return false
+    }
+    if (!core.isVolumeReady) {
+      val reason = "GPU_CAPTURE_BLOCKED_${core.volumeTelemetry.loadState.name}: ${core.volumeTelemetry.statusMessage}"
+      onProgress(GpuCaptureProgress(state = com.example.orb.v3.GpuCaptureState.FAILED, statusMessage = reason))
+      return false
+    }
+    if (apkSha256Ref.get().isNullOrBlank()) {
+      onProgress(GpuCaptureProgress(
+        state = com.example.orb.v3.GpuCaptureState.FAILED,
+        statusMessage = "GPU_CAPTURE_BLOCKED_APK_FINGERPRINT_PENDING: wait for installed APK SHA-256 telemetry, then retry.",
+      ))
+      return false
+    }
+    return gpuReferenceCapture.requestCapture(outputDir) { progress ->
+      onProgress(
+        if (isSoftwareRenderer && progress.state == com.example.orb.v3.GpuCaptureState.CAPTURING) {
+          progress.copy(statusMessage = "SOFTWARE GLES DIAGNOSTIC ONLY — not a hardware GPU fidelity result. ${progress.statusMessage}")
+        } else {
+          progress
+        }
+      )
+    }
+  }
+
+  fun updateApkSha256(value: String) {
+    apkSha256Ref.set(value)
   }
 
   /**
@@ -311,7 +372,24 @@ class AIOrbScene(
 
   override fun onSurfaceCreated(gl: GL10?, eglConfig: EGLConfig?) {
     val cfg = configRef.get()
-    glContextInitCounter.incrementAndGet()
+    val previousContextCount = glContextInitCounter.getAndIncrement()
+    if (previousContextCount > 0) {
+      // EGL names are context-local. Invalidate the old renderer resources before any
+      // renderer allocates new GL names, otherwise a later init/release can delete a
+      // newly-created object whose integer happens to match an old-context name.
+      gpuReferenceCapture.cancelForContextLoss()
+      taskGpuEvidenceCapture.cancelForContextLoss()
+      background.release()
+      core.release()
+      core.markGlContextLost()
+      orbitRibbons.release()
+      energyHighlights.release()
+      particles.release()
+      photoTextureRenderer.release()
+      taskEnergyRenderer.release()
+      perimeterRenderer.release()
+      postProcessing.release()
+    }
     GLES30.glClearColor(0.002f, 0.016f, 0.022f, 1.0f)
     GLES30.glEnable(GLES30.GL_DEPTH_TEST)
 
@@ -415,7 +493,7 @@ class AIOrbScene(
 
     val cfg = configRef.get()
     val volumeJustUpdated = core.uploadReadyAssetsIfNeeded(assetManager)
-    if (volumeJustUpdated) {
+    if (volumeJustUpdated && core.isVolumeReady) {
       webpLoadCounter.incrementAndGet()
     }
 
@@ -450,13 +528,39 @@ class AIOrbScene(
         )
       }
       postProcessing.executePostProcessToScreen(cfg)
+      onTelemetryUpdated(buildTelemetrySnapshot(
+        timing = frameTelemetryTracker.snapshot(),
+        coreAngleDeg = 0f,
+        coreAngularVelDegPerSec = 0f,
+        mode = cfg.debugMode,
+      ))
       return
     }
     hasRenderedFirstFrame = true
 
+    val productionFrameMode = cfg.debugMode == RenderDebugMode.FULL_RENDER ||
+      cfg.debugMode == RenderDebugMode.REFERENCE_LOCKED_FRAME ||
+      cfg.debugMode == RenderDebugMode.PRE_TONEMAP ||
+      cfg.debugMode == RenderDebugMode.POST_TONEMAP ||
+      cfg.debugMode == RenderDebugMode.CORE_ONLY_TRANSPARENT
+    if (!isTaskDemo && productionFrameMode && !core.isVolumeReady) {
+      // Production fidelity frames never fall through to the analytic shader fallback.
+      // Keep the backdrop responsive and publish LOADING / V3_ASSET_ERROR telemetry.
+      postProcessing.resize(surfaceWidth, surfaceHeight, cfg.quality)
+      val transparentCore = cfg.debugMode == RenderDebugMode.CORE_ONLY_TRANSPARENT
+      postProcessing.beginScenePass(transparentClear = transparentCore)
+      if (!transparentCore) {
+        background.draw(0f, postProcessing.renderWidth, postProcessing.renderHeight, 0f, 0f, postProcessing.hdrScale, cfg)
+      }
+      postProcessing.executePostProcessToScreen(cfg, preserveSceneAlpha = transparentCore)
+      val pausedMotion = motionController.step(0.0, cfg.copy(isPaused = true))
+      recordAndPublishTelemetry(frameStartNanos, volumeJustUpdated, pausedMotion, cfg.debugMode)
+      return
+    }
+
     // Tab 2 preserves live continuous V3 Orb spin even if Tab 1 had pause/debug modes enabled,
-    // without mutating Tab 1's AIOrbConfig. During Gate 4 GPU capture on Tab 1, freeze ONE single
-    // OrbGpuCaptureSnapshot (camera + transform + phase) across all 6 frames without stepping live motion.
+    // without mutating Tab 1's AIOrbConfig. During the Tab 1 GPU capture, freeze ONE single
+    // OrbGpuCaptureSnapshot (camera + transform + phase) across all layers without stepping live motion.
     val captureOverrideMode = if (!isTaskDemo) gpuReferenceCapture.currentOverrideModeOrNull() else null
     val captureActive = captureOverrideMode != null
     val effectiveOrbCfg = when {
@@ -495,7 +599,7 @@ class AIOrbScene(
       simDeltaSec = 0.0
       wasCapturingV32LastFrame = true
     } else {
-      // If we just resumed from a frozen 6-frame capture, step with zero jump on the first live frame
+      // If we just resumed from a frozen multi-layer capture, step with zero jump on the first live frame
       val effectiveRawDt = if (wasCapturingV32LastFrame) {
         wasCapturingV32LastFrame = false
         0.0
@@ -610,15 +714,25 @@ class AIOrbScene(
     val hideOuter = cfg.effectiveHideOuterOrbitals
 
     val drawRibbons = !hideOuter && mode != RenderDebugMode.OPTICS_ONLY
-    val drawHighlights = !hideOuter && mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
-    val drawParticles = !hideOuter && mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
-    val drawCore = mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.OPTICS_ONLY
+    val drawHighlights = !hideOuter && mode != RenderDebugMode.RIBBONS_ONLY &&
+      mode != RenderDebugMode.RESIDENTS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
+    val drawParticles = !hideOuter && mode != RenderDebugMode.RIBBONS_ONLY &&
+      mode != RenderDebugMode.RESIDENTS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
+    val drawCore = mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.RESIDENTS_ONLY &&
+      mode != RenderDebugMode.OPTICS_ONLY
 
     // ==================== V3 SINGLE-VOLUME MULTI-PASS GPU PIPELINE ====================
-    postProcessing.beginScenePass()
+    val transparentCoreCapture = mode == RenderDebugMode.CORE_ONLY_TRANSPARENT
+    postProcessing.beginScenePass(transparentClear = transparentCoreCapture)
 
     // Pass 1: Deep emerald-teal atmospheric space & multi-depth bokeh
-    background.draw(time, rw, rh, autoYawRad, autoPitchRad, hdrScale, cfg)
+    if (mode == RenderDebugMode.FOLD_NORMAL || transparentCoreCapture) {
+      GLES30.glClearColor(0f, 0f, 0f, 1f)
+      if (transparentCoreCapture) GLES30.glClearColor(0f, 0f, 0f, 0f)
+      GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT or GLES30.GL_DEPTH_BUFFER_BIT)
+    } else {
+      background.draw(time, rw, rh, autoYawRad, autoPitchRad, hdrScale, cfg)
+    }
 
     // Pass 2: Far-depth crystal droplets & micro-motes
     if (drawParticles) {
@@ -675,7 +789,11 @@ class AIOrbScene(
     }
 
     // Pass 9: High-threshold HDR Bloom + ACES Filmic + True sRGB 2.2 Composite
-    postProcessing.executePostProcessToScreen(cfg)
+    postProcessing.executePostProcessToScreen(
+      config = cfg,
+      preTonemapBypass = mode == RenderDebugMode.PRE_TONEMAP || mode == RenderDebugMode.FOLD_NORMAL,
+      preserveSceneAlpha = transparentCoreCapture,
+    )
 
     // Gate 4: Real GL-thread zero-UI glReadPixels capture when user triggers V3.2 Evidence Export
     if (frozenCaptureSnapshot != null) {
@@ -912,6 +1030,37 @@ class AIOrbScene(
       volumeLoadState = volTel.loadState,
       volumeLoaded = volTel.isLoaded,
       volumeDimensions = volTel.dimensionsLabel,
+      buildSha = BuildConfig.GIT_SHA,
+      apkSha256 = apkSha256Ref.get(),
+      shaderProgramId = core.runtimeShaderState.programId,
+      shaderSourceSha256 = core.runtimeShaderState.shaderSourceSha256,
+      qualityTier = core.runtimeShaderState.qualityTier,
+      configuredRaymarchSteps = core.runtimeShaderState.configuredRaymarchSteps,
+      effectiveRaymarchSteps = core.runtimeShaderState.effectiveRaymarchSteps,
+      currentSubdivisions = core.runtimeShaderState.currentSubdivisions,
+      geometryStateValid = core.runtimeShaderState.geometryStateValid,
+      uVolumeLoaded = core.runtimeShaderState.uVolumeLoaded,
+      uDebugMode = core.runtimeShaderState.uDebugMode,
+      gpuTextureObjectsValid = core.runtimeShaderState.gpuTextureObjectsValid,
+      volumeTextureId = core.runtimeShaderState.volumeTextureId,
+      detailTextureId = core.runtimeShaderState.detailTextureId,
+      causticsTextureId = core.runtimeShaderState.causticsTextureId,
+      glassEnvTextureId = core.runtimeShaderState.glassEnvTextureId,
+      volumeInternalFormat = core.runtimeShaderState.volumeInternalFormat,
+      volumeIsSrgb = core.runtimeShaderState.volumeIsSrgb,
+      raymarchSteps = core.runtimeShaderState.raymarchSteps,
+      densityScale = core.runtimeShaderState.densityScale,
+      coreTransparency = core.runtimeShaderState.coreTransparency,
+      uniformStateValid = core.runtimeShaderState.uniformStateValid,
+      foldActiveRatio = core.runtimeShaderState.foldActiveRatio,
+      foldActiveRatioStatus = core.runtimeShaderState.foldActiveRatioStatus,
+      renderResolution = core.runtimeShaderState.renderResolution,
+      geometrySubdivisions = core.runtimeShaderState.geometrySubdivisions,
+      geometryVertexCount = core.runtimeShaderState.geometryVertexCount,
+      geometryTriangleCount = core.runtimeShaderState.geometryTriangleCount,
+      geometryFingerprint = core.runtimeShaderState.geometryFingerprint,
+      glError = core.runtimeShaderState.glError,
+      glErrorPass = core.runtimeShaderState.glErrorPass,
       webpDecodeMs = volTel.decodeTimeMs,
       texture3dUploadMs = volTel.uploadTimeMs,
       gpuVolumeMemoryMiB = volTel.gpuMemoryMiB,

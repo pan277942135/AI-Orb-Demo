@@ -12,12 +12,12 @@
   },
   "components": {
     "L_sphere": 0.00315,
-    "L_cavity": 0.2977,
-    "L_volume": 0.50307,
+    "L_cavity": 0.33685,
+    "L_volume": 0.18503,
     "L_resident": 0.0992,
     "L_optics": 0.03404,
     "L_layering": 0.0,
-    "L_total": 0.21507
+    "L_total": 0.14418
   },
   "hardGates": {
     "E01_diameterRelErr_le_2pct": {
@@ -41,12 +41,12 @@
       "pass": true
     },
     "E03_cavityAreaRelErr_le_15pct": {
-      "value": 0.0708,
+      "value": 0.0441,
       "threshold": 0.15,
       "pass": true
     },
     "E03_cavityCentroid_le_004D": {
-      "value": 0.0084,
+      "value": 0.0216,
       "threshold": 0.04,
       "pass": true
     },
@@ -56,34 +56,34 @@
       "pass": true
     },
     "E05_emeraldAreaRelErr_le_15pct": {
-      "value": 0.0154,
+      "value": 0.0822,
       "threshold": 0.15,
       "pass": true
     },
     "E05_emeraldCentroid_le_004D": {
-      "value": 0.0413,
+      "value": 0.0367,
       "threshold": 0.04,
-      "pass": false
+      "pass": true
     },
     "E06_sapphireAreaRelErr_le_15pct": {
-      "value": 0.2755,
+      "value": 0.1098,
       "threshold": 0.15,
-      "pass": false
+      "pass": true
     },
     "E06_sapphireCentroid_le_004D": {
-      "value": 0.0862,
+      "value": 0.0173,
       "threshold": 0.04,
-      "pass": false
+      "pass": true
     },
     "E07_aquaAreaRelErr_le_15pct": {
-      "value": 0.2039,
+      "value": 0.0339,
       "threshold": 0.15,
-      "pass": false
+      "pass": true
     },
     "E07_aquaCentroid_le_004D": {
-      "value": 0.1261,
+      "value": 0.0283,
       "threshold": 0.04,
-      "pass": false
+      "pass": true
     },
     "E10_goldCombinedChamfer_le_0025R": {
       "value": 0.0248,
@@ -106,14 +106,10 @@
       "pass": true
     }
   },
-  "allOfflineHardGatesPass": false,
-  "failedOfflineGates": [
-    "E05_emeraldCentroid_le_004D",
-    "E06_sapphireAreaRelErr_le_15pct",
-    "E06_sapphireCentroid_le_004D",
-    "E07_aquaAreaRelErr_le_15pct",
-    "E07_aquaCentroid_le_004D"
-  ],
+  "allOfflineHardGatesPass": true,
+  "failedOfflineGates": [],
   "masterFidelityConfigPath": "app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json",
-  "masterFidelityConfigSha256": "b508c23b815819010107b9f4db25dba13e22e0c8c6fda22be54ac1b1e1cf9460"
+  "masterFidelityConfigSha256": "950636eef47dd81af138b4e0f6614bea9c91a124eb759e6fb7cbb222ebb94a9c",
+  "allStagesPass": true,
+  "failedStages": []
 }

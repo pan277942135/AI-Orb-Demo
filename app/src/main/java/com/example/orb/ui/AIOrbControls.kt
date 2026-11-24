@@ -690,7 +690,7 @@ private fun DebugControlPanel(
           }
         }
 
-        // Gate 4: One-click 6-frame real GPU Evidence Export (glReadPixels, zero UI overlay)
+        // One-click layered production GLES evidence export (glReadPixels, zero UI overlay)
         Spacer(Modifier.height(6.dp))
         val capture = uiState.gpuCaptureProgress
         val isCapturing = capture.state == GpuCaptureState.CAPTURING
@@ -820,6 +820,7 @@ private fun DebugControlPanel(
               } else {
                 MaterialTheme.colorScheme.onSurfaceVariant
               },
+              modifier = Modifier.testTag("volume_load_status"),
             )
           }
         }

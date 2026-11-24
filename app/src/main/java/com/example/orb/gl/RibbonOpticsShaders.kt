@@ -550,6 +550,7 @@ uniform float uOverallIntensity;
 uniform float uChromaticAmount;
 uniform float uHdrScale;
 uniform int uPreTonemapBypass;
+uniform int uPreserveSceneAlpha;
 
 $GLSL_INV_SMOOTHSTEP
 
@@ -566,11 +567,13 @@ void main() {
     vec2 centered = vUv - 0.5;
     float dist2 = dot(centered, centered);
     float invHdr = 1.0 / max(uHdrScale, 1e-4);
+    float sceneAlpha = texture(uSceneTex, vUv).a;
+    float outputAlpha = uPreserveSceneAlpha == 1 ? sceneAlpha : 1.0;
 
     if (uPreTonemapBypass == 1) {
         vec3 rawScene = texture(uSceneTex, vUv).rgb * invHdr;
         vec3 rawSrgb = pow(clamp(rawScene, vec3(0.0), vec3(1.0)), vec3(1.0 / 2.2));
-        fragColor = vec4(rawSrgb, 1.0);
+        fragColor = vec4(rawSrgb, outputAlpha);
         return;
     }
 
@@ -599,7 +602,7 @@ void main() {
     // True Linear -> sRGB 2.2 OETF display encoding (eliminates black crush on Android displays!)
     vec3 srgb = pow(max(mapped, vec3(0.0)), vec3(1.0 / 2.2));
 
-    fragColor = vec4(clamp(srgb, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(srgb, 0.0, 1.0), outputAlpha);
 }
 """
 }

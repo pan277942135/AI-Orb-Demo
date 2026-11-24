@@ -89,6 +89,10 @@ def generate_all_reports() -> list[Path]:
 ```
 
 Candidate B eliminates V3.1's `295.19%` E03 over-sizing by modeling the curved embedded upper crystal dome shell (`crystalLensPhi` + `intersectCrystalLens`, IOR chain `1.0003 / 1.333 / 1.45`) with refractive curved rim walls and localized 10:30 gold light coupling.
+
+## 3. Shared Upper-Dome Haze Classifier
+
+Stage B and Stage E now use the same `ny > 0.18`, flare-excluded, sRGB luma `> 135`, saturation `< 0.22` classifier from `fitting/visual_metrics.py`. The old `12.76%` Stage B value divided upper-dome haze pixels by the whole sphere's pixels; the corrected Candidate B result is `{cb['upperGreyWhiteHazeRatio']*100:.2f}%`. Stage E is a separate fitted optics render and measures `{e['metrics']['upperDomeHazeRatio']*100:.2f}%` with the same classifier. Neither value is copied into the other stage.
 """, encoding="utf-8")
     written.append(p_cav)
 
@@ -96,6 +100,13 @@ Candidate B eliminates V3.1's `295.19%` E03 over-sizing by modeling the curved e
     vr = c["regions"]
     sd = c["sliceDepthComparison"]
     dyn = val.get("dynamic360Sweep", {})
+    decoded = val.get("decodedWebpProjection", {})
+    decoded_regions = decoded.get("regions", {})
+    decoded_rows = "\n".join(
+        f"| `{key}` | `{decoded_regions[key]['relativeAreaError']*100:.2f}%` | `<= 15.0%` | `{decoded_regions[key]['centroidDistD']:.4f} D` | `<= 0.04 D` |"
+        for key in ("E03_upper_cavity", "E05_emerald", "E06_sapphire", "E07_aqua")
+        if key in decoded_regions
+    )
     p_vol = DOCS_DIR / "AI_ORB_V3_2_VOLUME_FIT_REPORT.md"
     p_vol.write_text(f"""# AI-Orb-Demo V3.2 — Stage C 3D WebP Fluid Volume Structure Fit Report
 
@@ -111,7 +122,18 @@ Candidate B eliminates V3.1's `295.19%` E03 over-sizing by modeling the curved e
 | `E06_sapphire` | `{vr['E06_sapphire']['targetAreaRatio']}` | `{vr['E06_sapphire']['simAreaRatio']}` | `{vr['E06_sapphire']['relativeAreaError']*100:.2f}%` | `{vr['E06_sapphire']['centroidDistD']:.4f} D` |
 | `E07_aqua` | `{vr['E07_aqua']['targetAreaRatio']}` | `{vr['E07_aqua']['simAreaRatio']}` | `{vr['E07_aqua']['relativeAreaError']*100:.2f}%` | `{vr['E07_aqua']['centroidDistD']:.4f} D` |
 
-## 2. 256×256×32 vs 256×256×64 Z-Slice Resolution Trade-Off
+## 2. Independent Decoded-WebP Projection (`{decoded.get('gridN', 'N/A')}×{decoded.get('gridN', 'N/A')}`, `{decoded.get('steps', 'N/A')}` ray steps)
+
+The verifier reads the 32 encoded WebP files back to RGBA and samples only the decoded 3D texture; it does not call the Canonical Analytical Field.
+
+| Region | Decoded-WebP Relative Area Error | Target | Centroid Dist | Target |
+|---|---:|---:|---:|---:|
+{decoded_rows}
+
+- Decoded projection pass: `{val.get('decodedWebpProjectionPass', False)}` (`{decoded.get('evaluationSource', 'N/A')}`)
+- Exact 32-slice RGBA evidence: `tools/orb-v3-generator/fitting/CANONICAL_VOLUME_PIXEL_CLOSURE.json` (`2,097,152` voxel bytes compared per channel).
+
+## 3. 256×256×32 vs 256×256×64 Z-Slice Resolution Trade-Off
 
 | Spec | Dimensions | GPU VRAM | Mean Trilinear Z Alpha Error | Decision |
 |---|---|---:|---:|---|
@@ -120,7 +142,7 @@ Candidate B eliminates V3.1's `295.19%` E03 over-sizing by modeling the curved e
 
 Rationale: {sd['rationale']}
 
-## 3. 360° Dynamic Self-Rotation Continuity Sweep
+## 4. 360° Dynamic Self-Rotation Continuity Sweep
 
 - Frozen Axis: `{dyn.get('axis', [0.14, 0.98, -0.14])}`
 - Max 30°-step mean alpha delta: `{dyn.get('maxStepAlphaJump', 'N/A')}`

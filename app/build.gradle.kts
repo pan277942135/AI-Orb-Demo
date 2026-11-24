@@ -8,6 +8,11 @@ plugins {
   alias(libs.plugins.google.services)
 }
 
+val buildGitSha = providers.gradleProperty("gitSha").orNull
+  ?: providers.environmentVariable("GIT_SHA").orNull
+  ?: providers.environmentVariable("GITHUB_SHA").orNull
+  ?: "UNKNOWN"
+
 android {
   namespace = "com.example"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
@@ -18,6 +23,7 @@ android {
     targetSdk = 36
     versionCode = 1
     versionName = "1.0"
+    buildConfigField("String", "GIT_SHA", "\"$buildGitSha\"")
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

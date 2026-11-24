@@ -1,0 +1,10 @@
+Pillow==13.0.0
+jsonschema==4.26.0
+numpy==2.3.5
+scipy==1.17.0
+scikit-image==0.25.2
+networkx==3.6.1
+imageio==2.38.2
+tifffile==2026.3.3
+lazy-loader==0.6
+packaging==26.3

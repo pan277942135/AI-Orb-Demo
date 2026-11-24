@@ -5,6 +5,7 @@ import com.example.orb.config.QualityTier
 import com.example.orb.geometry.Vec3
 import com.example.orb.scene.AIOrbFluidMath
 import com.example.orb.scene.AIOrbMotionController
+import com.example.orb.v3.MasterFidelityV32
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -16,6 +17,40 @@ import org.junit.Test
 class AIOrbFluidMathTest {
 
   private fun isFiniteVec3(v: Vec3): Boolean = v.x.isFinite() && v.y.isFinite() && v.z.isFinite()
+
+  @Test
+  fun foldCentralDifferenceUsesCoreSpaceSpansAndCorrectTextureVSign() {
+    val expected = Vec3(1.7f, -2.3f, 0.8f)
+    // The texture's positive V direction is negative Core Y. Exercise several normalized
+    // sampling intervals, representing different volume resolutions / filter footprints.
+    for (halfStep in listOf(0.007f, 0.014f, 0.028f, 0.032f)) {
+      val hx = halfStep
+      val hy = halfStep
+      val hz = halfStep * 2.0f
+      fun field(x: Float, y: Float, z: Float) = expected.x * x + expected.y * y + expected.z * z
+      val gradient = AIOrbFluidMath.centralDifferenceGradient(
+        positiveX = field(hx, 0f, 0f),
+        negativeX = field(-hx, 0f, 0f),
+        positiveYTexture = field(0f, -hy, 0f),
+        negativeYTexture = field(0f, hy, 0f),
+        positiveZ = field(0f, 0f, hz),
+        negativeZ = field(0f, 0f, -hz),
+        halfStep = Vec3(hx, hy, hz),
+      )
+      assertEquals(expected.x, gradient.x, 1e-5f)
+      assertEquals(expected.y, gradient.y, 1e-5f)
+      assertEquals(expected.z, gradient.z, 1e-5f)
+    }
+  }
+
+  @Test
+  fun foldGradientNormalizationFallsBackWithoutNanForFlatOrInvalidFields() {
+    val fallback = Vec3(0f, 0f, 1f)
+    assertEquals(fallback, AIOrbFluidMath.normalizedGradientOrFallback(Vec3(0f, 0f, 0f), fallback))
+    assertEquals(fallback, AIOrbFluidMath.normalizedGradientOrFallback(Vec3(Float.NaN, 1f, 0f), fallback))
+    val normalized = AIOrbFluidMath.normalizedGradientOrFallback(Vec3(2f, 0f, 0f), fallback)
+    assertEquals(Vec3(1f, 0f, 0f), normalized)
+  }
 
   @Test
   fun advectFluidPosProducesContinuousDirectional3DRotation() {
@@ -136,6 +171,10 @@ class AIOrbFluidMathTest {
       threw = true
     }
     assertTrue("smoothstepSafe must reject inverted edges", threw)
+
+    assertEquals(0f, AIOrbFluidMath.smoothstepSafe(0.2f, 0.8f, Float.NaN), 0f)
+    assertEquals(0f, AIOrbFluidMath.smoothstepSafe(0.2f, 0.8f, Float.POSITIVE_INFINITY), 0f)
+    assertEquals(1f, AIOrbFluidMath.inverseSmoothstep(0.2f, 0.8f, Float.NaN), 0f)
   }
 
   @Test
@@ -150,6 +189,33 @@ class AIOrbFluidMathTest {
 
     // Physical water absorbs red fastest, then green, transmitting blue/cyan deepest
     assertTrue("Expected T_blue > T_green > T_red in deep water", deep.z > deep.y && deep.y > deep.x)
+  }
+
+  @Test
+  fun volumeBeerLambertUsesDensityAndSegmentLengthLikeGlsl() {
+    val masterDensityScale = MasterFidelityV32.Default.fluidVolume.densityScale
+    val shallow = AIOrbFluidMath.volumeStepTransmittance(0.42f, masterDensityScale, 0.08f)
+    val deep = AIOrbFluidMath.volumeStepTransmittance(0.42f, masterDensityScale, 0.24f)
+    val denser = AIOrbFluidMath.volumeStepTransmittance(0.84f, masterDensityScale, 0.08f)
+    assertTrue(shallow.isFinite() && deep.isFinite() && denser.isFinite())
+    assertTrue("Longer path must transmit less", deep < shallow)
+    assertTrue("Higher density must transmit less", denser < shallow)
+    assertEquals(
+      kotlin.math.exp(-0.42f * masterDensityScale * 0.08f),
+      shallow,
+      1e-6f,
+    )
+
+    val spectrum = AIOrbFluidMath.volumeStepSpectralTransmittance(
+      linearDensity = 0.42f,
+      densityScale = masterDensityScale,
+      segmentLength = 0.08f,
+      absorption = Vec3(2.6f, 0.92f, 0.42f),
+    )
+    assertTrue("Master absorption should attenuate red most and blue least", spectrum.z > spectrum.y && spectrum.y > spectrum.x)
+    assertEquals(kotlin.math.exp(-2.6f * 0.42f * masterDensityScale * 0.08f), spectrum.x, 1e-6f)
+    assertEquals(kotlin.math.exp(-0.92f * 0.42f * masterDensityScale * 0.08f), spectrum.y, 1e-6f)
+    assertEquals(kotlin.math.exp(-0.42f * 0.42f * masterDensityScale * 0.08f), spectrum.z, 1e-6f)
   }
 
   @Test

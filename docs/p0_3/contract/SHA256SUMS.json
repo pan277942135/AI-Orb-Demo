@@ -1,0 +1,30 @@
+{
+  "AI_ORB_P0_3_ROI_ANNOTATION_TEMPLATE.json": {
+    "bytes": 2537,
+    "sha256": "27c004f80f7f6d9e4cd4530df691731aab4d67efc7211f19994d19b786a92fd5"
+  },
+  "AI_ORB_P0_3_ACCEPTANCE_CONTRACT_V1.json": {
+    "bytes": 28250,
+    "sha256": "aa0729887570db4a0da0d3fb7a629a1a7273666ba0c7ab129b60d70bfdee9170"
+  },
+  "README.md": {
+    "bytes": 2360,
+    "sha256": "500c7a05de387096984c4b440b25a0ff5e31fd003808183b5d7fcffa3d145a75"
+  },
+  "AI_ORB_P0_3_ACCEPTANCE_CONTRACT_V1.schema.json": {
+    "bytes": 1807,
+    "sha256": "e20f9845bfcfe6a13e831225cbe186a5d580855b365bca846f4750d1e8b0ff5e"
+  },
+  "references/REF_B_FULL_SCENE_RGB.png": {
+    "bytes": 2004711,
+    "sha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122"
+  },
+  "references/REF_A_CORE_CRYSTAL_RGBA.png": {
+    "bytes": 1674284,
+    "sha256": "2773e4628ff6132605314693742488542c3e70fd04b581d8825dd13cea0067ee"
+  },
+  "roi_masks/REF_A_CORE_SILHOUETTE_ALPHA_GE_008.png": {
+    "bytes": 7586,
+    "sha256": "b90907983d33cb4b2e0963b8d6e0242f0998eb065920380085138dc03f79c1ed"
+  }
+}

@@ -212,7 +212,7 @@ def extract_dense_gold_lobes(raw_e10: list[list[float]]) -> list[tuple[float, fl
     return dense if len(dense) >= 60 else pts
 
 
-def fit_residents(cfg: dict[str, Any], targets: dict[str, Any]) -> dict[str, Any]:
+def fit_residents(cfg: dict[str, Any], targets: dict[str, Any], optimize: bool = True) -> dict[str, Any]:
     """
     Stage D optimizer: fits A01 + A02 combined 3D projection to Master E10 gold pixels
     and validates C01, G01, G02 under the exact Stage A camera matrix.
@@ -327,12 +327,24 @@ def fit_residents(cfg: dict[str, Any], targets: dict[str, Any]) -> dict[str, Any
     hw01 = 0.135
     hw02 = 0.155
 
+    if not optimize:
+        # Read the exact frozen curves and widths from MASTER_FIDELITY_V32 for an audit-only
+        # Stage D pass. The production task freezes all five resident identities/materials.
+        a01 = [list(map(float, p)) for p in get_val(cfg, "residentA01", "controlPoints")]
+        a02 = [list(map(float, p)) for p in get_val(cfg, "residentA02", "controlPoints")]
+        w01 = list(map(float, get_val(cfg, "residentA01", "widthProfile")))
+        w02 = list(map(float, get_val(cfg, "residentA02", "widthProfile")))
+        hw01 = float(get_val(cfg, "residentA01", "halfWidth"))
+        hw02 = float(get_val(cfg, "residentA02", "halfWidth"))
+        t01 = list(map(float, get_val(cfg, "residentA01", "twistProfileDeg")))
+        t02 = list(map(float, get_val(cfg, "residentA02", "twistProfileDeg")))
+
     best = eval_gold(a01, a02, w01, w02, hw01, hw02, n_samp=32)
     history = [{"iter": 0, "chamferR": best["chamferR"], "r2m": best["ribbonToMasterR"], "m2r": best["masterToRibbonR"], "loss": best["loss"]}]
 
     # Multi-scale coordinate refinement on A01 & A02 XY control points + widthProfile + halfWidths
     it = 0
-    for step in (0.10, 0.04, 0.015, 0.007):
+    for step in ((0.10, 0.04, 0.015, 0.007) if optimize else ()):
         for _ in range(4):
             improved = False
             for curve in (a01, a02):
@@ -407,6 +419,11 @@ def fit_residents(cfg: dict[str, Any], targets: dict[str, Any]) -> dict[str, Any
         [0.48, -1.26, -0.24],
     ]
 
+    if not optimize:
+        c01 = [list(map(float, p)) for p in get_val(cfg, "residentC01", "controlPoints")]
+        g01 = [list(map(float, p)) for p in get_val(cfg, "residentG01", "controlPoints")]
+        g02 = [list(map(float, p)) for p in get_val(cfg, "residentG02", "controlPoints")]
+
     # Measure C01 and G01/G02 projection quality
     c01_turn = max_spline_turn_deg(c01, 60)
     raw_e11 = targets["targets"]["E11_cyan_resident_c01"]["sampledPointsNorm"]
@@ -418,19 +435,20 @@ def fit_residents(cfg: dict[str, Any], targets: dict[str, Any]) -> dict[str, Any
     def round_pts(pts: list[list[float]]) -> list[list[float]]:
         return [[round(v, 4) for v in p] for p in pts]
 
-    set_val(cfg, "residentA01", "controlPoints", round_pts(a01))
-    set_val(cfg, "residentA01", "widthProfile", [round(v, 3) for v in w01])
-    set_val(cfg, "residentA01", "twistProfileDeg", [round(v, 1) for v in t01])
-    set_val(cfg, "residentA01", "halfWidth", round(hw01, 4))
+    if optimize:
+        set_val(cfg, "residentA01", "controlPoints", round_pts(a01))
+        set_val(cfg, "residentA01", "widthProfile", [round(v, 3) for v in w01])
+        set_val(cfg, "residentA01", "twistProfileDeg", [round(v, 1) for v in t01])
+        set_val(cfg, "residentA01", "halfWidth", round(hw01, 4))
 
-    set_val(cfg, "residentA02", "controlPoints", round_pts(a02))
-    set_val(cfg, "residentA02", "widthProfile", [round(v, 3) for v in w02])
-    set_val(cfg, "residentA02", "twistProfileDeg", [round(v, 1) for v in t02])
-    set_val(cfg, "residentA02", "halfWidth", round(hw02, 4))
+        set_val(cfg, "residentA02", "controlPoints", round_pts(a02))
+        set_val(cfg, "residentA02", "widthProfile", [round(v, 3) for v in w02])
+        set_val(cfg, "residentA02", "twistProfileDeg", [round(v, 1) for v in t02])
+        set_val(cfg, "residentA02", "halfWidth", round(hw02, 4))
 
-    set_val(cfg, "residentC01", "controlPoints", round_pts(c01))
-    set_val(cfg, "residentG01", "controlPoints", round_pts(g01))
-    set_val(cfg, "residentG02", "controlPoints", round_pts(g02))
+        set_val(cfg, "residentC01", "controlPoints", round_pts(c01))
+        set_val(cfg, "residentG01", "controlPoints", round_pts(g01))
+        set_val(cfg, "residentG02", "controlPoints", round_pts(g02))
 
     # Note: hard gate allows <= 0.025R for centerline/band chamfer when well-aligned,
     # or check exact best["chamferR"]
@@ -442,6 +460,7 @@ def fit_residents(cfg: dict[str, Any], targets: dict[str, Any]) -> dict[str, Any
 
     return {
         "stage": "STAGE_D_RESIDENT_FIT",
+        "mode": "OPTIMIZED_CANDIDATE" if optimize else "FROZEN_MASTER_AUDIT",
         "passStrict025R": best["chamferR"] <= 0.025 and not best["ovalMetrics"]["isRegularOval"],
         "pass": best["chamferR"] <= 0.025 and not best["ovalMetrics"]["isRegularOval"] and c01_turn < 20.0,
         "baselineV31Gold": baseline_metrics,

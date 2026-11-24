@@ -54,8 +54,10 @@ import com.example.orb.ui.AIOrbViewModel
 import com.example.orb.ui.DemoTab
 import com.example.orb.ui.TaskRecognitionDemoScreen
 import com.example.orb.v3.OrbGpuReferenceCapture
+import com.example.orb.v3.GpuCaptureProgress
 import com.example.ui.theme.AbyssEmerald
 import com.example.ui.theme.MyApplicationTheme
+import java.io.File
 
 private data class SurfaceWindowMetrics(
   val leftPx: Float = 0f,
@@ -73,6 +75,9 @@ private data class PhotoWindowMetrics(
 )
 
 class MainActivity : ComponentActivity() {
+  @Volatile private var p0_3EvidenceScene: AIOrbScene? = null
+  @Volatile private var p0_3EvidenceProgress: GpuCaptureProgress? = null
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge(
@@ -128,7 +133,10 @@ class MainActivity : ComponentActivity() {
             config = uiState.config,
             onTelemetryUpdated = viewModel::reportTelemetry,
             onTaskEvidenceUpdated = viewModel::reportTaskEvidence,
-            onSceneReady = { sharedScene = it },
+            onSceneReady = { scene ->
+              sharedScene = scene
+              p0_3EvidenceScene = scene
+            },
             onSurfaceWindowBoundsChanged = { l, t, w, h ->
               surfaceMetrics = SurfaceWindowMetrics(l, t, w, h)
             },
@@ -239,6 +247,16 @@ class MainActivity : ComponentActivity() {
       window.decorView.post { applyImmersiveFullscreen(isLightBars = false) }
     }
   }
+
+  /** Instrumentation entry that delegates to the same production scene capture used by the UI. */
+  internal fun requestP0_3EvidenceCaptureForInstrumentation(outputDir: File): Boolean {
+    val scene = p0_3EvidenceScene ?: return false
+    return scene.requestV32EvidenceExport(outputDir) { progress ->
+      p0_3EvidenceProgress = progress
+    }
+  }
+
+  internal fun latestP0_3EvidenceProgressForInstrumentation(): GpuCaptureProgress? = p0_3EvidenceProgress
 
   private fun applyImmersiveFullscreen(isLightBars: Boolean) {
     val controller = WindowInsetsControllerCompat(window, window.decorView)

@@ -10,7 +10,7 @@ import kotlin.math.tan
 /**
  * Immutable, single-source camera snapshot shared across Tab 1 `FULL_RENDER`,
  * all V3/V3.2 diagnostic modes (`REFERENCE_LOCKED_FRAME`, `CAVITY_ONLY`,
- * `FLUID_VOLUME_ONLY`, `RIBBONS_ONLY`, `GLASS_ONLY`, etc.), and the 6-frame
+ * `FLUID_VOLUME_ONLY`, `RIBBONS_ONLY`, `GLASS_ONLY`, etc.), and the multi-layer
  * GPU evidence capture sequence.
  *
  * Uses pure Kotlin column-major 4x4 projection & lookAt builders so production

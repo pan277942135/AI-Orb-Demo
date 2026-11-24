@@ -21,10 +21,11 @@ import hashlib
 import json
 import multiprocessing as mp
 import os
-import subprocess
 import sys
 import time
 from pathlib import Path
+
+from PIL import Image
 
 GEN_DIR = Path(__file__).resolve().parent
 if str(GEN_DIR) not in sys.path:
@@ -109,30 +110,10 @@ def render_slice(z_idx: int) -> tuple[int, str, int]:
     )
 
     out_path = OUT_DIR / f"fluid_color_z{z_idx:02d}.webp"
-    cmd = [
-        "ffmpeg",
-        "-y",
-        "-loglevel",
-        "error",
-        "-f",
-        "rawvideo",
-        "-pix_fmt",
-        "rgba",
-        "-s",
-        f"{WIDTH}x{HEIGHT}",
-        "-i",
-        "-",
-        "-c:v",
-        "libwebp",
-        "-lossless",
-        "1",
-        "-compression_level",
-        "4",
-        str(out_path),
-    ]
-    proc = subprocess.run(cmd, input=bytes(buf), capture_output=True)
-    if proc.returncode != 0:
-        raise RuntimeError(f"ffmpeg failed for {out_path.name}: {proc.stderr.decode()}")
+    # Pillow exposes libwebp's `exact` switch; ffmpeg's libwebp wrapper does not.
+    # Without exact=True, VP8L rewrites RGB under transparent texels, breaking full-RGBA parity.
+    image = Image.frombytes("RGBA", (WIDTH, HEIGHT), bytes(buf))
+    image.save(out_path, format="WEBP", lossless=True, quality=100, method=4, exact=True)
 
     return z_idx, out_path.name, out_path.stat().st_size
 
