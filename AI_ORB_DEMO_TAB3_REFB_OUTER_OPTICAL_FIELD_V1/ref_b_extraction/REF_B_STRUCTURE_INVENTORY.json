@@ -1,0 +1,6590 @@
+{
+  "schema": "REF_B_STRUCTURE_INVENTORY_1_0",
+  "sourceRefBSha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
+  "contractSha256": "aa0729887570db4a0da0d3fb7a629a1a7273666ba0c7ab129b60d70bfdee9170",
+  "coordinateSystem": "pixel origin top-left, x right, y down; normalized coordinates divide by 1254",
+  "identityAndSegmentationCaveat": "Do not equate frozen identity count, centerline segment count, connected-component count, or 3D object count. All refer to different evidence layers.",
+  "counts": {
+    "contractResidentIdentities": 5,
+    "frozenResidentGroups": 3,
+    "frozenTraceSegments": 7,
+    "largeDropletCandidates": 5,
+    "smallParticleComponents": 10,
+    "bokehMaskComponents": 12
+  },
+  "objects": [
+    {
+      "objectId": "REFB-RESIDENT_FRONT_CYAN",
+      "objectType": "RESIDENT_FRONT_CYAN",
+      "evidenceClass": "OBSERVED_FROZEN_SEMANTIC_MASK",
+      "count": 1,
+      "bboxXYWH": [
+        75,
+        447,
+        1045,
+        400
+      ],
+      "areaPx": 33755,
+      "centroidPx": [
+        586.3028,
+        696.457
+      ],
+      "confidence": "HIGH_FOR_MASK_ALIGNMENT; mask semantics remain at group granularity"
+    },
+    {
+      "objectId": "REFB-RESIDENT_FRONT_GOLD",
+      "objectType": "RESIDENT_FRONT_GOLD",
+      "evidenceClass": "OBSERVED_FROZEN_SEMANTIC_MASK",
+      "count": 1,
+      "bboxXYWH": [
+        211,
+        215,
+        877,
+        520
+      ],
+      "areaPx": 26987,
+      "centroidPx": [
+        653.9701,
+        447.9965
+      ],
+      "confidence": "HIGH_FOR_MASK_ALIGNMENT; mask semantics remain at group granularity"
+    },
+    {
+      "objectId": "REFB-RESIDENT_BACK_GREEN_GOLD",
+      "objectType": "RESIDENT_BACK_GREEN_GOLD",
+      "evidenceClass": "OBSERVED_FROZEN_SEMANTIC_MASK",
+      "count": 1,
+      "bboxXYWH": [
+        188,
+        107,
+        857,
+        857
+      ],
+      "areaPx": 108841,
+      "centroidPx": [
+        621.5815,
+        530.49
+      ],
+      "confidence": "HIGH_FOR_MASK_ALIGNMENT; mask semantics remain at group granularity"
+    },
+    {
+      "objectId": "REFB-BACKGROUND_BOKEH",
+      "objectType": "BACKGROUND_BOKEH",
+      "evidenceClass": "OBSERVED_FROZEN_SEMANTIC_MASK",
+      "count": 12,
+      "bboxXYWH": [
+        0,
+        0,
+        1244,
+        1240
+      ],
+      "areaPx": 61819,
+      "centroidPx": [
+        608.5851,
+        526.7905
+      ],
+      "confidence": "HIGH_FOR_MASK_ALIGNMENT; mask semantics remain at group granularity"
+    },
+    {
+      "objectId": "REFB-DROPLETS_AND_PARTICLES",
+      "objectType": "DROPLETS_AND_PARTICLES",
+      "evidenceClass": "OBSERVED_FROZEN_SEMANTIC_MASK",
+      "count": 15,
+      "bboxXYWH": [
+        98,
+        196,
+        1023,
+        904
+      ],
+      "areaPx": 4167,
+      "centroidPx": [
+        765.851,
+        551.8239
+      ],
+      "confidence": "HIGH_FOR_MASK_ALIGNMENT; mask semantics remain at group granularity"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-001",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 1550,
+      "bboxXYWH": [
+        792,
+        799,
+        208,
+        45
+      ],
+      "centroidPx": [
+        886.066,
+        825.203
+      ],
+      "principalAxisDegreesImageXY": -174.574,
+      "pcaMajorScalePx": 199.242,
+      "pcaMinorScalePx": 31.489,
+      "aspectRatio": 6.3273,
+      "meanSrgb": [
+        199.05,
+        178.65,
+        133.87
+      ],
+      "meanSignal": 0.4365128,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-002",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 1051,
+      "bboxXYWH": [
+        400,
+        659,
+        241,
+        80
+      ],
+      "centroidPx": [
+        507.515,
+        691.169
+      ],
+      "principalAxisDegreesImageXY": -163.42,
+      "pcaMajorScalePx": 263.966,
+      "pcaMinorScalePx": 11.206,
+      "aspectRatio": 23.5565,
+      "meanSrgb": [
+        175.18,
+        208.75,
+        194.23
+      ],
+      "meanSignal": 0.42309859,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-003",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 603,
+      "bboxXYWH": [
+        1001,
+        754,
+        77,
+        64
+      ],
+      "centroidPx": [
+        1052.61,
+        787.859
+      ],
+      "principalAxisDegreesImageXY": 140.982,
+      "pcaMajorScalePx": 95.744,
+      "pcaMinorScalePx": 21.762,
+      "aspectRatio": 4.3995,
+      "meanSrgb": [
+        190.13,
+        159.97,
+        102.31
+      ],
+      "meanSignal": 0.47142756,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-004",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 442,
+      "bboxXYWH": [
+        338,
+        596,
+        27,
+        46
+      ],
+      "centroidPx": [
+        352.756,
+        618.247
+      ],
+      "principalAxisDegreesImageXY": 65.942,
+      "pcaMajorScalePx": 46.49,
+      "pcaMinorScalePx": 17.148,
+      "aspectRatio": 2.7111,
+      "meanSrgb": [
+        180.71,
+        194.32,
+        110.52
+      ],
+      "meanSignal": 0.41548041,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-005",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 347,
+      "bboxXYWH": [
+        289,
+        572,
+        18,
+        42
+      ],
+      "centroidPx": [
+        296.395,
+        592.098
+      ],
+      "principalAxisDegreesImageXY": 76.407,
+      "pcaMajorScalePx": 41.799,
+      "pcaMinorScalePx": 14.983,
+      "aspectRatio": 2.7897,
+      "meanSrgb": [
+        241.76,
+        231.39,
+        198.73
+      ],
+      "meanSignal": 0.37771043,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-006",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 320,
+      "bboxXYWH": [
+        193,
+        523,
+        33,
+        44
+      ],
+      "centroidPx": [
+        205.741,
+        544.819
+      ],
+      "principalAxisDegreesImageXY": 55.495,
+      "pcaMajorScalePx": 48.243,
+      "pcaMinorScalePx": 14.401,
+      "aspectRatio": 3.35,
+      "meanSrgb": [
+        184.03,
+        205.41,
+        199.71
+      ],
+      "meanSignal": 0.43021768,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-007",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 288,
+      "bboxXYWH": [
+        271,
+        563,
+        10,
+        38
+      ],
+      "centroidPx": [
+        275.285,
+        581.302
+      ],
+      "principalAxisDegreesImageXY": 84.447,
+      "pcaMajorScalePx": 39.365,
+      "pcaMinorScalePx": 10.001,
+      "aspectRatio": 3.9362,
+      "meanSrgb": [
+        221.35,
+        221.56,
+        198.93
+      ],
+      "meanSignal": 0.38859314,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-008",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 187,
+      "bboxXYWH": [
+        130,
+        477,
+        13,
+        47
+      ],
+      "centroidPx": [
+        133.866,
+        495.257
+      ],
+      "principalAxisDegreesImageXY": 82.734,
+      "pcaMajorScalePx": 47.841,
+      "pcaMinorScalePx": 7.233,
+      "aspectRatio": 6.6139,
+      "meanSrgb": [
+        117.98,
+        189.67,
+        200.06
+      ],
+      "meanSignal": 0.5517804,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-009",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 187,
+      "bboxXYWH": [
+        717,
+        783,
+        35,
+        20
+      ],
+      "centroidPx": [
+        731.583,
+        792.62
+      ],
+      "principalAxisDegreesImageXY": -155.736,
+      "pcaMajorScalePx": 29.956,
+      "pcaMinorScalePx": 11.092,
+      "aspectRatio": 2.7008,
+      "meanSrgb": [
+        190.08,
+        190.8,
+        134.96
+      ],
+      "meanSignal": 0.32343811,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-010",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 129,
+      "bboxXYWH": [
+        757,
+        801,
+        28,
+        12
+      ],
+      "centroidPx": [
+        770.899,
+        806.682
+      ],
+      "principalAxisDegreesImageXY": -171.882,
+      "pcaMajorScalePx": 33.436,
+      "pcaMinorScalePx": 9.333,
+      "aspectRatio": 3.5826,
+      "meanSrgb": [
+        213.88,
+        200.6,
+        159.28
+      ],
+      "meanSignal": 0.31354618,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-011",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 127,
+      "bboxXYWH": [
+        585,
+        722,
+        55,
+        22
+      ],
+      "centroidPx": [
+        610.205,
+        731.465
+      ],
+      "principalAxisDegreesImageXY": -160.804,
+      "pcaMajorScalePx": 61.604,
+      "pcaMinorScalePx": 3.703,
+      "aspectRatio": 16.635,
+      "meanSrgb": [
+        195.54,
+        200.19,
+        164.91
+      ],
+      "meanSignal": 0.32348463,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-012",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 124,
+      "bboxXYWH": [
+        466,
+        684,
+        44,
+        14
+      ],
+      "centroidPx": [
+        488.21,
+        691.315
+      ],
+      "principalAxisDegreesImageXY": -163.115,
+      "pcaMajorScalePx": 47.552,
+      "pcaMinorScalePx": 3.647,
+      "aspectRatio": 13.039,
+      "meanSrgb": [
+        164.97,
+        215.37,
+        195.6
+      ],
+      "meanSignal": 0.32165605,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-013",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 110,
+      "bboxXYWH": [
+        764,
+        788,
+        32,
+        17
+      ],
+      "centroidPx": [
+        779.764,
+        796.018
+      ],
+      "principalAxisDegreesImageXY": -154.36,
+      "pcaMajorScalePx": 33.984,
+      "pcaMinorScalePx": 6.377,
+      "aspectRatio": 5.3294,
+      "meanSrgb": [
+        235.92,
+        229.61,
+        199.96
+      ],
+      "meanSignal": 0.34430256,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-014",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 88,
+      "bboxXYWH": [
+        692,
+        762,
+        29,
+        12
+      ],
+      "centroidPx": [
+        706.545,
+        767.33
+      ],
+      "principalAxisDegreesImageXY": -159.159,
+      "pcaMajorScalePx": 30.926,
+      "pcaMinorScalePx": 4.367,
+      "aspectRatio": 7.0819,
+      "meanSrgb": [
+        192.77,
+        209.7,
+        183.48
+      ],
+      "meanSignal": 0.3154957,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-015",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 84,
+      "bboxXYWH": [
+        619,
+        741,
+        24,
+        11
+      ],
+      "centroidPx": [
+        630.238,
+        745.155
+      ],
+      "principalAxisDegreesImageXY": -156.947,
+      "pcaMajorScalePx": 25.671,
+      "pcaMinorScalePx": 4.462,
+      "aspectRatio": 5.7533,
+      "meanSrgb": [
+        215.94,
+        207.26,
+        145.62
+      ],
+      "meanSignal": 0.36083806,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-016",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 77,
+      "bboxXYWH": [
+        1104,
+        754,
+        9,
+        17
+      ],
+      "centroidPx": [
+        1108.403,
+        762.506
+      ],
+      "principalAxisDegreesImageXY": 113.452,
+      "pcaMajorScalePx": 17.357,
+      "pcaMinorScalePx": 5.728,
+      "aspectRatio": 3.0303,
+      "meanSrgb": [
+        190.47,
+        190.16,
+        167.81
+      ],
+      "meanSignal": 0.49475554,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-017",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 71,
+      "bboxXYWH": [
+        231,
+        545,
+        10,
+        18
+      ],
+      "centroidPx": [
+        235.254,
+        553.099
+      ],
+      "principalAxisDegreesImageXY": 106.85,
+      "pcaMajorScalePx": 19.398,
+      "pcaMinorScalePx": 6.712,
+      "aspectRatio": 2.8899,
+      "meanSrgb": [
+        232.49,
+        219.63,
+        170.07
+      ],
+      "meanSignal": 0.32304469,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-018",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 60,
+      "bboxXYWH": [
+        742,
+        786,
+        21,
+        14
+      ],
+      "centroidPx": [
+        752.6,
+        792.45
+      ],
+      "principalAxisDegreesImageXY": -141.196,
+      "pcaMajorScalePx": 23.654,
+      "pcaMinorScalePx": 6.176,
+      "aspectRatio": 3.8298,
+      "meanSrgb": [
+        232.62,
+        228.43,
+        191.42
+      ],
+      "meanSignal": 0.30298939,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-019",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 57,
+      "bboxXYWH": [
+        162,
+        530,
+        11,
+        10
+      ],
+      "centroidPx": [
+        167.175,
+        535.667
+      ],
+      "principalAxisDegreesImageXY": -136.854,
+      "pcaMajorScalePx": 10.935,
+      "pcaMinorScalePx": 8.326,
+      "aspectRatio": 1.3134,
+      "meanSrgb": [
+        112.44,
+        199.42,
+        209.89
+      ],
+      "meanSignal": 0.42208889,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-020",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 49,
+      "bboxXYWH": [
+        718,
+        798,
+        12,
+        7
+      ],
+      "centroidPx": [
+        723.898,
+        800.959
+      ],
+      "principalAxisDegreesImageXY": -162.26,
+      "pcaMajorScalePx": 12.826,
+      "pcaMinorScalePx": 5.131,
+      "aspectRatio": 2.4995,
+      "meanSrgb": [
+        127.67,
+        176.45,
+        154.94
+      ],
+      "meanSignal": 0.31743714,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-021",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 44,
+      "bboxXYWH": [
+        746,
+        800,
+        9,
+        12
+      ],
+      "centroidPx": [
+        750.523,
+        805.773
+      ],
+      "principalAxisDegreesImageXY": 60.155,
+      "pcaMajorScalePx": 13.44,
+      "pcaMinorScalePx": 8.57,
+      "aspectRatio": 1.5682,
+      "meanSrgb": [
+        184.18,
+        182.11,
+        137.84
+      ],
+      "meanSignal": 0.28979284,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-022",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 42,
+      "bboxXYWH": [
+        282,
+        581,
+        8,
+        24
+      ],
+      "centroidPx": [
+        285.619,
+        593.881
+      ],
+      "principalAxisDegreesImageXY": 75.637,
+      "pcaMajorScalePx": 30.015,
+      "pcaMinorScalePx": 2.579,
+      "aspectRatio": 11.638,
+      "meanSrgb": [
+        185.29,
+        182.64,
+        146.0
+      ],
+      "meanSignal": 0.30134377,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-023",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 39,
+      "bboxXYWH": [
+        804,
+        815,
+        21,
+        5
+      ],
+      "centroidPx": [
+        815.333,
+        817.231
+      ],
+      "principalAxisDegreesImageXY": 170.96,
+      "pcaMajorScalePx": 20.73,
+      "pcaMinorScalePx": 4.156,
+      "aspectRatio": 4.9878,
+      "meanSrgb": [
+        219.21,
+        215.74,
+        190.49
+      ],
+      "meanSignal": 0.29785722,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-024",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 32,
+      "bboxXYWH": [
+        139,
+        502,
+        5,
+        11
+      ],
+      "centroidPx": [
+        141.281,
+        507.156
+      ],
+      "principalAxisDegreesImageXY": 75.937,
+      "pcaMajorScalePx": 11.541,
+      "pcaMinorScalePx": 3.626,
+      "aspectRatio": 3.1831,
+      "meanSrgb": [
+        73.81,
+        183.25,
+        203.94
+      ],
+      "meanSignal": 0.37144271,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-025",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 29,
+      "bboxXYWH": [
+        148,
+        526,
+        10,
+        9
+      ],
+      "centroidPx": [
+        152.793,
+        529.103
+      ],
+      "principalAxisDegreesImageXY": -138.234,
+      "pcaMajorScalePx": 12.588,
+      "pcaMinorScalePx": 3.343,
+      "aspectRatio": 3.7656,
+      "meanSrgb": [
+        117.9,
+        208.76,
+        221.31
+      ],
+      "meanSignal": 0.48648578,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-026",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 28,
+      "bboxXYWH": [
+        191,
+        549,
+        8,
+        9
+      ],
+      "centroidPx": [
+        194.107,
+        553.536
+      ],
+      "principalAxisDegreesImageXY": 48.932,
+      "pcaMajorScalePx": 11.369,
+      "pcaMinorScalePx": 3.334,
+      "aspectRatio": 3.4096,
+      "meanSrgb": [
+        202.82,
+        208.04,
+        182.36
+      ],
+      "meanSignal": 0.43891522,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-027",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 28,
+      "bboxXYWH": [
+        547,
+        706,
+        15,
+        6
+      ],
+      "centroidPx": [
+        553.893,
+        709.143
+      ],
+      "principalAxisDegreesImageXY": -163.448,
+      "pcaMajorScalePx": 14.441,
+      "pcaMinorScalePx": 4.849,
+      "aspectRatio": 2.9782,
+      "meanSrgb": [
+        185.21,
+        194.07,
+        149.43
+      ],
+      "meanSignal": 0.29954529,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-028",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 26,
+      "bboxXYWH": [
+        617,
+        746,
+        11,
+        4
+      ],
+      "centroidPx": [
+        621.885,
+        747.269
+      ],
+      "principalAxisDegreesImageXY": -172.103,
+      "pcaMajorScalePx": 11.539,
+      "pcaMinorScalePx": 3.455,
+      "aspectRatio": 3.3399,
+      "meanSrgb": [
+        179.12,
+        189.0,
+        130.77
+      ],
+      "meanSignal": 0.29660282,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-029",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 23,
+      "bboxXYWH": [
+        1113,
+        743,
+        4,
+        9
+      ],
+      "centroidPx": [
+        1114.304,
+        746.957
+      ],
+      "principalAxisDegreesImageXY": 99.665,
+      "pcaMajorScalePx": 8.394,
+      "pcaMinorScalePx": 3.591,
+      "aspectRatio": 2.3375,
+      "meanSrgb": [
+        177.35,
+        162.91,
+        126.26
+      ],
+      "meanSignal": 0.33074126,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-030",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 22,
+      "bboxXYWH": [
+        184,
+        516,
+        6,
+        9
+      ],
+      "centroidPx": [
+        186.318,
+        519.545
+      ],
+      "principalAxisDegreesImageXY": 56.204,
+      "pcaMajorScalePx": 9.713,
+      "pcaMinorScalePx": 3.016,
+      "aspectRatio": 3.2206,
+      "meanSrgb": [
+        188.09,
+        200.59,
+        177.68
+      ],
+      "meanSignal": 0.40248343,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-031",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 21,
+      "bboxXYWH": [
+        163,
+        517,
+        5,
+        8
+      ],
+      "centroidPx": [
+        165.048,
+        519.762
+      ],
+      "principalAxisDegreesImageXY": 63.68,
+      "pcaMajorScalePx": 9.081,
+      "pcaMinorScalePx": 3.327,
+      "aspectRatio": 2.7291,
+      "meanSrgb": [
+        85.33,
+        177.14,
+        188.67
+      ],
+      "meanSignal": 0.34926638,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-032",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 17,
+      "bboxXYWH": [
+        176,
+        513,
+        4,
+        11
+      ],
+      "centroidPx": [
+        177.471,
+        517.765
+      ],
+      "principalAxisDegreesImageXY": 73.173,
+      "pcaMajorScalePx": 12.196,
+      "pcaMinorScalePx": 1.753,
+      "aspectRatio": 6.9556,
+      "meanSrgb": [
+        162.71,
+        163.35,
+        131.76
+      ],
+      "meanSignal": 0.29588279,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-033",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 17,
+      "bboxXYWH": [
+        248,
+        568,
+        4,
+        8
+      ],
+      "centroidPx": [
+        249.294,
+        570.941
+      ],
+      "principalAxisDegreesImageXY": 108.894,
+      "pcaMajorScalePx": 8.459,
+      "pcaMinorScalePx": 2.819,
+      "aspectRatio": 3.0009,
+      "meanSrgb": [
+        246.35,
+        233.24,
+        189.12
+      ],
+      "meanSignal": 0.29212412,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-034",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 17,
+      "bboxXYWH": [
+        749,
+        785,
+        16,
+        7
+      ],
+      "centroidPx": [
+        756.235,
+        788.118
+      ],
+      "principalAxisDegreesImageXY": -158.692,
+      "pcaMajorScalePx": 19.727,
+      "pcaMinorScalePx": 1.123,
+      "aspectRatio": 17.5616,
+      "meanSrgb": [
+        175.82,
+        189.47,
+        155.59
+      ],
+      "meanSignal": 0.30333361,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-035",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 17,
+      "bboxXYWH": [
+        851,
+        837,
+        7,
+        6
+      ],
+      "centroidPx": [
+        853.824,
+        839.529
+      ],
+      "principalAxisDegreesImageXY": 135.133,
+      "pcaMajorScalePx": 8.103,
+      "pcaMinorScalePx": 4.222,
+      "aspectRatio": 1.9192,
+      "meanSrgb": [
+        218.53,
+        179.0,
+        108.0
+      ],
+      "meanSignal": 0.33324915,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-036",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 14,
+      "bboxXYWH": [
+        641,
+        744,
+        7,
+        5
+      ],
+      "centroidPx": [
+        643.714,
+        745.929
+      ],
+      "principalAxisDegreesImageXY": -149.124,
+      "pcaMajorScalePx": 9.11,
+      "pcaMinorScalePx": 2.429,
+      "aspectRatio": 3.751,
+      "meanSrgb": [
+        225.79,
+        215.0,
+        174.79
+      ],
+      "meanSignal": 0.28678218,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-037",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 13,
+      "bboxXYWH": [
+        699,
+        775,
+        9,
+        5
+      ],
+      "centroidPx": [
+        702.923,
+        776.846
+      ],
+      "principalAxisDegreesImageXY": -152.063,
+      "pcaMajorScalePx": 10.372,
+      "pcaMinorScalePx": 1.989,
+      "aspectRatio": 5.2154,
+      "meanSrgb": [
+        218.38,
+        199.0,
+        134.08
+      ],
+      "meanSignal": 0.28110749,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-038",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 11,
+      "bboxXYWH": [
+        281,
+        573,
+        3,
+        7
+      ],
+      "centroidPx": [
+        281.909,
+        576.0
+      ],
+      "principalAxisDegreesImageXY": 80.034,
+      "pcaMajorScalePx": 7.537,
+      "pcaMinorScalePx": 2.368,
+      "aspectRatio": 3.183,
+      "meanSrgb": [
+        241.36,
+        228.64,
+        187.18
+      ],
+      "meanSignal": 0.27858454,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-039",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 11,
+      "bboxXYWH": [
+        338,
+        612,
+        3,
+        5
+      ],
+      "centroidPx": [
+        339.0,
+        614.0
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 4.513,
+      "pcaMinorScalePx": 2.954,
+      "aspectRatio": 1.5275,
+      "meanSrgb": [
+        188.91,
+        171.45,
+        96.64
+      ],
+      "meanSignal": 0.38939813,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-040",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 11,
+      "bboxXYWH": [
+        796,
+        823,
+        7,
+        5
+      ],
+      "centroidPx": [
+        798.364,
+        824.636
+      ],
+      "principalAxisDegreesImageXY": 146.77,
+      "pcaMajorScalePx": 9.693,
+      "pcaMinorScalePx": 2.558,
+      "aspectRatio": 3.7888,
+      "meanSrgb": [
+        218.91,
+        195.36,
+        143.91
+      ],
+      "meanSignal": 0.29967731,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-041",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 10,
+      "bboxXYWH": [
+        976,
+        829,
+        9,
+        4
+      ],
+      "centroidPx": [
+        980.0,
+        830.5
+      ],
+      "principalAxisDegreesImageXY": 157.941,
+      "pcaMajorScalePx": 10.562,
+      "pcaMinorScalePx": 1.113,
+      "aspectRatio": 9.4884,
+      "meanSrgb": [
+        188.4,
+        173.1,
+        137.2
+      ],
+      "meanSignal": 0.37026277,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-042",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 9,
+      "bboxXYWH": [
+        681,
+        777,
+        9,
+        1
+      ],
+      "centroidPx": [
+        685.0,
+        777.0
+      ],
+      "principalAxisDegreesImageXY": 0.0,
+      "pcaMajorScalePx": 10.328,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 10.328,
+      "meanSrgb": [
+        136.89,
+        186.11,
+        160.67
+      ],
+      "meanSignal": 0.27198395,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-043",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 7,
+      "bboxXYWH": [
+        658,
+        760,
+        6,
+        3
+      ],
+      "centroidPx": [
+        660.143,
+        760.857
+      ],
+      "principalAxisDegreesImageXY": -164.219,
+      "pcaMajorScalePx": 7.498,
+      "pcaMinorScalePx": 1.601,
+      "aspectRatio": 4.6837,
+      "meanSrgb": [
+        228.43,
+        224.86,
+        175.0
+      ],
+      "meanSignal": 0.26958385,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-044",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 7,
+      "bboxXYWH": [
+        784,
+        808,
+        6,
+        2
+      ],
+      "centroidPx": [
+        786.143,
+        808.429
+      ],
+      "principalAxisDegreesImageXY": -173.164,
+      "pcaMajorScalePx": 7.277,
+      "pcaMinorScalePx": 1.793,
+      "aspectRatio": 4.059,
+      "meanSrgb": [
+        246.0,
+        229.14,
+        186.0
+      ],
+      "meanSignal": 0.26741073,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-045",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 6,
+      "bboxXYWH": [
+        373,
+        637,
+        4,
+        3
+      ],
+      "centroidPx": [
+        374.5,
+        638.0
+      ],
+      "principalAxisDegreesImageXY": -140.31,
+      "pcaMajorScalePx": 4.85,
+      "pcaMinorScalePx": 1.347,
+      "aspectRatio": 3.6006,
+      "meanSrgb": [
+        153.0,
+        182.83,
+        72.83
+      ],
+      "meanSignal": 0.27596933,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_CYAN-046",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 6,
+      "bboxXYWH": [
+        941,
+        812,
+        3,
+        2
+      ],
+      "centroidPx": [
+        942.0,
+        812.5
+      ],
+      "principalAxisDegreesImageXY": 0.0,
+      "pcaMajorScalePx": 3.266,
+      "pcaMinorScalePx": 2.0,
+      "aspectRatio": 1.633,
+      "meanSrgb": [
+        155.0,
+        138.5,
+        86.33
+      ],
+      "meanSignal": 0.31436834,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-001",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 74,
+      "bboxXYWH": [
+        221,
+        564,
+        17,
+        15
+      ],
+      "centroidPx": [
+        228.014,
+        571.054
+      ],
+      "principalAxisDegreesImageXY": -142.123,
+      "pcaMajorScalePx": 20.431,
+      "pcaMinorScalePx": 5.773,
+      "aspectRatio": 3.5393,
+      "meanSrgb": [
+        254.36,
+        254.34,
+        253.62
+      ],
+      "meanSignal": 0.9937042,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-002",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 19,
+      "bboxXYWH": [
+        728,
+        780,
+        12,
+        6
+      ],
+      "centroidPx": [
+        733.579,
+        782.842
+      ],
+      "principalAxisDegreesImageXY": -155.881,
+      "pcaMajorScalePx": 12.937,
+      "pcaMinorScalePx": 2.323,
+      "aspectRatio": 5.5693,
+      "meanSrgb": [
+        254.05,
+        254.79,
+        250.89
+      ],
+      "meanSignal": 0.99428278,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-003",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 11,
+      "bboxXYWH": [
+        277,
+        574,
+        1,
+        11
+      ],
+      "centroidPx": [
+        277.0,
+        579.0
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 12.649,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 12.6491,
+      "meanSrgb": [
+        252.64,
+        255.0,
+        253.82
+      ],
+      "meanSignal": 0.99479955,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-004",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 8,
+      "bboxXYWH": [
+        300,
+        587,
+        1,
+        8
+      ],
+      "centroidPx": [
+        300.0,
+        590.5
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 9.165,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 9.1652,
+      "meanSrgb": [
+        255.0,
+        255.0,
+        248.62
+      ],
+      "meanSignal": 0.99598742,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-005",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 8,
+      "bboxXYWH": [
+        674,
+        760,
+        6,
+        3
+      ],
+      "centroidPx": [
+        676.75,
+        761.25
+      ],
+      "principalAxisDegreesImageXY": -160.453,
+      "pcaMajorScalePx": 6.604,
+      "pcaMinorScalePx": 1.544,
+      "aspectRatio": 4.2769,
+      "meanSrgb": [
+        254.38,
+        254.75,
+        251.25
+      ],
+      "meanSignal": 0.99485767,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-006",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 6,
+      "bboxXYWH": [
+        427,
+        672,
+        5,
+        2
+      ],
+      "centroidPx": [
+        429.0,
+        672.5
+      ],
+      "principalAxisDegreesImageXY": -162.391,
+      "pcaMajorScalePx": 5.404,
+      "pcaMinorScalePx": 1.209,
+      "aspectRatio": 4.4712,
+      "meanSrgb": [
+        254.0,
+        254.33,
+        253.0
+      ],
+      "meanSignal": 0.99259472,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-007",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 6,
+      "bboxXYWH": [
+        733,
+        778,
+        5,
+        3
+      ],
+      "centroidPx": [
+        735.0,
+        778.667
+      ],
+      "principalAxisDegreesImageXY": -151.845,
+      "pcaMajorScalePx": 5.814,
+      "pcaMinorScalePx": 1.324,
+      "aspectRatio": 4.3911,
+      "meanSrgb": [
+        253.83,
+        254.83,
+        251.67
+      ],
+      "meanSignal": 0.99464321,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-008",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 5,
+      "bboxXYWH": [
+        294,
+        603,
+        2,
+        5
+      ],
+      "centroidPx": [
+        294.2,
+        605.0
+      ],
+      "principalAxisDegreesImageXY": 78.251,
+      "pcaMajorScalePx": 5.773,
+      "pcaMinorScalePx": 1.109,
+      "aspectRatio": 5.208,
+      "meanSrgb": [
+        254.2,
+        255.0,
+        250.6
+      ],
+      "meanSignal": 0.99569875,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-009",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 5,
+      "bboxXYWH": [
+        441,
+        676,
+        5,
+        2
+      ],
+      "centroidPx": [
+        443.0,
+        676.4
+      ],
+      "principalAxisDegreesImageXY": -162.857,
+      "pcaMajorScalePx": 5.913,
+      "pcaMinorScalePx": 0.937,
+      "aspectRatio": 5.9128,
+      "meanSrgb": [
+        254.2,
+        254.4,
+        254.0
+      ],
+      "meanSignal": 0.9940294,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-010",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 4,
+      "bboxXYWH": [
+        450,
+        678,
+        4,
+        1
+      ],
+      "centroidPx": [
+        451.5,
+        678.0
+      ],
+      "principalAxisDegreesImageXY": 0.0,
+      "pcaMajorScalePx": 4.472,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 4.4721,
+      "meanSrgb": [
+        254.0,
+        255.0,
+        255.0
+      ],
+      "meanSignal": 0.99811572,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-011",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 3,
+      "bboxXYWH": [
+        299,
+        582,
+        1,
+        3
+      ],
+      "centroidPx": [
+        299.0,
+        583.0
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 3.266,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 3.266,
+      "meanSrgb": [
+        255.0,
+        255.0,
+        239.33
+      ],
+      "meanSignal": 0.99031973,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-012",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 3,
+      "bboxXYWH": [
+        301,
+        598,
+        1,
+        3
+      ],
+      "centroidPx": [
+        301.0,
+        599.0
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 3.266,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 3.266,
+      "meanSrgb": [
+        255.0,
+        255.0,
+        246.0
+      ],
+      "meanSignal": 0.99434596,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-013",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 3,
+      "bboxXYWH": [
+        693,
+        763,
+        3,
+        2
+      ],
+      "centroidPx": [
+        694.0,
+        763.667
+      ],
+      "principalAxisDegreesImageXY": -151.845,
+      "pcaMajorScalePx": 3.677,
+      "pcaMinorScalePx": 0.837,
+      "aspectRatio": 3.6771,
+      "meanSrgb": [
+        255.0,
+        255.0,
+        250.33
+      ],
+      "meanSignal": 0.99704212,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-014",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        303,
+        610,
+        1,
+        2
+      ],
+      "centroidPx": [
+        303.0,
+        610.5
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 2.0,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.0,
+      "meanSrgb": [
+        255.0,
+        255.0,
+        245.5
+      ],
+      "meanSignal": 0.99403197,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-015",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        464,
+        680,
+        2,
+        1
+      ],
+      "centroidPx": [
+        464.5,
+        680.0
+      ],
+      "principalAxisDegreesImageXY": 0.0,
+      "pcaMajorScalePx": 2.0,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.0,
+      "meanSrgb": [
+        253.0,
+        255.0,
+        255.0
+      ],
+      "meanSignal": 0.99624616,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_CYAN-016",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        818,
+        806,
+        2,
+        1
+      ],
+      "centroidPx": [
+        818.5,
+        806.0
+      ],
+      "principalAxisDegreesImageXY": 0.0,
+      "pcaMajorScalePx": 2.0,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.0,
+      "meanSrgb": [
+        253.0,
+        255.0,
+        254.0
+      ],
+      "meanSignal": 0.99559069,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-001",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 1136,
+      "bboxXYWH": [
+        794,
+        376,
+        108,
+        145
+      ],
+      "centroidPx": [
+        854.385,
+        444.284
+      ],
+      "principalAxisDegreesImageXY": 53.43,
+      "pcaMajorScalePx": 213.305,
+      "pcaMinorScalePx": 18.508,
+      "aspectRatio": 11.5248,
+      "meanSrgb": [
+        185.97,
+        171.82,
+        118.39
+      ],
+      "meanSignal": 0.4511925,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-002",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 689,
+      "bboxXYWH": [
+        623,
+        239,
+        74,
+        33
+      ],
+      "centroidPx": [
+        656.601,
+        255.338
+      ],
+      "principalAxisDegreesImageXY": -156.644,
+      "pcaMajorScalePx": 69.128,
+      "pcaMinorScalePx": 15.761,
+      "aspectRatio": 4.3861,
+      "meanSrgb": [
+        158.47,
+        185.24,
+        176.14
+      ],
+      "meanSignal": 0.44915673,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-003",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 432,
+      "bboxXYWH": [
+        279,
+        259,
+        38,
+        34
+      ],
+      "centroidPx": [
+        299.331,
+        274.745
+      ],
+      "principalAxisDegreesImageXY": 139.282,
+      "pcaMajorScalePx": 45.002,
+      "pcaMinorScalePx": 13.254,
+      "aspectRatio": 3.3954,
+      "meanSrgb": [
+        211.27,
+        198.72,
+        158.62
+      ],
+      "meanSignal": 0.40743569,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-004",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 406,
+      "bboxXYWH": [
+        435,
+        439,
+        60,
+        43
+      ],
+      "centroidPx": [
+        464.054,
+        461.515
+      ],
+      "principalAxisDegreesImageXY": -146.559,
+      "pcaMajorScalePx": 79.065,
+      "pcaMinorScalePx": 11.685,
+      "aspectRatio": 6.7663,
+      "meanSrgb": [
+        210.29,
+        217.6,
+        193.5
+      ],
+      "meanSignal": 0.40441918,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-005",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 177,
+      "bboxXYWH": [
+        751,
+        657,
+        21,
+        25
+      ],
+      "centroidPx": [
+        761.356,
+        668.096
+      ],
+      "principalAxisDegreesImageXY": -136.292,
+      "pcaMajorScalePx": 30.616,
+      "pcaMinorScalePx": 11.008,
+      "aspectRatio": 2.7814,
+      "meanSrgb": [
+        98.52,
+        221.55,
+        216.68
+      ],
+      "meanSignal": 0.3743231,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-006",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 149,
+      "bboxXYWH": [
+        281,
+        363,
+        15,
+        17
+      ],
+      "centroidPx": [
+        288.242,
+        371.282
+      ],
+      "principalAxisDegreesImageXY": 80.965,
+      "pcaMajorScalePx": 14.444,
+      "pcaMinorScalePx": 13.735,
+      "aspectRatio": 1.0516,
+      "meanSrgb": [
+        215.91,
+        193.35,
+        130.38
+      ],
+      "meanSignal": 0.33149493,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-007",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 143,
+      "bboxXYWH": [
+        888,
+        720,
+        19,
+        13
+      ],
+      "centroidPx": [
+        896.622,
+        725.818
+      ],
+      "principalAxisDegreesImageXY": 152.237,
+      "pcaMajorScalePx": 18.975,
+      "pcaMinorScalePx": 11.169,
+      "aspectRatio": 1.6989,
+      "meanSrgb": [
+        184.73,
+        195.39,
+        176.28
+      ],
+      "meanSignal": 0.37816295,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-008",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 132,
+      "bboxXYWH": [
+        384,
+        413,
+        11,
+        16
+      ],
+      "centroidPx": [
+        388.515,
+        420.811
+      ],
+      "principalAxisDegreesImageXY": 69.084,
+      "pcaMajorScalePx": 17.484,
+      "pcaMinorScalePx": 9.928,
+      "aspectRatio": 1.7611,
+      "meanSrgb": [
+        210.06,
+        211.48,
+        187.68
+      ],
+      "meanSignal": 0.43862674,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-009",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 122,
+      "bboxXYWH": [
+        935,
+        542,
+        10,
+        27
+      ],
+      "centroidPx": [
+        939.549,
+        555.943
+      ],
+      "principalAxisDegreesImageXY": 76.05,
+      "pcaMajorScalePx": 27.152,
+      "pcaMinorScalePx": 6.327,
+      "aspectRatio": 4.2916,
+      "meanSrgb": [
+        253.63,
+        247.18,
+        218.42
+      ],
+      "meanSignal": 0.34249079,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-010",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 111,
+      "bboxXYWH": [
+        905,
+        722,
+        14,
+        13
+      ],
+      "centroidPx": [
+        910.874,
+        727.856
+      ],
+      "principalAxisDegreesImageXY": 126.677,
+      "pcaMajorScalePx": 16.908,
+      "pcaMinorScalePx": 9.212,
+      "aspectRatio": 1.8354,
+      "meanSrgb": [
+        163.09,
+        171.2,
+        149.81
+      ],
+      "meanSignal": 0.49925268,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-011",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 101,
+      "bboxXYWH": [
+        945,
+        549,
+        6,
+        27
+      ],
+      "centroidPx": [
+        947.673,
+        562.347
+      ],
+      "principalAxisDegreesImageXY": 83.698,
+      "pcaMajorScalePx": 27.479,
+      "pcaMinorScalePx": 4.917,
+      "aspectRatio": 5.5885,
+      "meanSrgb": [
+        239.52,
+        218.81,
+        176.03
+      ],
+      "meanSignal": 0.43730986,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-012",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 91,
+      "bboxXYWH": [
+        535,
+        514,
+        30,
+        18
+      ],
+      "centroidPx": [
+        550.11,
+        523.209
+      ],
+      "principalAxisDegreesImageXY": -148.897,
+      "pcaMajorScalePx": 36.757,
+      "pcaMinorScalePx": 4.959,
+      "aspectRatio": 7.4124,
+      "meanSrgb": [
+        67.81,
+        159.74,
+        163.7
+      ],
+      "meanSignal": 0.39964706,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-013",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 88,
+      "bboxXYWH": [
+        864,
+        457,
+        8,
+        21
+      ],
+      "centroidPx": [
+        867.42,
+        467.818
+      ],
+      "principalAxisDegreesImageXY": 79.706,
+      "pcaMajorScalePx": 22.888,
+      "pcaMinorScalePx": 5.74,
+      "aspectRatio": 3.9874,
+      "meanSrgb": [
+        199.28,
+        170.59,
+        97.93
+      ],
+      "meanSignal": 0.37388098,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-014",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 80,
+      "bboxXYWH": [
+        515,
+        215,
+        29,
+        4
+      ],
+      "centroidPx": [
+        526.4,
+        216.05
+      ],
+      "principalAxisDegreesImageXY": 177.299,
+      "pcaMajorScalePx": 30.13,
+      "pcaMinorScalePx": 3.629,
+      "aspectRatio": 8.3017,
+      "meanSrgb": [
+        187.64,
+        218.34,
+        212.34
+      ],
+      "meanSignal": 0.34505931,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-015",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 70,
+      "bboxXYWH": [
+        260,
+        356,
+        12,
+        12
+      ],
+      "centroidPx": [
+        265.9,
+        361.214
+      ],
+      "principalAxisDegreesImageXY": -159.765,
+      "pcaMajorScalePx": 11.606,
+      "pcaMinorScalePx": 9.523,
+      "aspectRatio": 1.2188,
+      "meanSrgb": [
+        227.73,
+        202.86,
+        133.9
+      ],
+      "meanSignal": 0.30930114,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-016",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 70,
+      "bboxXYWH": [
+        565,
+        530,
+        22,
+        9
+      ],
+      "centroidPx": [
+        575.257,
+        533.9
+      ],
+      "principalAxisDegreesImageXY": -163.332,
+      "pcaMajorScalePx": 23.366,
+      "pcaMinorScalePx": 4.514,
+      "aspectRatio": 5.1764,
+      "meanSrgb": [
+        118.0,
+        175.53,
+        181.11
+      ],
+      "meanSignal": 0.57700902,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-017",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 69,
+      "bboxXYWH": [
+        609,
+        235,
+        13,
+        9
+      ],
+      "centroidPx": [
+        614.058,
+        239.594
+      ],
+      "principalAxisDegreesImageXY": -177.231,
+      "pcaMajorScalePx": 11.11,
+      "pcaMinorScalePx": 8.507,
+      "aspectRatio": 1.3059,
+      "meanSrgb": [
+        144.9,
+        201.55,
+        199.93
+      ],
+      "meanSignal": 0.29642338,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-018",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 65,
+      "bboxXYWH": [
+        490,
+        215,
+        13,
+        7
+      ],
+      "centroidPx": [
+        495.585,
+        217.738
+      ],
+      "principalAxisDegreesImageXY": 167.055,
+      "pcaMajorScalePx": 13.426,
+      "pcaMinorScalePx": 6.354,
+      "aspectRatio": 2.1129,
+      "meanSrgb": [
+        238.72,
+        226.66,
+        198.68
+      ],
+      "meanSignal": 0.30438784,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-019",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 62,
+      "bboxXYWH": [
+        402,
+        420,
+        26,
+        15
+      ],
+      "centroidPx": [
+        413.468,
+        428.419
+      ],
+      "principalAxisDegreesImageXY": -152.147,
+      "pcaMajorScalePx": 28.284,
+      "pcaMinorScalePx": 5.342,
+      "aspectRatio": 5.2946,
+      "meanSrgb": [
+        242.42,
+        234.21,
+        182.24
+      ],
+      "meanSignal": 0.32455641,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-020",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 61,
+      "bboxXYWH": [
+        347,
+        397,
+        9,
+        13
+      ],
+      "centroidPx": [
+        351.082,
+        402.475
+      ],
+      "principalAxisDegreesImageXY": 110.037,
+      "pcaMajorScalePx": 13.169,
+      "pcaMinorScalePx": 6.959,
+      "aspectRatio": 1.8922,
+      "meanSrgb": [
+        169.75,
+        175.52,
+        101.95
+      ],
+      "meanSignal": 0.51457727,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-021",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 58,
+      "bboxXYWH": [
+        880,
+        718,
+        11,
+        13
+      ],
+      "centroidPx": [
+        885.0,
+        724.276
+      ],
+      "principalAxisDegreesImageXY": 121.507,
+      "pcaMajorScalePx": 15.69,
+      "pcaMinorScalePx": 5.015,
+      "aspectRatio": 3.1286,
+      "meanSrgb": [
+        105.95,
+        206.47,
+        221.81
+      ],
+      "meanSignal": 0.39187124,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-022",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 57,
+      "bboxXYWH": [
+        326,
+        387,
+        11,
+        12
+      ],
+      "centroidPx": [
+        330.93,
+        392.684
+      ],
+      "principalAxisDegreesImageXY": 127.928,
+      "pcaMajorScalePx": 15.371,
+      "pcaMinorScalePx": 4.922,
+      "aspectRatio": 3.123,
+      "meanSrgb": [
+        239.11,
+        225.91,
+        188.18
+      ],
+      "meanSignal": 0.61250317,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-023",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 47,
+      "bboxXYWH": [
+        1047,
+        636,
+        15,
+        19
+      ],
+      "centroidPx": [
+        1054.234,
+        643.66
+      ],
+      "principalAxisDegreesImageXY": 52.919,
+      "pcaMajorScalePx": 23.62,
+      "pcaMinorScalePx": 2.983,
+      "aspectRatio": 7.9188,
+      "meanSrgb": [
+        247.21,
+        216.28,
+        148.23
+      ],
+      "meanSignal": 0.31499669,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-024",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 43,
+      "bboxXYWH": [
+        273,
+        356,
+        8,
+        9
+      ],
+      "centroidPx": [
+        276.14,
+        360.395
+      ],
+      "principalAxisDegreesImageXY": 49.857,
+      "pcaMajorScalePx": 8.38,
+      "pcaMinorScalePx": 7.08,
+      "aspectRatio": 1.1837,
+      "meanSrgb": [
+        198.0,
+        159.3,
+        86.56
+      ],
+      "meanSignal": 0.28930983,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-025",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 43,
+      "bboxXYWH": [
+        840,
+        429,
+        9,
+        11
+      ],
+      "centroidPx": [
+        844.093,
+        434.558
+      ],
+      "principalAxisDegreesImageXY": 58.072,
+      "pcaMajorScalePx": 13.768,
+      "pcaMinorScalePx": 4.261,
+      "aspectRatio": 3.2315,
+      "meanSrgb": [
+        205.77,
+        170.74,
+        105.07
+      ],
+      "meanSignal": 0.45091802,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-026",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 40,
+      "bboxXYWH": [
+        265,
+        280,
+        8,
+        9
+      ],
+      "centroidPx": [
+        268.725,
+        284.8
+      ],
+      "principalAxisDegreesImageXY": 128.112,
+      "pcaMajorScalePx": 9.581,
+      "pcaMinorScalePx": 5.828,
+      "aspectRatio": 1.6439,
+      "meanSrgb": [
+        192.22,
+        192.72,
+        168.9
+      ],
+      "meanSignal": 0.33489418,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-027",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 38,
+      "bboxXYWH": [
+        456,
+        226,
+        13,
+        6
+      ],
+      "centroidPx": [
+        462.316,
+        228.474
+      ],
+      "principalAxisDegreesImageXY": 163.64,
+      "pcaMajorScalePx": 12.471,
+      "pcaMinorScalePx": 4.694,
+      "aspectRatio": 2.657,
+      "meanSrgb": [
+        219.5,
+        222.82,
+        215.66
+      ],
+      "meanSignal": 0.27922374,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-028",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 36,
+      "bboxXYWH": [
+        1074,
+        658,
+        7,
+        14
+      ],
+      "centroidPx": [
+        1076.778,
+        666.417
+      ],
+      "principalAxisDegreesImageXY": 76.078,
+      "pcaMajorScalePx": 14.497,
+      "pcaMinorScalePx": 4.993,
+      "aspectRatio": 2.9034,
+      "meanSrgb": [
+        254.03,
+        247.94,
+        210.61
+      ],
+      "meanSignal": 0.30324769,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-029",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 35,
+      "bboxXYWH": [
+        499,
+        223,
+        11,
+        4
+      ],
+      "centroidPx": [
+        504.543,
+        224.743
+      ],
+      "principalAxisDegreesImageXY": 171.977,
+      "pcaMajorScalePx": 11.985,
+      "pcaMinorScalePx": 3.775,
+      "aspectRatio": 3.1748,
+      "meanSrgb": [
+        124.43,
+        130.2,
+        105.06
+      ],
+      "meanSignal": 0.27556944,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-030",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 35,
+      "bboxXYWH": [
+        812,
+        694,
+        9,
+        13
+      ],
+      "centroidPx": [
+        816.686,
+        700.0
+      ],
+      "principalAxisDegreesImageXY": 119.948,
+      "pcaMajorScalePx": 15.513,
+      "pcaMinorScalePx": 3.519,
+      "aspectRatio": 4.4079,
+      "meanSrgb": [
+        112.57,
+        190.03,
+        131.31
+      ],
+      "meanSignal": 0.435783,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-031",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 32,
+      "bboxXYWH": [
+        816,
+        700,
+        15,
+        8
+      ],
+      "centroidPx": [
+        822.531,
+        703.375
+      ],
+      "principalAxisDegreesImageXY": 153.528,
+      "pcaMajorScalePx": 17.438,
+      "pcaMinorScalePx": 2.578,
+      "aspectRatio": 6.7642,
+      "meanSrgb": [
+        97.84,
+        179.38,
+        112.0
+      ],
+      "meanSignal": 0.31703898,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-032",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 31,
+      "bboxXYWH": [
+        854,
+        710,
+        7,
+        8
+      ],
+      "centroidPx": [
+        856.516,
+        712.968
+      ],
+      "principalAxisDegreesImageXY": 127.011,
+      "pcaMajorScalePx": 10.003,
+      "pcaMinorScalePx": 4.36,
+      "aspectRatio": 2.2941,
+      "meanSrgb": [
+        61.81,
+        192.13,
+        208.06
+      ],
+      "meanSignal": 0.42895103,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-033",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 29,
+      "bboxXYWH": [
+        589,
+        236,
+        15,
+        5
+      ],
+      "centroidPx": [
+        596.172,
+        237.621
+      ],
+      "principalAxisDegreesImageXY": -166.591,
+      "pcaMajorScalePx": 15.677,
+      "pcaMinorScalePx": 2.518,
+      "aspectRatio": 6.2267,
+      "meanSrgb": [
+        181.93,
+        180.69,
+        149.0
+      ],
+      "meanSignal": 0.31116521,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-034",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 29,
+      "bboxXYWH": [
+        259,
+        347,
+        9,
+        7
+      ],
+      "centroidPx": [
+        262.31,
+        350.552
+      ],
+      "principalAxisDegreesImageXY": -151.51,
+      "pcaMajorScalePx": 10.352,
+      "pcaMinorScalePx": 3.871,
+      "aspectRatio": 2.6739,
+      "meanSrgb": [
+        244.69,
+        229.79,
+        187.07
+      ],
+      "meanSignal": 0.34869939,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-035",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 27,
+      "bboxXYWH": [
+        870,
+        718,
+        6,
+        10
+      ],
+      "centroidPx": [
+        872.63,
+        722.704
+      ],
+      "principalAxisDegreesImageXY": 107.739,
+      "pcaMajorScalePx": 9.861,
+      "pcaMinorScalePx": 4.205,
+      "aspectRatio": 2.3453,
+      "meanSrgb": [
+        77.44,
+        212.81,
+        230.48
+      ],
+      "meanSignal": 0.2914637,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-036",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 26,
+      "bboxXYWH": [
+        309,
+        382,
+        7,
+        5
+      ],
+      "centroidPx": [
+        312.154,
+        384.154
+      ],
+      "principalAxisDegreesImageXY": 177.801,
+      "pcaMajorScalePx": 7.08,
+      "pcaMinorScalePx": 4.919,
+      "aspectRatio": 1.4392,
+      "meanSrgb": [
+        237.42,
+        198.81,
+        117.42
+      ],
+      "meanSignal": 0.2684606,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-037",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 24,
+      "bboxXYWH": [
+        506,
+        489,
+        10,
+        7
+      ],
+      "centroidPx": [
+        510.958,
+        492.75
+      ],
+      "principalAxisDegreesImageXY": 166.04,
+      "pcaMajorScalePx": 9.083,
+      "pcaMinorScalePx": 7.104,
+      "aspectRatio": 1.2786,
+      "meanSrgb": [
+        164.38,
+        222.0,
+        219.08
+      ],
+      "meanSignal": 0.28639016,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-038",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 15,
+      "bboxXYWH": [
+        929,
+        549,
+        3,
+        8
+      ],
+      "centroidPx": [
+        929.733,
+        552.267
+      ],
+      "principalAxisDegreesImageXY": 80.461,
+      "pcaMajorScalePx": 8.812,
+      "pcaMinorScalePx": 2.326,
+      "aspectRatio": 3.7877,
+      "meanSrgb": [
+        212.4,
+        164.6,
+        86.53
+      ],
+      "meanSignal": 0.28461188,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-039",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 14,
+      "bboxXYWH": [
+        475,
+        229,
+        13,
+        3
+      ],
+      "centroidPx": [
+        481.214,
+        230.0
+      ],
+      "principalAxisDegreesImageXY": 169.227,
+      "pcaMajorScalePx": 15.013,
+      "pcaMinorScalePx": 1.147,
+      "aspectRatio": 13.0932,
+      "meanSrgb": [
+        141.0,
+        149.64,
+        124.79
+      ],
+      "meanSignal": 0.26702729,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-040",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 12,
+      "bboxXYWH": [
+        443,
+        233,
+        9,
+        4
+      ],
+      "centroidPx": [
+        447.167,
+        234.833
+      ],
+      "principalAxisDegreesImageXY": 161.133,
+      "pcaMajorScalePx": 9.871,
+      "pcaMinorScalePx": 1.737,
+      "aspectRatio": 5.6828,
+      "meanSrgb": [
+        229.0,
+        223.0,
+        210.0
+      ],
+      "meanSignal": 0.27291444,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-041",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 12,
+      "bboxXYWH": [
+        751,
+        321,
+        6,
+        5
+      ],
+      "centroidPx": [
+        753.667,
+        322.75
+      ],
+      "principalAxisDegreesImageXY": -145.917,
+      "pcaMajorScalePx": 6.68,
+      "pcaMinorScalePx": 2.697,
+      "aspectRatio": 2.477,
+      "meanSrgb": [
+        81.08,
+        139.58,
+        170.25
+      ],
+      "meanSignal": 0.28518313,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-042",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 11,
+      "bboxXYWH": [
+        367,
+        403,
+        3,
+        6
+      ],
+      "centroidPx": [
+        367.818,
+        405.455
+      ],
+      "principalAxisDegreesImageXY": 107.74,
+      "pcaMajorScalePx": 5.991,
+      "pcaMinorScalePx": 2.316,
+      "aspectRatio": 2.5867,
+      "meanSrgb": [
+        152.09,
+        160.45,
+        102.73
+      ],
+      "meanSignal": 0.35228899,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-043",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 10,
+      "bboxXYWH": [
+        255,
+        305,
+        5,
+        4
+      ],
+      "centroidPx": [
+        257.2,
+        306.4
+      ],
+      "principalAxisDegreesImageXY": 149.872,
+      "pcaMajorScalePx": 6.361,
+      "pcaMinorScalePx": 2.083,
+      "aspectRatio": 3.0531,
+      "meanSrgb": [
+        194.5,
+        154.1,
+        89.5
+      ],
+      "meanSignal": 0.35041943,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-044",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 10,
+      "bboxXYWH": [
+        249,
+        345,
+        7,
+        5
+      ],
+      "centroidPx": [
+        252.2,
+        346.8
+      ],
+      "principalAxisDegreesImageXY": 146.31,
+      "pcaMajorScalePx": 8.764,
+      "pcaMinorScalePx": 1.386,
+      "aspectRatio": 6.3246,
+      "meanSrgb": [
+        96.3,
+        110.9,
+        91.7
+      ],
+      "meanSignal": 0.2823202,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-045",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 10,
+      "bboxXYWH": [
+        409,
+        433,
+        4,
+        8
+      ],
+      "centroidPx": [
+        410.8,
+        436.3
+      ],
+      "principalAxisDegreesImageXY": 68.938,
+      "pcaMajorScalePx": 8.954,
+      "pcaMinorScalePx": 2.397,
+      "aspectRatio": 3.7348,
+      "meanSrgb": [
+        140.6,
+        174.9,
+        133.3
+      ],
+      "meanSignal": 0.26352346,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-046",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 10,
+      "bboxXYWH": [
+        549,
+        510,
+        5,
+        4
+      ],
+      "centroidPx": [
+        550.7,
+        512.0
+      ],
+      "principalAxisDegreesImageXY": -144.36,
+      "pcaMajorScalePx": 6.007,
+      "pcaMinorScalePx": 2.382,
+      "aspectRatio": 2.5215,
+      "meanSrgb": [
+        112.9,
+        208.9,
+        210.1
+      ],
+      "meanSignal": 0.34051412,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-047",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 8,
+      "bboxXYWH": [
+        696,
+        280,
+        4,
+        3
+      ],
+      "centroidPx": [
+        697.75,
+        280.625
+      ],
+      "principalAxisDegreesImageXY": -162.704,
+      "pcaMajorScalePx": 3.972,
+      "pcaMinorScalePx": 2.64,
+      "aspectRatio": 1.5044,
+      "meanSrgb": [
+        127.38,
+        159.38,
+        114.38
+      ],
+      "meanSignal": 0.34399384,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-048",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 7,
+      "bboxXYWH": [
+        768,
+        333,
+        4,
+        5
+      ],
+      "centroidPx": [
+        769.286,
+        334.857
+      ],
+      "principalAxisDegreesImageXY": 50.845,
+      "pcaMajorScalePx": 6.343,
+      "pcaMinorScalePx": 1.248,
+      "aspectRatio": 5.0819,
+      "meanSrgb": [
+        80.14,
+        138.86,
+        170.29
+      ],
+      "meanSignal": 0.27277175,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-049",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 7,
+      "bboxXYWH": [
+        378,
+        420,
+        3,
+        3
+      ],
+      "centroidPx": [
+        379.0,
+        421.286
+      ],
+      "principalAxisDegreesImageXY": 0.0,
+      "pcaMajorScalePx": 3.024,
+      "pcaMinorScalePx": 2.799,
+      "aspectRatio": 1.0801,
+      "meanSrgb": [
+        179.0,
+        200.0,
+        192.0
+      ],
+      "meanSignal": 0.30185869,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-050",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 6,
+      "bboxXYWH": [
+        469,
+        217,
+        5,
+        2
+      ],
+      "centroidPx": [
+        471.0,
+        217.5
+      ],
+      "principalAxisDegreesImageXY": 162.391,
+      "pcaMajorScalePx": 5.404,
+      "pcaMinorScalePx": 1.209,
+      "aspectRatio": 4.4712,
+      "meanSrgb": [
+        154.0,
+        134.33,
+        88.17
+      ],
+      "meanSignal": 0.26760805,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_FRONT_GOLD-051",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 6,
+      "bboxXYWH": [
+        920,
+        543,
+        3,
+        4
+      ],
+      "centroidPx": [
+        921.0,
+        544.5
+      ],
+      "principalAxisDegreesImageXY": 50.31,
+      "pcaMajorScalePx": 4.85,
+      "pcaMinorScalePx": 1.347,
+      "aspectRatio": 3.6006,
+      "meanSrgb": [
+        235.83,
+        201.67,
+        133.33
+      ],
+      "meanSignal": 0.37855604,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_GOLD-001",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 77,
+      "bboxXYWH": [
+        1065,
+        651,
+        10,
+        14
+      ],
+      "centroidPx": [
+        1069.117,
+        657.364
+      ],
+      "principalAxisDegreesImageXY": 123.279,
+      "pcaMajorScalePx": 13.191,
+      "pcaMinorScalePx": 9.346,
+      "aspectRatio": 1.4113,
+      "meanSrgb": [
+        254.57,
+        254.3,
+        253.71
+      ],
+      "meanSignal": 0.9939031,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_GOLD-002",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 11,
+      "bboxXYWH": [
+        947,
+        556,
+        1,
+        11
+      ],
+      "centroidPx": [
+        947.0,
+        561.0
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 12.649,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 12.6491,
+      "meanSrgb": [
+        254.91,
+        255.0,
+        253.36
+      ],
+      "meanSignal": 0.99879134,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_GOLD-003",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 9,
+      "bboxXYWH": [
+        934,
+        538,
+        3,
+        8
+      ],
+      "centroidPx": [
+        935.444,
+        541.444
+      ],
+      "principalAxisDegreesImageXY": 74.716,
+      "pcaMajorScalePx": 8.973,
+      "pcaMinorScalePx": 1.433,
+      "aspectRatio": 6.2604,
+      "meanSrgb": [
+        254.67,
+        254.56,
+        253.67
+      ],
+      "meanSignal": 0.9956916,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_GOLD-004",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 4,
+      "bboxXYWH": [
+        941,
+        558,
+        1,
+        4
+      ],
+      "centroidPx": [
+        941.0,
+        559.5
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 4.472,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 4.4721,
+      "meanSrgb": [
+        254.75,
+        255.0,
+        249.0
+      ],
+      "meanSignal": 0.99573505,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_GOLD-005",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 4,
+      "bboxXYWH": [
+        948,
+        570,
+        1,
+        4
+      ],
+      "centroidPx": [
+        948.0,
+        571.5
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 4.472,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 4.4721,
+      "meanSrgb": [
+        255.0,
+        255.0,
+        251.25
+      ],
+      "meanSignal": 0.99762928,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_GOLD-006",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 3,
+      "bboxXYWH": [
+        655,
+        251,
+        3,
+        1
+      ],
+      "centroidPx": [
+        656.0,
+        251.0
+      ],
+      "principalAxisDegreesImageXY": 0.0,
+      "pcaMajorScalePx": 3.266,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 3.266,
+      "meanSrgb": [
+        252.67,
+        255.0,
+        254.67
+      ],
+      "meanSignal": 0.99539495,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_GOLD-007",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 3,
+      "bboxXYWH": [
+        332,
+        389,
+        3,
+        3
+      ],
+      "centroidPx": [
+        333.0,
+        390.0
+      ],
+      "principalAxisDegreesImageXY": 135.0,
+      "pcaMajorScalePx": 4.619,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 4.6188,
+      "meanSrgb": [
+        255.0,
+        255.0,
+        246.67
+      ],
+      "meanSignal": 0.99477524,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_GOLD-008",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 3,
+      "bboxXYWH": [
+        329,
+        393,
+        3,
+        3
+      ],
+      "centroidPx": [
+        330.0,
+        394.0
+      ],
+      "principalAxisDegreesImageXY": 135.0,
+      "pcaMajorScalePx": 4.619,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 4.6188,
+      "meanSrgb": [
+        255.0,
+        255.0,
+        246.0
+      ],
+      "meanSignal": 0.9943592,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_GOLD-009",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 3,
+      "bboxXYWH": [
+        946,
+        550,
+        1,
+        3
+      ],
+      "centroidPx": [
+        946.0,
+        551.0
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 3.266,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 3.266,
+      "meanSrgb": [
+        255.0,
+        255.0,
+        248.0
+      ],
+      "meanSignal": 0.99557418,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_GOLD-010",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        327,
+        397,
+        2,
+        2
+      ],
+      "centroidPx": [
+        327.5,
+        397.5
+      ],
+      "principalAxisDegreesImageXY": 135.0,
+      "pcaMajorScalePx": 2.828,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.8284,
+      "meanSrgb": [
+        255.0,
+        255.0,
+        247.5
+      ],
+      "meanSignal": 0.99526358,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_GOLD-011",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        575,
+        534,
+        2,
+        1
+      ],
+      "centroidPx": [
+        575.5,
+        534.0
+      ],
+      "principalAxisDegreesImageXY": 0.0,
+      "pcaMajorScalePx": 2.0,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.0,
+      "meanSrgb": [
+        255.0,
+        255.0,
+        255.0
+      ],
+      "meanSignal": 1.0,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_GOLD-012",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        937,
+        548,
+        1,
+        2
+      ],
+      "centroidPx": [
+        937.0,
+        548.5
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 2.0,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.0,
+      "meanSrgb": [
+        254.0,
+        255.0,
+        247.0
+      ],
+      "meanSignal": 0.99307728,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_FRONT_GOLD-013",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        940,
+        554,
+        1,
+        2
+      ],
+      "centroidPx": [
+        940.0,
+        554.5
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 2.0,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.0,
+      "meanSrgb": [
+        253.5,
+        255.0,
+        248.0
+      ],
+      "meanSignal": 0.99274218,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-001",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 4275,
+      "bboxXYWH": [
+        692,
+        644,
+        254,
+        258
+      ],
+      "centroidPx": [
+        854.934,
+        788.629
+      ],
+      "principalAxisDegreesImageXY": 132.032,
+      "pcaMajorScalePx": 349.743,
+      "pcaMinorScalePx": 65.223,
+      "aspectRatio": 5.3623,
+      "meanSrgb": [
+        184.8,
+        178.65,
+        144.87
+      ],
+      "meanSignal": 0.41853493,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-002",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 609,
+      "bboxXYWH": [
+        246,
+        283,
+        47,
+        72
+      ],
+      "centroidPx": [
+        272.626,
+        319.631
+      ],
+      "principalAxisDegreesImageXY": 112.069,
+      "pcaMajorScalePx": 93.377,
+      "pcaMinorScalePx": 16.855,
+      "aspectRatio": 5.5401,
+      "meanSrgb": [
+        196.19,
+        175.69,
+        130.01
+      ],
+      "meanSignal": 0.29887438,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-003",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 578,
+      "bboxXYWH": [
+        188,
+        493,
+        40,
+        78
+      ],
+      "centroidPx": [
+        203.166,
+        538.891
+      ],
+      "principalAxisDegreesImageXY": 62.79,
+      "pcaMajorScalePx": 79.474,
+      "pcaMinorScalePx": 15.492,
+      "aspectRatio": 5.1299,
+      "meanSrgb": [
+        170.53,
+        195.04,
+        189.39
+      ],
+      "meanSignal": 0.43756294,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-004",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 567,
+      "bboxXYWH": [
+        199,
+        591,
+        58,
+        49
+      ],
+      "centroidPx": [
+        223.974,
+        616.988
+      ],
+      "principalAxisDegreesImageXY": -144.957,
+      "pcaMajorScalePx": 77.182,
+      "pcaMinorScalePx": 17.763,
+      "aspectRatio": 4.345,
+      "meanSrgb": [
+        184.95,
+        210.38,
+        204.66
+      ],
+      "meanSignal": 0.35174227,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-005",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 564,
+      "bboxXYWH": [
+        249,
+        353,
+        29,
+        58
+      ],
+      "centroidPx": [
+        260.732,
+        375.628
+      ],
+      "principalAxisDegreesImageXY": 105.711,
+      "pcaMajorScalePx": 54.259,
+      "pcaMinorScalePx": 16.967,
+      "aspectRatio": 3.198,
+      "meanSrgb": [
+        198.82,
+        182.76,
+        131.74
+      ],
+      "meanSignal": 0.38783336,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-006",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 442,
+      "bboxXYWH": [
+        315,
+        187,
+        49,
+        25
+      ],
+      "centroidPx": [
+        337.943,
+        197.242
+      ],
+      "principalAxisDegreesImageXY": 158.555,
+      "pcaMajorScalePx": 49.175,
+      "pcaMinorScalePx": 11.978,
+      "aspectRatio": 4.1054,
+      "meanSrgb": [
+        203.71,
+        178.4,
+        123.02
+      ],
+      "meanSignal": 0.42838034,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-007",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 298,
+      "bboxXYWH": [
+        640,
+        920,
+        57,
+        12
+      ],
+      "centroidPx": [
+        668.591,
+        926.114
+      ],
+      "principalAxisDegreesImageXY": -174.0,
+      "pcaMajorScalePx": 56.427,
+      "pcaMinorScalePx": 9.209,
+      "aspectRatio": 6.1277,
+      "meanSrgb": [
+        107.5,
+        178.92,
+        178.84
+      ],
+      "meanSignal": 0.41280574,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-008",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 287,
+      "bboxXYWH": [
+        224,
+        652,
+        52,
+        35
+      ],
+      "centroidPx": [
+        250.557,
+        669.324
+      ],
+      "principalAxisDegreesImageXY": -147.675,
+      "pcaMajorScalePx": 63.214,
+      "pcaMinorScalePx": 6.762,
+      "aspectRatio": 9.3485,
+      "meanSrgb": [
+        140.02,
+        168.73,
+        160.44
+      ],
+      "meanSignal": 0.51513606,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-009",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 206,
+      "bboxXYWH": [
+        385,
+        848,
+        57,
+        59
+      ],
+      "centroidPx": [
+        411.592,
+        875.519
+      ],
+      "principalAxisDegreesImageXY": 46.822,
+      "pcaMajorScalePx": 84.887,
+      "pcaMinorScalePx": 3.945,
+      "aspectRatio": 21.5177,
+      "meanSrgb": [
+        131.71,
+        139.74,
+        68.32
+      ],
+      "meanSignal": 0.52115029,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-010",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 169,
+      "bboxXYWH": [
+        221,
+        594,
+        26,
+        25
+      ],
+      "centroidPx": [
+        235.284,
+        606.367
+      ],
+      "principalAxisDegreesImageXY": -139.739,
+      "pcaMajorScalePx": 30.829,
+      "pcaMinorScalePx": 12.365,
+      "aspectRatio": 2.4932,
+      "meanSrgb": [
+        200.49,
+        224.0,
+        215.18
+      ],
+      "meanSignal": 0.27651805,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-011",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 165,
+      "bboxXYWH": [
+        191,
+        547,
+        21,
+        35
+      ],
+      "centroidPx": [
+        199.836,
+        565.042
+      ],
+      "principalAxisDegreesImageXY": 60.517,
+      "pcaMajorScalePx": 40.231,
+      "pcaMinorScalePx": 6.274,
+      "aspectRatio": 6.4126,
+      "meanSrgb": [
+        202.45,
+        208.79,
+        181.19
+      ],
+      "meanSignal": 0.37002102,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-012",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 159,
+      "bboxXYWH": [
+        1032,
+        437,
+        9,
+        23
+      ],
+      "centroidPx": [
+        1036.239,
+        447.094
+      ],
+      "principalAxisDegreesImageXY": 81.988,
+      "pcaMajorScalePx": 25.314,
+      "pcaMinorScalePx": 8.299,
+      "aspectRatio": 3.0501,
+      "meanSrgb": [
+        175.78,
+        171.47,
+        83.76
+      ],
+      "meanSignal": 0.32961097,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-013",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 140,
+      "bboxXYWH": [
+        254,
+        301,
+        11,
+        19
+      ],
+      "centroidPx": [
+        259.314,
+        311.593
+      ],
+      "principalAxisDegreesImageXY": 90.041,
+      "pcaMajorScalePx": 17.111,
+      "pcaMinorScalePx": 10.966,
+      "aspectRatio": 1.5604,
+      "meanSrgb": [
+        217.1,
+        190.0,
+        128.24
+      ],
+      "meanSignal": 0.48170412,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-014",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 121,
+      "bboxXYWH": [
+        737,
+        859,
+        41,
+        20
+      ],
+      "centroidPx": [
+        758.256,
+        867.86
+      ],
+      "principalAxisDegreesImageXY": 153.277,
+      "pcaMajorScalePx": 38.663,
+      "pcaMinorScalePx": 4.618,
+      "aspectRatio": 8.3716,
+      "meanSrgb": [
+        253.09,
+        245.97,
+        220.35
+      ],
+      "meanSignal": 0.31666699,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-015",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 115,
+      "bboxXYWH": [
+        980,
+        652,
+        9,
+        22
+      ],
+      "centroidPx": [
+        983.835,
+        661.896
+      ],
+      "principalAxisDegreesImageXY": 90.076,
+      "pcaMajorScalePx": 21.981,
+      "pcaMinorScalePx": 7.946,
+      "aspectRatio": 2.7662,
+      "meanSrgb": [
+        166.82,
+        176.46,
+        114.84
+      ],
+      "meanSignal": 0.36726192,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-016",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 95,
+      "bboxXYWH": [
+        1013,
+        547,
+        20,
+        15
+      ],
+      "centroidPx": [
+        1021.168,
+        553.074
+      ],
+      "principalAxisDegreesImageXY": -148.224,
+      "pcaMajorScalePx": 25.141,
+      "pcaMinorScalePx": 6.291,
+      "aspectRatio": 3.9964,
+      "meanSrgb": [
+        226.46,
+        185.23,
+        103.15
+      ],
+      "meanSignal": 0.34916991,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-017",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 93,
+      "bboxXYWH": [
+        981,
+        566,
+        16,
+        13
+      ],
+      "centroidPx": [
+        988.72,
+        571.957
+      ],
+      "principalAxisDegreesImageXY": -143.155,
+      "pcaMajorScalePx": 18.679,
+      "pcaMinorScalePx": 6.486,
+      "aspectRatio": 2.88,
+      "meanSrgb": [
+        202.55,
+        177.19,
+        94.58
+      ],
+      "meanSignal": 0.36462155,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-018",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 75,
+      "bboxXYWH": [
+        820,
+        180,
+        19,
+        15
+      ],
+      "centroidPx": [
+        830.827,
+        187.773
+      ],
+      "principalAxisDegreesImageXY": -146.015,
+      "pcaMajorScalePx": 21.018,
+      "pcaMinorScalePx": 5.288,
+      "aspectRatio": 3.9747,
+      "meanSrgb": [
+        191.77,
+        185.96,
+        85.37
+      ],
+      "meanSignal": 0.40789491,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-019",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 74,
+      "bboxXYWH": [
+        1023,
+        420,
+        9,
+        15
+      ],
+      "centroidPx": [
+        1027.162,
+        427.946
+      ],
+      "principalAxisDegreesImageXY": 67.304,
+      "pcaMajorScalePx": 15.829,
+      "pcaMinorScalePx": 6.08,
+      "aspectRatio": 2.6034,
+      "meanSrgb": [
+        168.95,
+        167.8,
+        80.5
+      ],
+      "meanSignal": 0.27245477,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-020",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 72,
+      "bboxXYWH": [
+        228,
+        371,
+        11,
+        11
+      ],
+      "centroidPx": [
+        233.389,
+        375.972
+      ],
+      "principalAxisDegreesImageXY": 138.476,
+      "pcaMajorScalePx": 12.084,
+      "pcaMinorScalePx": 7.943,
+      "aspectRatio": 1.5213,
+      "meanSrgb": [
+        159.79,
+        180.83,
+        170.74
+      ],
+      "meanSignal": 0.28099352,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-021",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 71,
+      "bboxXYWH": [
+        275,
+        766,
+        23,
+        19
+      ],
+      "centroidPx": [
+        286.563,
+        776.648
+      ],
+      "principalAxisDegreesImageXY": -141.059,
+      "pcaMajorScalePx": 29.078,
+      "pcaMinorScalePx": 3.34,
+      "aspectRatio": 8.7068,
+      "meanSrgb": [
+        125.28,
+        139.31,
+        78.39
+      ],
+      "meanSignal": 0.60107529,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-022",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 65,
+      "bboxXYWH": [
+        996,
+        536,
+        10,
+        9
+      ],
+      "centroidPx": [
+        1000.892,
+        539.538
+      ],
+      "principalAxisDegreesImageXY": 179.888,
+      "pcaMajorScalePx": 10.074,
+      "pcaMinorScalePx": 8.509,
+      "aspectRatio": 1.1838,
+      "meanSrgb": [
+        222.35,
+        180.35,
+        94.82
+      ],
+      "meanSignal": 0.33195147,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-023",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 59,
+      "bboxXYWH": [
+        210,
+        386,
+        13,
+        19
+      ],
+      "centroidPx": [
+        216.339,
+        392.034
+      ],
+      "principalAxisDegreesImageXY": 121.504,
+      "pcaMajorScalePx": 22.59,
+      "pcaMinorScalePx": 4.462,
+      "aspectRatio": 5.0628,
+      "meanSrgb": [
+        182.05,
+        164.12,
+        125.14
+      ],
+      "meanSignal": 0.27775046,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-024",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 57,
+      "bboxXYWH": [
+        886,
+        265,
+        13,
+        14
+      ],
+      "centroidPx": [
+        892.561,
+        270.895
+      ],
+      "principalAxisDegreesImageXY": 45.26,
+      "pcaMajorScalePx": 16.114,
+      "pcaMinorScalePx": 5.763,
+      "aspectRatio": 2.7962,
+      "meanSrgb": [
+        133.33,
+        142.81,
+        77.56
+      ],
+      "meanSignal": 0.36442196,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-025",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 57,
+      "bboxXYWH": [
+        989,
+        381,
+        10,
+        9
+      ],
+      "centroidPx": [
+        993.632,
+        384.982
+      ],
+      "principalAxisDegreesImageXY": -147.239,
+      "pcaMajorScalePx": 9.515,
+      "pcaMinorScalePx": 7.781,
+      "aspectRatio": 1.2229,
+      "meanSrgb": [
+        161.77,
+        160.58,
+        90.26
+      ],
+      "meanSignal": 0.36725569,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-026",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 55,
+      "bboxXYWH": [
+        264,
+        281,
+        9,
+        9
+      ],
+      "centroidPx": [
+        268.418,
+        284.836
+      ],
+      "principalAxisDegreesImageXY": 138.175,
+      "pcaMajorScalePx": 9.844,
+      "pcaMinorScalePx": 7.43,
+      "aspectRatio": 1.3249,
+      "meanSrgb": [
+        188.25,
+        188.49,
+        164.15
+      ],
+      "meanSignal": 0.32675919,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-027",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 53,
+      "bboxXYWH": [
+        230,
+        551,
+        6,
+        15
+      ],
+      "centroidPx": [
+        232.755,
+        559.038
+      ],
+      "principalAxisDegreesImageXY": 95.681,
+      "pcaMajorScalePx": 14.908,
+      "pcaMinorScalePx": 5.256,
+      "aspectRatio": 2.8367,
+      "meanSrgb": [
+        241.89,
+        232.94,
+        197.55
+      ],
+      "meanSignal": 0.30417386,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-028",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 50,
+      "bboxXYWH": [
+        1018,
+        493,
+        7,
+        9
+      ],
+      "centroidPx": [
+        1021.34,
+        496.66
+      ],
+      "principalAxisDegreesImageXY": 79.953,
+      "pcaMajorScalePx": 9.49,
+      "pcaMinorScalePx": 6.765,
+      "aspectRatio": 1.4028,
+      "meanSrgb": [
+        174.2,
+        169.2,
+        69.32
+      ],
+      "meanSignal": 0.26811522,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-029",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 48,
+      "bboxXYWH": [
+        622,
+        149,
+        9,
+        6
+      ],
+      "centroidPx": [
+        626.146,
+        151.521
+      ],
+      "principalAxisDegreesImageXY": 179.354,
+      "pcaMajorScalePx": 9.487,
+      "pcaMinorScalePx": 6.428,
+      "aspectRatio": 1.4758,
+      "meanSrgb": [
+        136.79,
+        155.42,
+        118.33
+      ],
+      "meanSignal": 0.23870058,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-030",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 41,
+      "bboxXYWH": [
+        1006,
+        398,
+        8,
+        7
+      ],
+      "centroidPx": [
+        1008.927,
+        401.073
+      ],
+      "principalAxisDegreesImageXY": 170.2,
+      "pcaMajorScalePx": 7.42,
+      "pcaMinorScalePx": 7.136,
+      "aspectRatio": 1.0399,
+      "meanSrgb": [
+        157.93,
+        157.24,
+        80.1
+      ],
+      "meanSignal": 0.29810765,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-031",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 30,
+      "bboxXYWH": [
+        369,
+        835,
+        14,
+        12
+      ],
+      "centroidPx": [
+        375.233,
+        840.633
+      ],
+      "principalAxisDegreesImageXY": -140.433,
+      "pcaMajorScalePx": 17.814,
+      "pcaMinorScalePx": 2.233,
+      "aspectRatio": 7.9771,
+      "meanSrgb": [
+        105.7,
+        120.17,
+        54.2
+      ],
+      "meanSignal": 0.28166792,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-032",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 28,
+      "bboxXYWH": [
+        222,
+        483,
+        6,
+        6
+      ],
+      "centroidPx": [
+        224.786,
+        485.5
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 6.0,
+      "pcaMinorScalePx": 5.89,
+      "aspectRatio": 1.0186,
+      "meanSrgb": [
+        131.93,
+        147.5,
+        122.21
+      ],
+      "meanSignal": 0.46863562,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-033",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 27,
+      "bboxXYWH": [
+        1012,
+        591,
+        9,
+        8
+      ],
+      "centroidPx": [
+        1016.259,
+        594.667
+      ],
+      "principalAxisDegreesImageXY": -147.734,
+      "pcaMajorScalePx": 9.422,
+      "pcaMinorScalePx": 5.409,
+      "aspectRatio": 1.7418,
+      "meanSrgb": [
+        231.59,
+        187.0,
+        92.48
+      ],
+      "meanSignal": 0.23193453,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-034",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 24,
+      "bboxXYWH": [
+        851,
+        836,
+        7,
+        7
+      ],
+      "centroidPx": [
+        853.792,
+        839.25
+      ],
+      "principalAxisDegreesImageXY": 130.919,
+      "pcaMajorScalePx": 8.179,
+      "pcaMinorScalePx": 4.172,
+      "aspectRatio": 1.9608,
+      "meanSrgb": [
+        214.21,
+        174.62,
+        104.88
+      ],
+      "meanSignal": 0.35061073,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-035",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 22,
+      "bboxXYWH": [
+        219,
+        500,
+        4,
+        8
+      ],
+      "centroidPx": [
+        220.545,
+        504.091
+      ],
+      "principalAxisDegreesImageXY": 81.15,
+      "pcaMajorScalePx": 8.069,
+      "pcaMinorScalePx": 3.594,
+      "aspectRatio": 2.2453,
+      "meanSrgb": [
+        117.55,
+        135.0,
+        118.45
+      ],
+      "meanSignal": 0.33254468,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-036",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 22,
+      "bboxXYWH": [
+        211,
+        587,
+        8,
+        8
+      ],
+      "centroidPx": [
+        214.818,
+        590.091
+      ],
+      "principalAxisDegreesImageXY": 45.712,
+      "pcaMajorScalePx": 11.846,
+      "pcaMinorScalePx": 2.717,
+      "aspectRatio": 4.3591,
+      "meanSrgb": [
+        243.5,
+        242.18,
+        221.45
+      ],
+      "meanSignal": 0.30194104,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-037",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 19,
+      "bboxXYWH": [
+        237,
+        596,
+        9,
+        9
+      ],
+      "centroidPx": [
+        241.316,
+        599.789
+      ],
+      "principalAxisDegreesImageXY": -138.934,
+      "pcaMajorScalePx": 12.674,
+      "pcaMinorScalePx": 2.677,
+      "aspectRatio": 4.7343,
+      "meanSrgb": [
+        159.21,
+        205.0,
+        207.63
+      ],
+      "meanSignal": 0.24482612,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-038",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 17,
+      "bboxXYWH": [
+        943,
+        713,
+        6,
+        5
+      ],
+      "centroidPx": [
+        945.353,
+        715.059
+      ],
+      "principalAxisDegreesImageXY": -164.242,
+      "pcaMajorScalePx": 6.438,
+      "pcaMinorScalePx": 3.73,
+      "aspectRatio": 1.726,
+      "meanSrgb": [
+        139.65,
+        134.29,
+        98.65
+      ],
+      "meanSignal": 0.40004459,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-039",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 16,
+      "bboxXYWH": [
+        878,
+        247,
+        4,
+        5
+      ],
+      "centroidPx": [
+        879.312,
+        248.938
+      ],
+      "principalAxisDegreesImageXY": 71.565,
+      "pcaMajorScalePx": 5.327,
+      "pcaMinorScalePx": 3.742,
+      "aspectRatio": 1.4237,
+      "meanSrgb": [
+        157.0,
+        159.94,
+        63.62
+      ],
+      "meanSignal": 0.27042666,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-040",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 16,
+      "bboxXYWH": [
+        957,
+        682,
+        5,
+        4
+      ],
+      "centroidPx": [
+        959.25,
+        683.562
+      ],
+      "principalAxisDegreesImageXY": -152.01,
+      "pcaMajorScalePx": 4.999,
+      "pcaMinorScalePx": 3.993,
+      "aspectRatio": 1.252,
+      "meanSrgb": [
+        144.81,
+        122.25,
+        68.69
+      ],
+      "meanSignal": 0.43069652,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-041",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 16,
+      "bboxXYWH": [
+        927,
+        755,
+        7,
+        10
+      ],
+      "centroidPx": [
+        930.0,
+        759.125
+      ],
+      "principalAxisDegreesImageXY": 124.857,
+      "pcaMajorScalePx": 12.349,
+      "pcaMinorScalePx": 1.802,
+      "aspectRatio": 6.8546,
+      "meanSrgb": [
+        86.0,
+        97.81,
+        79.94
+      ],
+      "meanSignal": 0.52068478,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-042",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 16,
+      "bboxXYWH": [
+        744,
+        913,
+        7,
+        3
+      ],
+      "centroidPx": [
+        747.125,
+        914.062
+      ],
+      "principalAxisDegreesImageXY": 176.52,
+      "pcaMajorScalePx": 6.624,
+      "pcaMinorScalePx": 2.968,
+      "aspectRatio": 2.2319,
+      "meanSrgb": [
+        146.5,
+        131.25,
+        84.75
+      ],
+      "meanSignal": 0.33158955,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-043",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 15,
+      "bboxXYWH": [
+        737,
+        914,
+        6,
+        3
+      ],
+      "centroidPx": [
+        739.667,
+        914.933
+      ],
+      "principalAxisDegreesImageXY": 174.586,
+      "pcaMajorScalePx": 5.983,
+      "pcaMinorScalePx": 3.048,
+      "aspectRatio": 1.9625,
+      "meanSrgb": [
+        148.2,
+        133.87,
+        84.07
+      ],
+      "meanSignal": 0.29426089,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-044",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 14,
+      "bboxXYWH": [
+        227,
+        470,
+        4,
+        5
+      ],
+      "centroidPx": [
+        228.286,
+        471.857
+      ],
+      "principalAxisDegreesImageXY": 92.257,
+      "pcaMajorScalePx": 5.829,
+      "pcaMinorScalePx": 4.64,
+      "aspectRatio": 1.2562,
+      "meanSrgb": [
+        112.86,
+        125.14,
+        110.29
+      ],
+      "meanSignal": 0.28333786,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-045",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 14,
+      "bboxXYWH": [
+        217,
+        515,
+        5,
+        4
+      ],
+      "centroidPx": [
+        219.214,
+        516.357
+      ],
+      "principalAxisDegreesImageXY": -155.642,
+      "pcaMajorScalePx": 4.743,
+      "pcaMinorScalePx": 3.686,
+      "aspectRatio": 1.2867,
+      "meanSrgb": [
+        150.36,
+        149.14,
+        118.64
+      ],
+      "meanSignal": 0.58948529,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-046",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 14,
+      "bboxXYWH": [
+        188,
+        518,
+        3,
+        10
+      ],
+      "centroidPx": [
+        188.857,
+        522.786
+      ],
+      "principalAxisDegreesImageXY": 74.321,
+      "pcaMajorScalePx": 10.543,
+      "pcaMinorScalePx": 1.794,
+      "aspectRatio": 5.8753,
+      "meanSrgb": [
+        129.0,
+        175.29,
+        173.5
+      ],
+      "meanSignal": 0.28203908,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-047",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 14,
+      "bboxXYWH": [
+        198,
+        585,
+        8,
+        4
+      ],
+      "centroidPx": [
+        201.571,
+        586.214
+      ],
+      "principalAxisDegreesImageXY": -164.059,
+      "pcaMajorScalePx": 7.587,
+      "pcaMinorScalePx": 3.613,
+      "aspectRatio": 2.1002,
+      "meanSrgb": [
+        220.36,
+        226.79,
+        200.71
+      ],
+      "meanSignal": 0.2385143,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-048",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 12,
+      "bboxXYWH": [
+        307,
+        790,
+        7,
+        5
+      ],
+      "centroidPx": [
+        309.583,
+        792.417
+      ],
+      "principalAxisDegreesImageXY": -146.84,
+      "pcaMajorScalePx": 8.741,
+      "pcaMinorScalePx": 1.836,
+      "aspectRatio": 4.7617,
+      "meanSrgb": [
+        106.92,
+        121.83,
+        55.5
+      ],
+      "meanSignal": 0.26664355,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-049",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 12,
+      "bboxXYWH": [
+        819,
+        815,
+        6,
+        4
+      ],
+      "centroidPx": [
+        822.0,
+        816.25
+      ],
+      "principalAxisDegreesImageXY": 152.8,
+      "pcaMajorScalePx": 6.496,
+      "pcaMinorScalePx": 2.476,
+      "aspectRatio": 2.6241,
+      "meanSrgb": [
+        217.92,
+        185.83,
+        137.58
+      ],
+      "meanSignal": 0.31644407,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-050",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 12,
+      "bboxXYWH": [
+        666,
+        918,
+        4,
+        5
+      ],
+      "centroidPx": [
+        667.583,
+        920.333
+      ],
+      "principalAxisDegreesImageXY": 85.119,
+      "pcaMajorScalePx": 4.722,
+      "pcaMinorScalePx": 3.437,
+      "aspectRatio": 1.3739,
+      "meanSrgb": [
+        83.5,
+        180.17,
+        185.58
+      ],
+      "meanSignal": 0.25198486,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-051",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 9,
+      "bboxXYWH": [
+        978,
+        631,
+        3,
+        7
+      ],
+      "centroidPx": [
+        978.889,
+        634.222
+      ],
+      "principalAxisDegreesImageXY": 78.69,
+      "pcaMajorScalePx": 8.327,
+      "pcaMinorScalePx": 1.602,
+      "aspectRatio": 5.1962,
+      "meanSrgb": [
+        140.78,
+        165.67,
+        122.78
+      ],
+      "meanSignal": 0.23051994,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-052",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 9,
+      "bboxXYWH": [
+        754,
+        913,
+        5,
+        2
+      ],
+      "centroidPx": [
+        756.222,
+        913.556
+      ],
+      "principalAxisDegreesImageXY": 175.269,
+      "pcaMajorScalePx": 5.274,
+      "pcaMinorScalePx": 1.946,
+      "aspectRatio": 2.7102,
+      "meanSrgb": [
+        146.44,
+        130.67,
+        84.89
+      ],
+      "meanSignal": 0.25043023,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-053",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 9,
+      "bboxXYWH": [
+        731,
+        914,
+        5,
+        2
+      ],
+      "centroidPx": [
+        733.222,
+        914.444
+      ],
+      "principalAxisDegreesImageXY": -175.269,
+      "pcaMajorScalePx": 5.274,
+      "pcaMinorScalePx": 1.946,
+      "aspectRatio": 2.7102,
+      "meanSrgb": [
+        150.56,
+        135.44,
+        86.33
+      ],
+      "meanSignal": 0.26375645,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-054",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 8,
+      "bboxXYWH": [
+        284,
+        235,
+        4,
+        4
+      ],
+      "centroidPx": [
+        285.5,
+        236.375
+      ],
+      "principalAxisDegreesImageXY": 50.884,
+      "pcaMajorScalePx": 4.803,
+      "pcaMinorScalePx": 2.164,
+      "aspectRatio": 2.2197,
+      "meanSrgb": [
+        155.38,
+        140.62,
+        106.25
+      ],
+      "meanSignal": 0.30045325,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-055",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 7,
+      "bboxXYWH": [
+        839,
+        197,
+        7,
+        7
+      ],
+      "centroidPx": [
+        842.0,
+        200.0
+      ],
+      "principalAxisDegreesImageXY": 45.0,
+      "pcaMajorScalePx": 11.314,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 11.3137,
+      "meanSrgb": [
+        149.0,
+        158.14,
+        56.29
+      ],
+      "meanSignal": 0.24953301,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-056",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 7,
+      "bboxXYWH": [
+        214,
+        574,
+        3,
+        5
+      ],
+      "centroidPx": [
+        215.286,
+        576.429
+      ],
+      "principalAxisDegreesImageXY": 70.573,
+      "pcaMajorScalePx": 5.89,
+      "pcaMinorScalePx": 2.121,
+      "aspectRatio": 2.7773,
+      "meanSrgb": [
+        249.0,
+        247.0,
+        226.0
+      ],
+      "meanSignal": 0.23352011,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-057",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 7,
+      "bboxXYWH": [
+        913,
+        780,
+        3,
+        3
+      ],
+      "centroidPx": [
+        914.0,
+        781.0
+      ],
+      "principalAxisDegreesImageXY": 135.0,
+      "pcaMajorScalePx": 3.703,
+      "pcaMinorScalePx": 2.138,
+      "aspectRatio": 1.7321,
+      "meanSrgb": [
+        158.29,
+        147.29,
+        77.14
+      ],
+      "meanSignal": 0.43162832,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-EDGE-RESIDENT_BACK_GREEN_GOLD-058",
+      "objectType": "EDGE_FILAMENT_OR_REFRACTION_FRAGMENT",
+      "areaPx": 6,
+      "bboxXYWH": [
+        245,
+        608,
+        4,
+        4
+      ],
+      "centroidPx": [
+        246.167,
+        609.5
+      ],
+      "principalAxisDegreesImageXY": -138.456,
+      "pcaMajorScalePx": 5.587,
+      "pcaMinorScalePx": 1.292,
+      "aspectRatio": 4.3231,
+      "meanSrgb": [
+        230.5,
+        251.67,
+        253.33
+      ],
+      "meanSignal": 0.24560899,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_IMAGE_COMPONENT; physical identity uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-001",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 256,
+      "bboxXYWH": [
+        216,
+        562,
+        25,
+        29
+      ],
+      "centroidPx": [
+        227.727,
+        575.742
+      ],
+      "principalAxisDegreesImageXY": 69.42,
+      "pcaMajorScalePx": 24.599,
+      "pcaMinorScalePx": 18.644,
+      "aspectRatio": 1.3194,
+      "meanSrgb": [
+        254.21,
+        253.86,
+        250.21
+      ],
+      "meanSignal": 0.98825485,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-002",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 87,
+      "bboxXYWH": [
+        238,
+        623,
+        19,
+        16
+      ],
+      "centroidPx": [
+        247.874,
+        630.517
+      ],
+      "principalAxisDegreesImageXY": -143.117,
+      "pcaMajorScalePx": 19.395,
+      "pcaMinorScalePx": 6.587,
+      "aspectRatio": 2.9446,
+      "meanSrgb": [
+        251.78,
+        253.97,
+        253.94
+      ],
+      "meanSignal": 0.98671794,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-003",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 58,
+      "bboxXYWH": [
+        747,
+        862,
+        22,
+        12
+      ],
+      "centroidPx": [
+        758.793,
+        866.724
+      ],
+      "principalAxisDegreesImageXY": 152.666,
+      "pcaMajorScalePx": 25.135,
+      "pcaMinorScalePx": 3.277,
+      "aspectRatio": 7.6711,
+      "meanSrgb": [
+        253.9,
+        253.74,
+        246.83
+      ],
+      "meanSignal": 0.98479384,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-004",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 38,
+      "bboxXYWH": [
+        779,
+        852,
+        20,
+        13
+      ],
+      "centroidPx": [
+        788.211,
+        857.632
+      ],
+      "principalAxisDegreesImageXY": 147.717,
+      "pcaMajorScalePx": 23.917,
+      "pcaMinorScalePx": 2.798,
+      "aspectRatio": 8.548,
+      "meanSrgb": [
+        254.26,
+        253.55,
+        247.55
+      ],
+      "meanSignal": 0.98474264,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-005",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 13,
+      "bboxXYWH": [
+        247,
+        615,
+        4,
+        6
+      ],
+      "centroidPx": [
+        248.538,
+        617.462
+      ],
+      "principalAxisDegreesImageXY": 66.187,
+      "pcaMajorScalePx": 6.187,
+      "pcaMinorScalePx": 3.01,
+      "aspectRatio": 2.0555,
+      "meanSrgb": [
+        249.08,
+        254.15,
+        254.0
+      ],
+      "meanSignal": 0.98292893,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-006",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 9,
+      "bboxXYWH": [
+        783,
+        850,
+        7,
+        3
+      ],
+      "centroidPx": [
+        786.333,
+        851.333
+      ],
+      "principalAxisDegreesImageXY": 172.027,
+      "pcaMajorScalePx": 7.608,
+      "pcaMinorScalePx": 2.473,
+      "aspectRatio": 3.0767,
+      "meanSrgb": [
+        254.78,
+        253.89,
+        233.44
+      ],
+      "meanSignal": 0.97941941,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-007",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 6,
+      "bboxXYWH": [
+        772,
+        865,
+        6,
+        4
+      ],
+      "centroidPx": [
+        774.5,
+        866.5
+      ],
+      "principalAxisDegreesImageXY": 151.138,
+      "pcaMajorScalePx": 7.787,
+      "pcaMinorScalePx": 0.839,
+      "aspectRatio": 7.7865,
+      "meanSrgb": [
+        254.33,
+        254.17,
+        244.83
+      ],
+      "meanSignal": 0.98709297,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-008",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 5,
+      "bboxXYWH": [
+        232,
+        620,
+        5,
+        3
+      ],
+      "centroidPx": [
+        234.0,
+        621.2
+      ],
+      "principalAxisDegreesImageXY": -152.877,
+      "pcaMajorScalePx": 6.34,
+      "pcaMinorScalePx": 0.874,
+      "aspectRatio": 6.34,
+      "meanSrgb": [
+        246.8,
+        254.6,
+        254.6
+      ],
+      "meanSignal": 0.98199403,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-009",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 5,
+      "bboxXYWH": [
+        847,
+        810,
+        5,
+        4
+      ],
+      "centroidPx": [
+        849.0,
+        811.6
+      ],
+      "principalAxisDegreesImageXY": 144.462,
+      "pcaMajorScalePx": 6.928,
+      "pcaMinorScalePx": 0.8,
+      "aspectRatio": 6.9282,
+      "meanSrgb": [
+        255.0,
+        253.4,
+        234.6
+      ],
+      "meanSignal": 0.97739142,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-010",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 5,
+      "bboxXYWH": [
+        797,
+        847,
+        5,
+        2
+      ],
+      "centroidPx": [
+        799.0,
+        847.4
+      ],
+      "principalAxisDegreesImageXY": -162.857,
+      "pcaMajorScalePx": 5.913,
+      "pcaMinorScalePx": 0.937,
+      "aspectRatio": 5.9128,
+      "meanSrgb": [
+        255.0,
+        254.2,
+        235.8
+      ],
+      "meanSignal": 0.9831785,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-011",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 4,
+      "bboxXYWH": [
+        256,
+        392,
+        1,
+        4
+      ],
+      "centroidPx": [
+        256.0,
+        393.5
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 4.472,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 4.4721,
+      "meanSrgb": [
+        255.0,
+        254.25,
+        241.0
+      ],
+      "meanSignal": 0.98654836,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-012",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 3,
+      "bboxXYWH": [
+        938,
+        658,
+        1,
+        3
+      ],
+      "centroidPx": [
+        938.0,
+        659.0
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 3.266,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 3.266,
+      "meanSrgb": [
+        255.0,
+        255.0,
+        225.0
+      ],
+      "meanSignal": 0.98216987,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-013",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 3,
+      "bboxXYWH": [
+        937,
+        662,
+        1,
+        3
+      ],
+      "centroidPx": [
+        937.0,
+        663.0
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 3.266,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 3.266,
+      "meanSrgb": [
+        255.0,
+        255.0,
+        228.0
+      ],
+      "meanSignal": 0.98382825,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-014",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        213,
+        588,
+        2,
+        2
+      ],
+      "centroidPx": [
+        213.5,
+        588.5
+      ],
+      "principalAxisDegreesImageXY": 45.0,
+      "pcaMajorScalePx": 2.828,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.8284,
+      "meanSrgb": [
+        254.5,
+        253.5,
+        241.5
+      ],
+      "meanSignal": 0.9811368,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-015",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        247,
+        611,
+        2,
+        2
+      ],
+      "centroidPx": [
+        247.5,
+        611.5
+      ],
+      "principalAxisDegreesImageXY": 45.0,
+      "pcaMajorScalePx": 2.828,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.8284,
+      "meanSrgb": [
+        246.5,
+        254.0,
+        254.0
+      ],
+      "meanSignal": 0.97722888,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-016",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        936,
+        667,
+        1,
+        2
+      ],
+      "centroidPx": [
+        936.0,
+        667.5
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 2.0,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.0,
+      "meanSrgb": [
+        254.5,
+        255.0,
+        233.0
+      ],
+      "meanSignal": 0.98570067,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-017",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        935,
+        670,
+        1,
+        2
+      ],
+      "centroidPx": [
+        935.0,
+        670.5
+      ],
+      "principalAxisDegreesImageXY": 90.0,
+      "pcaMajorScalePx": 2.0,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.0,
+      "meanSrgb": [
+        254.5,
+        254.5,
+        235.0
+      ],
+      "meanSignal": 0.98365557,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-018",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        804,
+        846,
+        2,
+        2
+      ],
+      "centroidPx": [
+        804.5,
+        846.5
+      ],
+      "principalAxisDegreesImageXY": 135.0,
+      "pcaMajorScalePx": 2.828,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.8284,
+      "meanSrgb": [
+        255.0,
+        254.0,
+        234.0
+      ],
+      "meanSignal": 0.98084146,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-019",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        781,
+        849,
+        2,
+        1
+      ],
+      "centroidPx": [
+        781.5,
+        849.0
+      ],
+      "principalAxisDegreesImageXY": 0.0,
+      "pcaMajorScalePx": 2.0,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.0,
+      "meanSrgb": [
+        254.0,
+        254.0,
+        237.5
+      ],
+      "meanSignal": 0.98098528,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-020",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        803,
+        849,
+        2,
+        1
+      ],
+      "centroidPx": [
+        803.5,
+        849.0
+      ],
+      "principalAxisDegreesImageXY": 0.0,
+      "pcaMajorScalePx": 2.0,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.0,
+      "meanSrgb": [
+        254.0,
+        255.0,
+        238.0
+      ],
+      "meanSignal": 0.98763877,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-021",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        793,
+        851,
+        2,
+        1
+      ],
+      "centroidPx": [
+        793.5,
+        851.0
+      ],
+      "principalAxisDegreesImageXY": 0.0,
+      "pcaMajorScalePx": 2.0,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.0,
+      "meanSrgb": [
+        254.0,
+        253.0,
+        238.0
+      ],
+      "meanSignal": 0.97494435,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-HIGHLIGHT-RESIDENT_BACK_GREEN_GOLD-022",
+      "objectType": "LOCAL_HIGHLIGHT_CANDIDATE",
+      "areaPx": 2,
+      "bboxXYWH": [
+        783,
+        854,
+        2,
+        2
+      ],
+      "centroidPx": [
+        783.5,
+        854.5
+      ],
+      "principalAxisDegreesImageXY": 135.0,
+      "pcaMajorScalePx": 2.828,
+      "pcaMinorScalePx": 0.0,
+      "aspectRatio": 2.8284,
+      "meanSrgb": [
+        254.5,
+        254.0,
+        230.5
+      ],
+      "meanSignal": 0.97790718,
+      "evidenceClass": "OBSERVED_RGB_SIGNAL_COMPONENT; may be a highlight fragment of a larger occluded surface",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "confidence": "MEDIUM_FOR_LOCAL_LUMINANCE_PEAK; source of light uncertain"
+    },
+    {
+      "objectId": "REFB-DROP-01",
+      "objectType": "LARGE_DROPLET_CANDIDATE",
+      "areaPx": 1057,
+      "bboxXYWH": [
+        1008,
+        285,
+        35,
+        39
+      ],
+      "centroidPx": [
+        1025.0,
+        304.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT_WITH_INFERRED_DROPLET_ROLE",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-DROP-02",
+      "objectType": "LARGE_DROPLET_CANDIDATE",
+      "areaPx": 903,
+      "bboxXYWH": [
+        927,
+        878,
+        33,
+        35
+      ],
+      "centroidPx": [
+        943.0,
+        895.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT_WITH_INFERRED_DROPLET_ROLE",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-DROP-03",
+      "objectType": "LARGE_DROPLET_CANDIDATE",
+      "areaPx": 795,
+      "bboxXYWH": [
+        676,
+        196,
+        29,
+        35
+      ],
+      "centroidPx": [
+        690.0,
+        213.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT_WITH_INFERRED_DROPLET_ROLE",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-DROP-04",
+      "objectType": "LARGE_DROPLET_CANDIDATE",
+      "areaPx": 531,
+      "bboxXYWH": [
+        153,
+        640,
+        25,
+        27
+      ],
+      "centroidPx": [
+        165.0,
+        653.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT_WITH_INFERRED_DROPLET_ROLE",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-DROP-05",
+      "objectType": "LARGE_DROPLET_CANDIDATE",
+      "areaPx": 379,
+      "bboxXYWH": [
+        843,
+        937,
+        21,
+        23
+      ],
+      "centroidPx": [
+        853.0,
+        948.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT_WITH_INFERRED_DROPLET_ROLE",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-PARTICLE-01",
+      "objectType": "SMALL_PARTICLE_OR_SPECULAR_FRAGMENT",
+      "areaPx": 97,
+      "bboxXYWH": [
+        168,
+        261,
+        11,
+        11
+      ],
+      "centroidPx": [
+        173.0,
+        266.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-PARTICLE-02",
+      "objectType": "SMALL_PARTICLE_OR_SPECULAR_FRAGMENT",
+      "areaPx": 61,
+      "bboxXYWH": [
+        1112,
+        312,
+        9,
+        9
+      ],
+      "centroidPx": [
+        1116.0,
+        316.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-PARTICLE-03",
+      "objectType": "SMALL_PARTICLE_OR_SPECULAR_FRAGMENT",
+      "areaPx": 61,
+      "bboxXYWH": [
+        98,
+        436,
+        9,
+        9
+      ],
+      "centroidPx": [
+        102.0,
+        440.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-PARTICLE-04",
+      "objectType": "SMALL_PARTICLE_OR_SPECULAR_FRAGMENT",
+      "areaPx": 61,
+      "bboxXYWH": [
+        629,
+        1076,
+        9,
+        9
+      ],
+      "centroidPx": [
+        633.0,
+        1080.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-PARTICLE-05",
+      "objectType": "SMALL_PARTICLE_OR_SPECULAR_FRAGMENT",
+      "areaPx": 37,
+      "bboxXYWH": [
+        1055,
+        242,
+        7,
+        7
+      ],
+      "centroidPx": [
+        1058.0,
+        245.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-PARTICLE-06",
+      "objectType": "SMALL_PARTICLE_OR_SPECULAR_FRAGMENT",
+      "areaPx": 37,
+      "bboxXYWH": [
+        1087,
+        400,
+        7,
+        7
+      ],
+      "centroidPx": [
+        1090.0,
+        403.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-PARTICLE-07",
+      "objectType": "SMALL_PARTICLE_OR_SPECULAR_FRAGMENT",
+      "areaPx": 37,
+      "bboxXYWH": [
+        186,
+        550,
+        7,
+        7
+      ],
+      "centroidPx": [
+        189.0,
+        553.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-PARTICLE-08",
+      "objectType": "SMALL_PARTICLE_OR_SPECULAR_FRAGMENT",
+      "areaPx": 37,
+      "bboxXYWH": [
+        1098,
+        935,
+        7,
+        7
+      ],
+      "centroidPx": [
+        1101.0,
+        938.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-PARTICLE-09",
+      "objectType": "SMALL_PARTICLE_OR_SPECULAR_FRAGMENT",
+      "areaPx": 37,
+      "bboxXYWH": [
+        298,
+        999,
+        7,
+        7
+      ],
+      "centroidPx": [
+        301.0,
+        1002.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-PARTICLE-10",
+      "objectType": "SMALL_PARTICLE_OR_SPECULAR_FRAGMENT",
+      "areaPx": 37,
+      "bboxXYWH": [
+        777,
+        1093,
+        7,
+        7
+      ],
+      "centroidPx": [
+        780.0,
+        1096.0
+      ],
+      "evidenceClass": "OBSERVED_MASK_COMPONENT",
+      "confidence": "MEDIUM"
+    },
+    {
+      "objectId": "REFB-BOKEH-01",
+      "objectType": "BACKGROUND_BOKEH_COMPONENT",
+      "areaPx": 9748,
+      "bboxXYWH": [
+        1105,
+        0,
+        135,
+        86
+      ],
+      "centroidPx": [
+        1172.0,
+        37.579
+      ],
+      "evidenceClass": "OBSERVED_FROZEN_MASK_COMPONENT",
+      "confidence": "HIGH_FOR_MASK_COMPONENT"
+    },
+    {
+      "objectId": "REFB-BOKEH-02",
+      "objectType": "BACKGROUND_BOKEH_COMPONENT",
+      "areaPx": 9637,
+      "bboxXYWH": [
+        95,
+        1042,
+        105,
+        117
+      ],
+      "centroidPx": [
+        147.0,
+        1100.0
+      ],
+      "evidenceClass": "OBSERVED_FROZEN_MASK_COMPONENT",
+      "confidence": "HIGH_FOR_MASK_COMPONENT"
+    },
+    {
+      "objectId": "REFB-BOKEH-03",
+      "objectType": "BACKGROUND_BOKEH_COMPONENT",
+      "areaPx": 6915,
+      "bboxXYWH": [
+        1063,
+        1036,
+        99,
+        89
+      ],
+      "centroidPx": [
+        1112.0,
+        1080.0
+      ],
+      "evidenceClass": "OBSERVED_FROZEN_MASK_COMPONENT",
+      "confidence": "HIGH_FOR_MASK_COMPONENT"
+    },
+    {
+      "objectId": "REFB-BOKEH-04",
+      "objectType": "BACKGROUND_BOKEH_COMPONENT",
+      "areaPx": 6137,
+      "bboxXYWH": [
+        25,
+        741,
+        79,
+        99
+      ],
+      "centroidPx": [
+        64.0,
+        790.0
+      ],
+      "evidenceClass": "OBSERVED_FROZEN_MASK_COMPONENT",
+      "confidence": "HIGH_FOR_MASK_COMPONENT"
+    },
+    {
+      "objectId": "REFB-BOKEH-05",
+      "objectType": "BACKGROUND_BOKEH_COMPONENT",
+      "areaPx": 5497,
+      "bboxXYWH": [
+        0,
+        0,
+        76,
+        82
+      ],
+      "centroidPx": [
+        34.306,
+        38.11
+      ],
+      "evidenceClass": "OBSERVED_FROZEN_MASK_COMPONENT",
+      "confidence": "HIGH_FOR_MASK_COMPONENT"
+    },
+    {
+      "objectId": "REFB-BOKEH-06",
+      "objectType": "BACKGROUND_BOKEH_COMPONENT",
+      "areaPx": 5141,
+      "bboxXYWH": [
+        19,
+        292,
+        79,
+        83
+      ],
+      "centroidPx": [
+        58.0,
+        333.0
+      ],
+      "evidenceClass": "OBSERVED_FROZEN_MASK_COMPONENT",
+      "confidence": "HIGH_FOR_MASK_COMPONENT"
+    },
+    {
+      "objectId": "REFB-BOKEH-07",
+      "objectType": "BACKGROUND_BOKEH_COMPONENT",
+      "areaPx": 4999,
+      "bboxXYWH": [
+        743,
+        13,
+        85,
+        75
+      ],
+      "centroidPx": [
+        785.0,
+        50.0
+      ],
+      "evidenceClass": "OBSERVED_FROZEN_MASK_COMPONENT",
+      "confidence": "HIGH_FOR_MASK_COMPONENT"
+    },
+    {
+      "objectId": "REFB-BOKEH-08",
+      "objectType": "BACKGROUND_BOKEH_COMPONENT",
+      "areaPx": 4279,
+      "bboxXYWH": [
+        1136,
+        1161,
+        69,
+        79
+      ],
+      "centroidPx": [
+        1170.0,
+        1200.0
+      ],
+      "evidenceClass": "OBSERVED_FROZEN_MASK_COMPONENT",
+      "confidence": "HIGH_FOR_MASK_COMPONENT"
+    },
+    {
+      "objectId": "REFB-BOKEH-09",
+      "objectType": "BACKGROUND_BOKEH_COMPONENT",
+      "areaPx": 2807,
+      "bboxXYWH": [
+        79,
+        90,
+        63,
+        57
+      ],
+      "centroidPx": [
+        110.0,
+        118.0
+      ],
+      "evidenceClass": "OBSERVED_FROZEN_MASK_COMPONENT",
+      "confidence": "HIGH_FOR_MASK_COMPONENT"
+    },
+    {
+      "objectId": "REFB-BOKEH-10",
+      "objectType": "BACKGROUND_BOKEH_COMPONENT",
+      "areaPx": 2673,
+      "bboxXYWH": [
+        1193,
+        405,
+        51,
+        67
+      ],
+      "centroidPx": [
+        1218.0,
+        438.0
+      ],
+      "evidenceClass": "OBSERVED_FROZEN_MASK_COMPONENT",
+      "confidence": "HIGH_FOR_MASK_COMPONENT"
+    },
+    {
+      "objectId": "REFB-BOKEH-11",
+      "objectType": "BACKGROUND_BOKEH_COMPONENT",
+      "areaPx": 2537,
+      "bboxXYWH": [
+        1142,
+        126,
+        53,
+        61
+      ],
+      "centroidPx": [
+        1168.0,
+        156.0
+      ],
+      "evidenceClass": "OBSERVED_FROZEN_MASK_COMPONENT",
+      "confidence": "HIGH_FOR_MASK_COMPONENT"
+    },
+    {
+      "objectId": "REFB-BOKEH-12",
+      "objectType": "BACKGROUND_BOKEH_COMPONENT",
+      "areaPx": 1449,
+      "bboxXYWH": [
+        498,
+        34,
+        45,
+        41
+      ],
+      "centroidPx": [
+        520.0,
+        54.0
+      ],
+      "evidenceClass": "OBSERVED_FROZEN_MASK_COMPONENT",
+      "confidence": "HIGH_FOR_MASK_COMPONENT"
+    },
+    {
+      "objectId": "REFB-C01",
+      "objectType": "FROZEN_RESIDENT_IDENTITY",
+      "evidenceClass": "DECLARED_BY_FROZEN_P0_3_CONTRACT; still image does not reveal unique trajectory/period",
+      "count": 1,
+      "confidence": "HIGH_GROUP_MATCH; exact surface decomposition remains unresolved",
+      "depthRole": "FRONT",
+      "periodMs": 4400,
+      "candidateGroups": [
+        "RESIDENT_FRONT_CYAN"
+      ]
+    },
+    {
+      "objectId": "REFB-G01",
+      "objectType": "FROZEN_RESIDENT_IDENTITY",
+      "evidenceClass": "DECLARED_BY_FROZEN_P0_3_CONTRACT; still image does not reveal unique trajectory/period",
+      "count": 1,
+      "confidence": "LOW_IDENTITY_GEOMETRY; aggregate mask cannot isolate G01",
+      "depthRole": "BACK",
+      "periodMs": 6100,
+      "candidateGroups": [
+        "RESIDENT_BACK_GREEN_GOLD"
+      ]
+    },
+    {
+      "objectId": "REFB-G02",
+      "objectType": "FROZEN_RESIDENT_IDENTITY",
+      "evidenceClass": "DECLARED_BY_FROZEN_P0_3_CONTRACT; still image does not reveal unique trajectory/period",
+      "count": 1,
+      "confidence": "LOW_IDENTITY_GEOMETRY; front green identity has no dedicated frozen mask",
+      "depthRole": "FRONT",
+      "periodMs": 5300,
+      "candidateGroups": [
+        "RESIDENT_BACK_GREEN_GOLD"
+      ]
+    },
+    {
+      "objectId": "REFB-A01",
+      "objectType": "FROZEN_RESIDENT_IDENTITY",
+      "evidenceClass": "DECLARED_BY_FROZEN_P0_3_CONTRACT; still image does not reveal unique trajectory/period",
+      "count": 1,
+      "confidence": "LOW_IDENTITY_GEOMETRY; back gold identity shares an aggregate green/gold mask",
+      "depthRole": "BACK",
+      "periodMs": 3700,
+      "candidateGroups": [
+        "RESIDENT_BACK_GREEN_GOLD"
+      ]
+    },
+    {
+      "objectId": "REFB-A02",
+      "objectType": "FROZEN_RESIDENT_IDENTITY",
+      "evidenceClass": "DECLARED_BY_FROZEN_P0_3_CONTRACT; still image does not reveal unique trajectory/period",
+      "count": 1,
+      "confidence": "MEDIUM_GROUP_MATCH; two recorded path traces may be internal strands of one identity",
+      "depthRole": "FRONT",
+      "periodMs": 2900,
+      "candidateGroups": [
+        "RESIDENT_FRONT_GOLD"
+      ]
+    },
+    {
+      "objectId": "RESIDENT_FRONT_CYAN-TRACE-01",
+      "objectType": "VISIBLE_TRACE_SEGMENT",
+      "evidenceClass": "OBSERVED_FROZEN_P0_3_CENTERLINE_ANNOTATION",
+      "count": 1,
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "annotatedWidthPx": 30,
+      "measuredSignalWidth": {
+        "scoreDefinition": "(linearG + linearB)/2 - linearR",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": -0.0740389,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.958904,
+        "crossSectionWidthPx": {
+          "p10": 5.0,
+          "p25": 7.5,
+          "p50": 15.0,
+          "p75": 28.0,
+          "p90": 29.0
+        },
+        "usableCrossSectionCount": 71,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      },
+      "traceLengthPx": 1117.677,
+      "confidence": "HIGH_FOR_PIXEL_TRACE; 3D depth and grouping are inferred"
+    },
+    {
+      "objectId": "RESIDENT_FRONT_GOLD-TRACE-01",
+      "objectType": "VISIBLE_TRACE_SEGMENT",
+      "evidenceClass": "OBSERVED_FROZEN_P0_3_CENTERLINE_ANNOTATION",
+      "count": 1,
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "annotatedWidthPx": 15,
+      "measuredSignalWidth": {
+        "scoreDefinition": "(linearR + linearG)/2 - linearB",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": 0.166585,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.57971,
+        "crossSectionWidthPx": {
+          "p10": 3.9,
+          "p25": 5.0,
+          "p50": 8.0,
+          "p75": 12.5,
+          "p90": 15.0
+        },
+        "usableCrossSectionCount": 40,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      },
+      "traceLengthPx": 1062.823,
+      "confidence": "HIGH_FOR_PIXEL_TRACE; 3D depth and grouping are inferred"
+    },
+    {
+      "objectId": "RESIDENT_FRONT_GOLD-TRACE-02",
+      "objectType": "VISIBLE_TRACE_SEGMENT",
+      "evidenceClass": "OBSERVED_FROZEN_P0_3_CENTERLINE_ANNOTATION",
+      "count": 1,
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "annotatedWidthPx": 13,
+      "measuredSignalWidth": {
+        "scoreDefinition": "(linearR + linearG)/2 - linearB",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": 0.166585,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.25,
+        "crossSectionWidthPx": {
+          "p10": 2.4,
+          "p25": 3.5,
+          "p50": 7.0,
+          "p75": 11.0,
+          "p90": 12.6
+        },
+        "usableCrossSectionCount": 15,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      },
+      "traceLengthPx": 864.129,
+      "confidence": "HIGH_FOR_PIXEL_TRACE; 3D depth and grouping are inferred"
+    },
+    {
+      "objectId": "RESIDENT_BACK_GREEN_GOLD-TRACE-01",
+      "objectType": "VISIBLE_TRACE_SEGMENT",
+      "evidenceClass": "OBSERVED_FROZEN_P0_3_CENTERLINE_ANNOTATION",
+      "count": 1,
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "annotatedWidthPx": 42,
+      "measuredSignalWidth": {
+        "scoreDefinition": "linearG - (linearR + linearB)/2",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": 0.0654247,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.27907,
+        "crossSectionWidthPx": {
+          "p10": 5.5,
+          "p25": 7.5,
+          "p50": 14.0,
+          "p75": 15.0,
+          "p90": 16.5
+        },
+        "usableCrossSectionCount": 16,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      },
+      "traceLengthPx": 677.448,
+      "confidence": "HIGH_FOR_PIXEL_TRACE; 3D depth and grouping are inferred"
+    },
+    {
+      "objectId": "RESIDENT_BACK_GREEN_GOLD-TRACE-02",
+      "objectType": "VISIBLE_TRACE_SEGMENT",
+      "evidenceClass": "OBSERVED_FROZEN_P0_3_CENTERLINE_ANNOTATION",
+      "count": 1,
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "annotatedWidthPx": 48,
+      "measuredSignalWidth": {
+        "scoreDefinition": "linearG - (linearR + linearB)/2",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": 0.0654247,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.564103,
+        "crossSectionWidthPx": {
+          "p10": 3.0,
+          "p25": 6.5,
+          "p50": 16.0,
+          "p75": 21.0,
+          "p90": 32.6
+        },
+        "usableCrossSectionCount": 35,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      },
+      "traceLengthPx": 604.386,
+      "confidence": "HIGH_FOR_PIXEL_TRACE; 3D depth and grouping are inferred"
+    },
+    {
+      "objectId": "RESIDENT_BACK_GREEN_GOLD-TRACE-03",
+      "objectType": "VISIBLE_TRACE_SEGMENT",
+      "evidenceClass": "OBSERVED_FROZEN_P0_3_CENTERLINE_ANNOTATION",
+      "count": 1,
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "annotatedWidthPx": 44,
+      "measuredSignalWidth": {
+        "scoreDefinition": "linearG - (linearR + linearB)/2",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": 0.0654247,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.351351,
+        "crossSectionWidthPx": {
+          "p10": 2.0,
+          "p25": 3.0,
+          "p50": 8.0,
+          "p75": 12.0,
+          "p90": 21.4
+        },
+        "usableCrossSectionCount": 27,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      },
+      "traceLengthPx": 576.308,
+      "confidence": "HIGH_FOR_PIXEL_TRACE; 3D depth and grouping are inferred"
+    },
+    {
+      "objectId": "RESIDENT_BACK_GREEN_GOLD-TRACE-04",
+      "objectType": "VISIBLE_TRACE_SEGMENT",
+      "evidenceClass": "OBSERVED_FROZEN_P0_3_CENTERLINE_ANNOTATION",
+      "count": 1,
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "annotatedWidthPx": 43,
+      "measuredSignalWidth": {
+        "scoreDefinition": "linearG - (linearR + linearB)/2",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": 0.0654247,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.421053,
+        "crossSectionWidthPx": {
+          "p10": 2.0,
+          "p25": 3.0,
+          "p50": 7.5,
+          "p75": 16.25,
+          "p90": 30.9
+        },
+        "usableCrossSectionCount": 24,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      },
+      "traceLengthPx": 577.773,
+      "confidence": "HIGH_FOR_PIXEL_TRACE; 3D depth and grouping are inferred"
+    }
+  ]
+}

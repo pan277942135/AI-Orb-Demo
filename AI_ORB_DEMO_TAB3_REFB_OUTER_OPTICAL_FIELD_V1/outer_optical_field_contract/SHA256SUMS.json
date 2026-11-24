@@ -1,0 +1,10 @@
+{
+  "OUTER_OPTICAL_FIELD_CONTRACT_V1.json": {
+    "sha256": "9592638cdc18148f1b61157969b60c993c901f5f93ba5fc58d703cbc6f2655fc",
+    "bytes": 380215
+  },
+  "OUTER_OPTICAL_FIELD_CONTRACT_V1.schema.json": {
+    "sha256": "27e8ee615c98c86e7017923035edbd75396e693299605b2882c9fe360c06d6c9",
+    "bytes": 1493
+  }
+}

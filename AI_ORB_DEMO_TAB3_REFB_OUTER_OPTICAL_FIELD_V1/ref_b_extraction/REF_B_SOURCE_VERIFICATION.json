@@ -1,0 +1,66 @@
+{
+  "schema": "REF_B_SOURCE_VERIFICATION_1_0",
+  "result": "PASS",
+  "refB": {
+    "path": "docs/p0_3/references/REF_B_FULL_SCENE_RGB.png",
+    "sha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
+    "expectedSha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGB",
+    "pngInfoKeys": [],
+    "iccProfilePresent": false,
+    "gammaChunk": null,
+    "pixelArraySHA256": "0dabdd508d79d6166ad1b3d17190327c14b6b2ac270b1644be73d6bca49d2b11",
+    "contractMetadata": {
+      "id": "REF_B",
+      "file": "references/REF_B_FULL_SCENE_RGB.png",
+      "original_filename": "翡翠星光中的流光水晶球.png",
+      "sha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
+      "width": 1254,
+      "height": 1254,
+      "color_mode": "RGB",
+      "color_space": "sRGB",
+      "alpha": {
+        "present": false
+      },
+      "usage": "Render FULL_SCENE at the frozen square composition; compare full frame without auto-cropping or geometric warping."
+    }
+  },
+  "p0_3Contract": {
+    "path": "docs/p0_3/contract/AI_ORB_P0_3_ACCEPTANCE_CONTRACT_V1.json",
+    "sha256": "aa0729887570db4a0da0d3fb7a629a1a7273666ba0c7ab129b60d70bfdee9170",
+    "expectedSha256": "aa0729887570db4a0da0d3fb7a629a1a7273666ba0c7ab129b60d70bfdee9170",
+    "status": "FROZEN"
+  },
+  "uploadedContractArchive": {
+    "path": "/workspace/attachments/8595e0fa-cc9f-44e1-8d2d-2835da5f0a48/AI_ORB_P0_3_ACCEPTANCE_CONTRACT_V1.zip",
+    "sha256": "9e4d1b3230c9404814d6f23974371f33c4c9fc770788472070108ce6ea95f3b0",
+    "expectedSha256": "9e4d1b3230c9404814d6f23974371f33c4c9fc770788472070108ce6ea95f3b0",
+    "containsContractAndREF_B": true,
+    "containsDerivedMaskCount": 1,
+    "note": "archive carries the frozen source contract, both reference PNGs, and REF_A alpha seed; all 12 derived masks are sourced from the checked-in frozen ROI manifest and validated by its exact hashes"
+  },
+  "maskFreeze": {
+    "manifestSha256": "e05b630b734204105d752dda3fe61cb34a8c9ed4d2bee08f5dc41d460b3b092f",
+    "contractSha256": "aa0729887570db4a0da0d3fb7a629a1a7273666ba0c7ab129b60d70bfdee9170",
+    "referenceSha256": {
+      "REF_A": "2773e4628ff6132605314693742488542c3e70fd04b581d8825dd13cea0067ee",
+      "REF_B": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122"
+    },
+    "regionCount": 13,
+    "maskCount": 12,
+    "allMasksMatchFrozenManifest": true,
+    "overlapPixels": {
+      "EMERALD_FOLD__SAPPHIRE_VALLEY": 2408,
+      "EMERALD_FOLD__AQUA_LIQUID": 28529,
+      "SAPPHIRE_VALLEY__AQUA_LIQUID": 1360
+    }
+  },
+  "immutableInputs": [
+    "docs/p0_3/references/REF_B_FULL_SCENE_RGB.png",
+    "docs/p0_3/contract/AI_ORB_P0_3_ACCEPTANCE_CONTRACT_V1.json",
+    "docs/p0_3/ROI_MASK_FREEZE_MANIFEST.json",
+    "docs/p0_3/roi_masks/*.png"
+  ]
+}

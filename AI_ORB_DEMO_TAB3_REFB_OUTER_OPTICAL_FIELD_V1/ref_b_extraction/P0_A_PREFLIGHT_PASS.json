@@ -1,0 +1,110 @@
+{
+  "schema": "AI_ORB_TAB3_P0_A_EXTRACTION_PREFLIGHT_1_0",
+  "status": "PASS",
+  "reviewScope": "independent second-pass input, schema, hash, count, coordinate, and rendered-overlay artifact validation",
+  "checks": {
+    "REF_B_SOURCE_IDENTITY": {
+      "status": "PASS",
+      "sha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGB"
+    },
+    "FROZEN_13_ROI_12_MASKS": {
+      "status": "PASS",
+      "roiCount": 13,
+      "maskCount": 12,
+      "maskIds": [
+        "AQUA_LIQUID",
+        "BACKGROUND_BOKEH",
+        "CORE_SILHOUETTE",
+        "DROPLETS_AND_PARTICLES",
+        "EMBEDDED_CRYSTAL_LENS",
+        "EMERALD_FOLD",
+        "GOLD_CAUSTIC_HIGHLIGHTS",
+        "OUTER_GLASS_RIM",
+        "RESIDENT_BACK_GREEN_GOLD",
+        "RESIDENT_FRONT_CYAN",
+        "RESIDENT_FRONT_GOLD",
+        "SAPPHIRE_VALLEY"
+      ],
+      "manifestFrozen": true
+    },
+    "NEW_OUTER_CONTRACT_SCHEMA": {
+      "status": "PASS",
+      "schema": "OUTER_OPTICAL_FIELD_CONTRACT_V1.schema.json",
+      "regionReferences": 13,
+      "structureEntries": 250
+    },
+    "STRUCTURE_GEOMETRY_COLOR_DEPTH": {
+      "status": "PASS",
+      "inventoryRecords": 250,
+      "residentIds": 5,
+      "traceSegments": 7,
+      "projectedCrossingNodes": 7,
+      "dropletCandidates": 5,
+      "particleComponents": 10,
+      "bokehComponents": 12,
+      "depthInferenceCaveats": 3
+    },
+    "VISUALIZATIONS": {
+      "status": "PASS",
+      "images": {
+        "REF_B_VISUAL_DENSITY_MAP.png": {
+          "status": "PASS",
+          "size": [
+            1254,
+            1254
+          ],
+          "sha256": "6463c595ca6235cbf9840b29fa94c524ac5e4f8565ed72579b7db3e5be45b624"
+        },
+        "REF_B_GEOMETRY_OVERLAY.png": {
+          "status": "PASS",
+          "size": [
+            1254,
+            1254
+          ],
+          "sha256": "b92e489665284e76984517d3ff7ec0c3a2b743efe558463d71659658f50eeb3c"
+        },
+        "REF_B_COLOR_DISTRIBUTION.png": {
+          "status": "PASS",
+          "size": [
+            1100,
+            606
+          ],
+          "sha256": "9ed6712f322afec3df3524a7bbc69037d381f25d2d2db477c8e710d8e3c4e325"
+        },
+        "REF_B_STRUCTURE_ATLAS.png": {
+          "status": "PASS",
+          "size": [
+            1128,
+            620
+          ],
+          "sha256": "0bda42a6743aa8bd3cfe541dee8080a3981b51cb034a3d3a70ad8589ed072414"
+        }
+      },
+      "fullResolutionAlignedOverlays": true
+    },
+    "PIXEL_COORDINATE_SELF_CHECK": {
+      "status": "PASS",
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "tracePointCount": 82,
+      "allTraceCoordinatesInBounds": true
+    },
+    "IMMUTABLE_INPUTS_RECHECK": {
+      "status": "PASS",
+      "refBSha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
+      "p0ContractSha256": "aa0729887570db4a0da0d3fb7a629a1a7273666ba0c7ab129b60d70bfdee9170",
+      "all12MaskFilesVerified": true
+    }
+  },
+  "limitations": [
+    "REF_B is one static RGB frame, so physical depth, exact transparent surface boundaries, and temporal flow are not uniquely observable.",
+    "The frozen three resident masks aggregate five contract identities; G01/G02/A01 cannot be separated with identity-level certainty from these masks."
+  ]
+}

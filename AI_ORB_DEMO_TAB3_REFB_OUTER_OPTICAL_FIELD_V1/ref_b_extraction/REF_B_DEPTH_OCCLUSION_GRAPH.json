@@ -1,0 +1,201 @@
+{
+  "sourceImageIsSingleStaticRGB": true,
+  "nodes": [
+    {
+      "id": "RESIDENT_FRONT_CYAN",
+      "nodeType": "FROZEN_SEMANTIC_GROUP",
+      "depth": "front-associated; group match to C01 is high confidence"
+    },
+    {
+      "id": "RESIDENT_FRONT_GOLD",
+      "nodeType": "FROZEN_SEMANTIC_GROUP",
+      "depth": "front-associated; group match to A02 is medium confidence"
+    },
+    {
+      "id": "RESIDENT_BACK_GREEN_GOLD",
+      "nodeType": "AGGREGATE_FROZEN_SEMANTIC_GROUP",
+      "depth": "mixed/ambiguous; P0-3 identity roles include both FRONT and BACK"
+    },
+    {
+      "id": "C01",
+      "nodeType": "CONTRACT_RESIDENT_IDENTITY",
+      "depthRole": "FRONT",
+      "confidence": "HIGH_GROUP_MATCH; exact surface decomposition remains unresolved"
+    },
+    {
+      "id": "G01",
+      "nodeType": "CONTRACT_RESIDENT_IDENTITY",
+      "depthRole": "BACK",
+      "confidence": "LOW_IDENTITY_GEOMETRY; aggregate mask cannot isolate G01"
+    },
+    {
+      "id": "G02",
+      "nodeType": "CONTRACT_RESIDENT_IDENTITY",
+      "depthRole": "FRONT",
+      "confidence": "LOW_IDENTITY_GEOMETRY; front green identity has no dedicated frozen mask"
+    },
+    {
+      "id": "A01",
+      "nodeType": "CONTRACT_RESIDENT_IDENTITY",
+      "depthRole": "BACK",
+      "confidence": "LOW_IDENTITY_GEOMETRY; back gold identity shares an aggregate green/gold mask"
+    },
+    {
+      "id": "A02",
+      "nodeType": "CONTRACT_RESIDENT_IDENTITY",
+      "depthRole": "FRONT",
+      "confidence": "MEDIUM_GROUP_MATCH; two recorded path traces may be internal strands of one identity"
+    },
+    {
+      "id": "OVERLAP-01",
+      "nodeType": "OBSERVED_MASK_OVERLAP_NODE",
+      "pointPx": [
+        536.8762,
+        690.7889
+      ]
+    },
+    {
+      "id": "OVERLAP-02",
+      "nodeType": "OBSERVED_MASK_OVERLAP_NODE",
+      "pointPx": [
+        698.5915,
+        535.8808
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "RESIDENT_FRONT_CYAN",
+      "to": "RESIDENT_BACK_GREEN_GOLD",
+      "relation": "OBSERVED_PROJECTED_MASK_OVERLAP",
+      "overlapPixels": 3240,
+      "depthOrder": "UNKNOWN_AT_GROUP_LEVEL"
+    },
+    {
+      "from": "RESIDENT_FRONT_GOLD",
+      "to": "RESIDENT_BACK_GREEN_GOLD",
+      "relation": "OBSERVED_PROJECTED_MASK_OVERLAP",
+      "overlapPixels": 2475,
+      "depthOrder": "UNKNOWN_AT_GROUP_LEVEL"
+    },
+    {
+      "from": "G01",
+      "to": "C01",
+      "relation": "INFERRED_CONTRACT_DEPTH_ORDER",
+      "evidence": "P0-3 declared depth_role",
+      "pixelIntersectionAtIdentityLevel": "UNKNOWN"
+    },
+    {
+      "from": "G01",
+      "to": "G02",
+      "relation": "INFERRED_CONTRACT_DEPTH_ORDER",
+      "evidence": "P0-3 declared depth_role",
+      "pixelIntersectionAtIdentityLevel": "UNKNOWN"
+    },
+    {
+      "from": "G01",
+      "to": "A02",
+      "relation": "INFERRED_CONTRACT_DEPTH_ORDER",
+      "evidence": "P0-3 declared depth_role",
+      "pixelIntersectionAtIdentityLevel": "UNKNOWN"
+    },
+    {
+      "from": "A01",
+      "to": "C01",
+      "relation": "INFERRED_CONTRACT_DEPTH_ORDER",
+      "evidence": "P0-3 declared depth_role",
+      "pixelIntersectionAtIdentityLevel": "UNKNOWN"
+    },
+    {
+      "from": "A01",
+      "to": "G02",
+      "relation": "INFERRED_CONTRACT_DEPTH_ORDER",
+      "evidence": "P0-3 declared depth_role",
+      "pixelIntersectionAtIdentityLevel": "UNKNOWN"
+    },
+    {
+      "from": "A01",
+      "to": "A02",
+      "relation": "INFERRED_CONTRACT_DEPTH_ORDER",
+      "evidence": "P0-3 declared depth_role",
+      "pixelIntersectionAtIdentityLevel": "UNKNOWN"
+    }
+  ],
+  "observed": {
+    "projectedMaskOverlaps": [
+      {
+        "sourceObject": "RESIDENT_FRONT_CYAN",
+        "targetObject": "RESIDENT_BACK_GREEN_GOLD",
+        "overlapPixels": 3240,
+        "overlapCentroidPx": [
+          536.8762,
+          690.7889
+        ],
+        "projectedRelation": "MASK_OVERLAP",
+        "depthRelation": "INFERRED_FROM_FROZEN_DEPTH_ROLE_ONLY; aggregate ROI cannot attribute individual crossing order"
+      },
+      {
+        "sourceObject": "RESIDENT_FRONT_GOLD",
+        "targetObject": "RESIDENT_BACK_GREEN_GOLD",
+        "overlapPixels": 2475,
+        "overlapCentroidPx": [
+          698.5915,
+          535.8808
+        ],
+        "projectedRelation": "MASK_OVERLAP",
+        "depthRelation": "INFERRED_FROM_FROZEN_DEPTH_ROLE_ONLY; aggregate ROI cannot attribute individual crossing order"
+      },
+      {
+        "sourceObject": "RESIDENT_FRONT_CYAN",
+        "targetObject": "RESIDENT_FRONT_GOLD",
+        "overlapPixels": 0,
+        "overlapCentroidPx": null,
+        "projectedRelation": "NO_MASK_OVERLAP",
+        "depthRelation": "INFERRED_FROM_FROZEN_DEPTH_ROLE_ONLY; aggregate ROI cannot attribute individual crossing order"
+      }
+    ],
+    "annotatedTraceSegments": [
+      "RESIDENT_FRONT_CYAN-TRACE-01",
+      "RESIDENT_FRONT_GOLD-TRACE-01",
+      "RESIDENT_FRONT_GOLD-TRACE-02",
+      "RESIDENT_BACK_GREEN_GOLD-TRACE-01",
+      "RESIDENT_BACK_GREEN_GOLD-TRACE-02",
+      "RESIDENT_BACK_GREEN_GOLD-TRACE-03",
+      "RESIDENT_BACK_GREEN_GOLD-TRACE-04"
+    ]
+  },
+  "inferred": {
+    "residentIdentityDepthRoles": [
+      {
+        "id": "C01",
+        "role": "FRONT",
+        "source": "P0-3 technical_baseline.motion.resident_identity_and_motion"
+      },
+      {
+        "id": "G01",
+        "role": "BACK",
+        "source": "P0-3 technical_baseline.motion.resident_identity_and_motion"
+      },
+      {
+        "id": "G02",
+        "role": "FRONT",
+        "source": "P0-3 technical_baseline.motion.resident_identity_and_motion"
+      },
+      {
+        "id": "A01",
+        "role": "BACK",
+        "source": "P0-3 technical_baseline.motion.resident_identity_and_motion"
+      },
+      {
+        "id": "A02",
+        "role": "FRONT",
+        "source": "P0-3 technical_baseline.motion.resident_identity_and_motion"
+      }
+    ]
+  },
+  "uncertain": [
+    "The static PNG cannot uniquely recover metric Z, surface thickness, refraction path, or which aggregate mask pixels belong to G01 versus G02 versus A01.",
+    "A projected overlap does not itself prove which surface is in front; the front/back roles are taken from the frozen contract, not inferred from RGB alone.",
+    "Flow direction, phase, deformation, and temporal speed cannot be measured from a single still; periods and core rotation are contract inputs only."
+  ]
+}

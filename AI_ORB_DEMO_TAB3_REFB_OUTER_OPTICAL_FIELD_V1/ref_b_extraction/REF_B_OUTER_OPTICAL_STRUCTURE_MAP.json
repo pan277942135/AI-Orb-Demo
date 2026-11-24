@@ -1,0 +1,2088 @@
+{
+  "schema": "REF_B_OUTER_OPTICAL_STRUCTURE_MAP_1_0",
+  "sourceRefBSha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
+  "canvas": {
+    "width": 1254,
+    "height": 1254,
+    "origin": "top_left",
+    "normalizedRange": "[0,1] per axis"
+  },
+  "coreComposition": {
+    "source": "frozen P0-3 camera_and_composition target",
+    "targetDiameterRatio": 0.51994,
+    "targetDiameterPx": 652.005,
+    "evidenceClass": "CONTRACT_TARGET; not re-measured by an independent core segmentation mask"
+  },
+  "regions": {
+    "RESIDENT_FRONT_CYAN": {
+      "maskFile": "docs/p0_3/roi_masks/REF_B_RESIDENT_FRONT_CYAN.png",
+      "maskSha256": "5debbbb887fba96df20287fa83b95cdb4d4ec85a1ae31f0ee7e25cff6f0e777e",
+      "maskPixels": 33755,
+      "areaRatioOfCanvas": 0.0214656,
+      "bboxXYWH": [
+        75,
+        447,
+        1045,
+        400
+      ],
+      "bboxNormalizedXYWH": [
+        0.059809,
+        0.356459,
+        0.833333,
+        0.318979
+      ],
+      "centroidPx": [
+        586.3028,
+        696.457
+      ],
+      "centroidNormalized": [
+        0.467546,
+        0.555388
+      ],
+      "rowCoverageWidthPx": {
+        "p10": 0.0,
+        "p50": 0.0,
+        "p90": 72.0
+      },
+      "edgeGradientLinearLuma": {
+        "p50": 0.027231,
+        "p75": 0.084031,
+        "p90": 0.173484,
+        "p95": 0.240604,
+        "p99": 0.370242
+      },
+      "localContrastLinearLuma": {
+        "p50": 0.088798,
+        "p75": 0.148218,
+        "p90": 0.239645,
+        "p95": 0.333235,
+        "p99": 0.525717
+      },
+      "connectedComponents8": {
+        "componentCount": 1,
+        "components": [
+          {
+            "areaPx": 33755,
+            "bboxXYWH": [
+              75,
+              447,
+              1045,
+              400
+            ],
+            "centroidPx": [
+              586.303,
+              696.457
+            ]
+          }
+        ]
+      },
+      "geometryInterpretation": "frozen semantic annotation envelope; not a physically segmented transparent surface boundary"
+    },
+    "RESIDENT_FRONT_GOLD": {
+      "maskFile": "docs/p0_3/roi_masks/REF_B_RESIDENT_FRONT_GOLD.png",
+      "maskSha256": "94897a93e78517db875eb802030b7a8dd2375f6f296674ba173b13707f6970de",
+      "maskPixels": 26987,
+      "areaRatioOfCanvas": 0.01716167,
+      "bboxXYWH": [
+        211,
+        215,
+        877,
+        520
+      ],
+      "bboxNormalizedXYWH": [
+        0.168262,
+        0.171451,
+        0.699362,
+        0.414673
+      ],
+      "centroidPx": [
+        653.9701,
+        447.9965
+      ],
+      "centroidNormalized": [
+        0.521507,
+        0.357254
+      ],
+      "rowCoverageWidthPx": {
+        "p10": 0.0,
+        "p50": 0.0,
+        "p90": 50.0
+      },
+      "edgeGradientLinearLuma": {
+        "p50": 0.020125,
+        "p75": 0.053372,
+        "p90": 0.120472,
+        "p95": 0.205461,
+        "p99": 0.365516
+      },
+      "localContrastLinearLuma": {
+        "p50": 0.075355,
+        "p75": 0.142896,
+        "p90": 0.232494,
+        "p95": 0.300646,
+        "p99": 0.444788
+      },
+      "connectedComponents8": {
+        "componentCount": 2,
+        "components": [
+          {
+            "areaPx": 16059,
+            "bboxXYWH": [
+              211,
+              215,
+              877,
+              457
+            ],
+            "centroidPx": [
+              674.481,
+              369.133
+            ]
+          },
+          {
+            "areaPx": 10928,
+            "bboxXYWH": [
+              246,
+              344,
+              762,
+              391
+            ],
+            "centroidPx": [
+              623.829,
+              563.889
+            ]
+          }
+        ]
+      },
+      "geometryInterpretation": "frozen semantic annotation envelope; not a physically segmented transparent surface boundary"
+    },
+    "RESIDENT_BACK_GREEN_GOLD": {
+      "maskFile": "docs/p0_3/roi_masks/REF_B_RESIDENT_BACK_GREEN_GOLD.png",
+      "maskSha256": "2dd38c84caac6849c05b0b18a04df4a928ccd06a04b5e4d416fe441d14aa701a",
+      "maskPixels": 108841,
+      "areaRatioOfCanvas": 0.06921456,
+      "bboxXYWH": [
+        188,
+        107,
+        857,
+        857
+      ],
+      "bboxNormalizedXYWH": [
+        0.14992,
+        0.085327,
+        0.683413,
+        0.683413
+      ],
+      "centroidPx": [
+        621.5815,
+        530.49
+      ],
+      "centroidNormalized": [
+        0.495679,
+        0.423038
+      ],
+      "rowCoverageWidthPx": {
+        "p10": 0.0,
+        "p50": 96.0,
+        "p90": 171.7
+      },
+      "edgeGradientLinearLuma": {
+        "p50": 0.003654,
+        "p75": 0.015605,
+        "p90": 0.053724,
+        "p95": 0.105703,
+        "p99": 0.315063
+      },
+      "localContrastLinearLuma": {
+        "p50": 0.024565,
+        "p75": 0.068627,
+        "p90": 0.141213,
+        "p95": 0.208846,
+        "p99": 0.377522
+      },
+      "connectedComponents8": {
+        "componentCount": 1,
+        "components": [
+          {
+            "areaPx": 108841,
+            "bboxXYWH": [
+              188,
+              107,
+              857,
+              857
+            ],
+            "centroidPx": [
+              621.582,
+              530.49
+            ]
+          }
+        ]
+      },
+      "geometryInterpretation": "frozen semantic annotation envelope; not a physically segmented transparent surface boundary"
+    },
+    "BACKGROUND_BOKEH": {
+      "maskFile": "docs/p0_3/roi_masks/REF_B_BACKGROUND_BOKEH.png",
+      "maskSha256": "6768e9669dea0b7c113fe0023f41f2e462efb75b22750b938c10d952695a4476",
+      "maskPixels": 61819,
+      "areaRatioOfCanvas": 0.03931216,
+      "bboxXYWH": [
+        0,
+        0,
+        1244,
+        1240
+      ],
+      "bboxNormalizedXYWH": [
+        0.0,
+        0.0,
+        0.992026,
+        0.988836
+      ],
+      "centroidPx": [
+        608.5851,
+        526.7905
+      ],
+      "centroidNormalized": [
+        0.485315,
+        0.420088
+      ],
+      "rowCoverageWidthPx": {
+        "p10": 0.0,
+        "p50": 13.0,
+        "p90": 172.0
+      },
+      "edgeGradientLinearLuma": {
+        "p50": 0.000348,
+        "p75": 0.000538,
+        "p90": 0.000809,
+        "p95": 0.00108,
+        "p99": 0.001655
+      },
+      "localContrastLinearLuma": {
+        "p50": 0.000428,
+        "p75": 0.000827,
+        "p90": 0.001583,
+        "p95": 0.002309,
+        "p99": 0.00398
+      },
+      "connectedComponents8": {
+        "componentCount": 12,
+        "components": [
+          {
+            "areaPx": 9748,
+            "bboxXYWH": [
+              1105,
+              0,
+              135,
+              86
+            ],
+            "centroidPx": [
+              1172.0,
+              37.579
+            ]
+          },
+          {
+            "areaPx": 9637,
+            "bboxXYWH": [
+              95,
+              1042,
+              105,
+              117
+            ],
+            "centroidPx": [
+              147.0,
+              1100.0
+            ]
+          },
+          {
+            "areaPx": 6915,
+            "bboxXYWH": [
+              1063,
+              1036,
+              99,
+              89
+            ],
+            "centroidPx": [
+              1112.0,
+              1080.0
+            ]
+          },
+          {
+            "areaPx": 6137,
+            "bboxXYWH": [
+              25,
+              741,
+              79,
+              99
+            ],
+            "centroidPx": [
+              64.0,
+              790.0
+            ]
+          },
+          {
+            "areaPx": 5497,
+            "bboxXYWH": [
+              0,
+              0,
+              76,
+              82
+            ],
+            "centroidPx": [
+              34.306,
+              38.11
+            ]
+          },
+          {
+            "areaPx": 5141,
+            "bboxXYWH": [
+              19,
+              292,
+              79,
+              83
+            ],
+            "centroidPx": [
+              58.0,
+              333.0
+            ]
+          },
+          {
+            "areaPx": 4999,
+            "bboxXYWH": [
+              743,
+              13,
+              85,
+              75
+            ],
+            "centroidPx": [
+              785.0,
+              50.0
+            ]
+          },
+          {
+            "areaPx": 4279,
+            "bboxXYWH": [
+              1136,
+              1161,
+              69,
+              79
+            ],
+            "centroidPx": [
+              1170.0,
+              1200.0
+            ]
+          },
+          {
+            "areaPx": 2807,
+            "bboxXYWH": [
+              79,
+              90,
+              63,
+              57
+            ],
+            "centroidPx": [
+              110.0,
+              118.0
+            ]
+          },
+          {
+            "areaPx": 2673,
+            "bboxXYWH": [
+              1193,
+              405,
+              51,
+              67
+            ],
+            "centroidPx": [
+              1218.0,
+              438.0
+            ]
+          },
+          {
+            "areaPx": 2537,
+            "bboxXYWH": [
+              1142,
+              126,
+              53,
+              61
+            ],
+            "centroidPx": [
+              1168.0,
+              156.0
+            ]
+          },
+          {
+            "areaPx": 1449,
+            "bboxXYWH": [
+              498,
+              34,
+              45,
+              41
+            ],
+            "centroidPx": [
+              520.0,
+              54.0
+            ]
+          }
+        ]
+      },
+      "geometryInterpretation": "frozen semantic annotation envelope; not a physically segmented transparent surface boundary"
+    },
+    "DROPLETS_AND_PARTICLES": {
+      "maskFile": "docs/p0_3/roi_masks/REF_B_DROPLETS_AND_PARTICLES.png",
+      "maskSha256": "4d8912c3e78dc976ef0f6f9ce6d71ce87b32423e78e6995b3f22a01e51bcbc8f",
+      "maskPixels": 4167,
+      "areaRatioOfCanvas": 0.00264989,
+      "bboxXYWH": [
+        98,
+        196,
+        1023,
+        904
+      ],
+      "bboxNormalizedXYWH": [
+        0.07815,
+        0.1563,
+        0.815789,
+        0.720893
+      ],
+      "centroidPx": [
+        765.851,
+        551.8239
+      ],
+      "centroidNormalized": [
+        0.610726,
+        0.440051
+      ],
+      "rowCoverageWidthPx": {
+        "p10": 0.0,
+        "p50": 0.0,
+        "p90": 17.0
+      },
+      "edgeGradientLinearLuma": {
+        "p50": 0.003113,
+        "p75": 0.021876,
+        "p90": 0.072124,
+        "p95": 0.164604,
+        "p99": 0.379042
+      },
+      "localContrastLinearLuma": {
+        "p50": 0.036977,
+        "p75": 0.057467,
+        "p90": 0.093107,
+        "p95": 0.206774,
+        "p99": 0.729643
+      },
+      "connectedComponents8": {
+        "componentCount": 15,
+        "components": [
+          {
+            "areaPx": 1057,
+            "bboxXYWH": [
+              1008,
+              285,
+              35,
+              39
+            ],
+            "centroidPx": [
+              1025.0,
+              304.0
+            ]
+          },
+          {
+            "areaPx": 903,
+            "bboxXYWH": [
+              927,
+              878,
+              33,
+              35
+            ],
+            "centroidPx": [
+              943.0,
+              895.0
+            ]
+          },
+          {
+            "areaPx": 795,
+            "bboxXYWH": [
+              676,
+              196,
+              29,
+              35
+            ],
+            "centroidPx": [
+              690.0,
+              213.0
+            ]
+          },
+          {
+            "areaPx": 531,
+            "bboxXYWH": [
+              153,
+              640,
+              25,
+              27
+            ],
+            "centroidPx": [
+              165.0,
+              653.0
+            ]
+          },
+          {
+            "areaPx": 379,
+            "bboxXYWH": [
+              843,
+              937,
+              21,
+              23
+            ],
+            "centroidPx": [
+              853.0,
+              948.0
+            ]
+          },
+          {
+            "areaPx": 97,
+            "bboxXYWH": [
+              168,
+              261,
+              11,
+              11
+            ],
+            "centroidPx": [
+              173.0,
+              266.0
+            ]
+          },
+          {
+            "areaPx": 61,
+            "bboxXYWH": [
+              1112,
+              312,
+              9,
+              9
+            ],
+            "centroidPx": [
+              1116.0,
+              316.0
+            ]
+          },
+          {
+            "areaPx": 61,
+            "bboxXYWH": [
+              98,
+              436,
+              9,
+              9
+            ],
+            "centroidPx": [
+              102.0,
+              440.0
+            ]
+          },
+          {
+            "areaPx": 61,
+            "bboxXYWH": [
+              629,
+              1076,
+              9,
+              9
+            ],
+            "centroidPx": [
+              633.0,
+              1080.0
+            ]
+          },
+          {
+            "areaPx": 37,
+            "bboxXYWH": [
+              1055,
+              242,
+              7,
+              7
+            ],
+            "centroidPx": [
+              1058.0,
+              245.0
+            ]
+          },
+          {
+            "areaPx": 37,
+            "bboxXYWH": [
+              1087,
+              400,
+              7,
+              7
+            ],
+            "centroidPx": [
+              1090.0,
+              403.0
+            ]
+          },
+          {
+            "areaPx": 37,
+            "bboxXYWH": [
+              186,
+              550,
+              7,
+              7
+            ],
+            "centroidPx": [
+              189.0,
+              553.0
+            ]
+          },
+          {
+            "areaPx": 37,
+            "bboxXYWH": [
+              1098,
+              935,
+              7,
+              7
+            ],
+            "centroidPx": [
+              1101.0,
+              938.0
+            ]
+          },
+          {
+            "areaPx": 37,
+            "bboxXYWH": [
+              298,
+              999,
+              7,
+              7
+            ],
+            "centroidPx": [
+              301.0,
+              1002.0
+            ]
+          },
+          {
+            "areaPx": 37,
+            "bboxXYWH": [
+              777,
+              1093,
+              7,
+              7
+            ],
+            "centroidPx": [
+              780.0,
+              1096.0
+            ]
+          }
+        ]
+      },
+      "geometryInterpretation": "frozen semantic annotation envelope; not a physically segmented transparent surface boundary"
+    }
+  },
+  "traceSegments": [
+    {
+      "pointsPx": [
+        [
+          90,
+          462
+        ],
+        [
+          127,
+          492
+        ],
+        [
+          169,
+          524
+        ],
+        [
+          220,
+          553
+        ],
+        [
+          281,
+          584
+        ],
+        [
+          345,
+          616
+        ],
+        [
+          411,
+          648
+        ],
+        [
+          478,
+          680
+        ],
+        [
+          548,
+          711
+        ],
+        [
+          617,
+          742
+        ],
+        [
+          685,
+          771
+        ],
+        [
+          754,
+          799
+        ],
+        [
+          823,
+          821
+        ],
+        [
+          889,
+          831
+        ],
+        [
+          951,
+          824
+        ],
+        [
+          1009,
+          804
+        ],
+        [
+          1064,
+          778
+        ],
+        [
+          1104,
+          754
+        ]
+      ],
+      "annotationWidthPx": 30,
+      "sourceLine": 179,
+      "traceId": "RESIDENT_FRONT_CYAN-TRACE-01",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "lengthPx": 1117.677,
+      "lengthOverReferenceD": 1.714217,
+      "curvaturePerPx": {
+        "p10": 8.7e-05,
+        "p50": 0.000669,
+        "p90": 0.002973
+      },
+      "bboxXYWH": [
+        81,
+        451,
+        1031,
+        396
+      ],
+      "identityAttribution": "C01 frozen semantic group",
+      "evidenceClass": "OBSERVED_PIXEL_SPACE_ANNOTATION; not a unique 3D reconstruction",
+      "imageSignalWidth": {
+        "scoreDefinition": "(linearG + linearB)/2 - linearR",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": -0.0740389,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.958904,
+        "crossSectionWidthPx": {
+          "p10": 5.0,
+          "p25": 7.5,
+          "p50": 15.0,
+          "p75": 28.0,
+          "p90": 29.0
+        },
+        "usableCrossSectionCount": 71,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      }
+    },
+    {
+      "pointsPx": [
+        [
+          218,
+          330
+        ],
+        [
+          271,
+          289
+        ],
+        [
+          337,
+          258
+        ],
+        [
+          408,
+          236
+        ],
+        [
+          486,
+          223
+        ],
+        [
+          560,
+          224
+        ],
+        [
+          620,
+          239
+        ],
+        [
+          681,
+          270
+        ],
+        [
+          738,
+          313
+        ],
+        [
+          789,
+          362
+        ],
+        [
+          836,
+          420
+        ],
+        [
+          881,
+          483
+        ],
+        [
+          929,
+          543
+        ],
+        [
+          982,
+          594
+        ],
+        [
+          1035,
+          636
+        ],
+        [
+          1080,
+          664
+        ]
+      ],
+      "annotationWidthPx": 15,
+      "sourceLine": 182,
+      "traceId": "RESIDENT_FRONT_GOLD-TRACE-01",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "lengthPx": 1062.823,
+      "lengthOverReferenceD": 1.630084,
+      "curvaturePerPx": {
+        "p10": 0.000967,
+        "p50": 0.001822,
+        "p90": 0.003318
+      },
+      "bboxXYWH": [
+        214,
+        216,
+        871,
+        455
+      ],
+      "identityAttribution": "A02-like group; exact path-to-identity mapping is not separately masked",
+      "evidenceClass": "OBSERVED_PIXEL_SPACE_ANNOTATION; not a unique 3D reconstruction",
+      "imageSignalWidth": {
+        "scoreDefinition": "(linearR + linearG)/2 - linearB",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": 0.166585,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.57971,
+        "crossSectionWidthPx": {
+          "p10": 3.9,
+          "p25": 5.0,
+          "p50": 8.0,
+          "p75": 12.5,
+          "p90": 15.0
+        },
+        "usableCrossSectionCount": 40,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      }
+    },
+    {
+      "pointsPx": [
+        [
+          252,
+          350
+        ],
+        [
+          302,
+          379
+        ],
+        [
+          363,
+          408
+        ],
+        [
+          431,
+          443
+        ],
+        [
+          498,
+          481
+        ],
+        [
+          561,
+          526
+        ],
+        [
+          620,
+          571
+        ],
+        [
+          681,
+          614
+        ],
+        [
+          742,
+          657
+        ],
+        [
+          801,
+          693
+        ],
+        [
+          859,
+          717
+        ],
+        [
+          914,
+          728
+        ],
+        [
+          964,
+          717
+        ],
+        [
+          1001,
+          691
+        ]
+      ],
+      "annotationWidthPx": 13,
+      "sourceLine": 184,
+      "traceId": "RESIDENT_FRONT_GOLD-TRACE-02",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "lengthPx": 864.129,
+      "lengthOverReferenceD": 1.325341,
+      "curvaturePerPx": {
+        "p10": 0.000416,
+        "p50": 0.001113,
+        "p90": 0.007223
+      },
+      "bboxXYWH": [
+        249,
+        345,
+        756,
+        390
+      ],
+      "identityAttribution": "A02-like group; exact path-to-identity mapping is not separately masked",
+      "evidenceClass": "OBSERVED_PIXEL_SPACE_ANNOTATION; not a unique 3D reconstruction",
+      "imageSignalWidth": {
+        "scoreDefinition": "(linearR + linearG)/2 - linearB",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": 0.166585,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.25,
+        "crossSectionWidthPx": {
+          "p10": 2.4,
+          "p25": 3.5,
+          "p50": 7.0,
+          "p75": 11.0,
+          "p90": 12.6
+        },
+        "usableCrossSectionCount": 15,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      }
+    },
+    {
+      "pointsPx": [
+        [
+          303,
+          226
+        ],
+        [
+          376,
+          170
+        ],
+        [
+          464,
+          137
+        ],
+        [
+          555,
+          127
+        ],
+        [
+          647,
+          137
+        ],
+        [
+          732,
+          162
+        ],
+        [
+          805,
+          196
+        ],
+        [
+          866,
+          227
+        ],
+        [
+          921,
+          270
+        ]
+      ],
+      "annotationWidthPx": 42,
+      "sourceLine": 188,
+      "traceId": "RESIDENT_BACK_GREEN_GOLD-TRACE-01",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "lengthPx": 677.448,
+      "lengthOverReferenceD": 1.039023,
+      "curvaturePerPx": {
+        "p10": 0.001246,
+        "p50": 0.002361,
+        "p90": 0.002943
+      },
+      "bboxXYWH": [
+        290,
+        107,
+        645,
+        181
+      ],
+      "identityAttribution": "aggregate envelope; G01/G02/A01 path attribution remains ambiguous",
+      "evidenceClass": "OBSERVED_PIXEL_SPACE_ANNOTATION; not a unique 3D reconstruction",
+      "imageSignalWidth": {
+        "scoreDefinition": "linearG - (linearR + linearB)/2",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": 0.0654247,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.27907,
+        "crossSectionWidthPx": {
+          "p10": 5.5,
+          "p25": 7.5,
+          "p50": 14.0,
+          "p75": 15.0,
+          "p90": 16.5
+        },
+        "usableCrossSectionCount": 16,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      }
+    },
+    {
+      "pointsPx": [
+        [
+          923,
+          270
+        ],
+        [
+          973,
+          331
+        ],
+        [
+          1005,
+          403
+        ],
+        [
+          1020,
+          483
+        ],
+        [
+          1006,
+          559
+        ],
+        [
+          978,
+          631
+        ],
+        [
+          944,
+          694
+        ],
+        [
+          906,
+          753
+        ],
+        [
+          863,
+          807
+        ]
+      ],
+      "annotationWidthPx": 48,
+      "sourceLine": 188,
+      "traceId": "RESIDENT_BACK_GREEN_GOLD-TRACE-02",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "lengthPx": 604.386,
+      "lengthOverReferenceD": 0.926966,
+      "curvaturePerPx": {
+        "p10": 0.0013,
+        "p50": 0.002439,
+        "p90": 0.003879
+      },
+      "bboxXYWH": [
+        845,
+        255,
+        200,
+        567
+      ],
+      "identityAttribution": "aggregate envelope; G01/G02/A01 path attribution remains ambiguous",
+      "evidenceClass": "OBSERVED_PIXEL_SPACE_ANNOTATION; not a unique 3D reconstruction",
+      "imageSignalWidth": {
+        "scoreDefinition": "linearG - (linearR + linearB)/2",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": 0.0654247,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.564103,
+        "crossSectionWidthPx": {
+          "p10": 3.0,
+          "p25": 6.5,
+          "p50": 16.0,
+          "p75": 21.0,
+          "p90": 32.6
+        },
+        "usableCrossSectionCount": 35,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      }
+    },
+    {
+      "pointsPx": [
+        [
+          863,
+          807
+        ],
+        [
+          802,
+          861
+        ],
+        [
+          728,
+          908
+        ],
+        [
+          645,
+          938
+        ],
+        [
+          562,
+          939
+        ],
+        [
+          486,
+          914
+        ],
+        [
+          416,
+          874
+        ],
+        [
+          358,
+          826
+        ]
+      ],
+      "annotationWidthPx": 44,
+      "sourceLine": 188,
+      "traceId": "RESIDENT_BACK_GREEN_GOLD-TRACE-03",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "lengthPx": 576.308,
+      "lengthOverReferenceD": 0.883902,
+      "curvaturePerPx": {
+        "p10": 0.002041,
+        "p50": 0.002494,
+        "p90": 0.00396
+      },
+      "bboxXYWH": [
+        344,
+        791,
+        535,
+        170
+      ],
+      "identityAttribution": "aggregate envelope; G01/G02/A01 path attribution remains ambiguous",
+      "evidenceClass": "OBSERVED_PIXEL_SPACE_ANNOTATION; not a unique 3D reconstruction",
+      "imageSignalWidth": {
+        "scoreDefinition": "linearG - (linearR + linearB)/2",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": 0.0654247,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.351351,
+        "crossSectionWidthPx": {
+          "p10": 2.0,
+          "p25": 3.0,
+          "p50": 8.0,
+          "p75": 12.0,
+          "p90": 21.4
+        },
+        "usableCrossSectionCount": 27,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      }
+    },
+    {
+      "pointsPx": [
+        [
+          358,
+          826
+        ],
+        [
+          301,
+          766
+        ],
+        [
+          256,
+          695
+        ],
+        [
+          227,
+          616
+        ],
+        [
+          210,
+          531
+        ],
+        [
+          216,
+          451
+        ],
+        [
+          246,
+          373
+        ],
+        [
+          274,
+          302
+        ]
+      ],
+      "annotationWidthPx": 43,
+      "sourceLine": 188,
+      "traceId": "RESIDENT_BACK_GREEN_GOLD-TRACE-04",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "lengthPx": 577.773,
+      "lengthOverReferenceD": 0.886148,
+      "curvaturePerPx": {
+        "p10": 0.000956,
+        "p50": 0.002431,
+        "p90": 0.003404
+      },
+      "bboxXYWH": [
+        189,
+        294,
+        185,
+        547
+      ],
+      "identityAttribution": "aggregate envelope; G01/G02/A01 path attribution remains ambiguous",
+      "evidenceClass": "OBSERVED_PIXEL_SPACE_ANNOTATION; not a unique 3D reconstruction",
+      "imageSignalWidth": {
+        "scoreDefinition": "linearG - (linearR + linearB)/2",
+        "thresholdMethod": "Otsu on pixels inside the immutable semantic group mask",
+        "thresholdValueLinearColorDifference": 0.0654247,
+        "sampleSpacingTargetPx": 14,
+        "crossSectionHalfRangePx": 64,
+        "validSignalHitRate": 0.421053,
+        "crossSectionWidthPx": {
+          "p10": 2.0,
+          "p25": 3.0,
+          "p50": 7.5,
+          "p75": 16.25,
+          "p90": 30.9
+        },
+        "usableCrossSectionCount": 24,
+        "interpretation": "width of Otsu-selected chromatic signal along the frozen trace normal, clipped to the corresponding immutable semantic envelope; it measures highlighted signal inside that envelope, not the full transparent surface boundary",
+        "widthClippedToFrozenMask": true
+      }
+    }
+  ],
+  "branchGraph": {
+    "nodes": [
+      {
+        "nodeId": "X01",
+        "pointPx": [
+          843.651,
+          824.129
+        ],
+        "pointNormalized": [
+          0.672768,
+          0.6572
+        ],
+        "traceIds": [
+          "RESIDENT_FRONT_CYAN-TRACE-01",
+          "RESIDENT_BACK_GREEN_GOLD-TRACE-03"
+        ],
+        "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+        "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+        "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+      },
+      {
+        "nodeId": "X02",
+        "pointPx": [
+          213.681,
+          549.407
+        ],
+        "pointNormalized": [
+          0.1704,
+          0.438124
+        ],
+        "traceIds": [
+          "RESIDENT_FRONT_CYAN-TRACE-01",
+          "RESIDENT_BACK_GREEN_GOLD-TRACE-04"
+        ],
+        "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+        "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+        "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+      },
+      {
+        "nodeId": "X03",
+        "pointPx": [
+          989.942,
+          600.293
+        ],
+        "pointNormalized": [
+          0.789427,
+          0.478703
+        ],
+        "traceIds": [
+          "RESIDENT_FRONT_GOLD-TRACE-01",
+          "RESIDENT_BACK_GREEN_GOLD-TRACE-02"
+        ],
+        "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+        "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+        "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+      },
+      {
+        "nodeId": "X04",
+        "pointPx": [
+          923.439,
+          725.923
+        ],
+        "pointNormalized": [
+          0.736395,
+          0.578886
+        ],
+        "traceIds": [
+          "RESIDENT_FRONT_GOLD-TRACE-02",
+          "RESIDENT_BACK_GREEN_GOLD-TRACE-02"
+        ],
+        "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+        "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+        "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+      },
+      {
+        "nodeId": "X05",
+        "pointPx": [
+          254.499,
+          351.449
+        ],
+        "pointNormalized": [
+          0.20295,
+          0.280263
+        ],
+        "traceIds": [
+          "RESIDENT_FRONT_GOLD-TRACE-02",
+          "RESIDENT_BACK_GREEN_GOLD-TRACE-04"
+        ],
+        "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+        "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+        "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+      },
+      {
+        "nodeId": "X06",
+        "pointPx": [
+          863.0,
+          807.0
+        ],
+        "pointNormalized": [
+          0.688198,
+          0.643541
+        ],
+        "traceIds": [
+          "RESIDENT_BACK_GREEN_GOLD-TRACE-02",
+          "RESIDENT_BACK_GREEN_GOLD-TRACE-03"
+        ],
+        "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+        "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+        "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+      },
+      {
+        "nodeId": "X07",
+        "pointPx": [
+          358.0,
+          826.0
+        ],
+        "pointNormalized": [
+          0.285486,
+          0.658692
+        ],
+        "traceIds": [
+          "RESIDENT_BACK_GREEN_GOLD-TRACE-03",
+          "RESIDENT_BACK_GREEN_GOLD-TRACE-04"
+        ],
+        "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+        "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+        "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+      }
+    ],
+    "nodeCount": 7,
+    "edges": [
+      {
+        "traceId": "RESIDENT_FRONT_CYAN-TRACE-01",
+        "fromPointPx": [
+          90,
+          462
+        ],
+        "toPointPx": [
+          1104,
+          754
+        ],
+        "geometryRef": "RESIDENT_FRONT_CYAN-TRACE-01"
+      },
+      {
+        "traceId": "RESIDENT_FRONT_GOLD-TRACE-01",
+        "fromPointPx": [
+          218,
+          330
+        ],
+        "toPointPx": [
+          1080,
+          664
+        ],
+        "geometryRef": "RESIDENT_FRONT_GOLD-TRACE-01"
+      },
+      {
+        "traceId": "RESIDENT_FRONT_GOLD-TRACE-02",
+        "fromPointPx": [
+          252,
+          350
+        ],
+        "toPointPx": [
+          1001,
+          691
+        ],
+        "geometryRef": "RESIDENT_FRONT_GOLD-TRACE-02"
+      },
+      {
+        "traceId": "RESIDENT_BACK_GREEN_GOLD-TRACE-01",
+        "fromPointPx": [
+          303,
+          226
+        ],
+        "toPointPx": [
+          921,
+          270
+        ],
+        "geometryRef": "RESIDENT_BACK_GREEN_GOLD-TRACE-01"
+      },
+      {
+        "traceId": "RESIDENT_BACK_GREEN_GOLD-TRACE-02",
+        "fromPointPx": [
+          923,
+          270
+        ],
+        "toPointPx": [
+          863,
+          807
+        ],
+        "geometryRef": "RESIDENT_BACK_GREEN_GOLD-TRACE-02"
+      },
+      {
+        "traceId": "RESIDENT_BACK_GREEN_GOLD-TRACE-03",
+        "fromPointPx": [
+          863,
+          807
+        ],
+        "toPointPx": [
+          358,
+          826
+        ],
+        "geometryRef": "RESIDENT_BACK_GREEN_GOLD-TRACE-03"
+      },
+      {
+        "traceId": "RESIDENT_BACK_GREEN_GOLD-TRACE-04",
+        "fromPointPx": [
+          358,
+          826
+        ],
+        "toPointPx": [
+          274,
+          302
+        ],
+        "geometryRef": "RESIDENT_BACK_GREEN_GOLD-TRACE-04"
+      }
+    ],
+    "interpretation": "The graph records 2D polyline crossings from the frozen annotations. A crossing is not automatically a branch, merge, or 3D contact."
+  },
+  "dropletsAndParticles": {
+    "maskSha256": "4d8912c3e78dc976ef0f6f9ce6d71ce87b32423e78e6995b3f22a01e51bcbc8f",
+    "connectedComponents8": [
+      {
+        "areaPx": 1057,
+        "bboxXYWH": [
+          1008,
+          285,
+          35,
+          39
+        ],
+        "centroidPx": [
+          1025.0,
+          304.0
+        ]
+      },
+      {
+        "areaPx": 903,
+        "bboxXYWH": [
+          927,
+          878,
+          33,
+          35
+        ],
+        "centroidPx": [
+          943.0,
+          895.0
+        ]
+      },
+      {
+        "areaPx": 795,
+        "bboxXYWH": [
+          676,
+          196,
+          29,
+          35
+        ],
+        "centroidPx": [
+          690.0,
+          213.0
+        ]
+      },
+      {
+        "areaPx": 531,
+        "bboxXYWH": [
+          153,
+          640,
+          25,
+          27
+        ],
+        "centroidPx": [
+          165.0,
+          653.0
+        ]
+      },
+      {
+        "areaPx": 379,
+        "bboxXYWH": [
+          843,
+          937,
+          21,
+          23
+        ],
+        "centroidPx": [
+          853.0,
+          948.0
+        ]
+      },
+      {
+        "areaPx": 97,
+        "bboxXYWH": [
+          168,
+          261,
+          11,
+          11
+        ],
+        "centroidPx": [
+          173.0,
+          266.0
+        ]
+      },
+      {
+        "areaPx": 61,
+        "bboxXYWH": [
+          1112,
+          312,
+          9,
+          9
+        ],
+        "centroidPx": [
+          1116.0,
+          316.0
+        ]
+      },
+      {
+        "areaPx": 61,
+        "bboxXYWH": [
+          98,
+          436,
+          9,
+          9
+        ],
+        "centroidPx": [
+          102.0,
+          440.0
+        ]
+      },
+      {
+        "areaPx": 61,
+        "bboxXYWH": [
+          629,
+          1076,
+          9,
+          9
+        ],
+        "centroidPx": [
+          633.0,
+          1080.0
+        ]
+      },
+      {
+        "areaPx": 37,
+        "bboxXYWH": [
+          1055,
+          242,
+          7,
+          7
+        ],
+        "centroidPx": [
+          1058.0,
+          245.0
+        ]
+      },
+      {
+        "areaPx": 37,
+        "bboxXYWH": [
+          1087,
+          400,
+          7,
+          7
+        ],
+        "centroidPx": [
+          1090.0,
+          403.0
+        ]
+      },
+      {
+        "areaPx": 37,
+        "bboxXYWH": [
+          186,
+          550,
+          7,
+          7
+        ],
+        "centroidPx": [
+          189.0,
+          553.0
+        ]
+      },
+      {
+        "areaPx": 37,
+        "bboxXYWH": [
+          1098,
+          935,
+          7,
+          7
+        ],
+        "centroidPx": [
+          1101.0,
+          938.0
+        ]
+      },
+      {
+        "areaPx": 37,
+        "bboxXYWH": [
+          298,
+          999,
+          7,
+          7
+        ],
+        "centroidPx": [
+          301.0,
+          1002.0
+        ]
+      },
+      {
+        "areaPx": 37,
+        "bboxXYWH": [
+          777,
+          1093,
+          7,
+          7
+        ],
+        "centroidPx": [
+          780.0,
+          1096.0
+        ]
+      }
+    ],
+    "classificationMethod": "largest adjacent gap in log component area; no manually set area cutoff",
+    "areaSplitThresholdPx": 191.737,
+    "largeDropletCandidates": [
+      {
+        "areaPx": 1057,
+        "bboxXYWH": [
+          1008,
+          285,
+          35,
+          39
+        ],
+        "centroidPx": [
+          1025.0,
+          304.0
+        ]
+      },
+      {
+        "areaPx": 903,
+        "bboxXYWH": [
+          927,
+          878,
+          33,
+          35
+        ],
+        "centroidPx": [
+          943.0,
+          895.0
+        ]
+      },
+      {
+        "areaPx": 795,
+        "bboxXYWH": [
+          676,
+          196,
+          29,
+          35
+        ],
+        "centroidPx": [
+          690.0,
+          213.0
+        ]
+      },
+      {
+        "areaPx": 531,
+        "bboxXYWH": [
+          153,
+          640,
+          25,
+          27
+        ],
+        "centroidPx": [
+          165.0,
+          653.0
+        ]
+      },
+      {
+        "areaPx": 379,
+        "bboxXYWH": [
+          843,
+          937,
+          21,
+          23
+        ],
+        "centroidPx": [
+          853.0,
+          948.0
+        ]
+      }
+    ],
+    "smallParticleCandidates": [
+      {
+        "areaPx": 97,
+        "bboxXYWH": [
+          168,
+          261,
+          11,
+          11
+        ],
+        "centroidPx": [
+          173.0,
+          266.0
+        ]
+      },
+      {
+        "areaPx": 61,
+        "bboxXYWH": [
+          1112,
+          312,
+          9,
+          9
+        ],
+        "centroidPx": [
+          1116.0,
+          316.0
+        ]
+      },
+      {
+        "areaPx": 61,
+        "bboxXYWH": [
+          98,
+          436,
+          9,
+          9
+        ],
+        "centroidPx": [
+          102.0,
+          440.0
+        ]
+      },
+      {
+        "areaPx": 61,
+        "bboxXYWH": [
+          629,
+          1076,
+          9,
+          9
+        ],
+        "centroidPx": [
+          633.0,
+          1080.0
+        ]
+      },
+      {
+        "areaPx": 37,
+        "bboxXYWH": [
+          1055,
+          242,
+          7,
+          7
+        ],
+        "centroidPx": [
+          1058.0,
+          245.0
+        ]
+      },
+      {
+        "areaPx": 37,
+        "bboxXYWH": [
+          1087,
+          400,
+          7,
+          7
+        ],
+        "centroidPx": [
+          1090.0,
+          403.0
+        ]
+      },
+      {
+        "areaPx": 37,
+        "bboxXYWH": [
+          186,
+          550,
+          7,
+          7
+        ],
+        "centroidPx": [
+          189.0,
+          553.0
+        ]
+      },
+      {
+        "areaPx": 37,
+        "bboxXYWH": [
+          1098,
+          935,
+          7,
+          7
+        ],
+        "centroidPx": [
+          1101.0,
+          938.0
+        ]
+      },
+      {
+        "areaPx": 37,
+        "bboxXYWH": [
+          298,
+          999,
+          7,
+          7
+        ],
+        "centroidPx": [
+          301.0,
+          1002.0
+        ]
+      },
+      {
+        "areaPx": 37,
+        "bboxXYWH": [
+          777,
+          1093,
+          7,
+          7
+        ],
+        "centroidPx": [
+          780.0,
+          1096.0
+        ]
+      }
+    ],
+    "count": {
+      "largeDropletCandidates": 5,
+      "smallParticleComponents": 10,
+      "allAnnotatedComponents": 15
+    },
+    "confidence": "HIGH_FOR_ANNOTATED_MASK_COMPONENTS; physical droplet identity is inferred from size clusters and visual glass highlights"
+  },
+  "backgroundBokeh": {
+    "maskSha256": "6768e9669dea0b7c113fe0023f41f2e462efb75b22750b938c10d952695a4476",
+    "connectedComponents8": {
+      "componentCount": 12,
+      "components": [
+        {
+          "areaPx": 9748,
+          "bboxXYWH": [
+            1105,
+            0,
+            135,
+            86
+          ],
+          "centroidPx": [
+            1172.0,
+            37.579
+          ]
+        },
+        {
+          "areaPx": 9637,
+          "bboxXYWH": [
+            95,
+            1042,
+            105,
+            117
+          ],
+          "centroidPx": [
+            147.0,
+            1100.0
+          ]
+        },
+        {
+          "areaPx": 6915,
+          "bboxXYWH": [
+            1063,
+            1036,
+            99,
+            89
+          ],
+          "centroidPx": [
+            1112.0,
+            1080.0
+          ]
+        },
+        {
+          "areaPx": 6137,
+          "bboxXYWH": [
+            25,
+            741,
+            79,
+            99
+          ],
+          "centroidPx": [
+            64.0,
+            790.0
+          ]
+        },
+        {
+          "areaPx": 5497,
+          "bboxXYWH": [
+            0,
+            0,
+            76,
+            82
+          ],
+          "centroidPx": [
+            34.306,
+            38.11
+          ]
+        },
+        {
+          "areaPx": 5141,
+          "bboxXYWH": [
+            19,
+            292,
+            79,
+            83
+          ],
+          "centroidPx": [
+            58.0,
+            333.0
+          ]
+        },
+        {
+          "areaPx": 4999,
+          "bboxXYWH": [
+            743,
+            13,
+            85,
+            75
+          ],
+          "centroidPx": [
+            785.0,
+            50.0
+          ]
+        },
+        {
+          "areaPx": 4279,
+          "bboxXYWH": [
+            1136,
+            1161,
+            69,
+            79
+          ],
+          "centroidPx": [
+            1170.0,
+            1200.0
+          ]
+        },
+        {
+          "areaPx": 2807,
+          "bboxXYWH": [
+            79,
+            90,
+            63,
+            57
+          ],
+          "centroidPx": [
+            110.0,
+            118.0
+          ]
+        },
+        {
+          "areaPx": 2673,
+          "bboxXYWH": [
+            1193,
+            405,
+            51,
+            67
+          ],
+          "centroidPx": [
+            1218.0,
+            438.0
+          ]
+        },
+        {
+          "areaPx": 2537,
+          "bboxXYWH": [
+            1142,
+            126,
+            53,
+            61
+          ],
+          "centroidPx": [
+            1168.0,
+            156.0
+          ]
+        },
+        {
+          "areaPx": 1449,
+          "bboxXYWH": [
+            498,
+            34,
+            45,
+            41
+          ],
+          "centroidPx": [
+            520.0,
+            54.0
+          ]
+        }
+      ]
+    },
+    "count": 12,
+    "confidence": "HIGH_FOR_FROZEN_BOKEH_ANNOTATIONS; not a count of every out-of-ROI background glow pixel"
+  },
+  "densityMap": {
+    "file": "REF_B_VISUAL_DENSITY_MAP.png",
+    "method": "per-pixel 0.55*normalized(abs(linear-luma Gaussian sigma=9)) + 0.45*normalized(luma gradient), evaluated only in the union of 3 frozen resident masks and droplet mask, then Gaussian-smoothed sigma=12"
+  }
+}
