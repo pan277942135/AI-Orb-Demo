@@ -710,7 +710,7 @@ jobs:
           done
           test "$MARKER_READY" -eq 1
           timeout --foreground --signal=TERM --kill-after=15s 600s adb shell screenrecord \
-            --size 720x720 --bit-rate 4000000 --time-limit 24 /sdcard/AI_ORB_DEMO_TAB3_FINAL_20S.mp4 \
+            --size 720x720 --bit-rate 4000000 --time-limit 36 /sdcard/AI_ORB_DEMO_TAB3_FINAL_20S.mp4 \
             > "$OUT/logs/tab3_screenrecord.log" 2>&1
           wait "$TEST_PID"
           cat "$OUT/logs/tab3_motion_instrumentation.txt"
