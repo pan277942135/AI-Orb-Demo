@@ -35,7 +35,7 @@ class AIOrbViewModel : ViewModel() {
   val uiState: StateFlow<AIOrbUiState> = _uiState.asStateFlow()
 
   /**
-   * Switches between Tab 1 (`AI Orb`) and Tab 2 (`照片水光`) on the SINGLE shared
+   * Switches the three demo tabs on the SINGLE shared
    * [com.example.orb.scene.AIOrbScene] without altering ANY Tab 1 Orb visual parameter.
    */
   fun selectTab(tab: DemoTab) {
@@ -44,12 +44,13 @@ class AIOrbViewModel : ViewModel() {
       val targetSceneMode = when (tab) {
         DemoTab.AI_ORB -> OrbSceneMode.ORB_ONLY
         DemoTab.TASK_PERIMETER -> OrbSceneMode.TASK_PERIMETER_DEMO
+        DemoTab.YUJIAN_AI_ORB -> OrbSceneMode.YUJIAN_HYBRID
       }
       state.copy(
         activeTab = tab,
         config = state.config.copy(sceneMode = targetSceneMode),
-        isControlsExpanded = if (tab == DemoTab.TASK_PERIMETER) false else state.isControlsExpanded,
-        isTaskControlsExpanded = if (tab == DemoTab.AI_ORB) false else state.isTaskControlsExpanded,
+        isControlsExpanded = if (tab != DemoTab.AI_ORB) false else state.isControlsExpanded,
+        isTaskControlsExpanded = if (tab != DemoTab.TASK_PERIMETER) false else state.isTaskControlsExpanded,
       )
     }
   }
@@ -59,6 +60,11 @@ class AIOrbViewModel : ViewModel() {
       val currentMode = state.config.sceneMode
       state.copy(config = transform(state.config).copy(sceneMode = currentMode))
     }
+  }
+
+  /** Test-only state injection so instrumentation can freeze the same production scene snapshot. */
+  internal fun setConfigForInstrumentation(config: AIOrbConfig) {
+    _uiState.update { it.copy(config = config) }
   }
 
   fun toggleControls() {

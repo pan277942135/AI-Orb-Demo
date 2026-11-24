@@ -1,0 +1,22 @@
+{
+  "schema": "YUJIAN_TAB3_SOURCE_ASSET_PREFLIGHT_1_0",
+  "sourceCommit": "03db3692669847084d7e48fc3128f85cbf832af9",
+  "webp": {
+    "binarySha256": "daa85a1fc13fac4a7ca562959c2d19172ee0f1e94277c3eeb32ef1f09a1a7b09",
+    "width": 384,
+    "height": 384,
+    "decodedMode": "RGBA",
+    "decodedRgbaSha256": "0a48ddc14f61e307413e9996e3cdca5e2ae66a01255f0cd14b8f7d0a18628a1c",
+    "alphaMin": 0,
+    "alphaMax": 255,
+    "alphaNonzeroPixels": 73676,
+    "alphaOpaquePixels": 24,
+    "status": "PASS"
+  },
+  "sourceSphereShaderSha256": "eff0af75967117b501be6409009dfa62d9fb336065e458464a19d3e5221bbc05",
+  "adaptedFragmentSha256": "c36a5ca89bfe2528e441612295a3154fd5e79d951c56f16522005d2a85d7aaaf",
+  "adaptedVertexSha256": "2f7d00419193ab9937dfabd85ceacdee07c9e29cf8cb32a388dbdcd0cf1a0267",
+  "runtimeShaderSamplesSourceWebp": false,
+  "runtimeShaderWebpStatus": "PACKAGED_NOT_SAMPLED_BY_SOURCE_SPHERE_FS",
+  "status": "PASS"
+}

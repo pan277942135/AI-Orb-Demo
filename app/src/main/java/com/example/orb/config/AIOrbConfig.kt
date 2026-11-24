@@ -98,6 +98,13 @@ enum class RenderDebugMode(val shaderModeId: Int, val displayLabel: String) {
 enum class OrbSceneMode {
   ORB_ONLY,
   TASK_PERIMETER_DEMO,
+  YUJIAN_HYBRID,
+}
+
+/** The Core implementation selected by the active scene; Tab 2 still uses its shared native Core. */
+enum class OrbCoreMode {
+  NATIVE_V32,
+  YUJIAN_CORE,
 }
 
 /**
@@ -129,6 +136,9 @@ data class AIOrbConfig(
   val debugMode: RenderDebugMode = RenderDebugMode.FULL_RENDER,
   val sceneMode: OrbSceneMode = OrbSceneMode.ORB_ONLY,
 ) {
+  val coreMode: OrbCoreMode
+    get() = if (sceneMode == OrbSceneMode.YUJIAN_HYBRID) OrbCoreMode.YUJIAN_CORE else OrbCoreMode.NATIVE_V32
+
   /** Effective core-rotation lock flag honoring both legacy switch and explicit RenderDebugMode. */
   val effectiveLockCoreRotation: Boolean
     get() = isolateCoreDebug || debugMode.locksCameraAndOuterShell

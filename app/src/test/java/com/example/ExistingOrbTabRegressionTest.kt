@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.example.orb.config.AIOrbConfig
 import com.example.orb.config.OrbSceneMode
+import com.example.orb.config.OrbCoreMode
 import com.example.orb.config.QualityTier
 import com.example.orb.config.RenderDebugMode
 import com.example.orb.scene.AIOrbOrbitRibbons
@@ -93,10 +94,22 @@ class ExistingOrbTabRegressionTest {
     assertEquals(DemoTab.TASK_PERIMETER, vm.uiState.value.activeTab)
     assertEquals(OrbSceneMode.TASK_PERIMETER_DEMO, vm.uiState.value.config.sceneMode)
 
+    vm.selectTab(DemoTab.YUJIAN_AI_ORB)
+    assertEquals(DemoTab.YUJIAN_AI_ORB, vm.uiState.value.activeTab)
+    assertEquals(OrbSceneMode.YUJIAN_HYBRID, vm.uiState.value.config.sceneMode)
+    assertEquals(OrbCoreMode.YUJIAN_CORE, vm.uiState.value.config.coreMode)
+
     vm.selectTab(DemoTab.AI_ORB)
     assertEquals(DemoTab.AI_ORB, vm.uiState.value.activeTab)
     val restored = vm.uiState.value.config
     assertEquals(customTab1.copy(sceneMode = OrbSceneMode.ORB_ONLY), restored)
+    assertEquals(OrbCoreMode.NATIVE_V32, restored.coreMode)
+
+    vm.selectTab(DemoTab.YUJIAN_AI_ORB)
+    vm.selectTab(DemoTab.TASK_PERIMETER)
+    assertEquals(OrbSceneMode.TASK_PERIMETER_DEMO, vm.uiState.value.config.sceneMode)
+    vm.selectTab(DemoTab.AI_ORB)
+    assertEquals(customTab1.copy(sceneMode = OrbSceneMode.ORB_ONLY), vm.uiState.value.config)
 
     // Verify SINGLE AIOrbScene instance switches modes without recreating GL context or reloading WebP
     val scene = AIOrbScene(initialConfig = customTab1, assetManager = null)
@@ -108,16 +121,31 @@ class ExistingOrbTabRegressionTest {
     val kf04 = scene.jumpToTaskKeyframe(TaskEnergyStage.SIDE_ASCEND)
     assertEquals(TaskEnergyStage.SIDE_ASCEND, kf04.stage)
 
-    scene.updateConfig(customTab1.copy(sceneMode = OrbSceneMode.ORB_ONLY))
+    scene.updateConfig(customTab1.copy(sceneMode = OrbSceneMode.YUJIAN_HYBRID))
     assertEquals(2, scene.tabSwitchCount)
-    scene.updateConfig(customTab1.copy(sceneMode = OrbSceneMode.TASK_PERIMETER_DEMO))
+    scene.updateConfig(customTab1.copy(sceneMode = OrbSceneMode.ORB_ONLY))
     assertEquals(3, scene.tabSwitchCount)
+    scene.updateConfig(customTab1.copy(sceneMode = OrbSceneMode.TASK_PERIMETER_DEMO))
+    assertEquals(4, scene.tabSwitchCount)
 
     // Re-entering Tab 2 preserves existing Task progress without forcing reset
     assertEquals(TaskEnergyStage.SIDE_ASCEND, scene.currentTaskSnapshot().stage)
     val evidence = scene.currentTaskEvidence()
     assertNotNull(evidence)
     assertTrue("Shared GPU resources must never reload on tab switch", evidence.gpuResourcesReused)
-    assertEquals(3, evidence.tabSwitchCount)
+    assertEquals(4, evidence.tabSwitchCount)
+  }
+
+  @Test
+  fun tab3ChangesOnlyPassSixFromTheTab1OuterPassManifest() {
+    val nativePasses = AIOrbScene.activeRenderPassesV3(RenderDebugMode.FULL_RENDER)
+    val hybridPasses = AIOrbScene.activeRenderPassesYuJianHybrid(RenderDebugMode.FULL_RENDER)
+    assertEquals(nativePasses.size, hybridPasses.size)
+    assertEquals(nativePasses.first(), hybridPasses.first())
+    assertEquals(nativePasses.last(), hybridPasses.last())
+    nativePasses.indices.forEach { index ->
+      if (index == 5) assertEquals("PASS_6_YUJIAN_CORE_ONLY_SOURCE_SPHERE_FS", hybridPasses[index])
+      else assertEquals("Tab 3 must preserve native outer pass ${nativePasses[index]}", nativePasses[index], hybridPasses[index])
+    }
   }
 }

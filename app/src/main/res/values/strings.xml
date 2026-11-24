@@ -47,6 +47,8 @@
     <string name="cd_reference_master">High-fidelity static reference master image</string>
     <string name="tab_ai_orb">AI Orb</string>
     <string name="tab_task_perimeter">照片水光</string>
+    <string name="tab_yujian_ai_orb">渔获 AI Orb</string>
+    <string name="yujian_hybrid_badge">YuJian Core · AI Orb Demo 外围</string>
     <string name="task_header_title">拍照识鱼</string>
     <string name="task_status_understanding">正在理解照片</string>
     <string name="cd_task_back">返回 AI Orb</string>

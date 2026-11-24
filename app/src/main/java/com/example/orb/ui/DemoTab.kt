@@ -8,4 +8,5 @@ package com.example.orb.ui
 enum class DemoTab(val labelResId: Int) {
   AI_ORB(com.example.R.string.tab_ai_orb),
   TASK_PERIMETER(com.example.R.string.tab_task_perimeter),
+  YUJIAN_AI_ORB(com.example.R.string.tab_yujian_ai_orb),
 }
