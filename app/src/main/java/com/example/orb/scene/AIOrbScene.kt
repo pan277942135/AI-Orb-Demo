@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import com.example.BuildConfig
 import com.example.orb.config.AIOrbConfig
+import com.example.orb.config.OrbCoreMode
 import com.example.orb.config.OrbSceneMode
 import com.example.orb.config.RenderDebugMode
 import com.example.orb.task.PerimeterArcLengthTable
@@ -32,6 +33,8 @@ import com.example.orb.v3.OrbCameraSnapshot
 import com.example.orb.v3.OrbGpuCaptureSnapshot
 import com.example.orb.v3.OrbGpuReferenceCapture
 import com.example.orb.v3.OrbV3LoadState
+import com.example.orb.yujian.core.YuJianCoreFrameInput
+import com.example.orb.yujian.core.YuJianCoreRenderer
 import java.io.File
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
@@ -101,13 +104,37 @@ data class AIOrbTelemetry(
   val texture3dUploadMs: Float = 0f,
   val gpuVolumeMemoryMiB: Float = 0f,
   val volumeStatus: String = "Pending V3 WebP load",
+  val coreRendererMode: OrbCoreMode = OrbCoreMode.NATIVE_V32,
+  val yujianShaderProgramId: Int = 0,
+  val yujianShaderSourceSha256: String = "UNAVAILABLE",
+  val yujianCoreStatus: String = "NOT_INITIALIZED",
+  val yujianCoreRenderResolution: String = "0x0",
+  val yujianCoreFrameCount: Long = 0L,
+  val yujianCoreContextRebuildCount: Int = 0,
+  val yujianCoreGlError: String = "GL_NO_ERROR",
+  val yujianCoreGlErrorPass: String = "NONE",
+  val yujianCoreUniformsReadBackValid: Boolean = false,
+  val yujianCoreRefractionTextureId: Int = 0,
+  val yujianCoreBoundTextureId: Int = 0,
+  val yujianCoreSamplerTextureUnit: Int = -1,
+  val yujianCoreHdrScale: Float = Float.NaN,
+  val yujianCoreElapsedTimeSec: Float = 0f,
+  val yujianCoreProjectedCenterNdc: String = "UNAVAILABLE",
+  val yujianCoreProjectedRadiiNdc: String = "UNAVAILABLE",
+  val yujianDrawFramebufferId: Int = 0,
+  val yujianDrawColorAttachmentTextureId: Int = 0,
+  val yujianDrawFramebufferComplete: Boolean = false,
+  val yujianNoFramebufferFeedbackLoop: Boolean = false,
+  val yujianPassStateReadBackValid: Boolean = false,
+  val sceneFramebufferComplete: Boolean = false,
+  val refractionTextureId: Int = 0,
 ) {
   val fboFormatLabel: String get() = if (isHdrFbo) "RGBA16F (HDR)" else "RGBA8 (Linear-HDR 0.25x)"
   val renderingBackendLabel: String get() = if (isSoftwareRenderer) "SOFTWARE RENDERING" else "HARDWARE GPU"
 }
 
 /**
- * Unified OpenGL ES 3.0 scene renderer shared across BOTH Tab 1 (`AI Orb`) and Tab 2 (`照片水光`).
+ * Unified OpenGL ES 3.0 scene renderer shared across Tab 1, Tab 2, and Tab 3.
  *
  * - Tab 1 (`ORB_ONLY`): 100% preserves the frozen V3 WebP-First 3D Volume Hybrid Rendering pipeline,
  *   double-wall crystal glass shell, independent 26°/s Core Rotation, 5 frozen Residents, and all
@@ -116,6 +143,8 @@ data class AIOrbTelemetry(
  *   [energyHighlights], [particles], [motionController], and [postProcessing] FBO via off-axis
  *   lens-shift projection, adding the studio backdrop, cropped fishing photo, 4 independent Task
  *   Energy streams, and unified-path 6-keyframe Perimeter WaterLight.
+ * - Tab 3 (`YUJIAN_HYBRID`): keeps the Tab 1 outer passes and replaces only Pass 6 with the
+ *   source-extracted YuJian Core shader in this same GL context.
  */
 class AIOrbScene(
   initialConfig: AIOrbConfig = AIOrbConfig.Default,
@@ -135,6 +164,7 @@ class AIOrbScene(
   private val lighting = AIOrbLighting()
   private val background = AIOrbBackground()
   private val core = AIOrbCore()
+  private val yujianCoreRenderer = YuJianCoreRenderer()
   private val orbitRibbons = AIOrbOrbitRibbons(masterFidelity)
   private val energyHighlights = AIOrbEnergyHighlights()
   private val particles = AIOrbParticles()
@@ -159,10 +189,12 @@ class AIOrbScene(
   private val webpLoadCounter = AtomicInteger(0)
   private val tabSwitchCounter = AtomicInteger(0)
   private val apkSha256Ref = AtomicReference<String?>(null)
+  private val latestTelemetryRef = AtomicReference(AIOrbTelemetry())
 
   val glContextInitCount: Int get() = glContextInitCounter.get()
   val webpLoadCount: Int get() = webpLoadCounter.get()
   val tabSwitchCount: Int get() = tabSwitchCounter.get()
+  val latestTelemetry: AIOrbTelemetry get() = latestTelemetryRef.get()
 
   /** V3 executes strictly one unified 3D volume fluid renderer (zero duplicate inner-bowl fluid pass). */
   val isV3SingleVolumePipeline: Boolean = true
@@ -232,7 +264,7 @@ class AIOrbScene(
     outputDir: File,
     onProgress: (GpuCaptureProgress) -> Unit,
   ): Boolean {
-    if (configRef.get().sceneMode == OrbSceneMode.TASK_PERIMETER_DEMO) {
+    if (configRef.get().sceneMode != OrbSceneMode.ORB_ONLY) {
       onProgress(GpuCaptureProgress(state = com.example.orb.v3.GpuCaptureState.FAILED, statusMessage = "V4.2 core capture is available only on Tab 1."))
       return false
     }
@@ -379,6 +411,7 @@ class AIOrbScene(
       // newly-created object whose integer happens to match an old-context name.
       gpuReferenceCapture.cancelForContextLoss()
       taskGpuEvidenceCapture.cancelForContextLoss()
+      yujianCoreRenderer.onContextLost()
       background.release()
       core.release()
       core.markGlContextLost()
@@ -399,6 +432,7 @@ class AIOrbScene(
     energyHighlights.init()
     particles.init()
     postProcessing.init()
+    assetManager?.let(yujianCoreRenderer::onSurfaceCreated)
 
     // Defer Tab 2 shader compilation until first Tab 2 frame so Tab 1 startup swaps cleanly
     // well within Android's 1000ms SurfaceSyncGroup handshake budget.
@@ -440,6 +474,7 @@ class AIOrbScene(
     surfaceHeight = height.coerceAtLeast(1)
     val cfg = configRef.get()
     postProcessing.resize(surfaceWidth, surfaceHeight, cfg.quality)
+    yujianCoreRenderer.onSurfaceChanged(postProcessing.renderWidth, postProcessing.renderHeight)
     updateProjectionMatrix()
   }
 
@@ -502,7 +537,10 @@ class AIOrbScene(
     // Fast first-frame handshake: complete initial eglSwapBuffers() in <15ms so Android's
     // SurfaceSyncGroup(SurfaceView / VRI[MainActivity]) NEVER hits its 1000ms timeout while
     // 35 Lossless RGBA WebP assets finish decoding in the background or SwiftShader warms up.
-    if (!hasRenderedFirstFrame && (!core.isVolumeReady || isSoftwareRenderer)) {
+    // Tab 2 still renders the native V3 core and must preserve its existing asset readiness gate.
+    // Only Tab 3's independent YuJian Pass 6 can start without waiting for the Demo 3D volume.
+    val needsNativeV32Volume = cfg.coreMode == OrbCoreMode.NATIVE_V32
+    if (!hasRenderedFirstFrame && ((needsNativeV32Volume && !core.isVolumeReady) || isSoftwareRenderer)) {
       hasRenderedFirstFrame = true
       postProcessing.resize(surfaceWidth, surfaceHeight, cfg.quality)
       postProcessing.beginScenePass()
@@ -543,7 +581,7 @@ class AIOrbScene(
       cfg.debugMode == RenderDebugMode.PRE_TONEMAP ||
       cfg.debugMode == RenderDebugMode.POST_TONEMAP ||
       cfg.debugMode == RenderDebugMode.CORE_ONLY_TRANSPARENT
-    if (!isTaskDemo && productionFrameMode && !core.isVolumeReady) {
+    if (needsNativeV32Volume && productionFrameMode && !core.isVolumeReady) {
       // Production fidelity frames never fall through to the analytic shader fallback.
       // Keep the backdrop responsive and publish LOADING / V3_ASSET_ERROR telemetry.
       postProcessing.resize(surfaceWidth, surfaceHeight, cfg.quality)
@@ -755,24 +793,42 @@ class AIOrbScene(
       postProcessing.captureRefractionSnapshot()
     }
 
-    // Pass 6 (V3): Unified WebP 3D Volume Raymarch (`sampler3D uFluidVolume`) + Double-Wall Crystal Glass Shell
+    // Pass 6: Tab 1 keeps the native V3.2 renderer; Tab 3 substitutes only the YuJian Core-only shader.
     if (drawCore) {
-      core.draw(
-        outerGlassModel = outerGlassModel,
-        invOuterGlassModel = invOuterGlassModel,
-        viewMatrix = viewMatrix,
-        projMatrix = projMatrix,
-        cameraPos = cameraPos,
-        refractionTexId = postProcessing.refractionTextureId,
-        fboWidth = rw,
-        fboHeight = rh,
-        motion = motion,
-        hdrScale = hdrScale,
-        lighting = lighting,
-        config = cfg,
-        isSoftwareRenderer = isSoftwareRenderer,
-        fidelity = masterFidelity,
-      )
+      if (cfg.coreMode == OrbCoreMode.YUJIAN_CORE) {
+        yujianCoreRenderer.render(
+          YuJianCoreFrameInput(
+            modelMatrix = outerGlassModel,
+            viewMatrix = viewMatrix,
+            projectionMatrix = projMatrix,
+            cameraPosition = cameraPos,
+            elapsedTimeSec = time,
+            deltaTimeSec = dt,
+            refractionTextureId = postProcessing.refractionTextureId,
+            viewportWidth = rw,
+            viewportHeight = rh,
+            hdrScale = hdrScale,
+            motion = motion,
+          )
+        )
+      } else {
+        core.draw(
+          outerGlassModel = outerGlassModel,
+          invOuterGlassModel = invOuterGlassModel,
+          viewMatrix = viewMatrix,
+          projMatrix = projMatrix,
+          cameraPos = cameraPos,
+          refractionTexId = postProcessing.refractionTextureId,
+          fboWidth = rw,
+          fboHeight = rh,
+          motion = motion,
+          hdrScale = hdrScale,
+          lighting = lighting,
+          config = cfg,
+          isSoftwareRenderer = isSoftwareRenderer,
+          fidelity = masterFidelity,
+        )
+      }
     }
 
     // Pass 7: Front-of-glass-dome 3D organic Resident ribbons (hardware depth-tested against outer glass sphere!)
@@ -1010,7 +1066,8 @@ class AIOrbScene(
     mode: RenderDebugMode,
   ): AIOrbTelemetry {
     val volTel = core.volumeTelemetry
-    return AIOrbTelemetry(
+    val yujian = yujianCoreRenderer.runtimeState
+    val snapshot = AIOrbTelemetry(
       fps = timing.fps,
       frameMsP50 = timing.cpuFrameMsP50,
       frameMsP95 = timing.cpuFrameMsP95,
@@ -1065,7 +1122,33 @@ class AIOrbScene(
       texture3dUploadMs = volTel.uploadTimeMs,
       gpuVolumeMemoryMiB = volTel.gpuMemoryMiB,
       volumeStatus = volTel.statusMessage,
+      coreRendererMode = configRef.get().coreMode,
+      yujianShaderProgramId = yujian.shaderProgramId,
+      yujianShaderSourceSha256 = yujian.shaderSourceSha256,
+      yujianCoreStatus = yujian.status,
+      yujianCoreRenderResolution = yujian.renderResolution,
+      yujianCoreFrameCount = yujian.frameCount,
+      yujianCoreContextRebuildCount = yujian.contextRebuildCount,
+      yujianCoreGlError = yujian.glError,
+      yujianCoreGlErrorPass = yujian.glErrorPass,
+      yujianCoreUniformsReadBackValid = yujian.uniformsReadBackValid,
+      yujianCoreRefractionTextureId = yujian.refractionTextureId,
+      yujianCoreBoundTextureId = yujian.boundRefractionTextureId,
+      yujianCoreSamplerTextureUnit = yujian.samplerTextureUnit,
+      yujianCoreHdrScale = yujian.hdrScale,
+      yujianCoreElapsedTimeSec = yujian.elapsedTimeSec,
+      yujianCoreProjectedCenterNdc = yujian.projectedCenterNdc,
+      yujianCoreProjectedRadiiNdc = yujian.projectedRadiiNdc,
+      yujianDrawFramebufferId = yujian.drawFramebufferId,
+      yujianDrawColorAttachmentTextureId = yujian.drawColorAttachmentTextureId,
+      yujianDrawFramebufferComplete = yujian.drawFramebufferComplete,
+      yujianNoFramebufferFeedbackLoop = yujian.noFramebufferFeedbackLoop,
+      yujianPassStateReadBackValid = yujian.passStateReadBackValid,
+      sceneFramebufferComplete = postProcessing.isSceneFboComplete,
+      refractionTextureId = postProcessing.refractionTextureId,
     )
+    latestTelemetryRef.set(snapshot)
+    return snapshot
   }
 
   private fun recordAndPublishTelemetry(
@@ -1090,6 +1173,7 @@ class AIOrbScene(
   fun release() {
     gpuReferenceCapture.release()
     taskGpuEvidenceCapture.release()
+    yujianCoreRenderer.release()
     background.release()
     core.release()
     orbitRibbons.release()
@@ -1151,6 +1235,12 @@ class AIOrbScene(
         )
       }
     }
+
+    /** Tab 3 substitutes only Pass 6 while preserving the native Demo outer-pass order. */
+    fun activeRenderPassesYuJianHybrid(mode: RenderDebugMode): List<String> =
+      activeRenderPassesV3(mode).map { pass ->
+        if (pass.startsWith("PASS_6_")) "PASS_6_YUJIAN_CORE_ONLY_SOURCE_SPHERE_FS" else pass
+      }
 
     /**
      * Tab 2 (`TASK_PERIMETER_DEMO`) authoritative render pass manifest reusing the EXACT SAME

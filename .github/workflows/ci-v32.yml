@@ -2,7 +2,7 @@ name: AI Orb V4.2 Core Fidelity Recovery
 
 on:
   push:
-    branches: [main]
+    branches: [main, "codex/**"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -37,6 +37,9 @@ jobs:
 
       - name: Install pinned volume generation dependency
         run: python -m pip install -r tools/orb-v3-generator/requirements.txt
+
+      - name: YUJIAN_TAB3_SOURCE_ASSET_PREFLIGHT
+        run: python3 tools/orb-yujian-tab3/validate_source_assets.py
 
       - name: P0_3_PF01_ROI_MASKS
         run: |
@@ -275,6 +278,86 @@ jobs:
             app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json
             app/src/main/assets/orb_v3/volume/*.webp
 
+      - name: YUJIAN_HYBRID_APK_FINGERPRINT
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          HEAD_SHA=$(git rev-parse HEAD)
+          test "$HEAD_SHA" = "$EXPECTED_HEAD_SHA"
+          cp app/build/outputs/apk/debug/app-debug.apk AI-Orb-Demo-YuJian-Hybrid-Debug.apk
+          cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk AI-Orb-Demo-YuJian-Hybrid-Debug-androidTest.apk
+          APK_SHA=$(sha256sum AI-Orb-Demo-YuJian-Hybrid-Debug.apk | awk '{print $1}')
+          APK_BYTES=$(stat -c%s AI-Orb-Demo-YuJian-Hybrid-Debug.apk)
+          APK_TEST_SHA=$(sha256sum AI-Orb-Demo-YuJian-Hybrid-Debug-androidTest.apk | awk '{print $1}')
+          WEBP_SHA=$(sha256sum app/src/main/assets/yujian_orb_core/processing_water_core_v1.webp | awk '{print $1}')
+          SHADER_SHA=$(sha256sum app/src/main/assets/yujian_orb_core/YuJianCoreFragment.glsl | awk '{print $1}')
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          export HEAD_SHA APK_SHA APK_BYTES APK_TEST_SHA WEBP_SHA SHADER_SHA RUN_URL
+          python3 - <<'PY'
+          import hashlib, json, os, zipfile
+          from pathlib import Path
+
+          apk_path = Path("AI-Orb-Demo-YuJian-Hybrid-Debug.apk")
+          with zipfile.ZipFile(apk_path) as apk:
+              source_webp_sha = hashlib.sha256(apk.read("assets/yujian_orb_core/processing_water_core_v1.webp")).hexdigest()
+              source_shader_sha = hashlib.sha256(apk.read("assets/yujian_orb_core/YuJianCoreFragment.glsl")).hexdigest()
+          expected_webp = "daa85a1fc13fac4a7ca562959c2d19172ee0f1e94277c3eeb32ef1f09a1a7b09"
+          expected_shader = os.environ["SHADER_SHA"]
+          assert source_webp_sha == expected_webp, "Packaged YuJian source WebP SHA mismatch"
+          assert source_shader_sha == expected_shader, "Packaged YuJian Core Shader SHA mismatch"
+          Path("docs/yujian_hybrid/BUILD_FINGERPRINT.json").write_text(json.dumps({
+              "schema": "AI_ORB_DEMO_YUJIAN_TAB3_EXACT_HEAD_FINGERPRINT_1_0",
+              "taskId": "AI_ORB_DEMO_YUJIAN_CORE_TAB1_OUTER_HYBRID_V1",
+              "gitCommitSha": os.environ["EXPECTED_HEAD_SHA"],
+              "branch": os.environ["GITHUB_REF"],
+              "githubRunId": os.environ["GITHUB_RUN_ID"],
+              "ciRunUrl": os.environ["RUN_URL"],
+              "applicationId": "com.aistudio.aiorbdemo.vxkrmq",
+              "versionCode": 1,
+              "versionName": "1.0",
+              "apkFile": apk_path.name,
+              "apkSha256": os.environ["APK_SHA"],
+              "apkSizeBytes": int(os.environ["APK_BYTES"]),
+              "androidTestApkSha256": os.environ["APK_TEST_SHA"],
+              "sourceCommit": "03db3692669847084d7e48fc3128f85cbf832af9",
+              "sourceWebpSha256": source_webp_sha,
+              "sourceWebpRuntimeUsage": "PACKAGED_NOT_SAMPLED_BY_SOURCE_SPHERE_FS",
+              "adaptedCoreShaderSha256": os.environ["SHADER_SHA"],
+              "api36RendererAcceptance": "PENDING_API36_AVD_JOB",
+              "hardwareGpuAcceptance": "NOT_CLAIMED"
+          }, indent=2) + "\n")
+          PY
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          Path("docs/yujian_hybrid/SHA256SUMS.json").write_text(json.dumps({
+              "gitCommitSha": os.environ["HEAD_SHA"],
+              "apkSha256": os.environ["APK_SHA"],
+              "apkTestSha256": os.environ["APK_TEST_SHA"],
+              "sourceWebpSha256": os.environ["WEBP_SHA"],
+              "adaptedShaderSha256": os.environ["SHADER_SHA"],
+              "buildFingerprintSha256": hashlib.sha256(Path("docs/yujian_hybrid/BUILD_FINGERPRINT.json").read_bytes()).hexdigest(),
+              "ciRunUrl": os.environ["RUN_URL"]
+          }, indent=2) + "\n")
+          PY
+          cat docs/yujian_hybrid/BUILD_FINGERPRINT.json
+          sha256sum AI-Orb-Demo-YuJian-Hybrid-Debug.apk AI-Orb-Demo-YuJian-Hybrid-Debug-androidTest.apk > docs/yujian_hybrid/APK_SHA256SUMS.txt
+          cat docs/yujian_hybrid/APK_SHA256SUMS.txt
+
+      - name: YUJIAN_HYBRID_ARTIFACT_UPLOAD
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-orb-yujian-hybrid-exact-head-${{ github.run_id }}
+          path: |
+            AI-Orb-Demo-YuJian-Hybrid-Debug.apk
+            AI-Orb-Demo-YuJian-Hybrid-Debug-androidTest.apk
+            docs/yujian_hybrid/**
+
   api36-avd-baseline:
     name: API36_AVD_BASELINE_CAPTURE + PF05 Repeatability
     needs: verify-v42-core-fidelity
@@ -291,6 +374,12 @@ jobs:
         with:
           name: ai-orb-v42-core-fidelity-exact-head
           path: exact-head
+
+      - name: Download exact-HEAD YuJian hybrid APK and source fingerprint
+        uses: actions/download-artifact@v4
+        with:
+          name: ai-orb-yujian-hybrid-exact-head-${{ github.run_id }}
+          path: yujian-head
 
       - name: Set up Java and Python runtimes
         uses: actions/setup-java@v4
@@ -535,6 +624,135 @@ jobs:
             echo "PROCESS_EXITED_AFTER_INSTRUMENTATION_TEARDOWN" > p0_3_evidence/api36_avd/logs/application_lifecycle_after_baselines.txt
           fi
 
+      - name: API36_TAB3_HYBRID_RENDER_AND_LAYER_CAPTURE
+        env:
+          APP_ID: com.aistudio.aiorbdemo.vxkrmq
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=p0_3_evidence/yujian_tab3
+          mkdir -p "$OUT/logs"
+          adb shell am force-stop "$APP_ID"
+          timeout 900s adb shell am instrument -w -r \
+            -e class com.example.YuJianHybridTab3Api36Test#switchesThreeTabsAndExecutesYuJianPassSixWithoutRebuildingTheScene \
+            "$APP_ID.test/androidx.test.runner.AndroidJUnitRunner" \
+            | tee "$OUT/logs/tab3_layer_instrumentation.txt"
+          grep -q 'OK (1 test)' "$OUT/logs/tab3_layer_instrumentation.txt"
+          adb pull "/sdcard/Android/data/$APP_ID/files/tab3_hybrid" "$OUT/captures"
+          test -s "$OUT/captures/TAB1_NATIVE_ORB_GPU.png"
+          test -s "$OUT/captures/TAB3_HYBRID_ORB_GPU.png"
+          test -s "$OUT/captures/YUJIAN_CORE_ONLY_SOURCE_SHADER_GPU.png"
+          test -s "$OUT/captures/TAB1_OUTER_RESIDENTS_GPU.png"
+          cp docs/yujian_hybrid/BUILD_FINGERPRINT.json "$OUT/BUILD_FINGERPRINT.json"
+          cp p0_3_evidence/api36_avd/environment.json "$OUT/AVD_ENVIRONMENT.json"
+          adb logcat -b all -d > "$OUT/logs/tab3_logcat.txt"
+          grep -Eni 'GL error|GL_INVALID|GL_OUT_OF_MEMORY|shader compile failed|FATAL EXCEPTION|ANR in' "$OUT/logs/tab3_logcat.txt" > "$OUT/logs/gl_or_runtime_errors.txt" || true
+
+      - name: API36_TAB3_CONTINUOUS_20S_MOTION_VIDEO
+        env:
+          APP_ID: com.aistudio.aiorbdemo.vxkrmq
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=p0_3_evidence/yujian_tab3
+          mkdir -p "$OUT/logs"
+          adb shell am force-stop "$APP_ID"
+          adb shell rm -f "/sdcard/Android/data/$APP_ID/files/tab3_hybrid/TAB3_MOTION_STARTED"
+          timeout 900s adb shell am instrument -w -r \
+            -e class com.example.YuJianHybridTab3Api36Test#thirdTabKeepsTheSharedCoreClockMovingForTwentySeconds \
+            "$APP_ID.test/androidx.test.runner.AndroidJUnitRunner" \
+            > "$OUT/logs/tab3_motion_instrumentation.txt" 2>&1 &
+          TEST_PID=$!
+          MARKER_READY=0
+          for attempt in $(seq 1 120); do
+            if adb shell test -f "/sdcard/Android/data/$APP_ID/files/tab3_hybrid/TAB3_MOTION_STARTED"; then
+              MARKER_READY=1
+              break
+            fi
+            if ! kill -0 "$TEST_PID" 2>/dev/null; then
+              cat "$OUT/logs/tab3_motion_instrumentation.txt"
+              exit 1
+            fi
+            sleep 1
+          done
+          test "$MARKER_READY" -eq 1
+          timeout --foreground --signal=TERM --kill-after=15s 600s adb shell screenrecord \
+            --size 720x720 --bit-rate 4000000 --time-limit 24 /sdcard/AI_ORB_DEMO_TAB3_FINAL_20S.mp4 \
+            > "$OUT/logs/tab3_screenrecord.log" 2>&1
+          wait "$TEST_PID"
+          cat "$OUT/logs/tab3_motion_instrumentation.txt"
+          grep -q 'OK (1 test)' "$OUT/logs/tab3_motion_instrumentation.txt"
+          adb pull "/sdcard/Android/data/$APP_ID/files/tab3_hybrid/TAB3_MOTION_20S_RUNTIME.json" "$OUT/captures/TAB3_MOTION_20S_RUNTIME.json"
+          adb pull /sdcard/AI_ORB_DEMO_TAB3_FINAL_20S.mp4 "$OUT/AI_ORB_DEMO_TAB3_FINAL_20S.mp4"
+          python3 tools/orb-yujian-tab3/validate_runtime_evidence.py \
+            --evidence-dir "$OUT/captures" \
+            --video "$OUT/AI_ORB_DEMO_TAB3_FINAL_20S.mp4" \
+            --expected-head "${{ github.event.pull_request.head.sha || github.sha }}" \
+            --output "$OUT/TAB3_HYBRID_VISUAL_ACCEPTANCE_REPORT.json"
+
+      - name: Assemble YuJian hybrid delivery evidence
+        if: always()
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          OUT=AI_ORB_DEMO_YUJIAN_HYBRID_V1
+          mkdir -p "$OUT/source_audit" "$OUT/reports" "$OUT/evidence" "$OUT/video" \
+            "$OUT/round_1" "$OUT/round_2" "$OUT/round_3" "$OUT/visual/DIFF_HEATMAPS"
+          cp yujian-head/docs/yujian_hybrid/YUJIAN_ORB_SOURCE_MANIFEST.json "$OUT/source_audit/" || true
+          cp yujian-head/docs/yujian_hybrid/YUJIAN_CORE_EXTRACTION_AUDIT.md "$OUT/source_audit/" || true
+          cp yujian-head/docs/yujian_hybrid/TAB3_HYBRID_RENDER_ARCHITECTURE.md "$OUT/source_audit/" || true
+          cp yujian-head/docs/yujian_hybrid/BUILD_FINGERPRINT.json "$OUT/BUILD_FINGERPRINT.json" || true
+          cp yujian-head/docs/yujian_hybrid/SHA256SUMS.json "$OUT/SHA256SUMS.json" || true
+          cp yujian-head/AI-Orb-Demo-YuJian-Hybrid-Debug.apk "$OUT/" || true
+          cp p0_3_evidence/yujian_tab3/TAB3_HYBRID_VISUAL_ACCEPTANCE_REPORT.json "$OUT/reports/" || true
+          cp p0_3_evidence/yujian_tab3/captures/RUNTIME_TELEMETRY.json "$OUT/reports/FINAL_RUNTIME_TELEMETRY.json" || true
+          cp p0_3_evidence/yujian_tab3/AI_ORB_DEMO_TAB3_FINAL_20S.mp4 "$OUT/video/" || true
+          cp -R p0_3_evidence/yujian_tab3 "$OUT/evidence/" || true
+          if [ -s "$OUT/evidence/yujian_tab3/captures/TAB3_HYBRID_ORB_GPU.png" ]; then
+            python3 tools/orb-yujian-tab3/package_visual_evidence.py \
+              --capture-dir "$OUT/evidence/yujian_tab3/captures" --output-dir "$OUT" \
+              --head "$EXPECTED_HEAD_SHA"
+          else
+            cat > "$OUT/round_1/ROUND_1_REPORT.json" <<'JSON'
+          {"round":1,"status":"NOT_ACCEPTED","reason":"API36 GPU screenshot export failed; no visual improvement or source parity is claimed."}
+          JSON
+          fi
+          cat > "$OUT/round_2/ROUND_2_REPORT.json" <<'JSON'
+          {"status":"NOT_RUN","reason":"A second visual optimization round requires inspection of Round 1 GPU output and a comparable reference measurement."}
+          JSON
+          cat > "$OUT/round_3/ROUND_3_REPORT.json" <<'JSON'
+          {"status":"NOT_RUN","reason":"A third visual optimization round requires Round 2 evidence and a measured improvement check."}
+          JSON
+          cat > "$OUT/reports/FINAL_ACCEPTANCE_REPORT.md" <<EOF
+          # YuJian Hybrid Tab 3 Acceptance
+
+          - Exact source HEAD: \`${EXPECTED_HEAD_SHA}\`
+          - CI run: \${GITHUB_SERVER_URL}/\${GITHUB_REPOSITORY}/actions/runs/\${GITHUB_RUN_ID}
+          - Render backend: API36 x86_64 AVD with SwiftShader (software); this is not hardware GPU validation.
+          - YuJian source app GPU reference: NOT_CAPTURED; source comparison metrics are NOT_COMPARABLE.
+          - Round 1: NOT_ACCEPTED until measured against a source app GPU reference.
+          - Round 2: NOT_RUN.
+          - Round 3: NOT_RUN.
+          - Hardware GPU fidelity acceptance: NOT_RUN.
+          EOF
+          python3 - "$OUT" <<'PY'
+          import hashlib, json, sys
+          from pathlib import Path
+          root = Path(sys.argv[1])
+          records = {}
+          for path in sorted(root.rglob("*")):
+              if path.is_file() and path.name != "SHA256SUMS.json":
+                  records[path.relative_to(root).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
+          (root / "SHA256SUMS.json").write_text(json.dumps({"files": records}, indent=2) + "\n")
+          PY
+          (cd "$OUT" && zip -qr ../AI_ORB_DEMO_YUJIAN_HYBRID_V1.zip .)
+          sha256sum AI_ORB_DEMO_YUJIAN_HYBRID_V1.zip > AI_ORB_DEMO_YUJIAN_HYBRID_V1.zip.sha256
+
       - name: Preserve API36 diagnostics after failure
         if: failure()
         env:
@@ -662,4 +880,7 @@ jobs:
             docs/p0_3/VISUAL_DIFF_CONTACT_SHEET.png
             docs/p0_3/VISUAL_DIFF_HEATMAPS/**
             docs/p0_3/P04_METRIC_VALIDATION_REPORT.json
+            AI_ORB_DEMO_YUJIAN_HYBRID_V1.zip
+            AI_ORB_DEMO_YUJIAN_HYBRID_V1.zip.sha256
+            AI_ORB_DEMO_YUJIAN_HYBRID_V1/**
           if-no-files-found: warn

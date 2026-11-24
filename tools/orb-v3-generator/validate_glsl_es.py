@@ -199,6 +199,13 @@ def main() -> int:
     ):
         programs[label] = compiler.link_pair(ribbon(vert), ribbon(frag), label, vert, frag)
 
+    yujian_root = ROOT / "app/src/main/assets/yujian_orb_core"
+    yujian_vertex = (yujian_root / "YuJianCoreVertex.glsl").read_text(encoding="utf-8")
+    yujian_fragment = (yujian_root / "YuJianCoreFragment.glsl").read_text(encoding="utf-8")
+    programs["YUJIAN_CORE"] = compiler.link_pair(
+        yujian_vertex, yujian_fragment, "YUJIAN_CORE_PASS6", "YuJianCoreVertex.glsl", "YuJianCoreFragment.glsl"
+    )
+
     required_core_uniforms = (
         "uDensityScale",
         "uDensityRange",
@@ -218,14 +225,24 @@ def main() -> int:
         location = compiler.gl_get_uniform_location(core_program, name.encode("ascii"))
         if location < 0:
             raise RuntimeError(f"Fitted core uniform is inactive after linking: {name}")
-    if len(compiler.compiled_sources) != 16:
-        raise RuntimeError(f"Expected 16 production shader sources, compiled {len(compiler.compiled_sources)}")
+    required_yujian_uniforms = (
+        "uBackTex", "uTime", "uWake", "uSphereCenter", "uSphereRadii", "uQuadExtent",
+        "uHdrScale", "uCoreCenterViewZ", "uCoreRadiusView", "uProjectionDepth", "uShowSun", "uShowCaustics",
+    )
+    yujian_program = programs["YUJIAN_CORE"]
+    for name in required_yujian_uniforms:
+        location = compiler.gl_get_uniform_location(yujian_program, name.encode("ascii"))
+        if location < 0:
+            raise RuntimeError(f"YuJian Core Pass 6 uniform is inactive after linking: {name}")
+    if len(compiler.compiled_sources) != 18:
+        raise RuntimeError(f"Expected 18 production shader sources, compiled {len(compiler.compiled_sources)}")
     if compiler.gl_get_error() != GL_NO_ERROR:
         raise RuntimeError("GLES reported an error after production shader compilation/linking")
 
     print(
         f"[validate_glsl_es] PASS: {len(compiler.compiled_sources)} shader sources compiled, "
-        f"{len(programs)} programs linked, {len(required_core_uniforms)} core fitted uniforms active."
+        f"{len(programs)} programs linked, {len(required_core_uniforms)} native fitted + "
+        f"{len(required_yujian_uniforms)} YuJian uniforms active."
     )
     print("[validate_glsl_es] This is shader compile/link evidence only; it does not claim hardware GPU capture.")
     return 0

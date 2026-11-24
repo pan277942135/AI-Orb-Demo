@@ -45,6 +45,8 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.orb.config.RenderDebugMode
+import com.example.orb.config.AIOrbConfig
+import com.example.orb.config.OrbSceneMode
 import com.example.orb.scene.AIOrbScene
 import com.example.orb.task.TaskGpuEvidenceCapture
 import com.example.orb.task.TaskSceneLayoutSnapshot
@@ -77,6 +79,7 @@ private data class PhotoWindowMetrics(
 class MainActivity : ComponentActivity() {
   @Volatile private var p0_3EvidenceScene: AIOrbScene? = null
   @Volatile private var p0_3EvidenceProgress: GpuCaptureProgress? = null
+  @Volatile private var p0_3EvidenceViewModel: AIOrbViewModel? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -90,6 +93,7 @@ class MainActivity : ComponentActivity() {
     setContent {
       MyApplicationTheme {
         val viewModel: AIOrbViewModel = viewModel()
+        p0_3EvidenceViewModel = viewModel
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         var sharedScene by remember { mutableStateOf<AIOrbScene?>(null) }
@@ -97,6 +101,7 @@ class MainActivity : ComponentActivity() {
         var photoMetrics by remember { mutableStateOf<PhotoWindowMetrics?>(null) }
 
         val isTaskTab = uiState.activeTab == DemoTab.TASK_PERIMETER
+        val isYujianTab = uiState.activeTab == DemoTab.YUJIAN_AI_ORB
 
         LaunchedEffect(isTaskTab) {
           applyImmersiveFullscreen(isLightBars = isTaskTab)
@@ -127,8 +132,8 @@ class MainActivity : ComponentActivity() {
             .fillMaxSize()
             .background(if (isTaskTab) ComposeColor(0xFFCDEEF7) else AbyssEmerald),
         ) {
-          // SINGLE persistent OpenGL ES 3.0 GLSurfaceView + AIOrbScene shared across BOTH tabs!
-          // Never unmounted on tab switch -> zero EGL recreation, zero WebP reload, seamless motion.
+          // One persistent OpenGL ES 3.0 GLSurfaceView + AIOrbScene shared across all three tabs.
+          // Tab switching only changes the scene mode; it never creates another EGL context.
           AIOrbCanvas(
             config = uiState.config,
             onTelemetryUpdated = viewModel::reportTelemetry,
@@ -144,7 +149,7 @@ class MainActivity : ComponentActivity() {
           )
 
           // Tab 1 isolated QA Reference Master viewer (strictly Tab 1 only, never composited with GPU)
-          if (!isTaskTab && uiState.config.debugMode == RenderDebugMode.REFERENCE_ONLY) {
+          if (uiState.activeTab == DemoTab.AI_ORB && uiState.config.debugMode == RenderDebugMode.REFERENCE_ONLY) {
             Box(
               modifier = Modifier
                 .fillMaxSize()
@@ -204,6 +209,23 @@ class MainActivity : ComponentActivity() {
                 photoMetrics = PhotoWindowMetrics(l, t, r, b, cr)
               },
             )
+          } else if (isYujianTab) {
+            Surface(
+              shape = RoundedCornerShape(10.dp),
+              color = ComposeColor(0xAA061A20),
+              border = BorderStroke(1.dp, ComposeColor(0x6636B8C9)),
+              modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 24.dp)
+                .testTag("yujian_hybrid_badge"),
+            ) {
+              Text(
+                text = stringResource(R.string.yujian_hybrid_badge),
+                style = MaterialTheme.typography.labelMedium,
+                color = ComposeColor(0xFFBEEEF5),
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+              )
+            }
           } else {
             AIOrbControlsOverlay(
               uiState = uiState,
@@ -225,7 +247,7 @@ class MainActivity : ComponentActivity() {
             )
           }
 
-          // Floating Dual-Tab Segmented Switcher (`AI Orb` | `照片水光`)
+          // Floating three-tab segmented switcher.
           DemoTabSwitcherBar(
             activeTab = uiState.activeTab,
             onSelectTab = viewModel::selectTab,
@@ -257,6 +279,14 @@ class MainActivity : ComponentActivity() {
   }
 
   internal fun latestP0_3EvidenceProgressForInstrumentation(): GpuCaptureProgress? = p0_3EvidenceProgress
+
+  internal fun sceneForInstrumentation(): AIOrbScene? = p0_3EvidenceScene
+
+  internal fun setSceneForInstrumentation(sceneMode: OrbSceneMode, mode: RenderDebugMode, paused: Boolean = false) {
+    val config = AIOrbConfig.Default.copy(sceneMode = sceneMode, debugMode = mode, isPaused = paused)
+    p0_3EvidenceViewModel?.setConfigForInstrumentation(config)
+    p0_3EvidenceScene?.updateConfig(config)
+  }
 
   private fun applyImmersiveFullscreen(isLightBars: Boolean) {
     val controller = WindowInsetsControllerCompat(window, window.decorView)
@@ -326,6 +356,15 @@ private fun DemoTabSwitcherBar(
         inactiveText = inactiveTextColor,
         tag = "tab_task_perimeter",
         onClick = { onSelectTab(DemoTab.TASK_PERIMETER) },
+      )
+      DemoTabSegment(
+        label = stringResource(R.string.tab_yujian_ai_orb),
+        selected = activeTab == DemoTab.YUJIAN_AI_ORB,
+        activeBg = activePillColor,
+        activeText = activeTextColor,
+        inactiveText = inactiveTextColor,
+        tag = "tab_yujian_ai_orb",
+        onClick = { onSelectTab(DemoTab.YUJIAN_AI_ORB) },
       )
     }
   }

@@ -1,0 +1,119 @@
+{
+  "schema": "YUJIAN_ORB_CORE_SOURCE_MANIFEST_1_0",
+  "sourceCommit": "03db3692669847084d7e48fc3128f85cbf832af9",
+  "sourceMainObserved": "03db3692669847084d7e48fc3128f85cbf832af9",
+  "demoBaseCommit": "a8e9249da74784fdf89cb08ec089ae9b676eb45a",
+  "demoBranch": "codex/yujian-orb-third-tab-hybrid-v1",
+  "items": [
+    {
+      "sourcePath": "app/src/main/java/com/yujian/ai/ui/designsystem/components/aiorb/AIOrbCore.kt",
+      "sourceSha256": "44ee4f2ec39df7651b2bc3d6e6102c29a019aa24c63fa009555bf2a75655767a",
+      "sourceSymbol": "AIOrbCore routing: WebP+AGSL and optional GL candidate",
+      "targetPath": null,
+      "targetSha256": null,
+      "dependencyRole": "Production route and fallback audit",
+      "migrationStatus": "AUDITED_NOT_MIGRATED"
+    },
+    {
+      "sourcePath": "app/src/main/java/com/yujian/ai/ui/waterlight/renderer/OrbCrystalWakeGlOverlay.kt",
+      "sourceSha256": "91b7503522338c65a33d2390385808e3b1985733be925f1e7dfa2141d331ad17",
+      "sourceSymbol": "SPHERE_FS",
+      "sourceSymbolSha256": "eff0af75967117b501be6409009dfa62d9fb336065e458464a19d3e5221bbc05",
+      "targetPath": "app/src/main/assets/yujian_orb_core/YuJianCoreFragment.glsl",
+      "targetSha256": "c36a5ca89bfe2528e441612295a3154fd5e79d951c56f16522005d2a85d7aaaf",
+      "dependencyRole": "Core body, chromatic background refraction, meniscus, caustics, sunlight and Fresnel",
+      "migrationStatus": "EXTRACTED_AND_ADAPTED_TO_GLES3_AND_SHARED_DEMO_PROJECTION"
+    },
+    {
+      "sourcePath": "app/src/main/java/com/yujian/ai/ui/waterlight/renderer/OrbCrystalWakeGlOverlay.kt",
+      "sourceSha256": "91b7503522338c65a33d2390385808e3b1985733be925f1e7dfa2141d331ad17",
+      "sourceSymbol": "QUAD_VS",
+      "sourceSymbolSha256": "e6aaef05da273580ec1133edbe112a6ef6f9847abaa931fd31aeaa1bcb682bd8",
+      "targetPath": "app/src/main/assets/yujian_orb_core/YuJianCoreVertex.glsl",
+      "targetSha256": "2f7d00419193ab9937dfabd85ceacdee07c9e29cf8cb32a388dbdcd0cf1a0267",
+      "dependencyRole": "Source quad mapped to projected Core bounds through Demo matrices",
+      "migrationStatus": "ADAPTED_TO_GLES3_PROJECTED_BOUNDS"
+    },
+    {
+      "sourcePath": "app/src/main/java/com/yujian/ai/ui/waterlight/renderer/OrbResidentSystemsV1.kt",
+      "sourceSha256": "1e2d0459936b15a98e06cff99a92c9b831fba50a7dc93dee3e765e6517a38129",
+      "sourceSymbol": "OrbCoreRotationFieldV1.inverseSample",
+      "targetPath": "app/src/main/assets/yujian_orb_core/YuJianCoreFragment.glsl",
+      "targetSha256": "c36a5ca89bfe2528e441612295a3154fd5e79d951c56f16522005d2a85d7aaaf",
+      "dependencyRole": "Frozen 7-second radial 2D interior optical coordinate rotation; not rigid mesh rotation",
+      "migrationStatus": "PROFILE_ADAPTED_TO_SOURCE_GL_INTERIOR_OPTICAL_COORDINATES"
+    },
+    {
+      "sourcePath": "app/src/main/res/drawable-nodpi/processing_water_core_v1.webp",
+      "sourceSha256": "daa85a1fc13fac4a7ca562959c2d19172ee0f1e94277c3eeb32ef1f09a1a7b09",
+      "targetPath": "app/src/main/assets/yujian_orb_core/processing_water_core_v1.webp",
+      "targetSha256": "daa85a1fc13fac4a7ca562959c2d19172ee0f1e94277c3eeb32ef1f09a1a7b09",
+      "dependencyRole": "Pinned original source Core image for YuJian's image/AGSL route; SPHERE_FS does not sample it",
+      "migrationStatus": "COPIED_BIT_IDENTICALLY_PACKAGED_NOT_SAMPLED_BY_EXTRACTED_GL_SHADER"
+    },
+    {
+      "sourcePath": "app/src/main/java/com/yujian/ai/ui/waterlight/renderer/OrbFluidRefractionProgramV1.kt",
+      "sourceSha256": "d23c5f9be1e95d9b19b2f99e003c457461a00fec8e7a0a783cc6c8a124bfaf70",
+      "targetPath": null,
+      "targetSha256": null,
+      "dependencyRole": "Audited WebP+AGSL Core path; not reused as a second Compose/RuntimeShader host",
+      "migrationStatus": "AUDITED_NOT_MIGRATED"
+    },
+    {
+      "sourcePath": "app/src/main/assets/orb_fluid_v1/orb_fluid_refraction_v1.agsl",
+      "sourceSha256": "909395f21c7be87b4d73c62a2406c4b34eeb3d2fd2b7a3b2ba8060f3d1421011",
+      "targetPath": null,
+      "targetSha256": null,
+      "dependencyRole": "Pinned AGSL fluid image path; not used by the selected GLES SPHERE_FS route",
+      "migrationStatus": "AUDITED_NOT_MIGRATED"
+    },
+    {
+      "sourcePath": "app/src/main/java/com/yujian/ai/ui/waterlight/renderer/WaterLightGlSupport.kt",
+      "sourceSha256": "8dc5ae12735ba723654e4b62c8491f52777cdd8c9d4f0c67da0369a1b744a277",
+      "targetPath": null,
+      "targetSha256": null,
+      "dependencyRole": "Compose TextureView/EGL support; second EGL host is excluded",
+      "migrationStatus": "EXCLUDED_SECOND_EGL_HOST"
+    },
+    {
+      "sourcePath": "app/src/main/java/com/yujian/ai/ui/waterlight/renderer/OrbCausticsAdapter.kt",
+      "sourceSha256": "d338fa3f5509e8c96c8834e9a79eb1b20ae25dcc171df8185ac70ae763388615",
+      "targetPath": null,
+      "targetSha256": null,
+      "dependencyRole": "Source-app caustics adapter; Core caustics are already inside SPHERE_FS",
+      "migrationStatus": "EXCLUDED_OUTSIDE_CORE_SHADER"
+    },
+    {
+      "sourcePath": "app/src/main/java/com/yujian/ai/ui/waterlight/renderer/OrbDropletRenderer.kt",
+      "sourceSha256": "7826a94f522b24e0e0445f1dbdfc9c87416a2a7f24f5c9fdc4b7897a4a6eae23",
+      "targetPath": null,
+      "targetSha256": null,
+      "dependencyRole": "Source outer droplet system; Demo owns outer particles",
+      "migrationStatus": "EXCLUDED_OUTER_DUPLICATE"
+    },
+    {
+      "sourcePath": "app/src/main/java/com/yujian/ai/ui/waterlight/renderer/OrbFilamentRenderer.kt",
+      "sourceSha256": "6ae8b8603301862ff5c8bfe33e5bf0f57f3c68280eb6bc85b1e2b3a7527e26c1",
+      "targetPath": null,
+      "targetSha256": null,
+      "dependencyRole": "Source Resident paths; Tab 3 must use Demo's five frozen Residents",
+      "migrationStatus": "EXCLUDED_OUTER_DUPLICATE"
+    },
+    {
+      "sourcePath": "app/src/main/java/com/yujian/ai/ui/waterlight/renderer/OrbRuntimeProfileV1.kt",
+      "sourceSha256": "7e0f549ab297c934072c5e83323562b039d58c3044a4df954936b6597fec9ae6",
+      "targetPath": null,
+      "targetSha256": null,
+      "dependencyRole": "Source scene/stage runtime profile; no recognition business is imported",
+      "migrationStatus": "AUDITED_NOT_MIGRATED"
+    },
+    {
+      "sourcePath": "app/src/main/java/com/yujian/ai/ui/waterlight/renderer/OrbGrassMotionProfileV11.kt",
+      "sourceSha256": "481db889e1b7c41d1f80c39876aba2084259eebb703505571914d436aabffeaf",
+      "targetPath": null,
+      "targetSha256": null,
+      "dependencyRole": "Source grass motion; grass is excluded from Tab 3",
+      "migrationStatus": "EXCLUDED_OUTER_DUPLICATE"
+    }
+  ]
+}
