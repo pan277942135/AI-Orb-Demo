@@ -33,10 +33,12 @@ import com.example.orb.v3.OrbCameraSnapshot
 import com.example.orb.v3.OrbGpuCaptureSnapshot
 import com.example.orb.v3.OrbGpuReferenceCapture
 import com.example.orb.v3.OrbV3LoadState
+import com.example.orb.outer.OuterOpticalFieldRenderer
 import com.example.orb.yujian.core.YuJianCoreFrameInput
 import com.example.orb.yujian.core.YuJianCoreRenderer
 import java.io.File
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import javax.microedition.khronos.egl.EGLConfig
@@ -128,6 +130,24 @@ data class AIOrbTelemetry(
   val yujianPassStateReadBackValid: Boolean = false,
   val sceneFramebufferComplete: Boolean = false,
   val refractionTextureId: Int = 0,
+  val outerOpticalStatus: String = "NOT_INITIALIZED",
+  val outerOpticalManifestSha256: String = "UNAVAILABLE",
+  val outerOpticalShaderSourceSha256: String = "UNAVAILABLE",
+  val outerOpticalRibbonProgramId: Int = 0,
+  val outerOpticalPointProgramId: Int = 0,
+  val outerOpticalTraceCount: Int = 0,
+  val outerOpticalSurfaceCount: Int = 0,
+  val outerOpticalFilamentCount: Int = 0,
+  val outerOpticalHighlightCount: Int = 0,
+  val outerOpticalDropletCount: Int = 0,
+  val outerOpticalParticleCount: Int = 0,
+  val outerOpticalBackVertexCount: Int = 0,
+  val outerOpticalFrontVertexCount: Int = 0,
+  val outerOpticalFramebufferId: Int = 0,
+  val outerOpticalRefractionTextureId: Int = 0,
+  val outerOpticalGlError: String = "GL_NO_ERROR",
+  val outerOpticalGlErrorPass: String = "NONE",
+  val outerOpticalUniformReadbackValid: Boolean = false,
 ) {
   val fboFormatLabel: String get() = if (isHdrFbo) "RGBA16F (HDR)" else "RGBA8 (Linear-HDR 0.25x)"
   val renderingBackendLabel: String get() = if (isSoftwareRenderer) "SOFTWARE RENDERING" else "HARDWARE GPU"
@@ -143,8 +163,8 @@ data class AIOrbTelemetry(
  *   [energyHighlights], [particles], [motionController], and [postProcessing] FBO via off-axis
  *   lens-shift projection, adding the studio backdrop, cropped fishing photo, 4 independent Task
  *   Energy streams, and unified-path 6-keyframe Perimeter WaterLight.
- * - Tab 3 (`YUJIAN_HYBRID`): keeps the Tab 1 outer passes and replaces only Pass 6 with the
- *   source-extracted YuJian Core shader in this same GL context.
+ * - Tab 3 (`YUJIAN_HYBRID`): uses a REF_B-driven outer optical field around the source-extracted
+ *   YuJian Core shader in this same GL context; Tab 1 and Tab 2 retain their own pass paths.
  */
 class AIOrbScene(
   initialConfig: AIOrbConfig = AIOrbConfig.Default,
@@ -154,6 +174,7 @@ class AIOrbScene(
 ) : GLSurfaceView.Renderer {
 
   private val configRef = AtomicReference(initialConfig)
+  private val telemetryPublishRequested = AtomicBoolean(false)
 
   // V3.2 Master-Fitted runtime parameters loaded from assets/orb_v3/manifest/MASTER_FIDELITY_V32.json
   val masterFidelity: MasterFidelityV32 = MasterFidelityV32.loadFromAssets(assetManager)
@@ -165,6 +186,7 @@ class AIOrbScene(
   private val background = AIOrbBackground()
   private val core = AIOrbCore()
   private val yujianCoreRenderer = YuJianCoreRenderer()
+  private val outerOpticalFieldRenderer = OuterOpticalFieldRenderer()
   private val orbitRibbons = AIOrbOrbitRibbons(masterFidelity)
   private val energyHighlights = AIOrbEnergyHighlights()
   private val particles = AIOrbParticles()
@@ -245,6 +267,7 @@ class AIOrbScene(
 
   fun updateConfig(config: AIOrbConfig) {
     val prev = configRef.getAndSet(config)
+    if (prev != config) telemetryPublishRequested.set(true)
     if (prev.sceneMode != config.sceneMode) {
       tabSwitchCounter.incrementAndGet()
       if (config.sceneMode == OrbSceneMode.TASK_PERIMETER_DEMO) {
@@ -412,6 +435,7 @@ class AIOrbScene(
       gpuReferenceCapture.cancelForContextLoss()
       taskGpuEvidenceCapture.cancelForContextLoss()
       yujianCoreRenderer.onContextLost()
+      outerOpticalFieldRenderer.onContextLost()
       background.release()
       core.release()
       core.markGlContextLost()
@@ -527,6 +551,12 @@ class AIOrbScene(
     lastFrameNanos = frameStartNanos
 
     val cfg = configRef.get()
+    val isYuJianTab3 = cfg.sceneMode == OrbSceneMode.YUJIAN_HYBRID && cfg.coreMode == OrbCoreMode.YUJIAN_CORE
+    if (isYuJianTab3 && outerOpticalFieldRenderer.runtimeState.status in setOf("NOT_INITIALIZED", "CONTEXT_LOST", "RELEASED")) {
+      // Keep Tab 1 and Tab 2 startup costs and GL resource allocation unchanged. Build the
+      // REF_B field on the shared GL thread only when Tab 3 is first rendered or recovers.
+      outerOpticalFieldRenderer.onSurfaceCreated(assetManager)
+    }
     val volumeJustUpdated = core.uploadReadyAssetsIfNeeded(assetManager)
     if (volumeJustUpdated && core.isVolumeReady) {
       webpLoadCounter.incrementAndGet()
@@ -691,9 +721,8 @@ class AIOrbScene(
   }
 
   /**
-   * 100% preserved Tab 1 (`ORB_ONLY`) V3 Single-Volume Multi-Pass GPU Pipeline with unified
-   * V3.2 `OrbCameraBuilder` camera shared identically by `FULL_RENDER` and ALL diagnostic modes.
-   * Zero Task, Photo, or Perimeter passes execute here.
+   * Tab 1 keeps its native V3 single-volume pass path. Tab 3 selects its independent REF_B outer
+   * field in this same camera/FBO path. No Tab 2 Task, Photo, or Perimeter pass executes here.
    */
   private fun renderOriginalOrbOnlyFrame(
     frameStartNanos: Long,
@@ -758,6 +787,7 @@ class AIOrbScene(
       mode != RenderDebugMode.RESIDENTS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
     val drawCore = mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.RESIDENTS_ONLY &&
       mode != RenderDebugMode.OPTICS_ONLY
+    val isYuJianTab3 = cfg.sceneMode == OrbSceneMode.YUJIAN_HYBRID && cfg.coreMode == OrbCoreMode.YUJIAN_CORE
 
     // ==================== V3 SINGLE-VOLUME MULTI-PASS GPU PIPELINE ====================
     val transparentCoreCapture = mode == RenderDebugMode.CORE_ONLY_TRANSPARENT
@@ -769,23 +799,39 @@ class AIOrbScene(
       if (transparentCoreCapture) GLES30.glClearColor(0f, 0f, 0f, 0f)
       GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT or GLES30.GL_DEPTH_BUFFER_BIT)
     } else {
-      background.draw(time, rw, rh, autoYawRad, autoPitchRad, hdrScale, cfg)
+      background.draw(
+        time, rw, rh, autoYawRad, autoPitchRad, hdrScale, cfg,
+        referenceBokeh = if (isYuJianTab3) outerOpticalFieldRenderer.referenceBokeh else null,
+      )
     }
 
     // Pass 2: Far-depth crystal droplets & micro-motes
-    if (drawParticles) {
+    if (drawParticles && !isYuJianTab3) {
       particles.drawPass(0, orbCenterViewZ, viewMatrix, projMatrix, motion, hdrScale, cfg)
     }
 
     // Pass 3: Back-hemisphere & behind-glass-dome 3D organic Resident ribbons (refracted through glass core)
     val scaledCoreRadius = (cfg.coreScale * cfg.coreShellScale).coerceAtLeast(0.4f)
-    if (drawRibbons) {
+    if (drawRibbons && !isYuJianTab3) {
       orbitRibbons.drawPass(0, orbOriginView, scaledCoreRadius, viewMatrix, projMatrix, cameraPos, motion, hdrScale, cfg)
     }
 
     // Pass 4: Back-hemisphere travelling HDR starburst flares
-    if (drawHighlights) {
+    if (drawHighlights && !isYuJianTab3) {
       energyHighlights.drawPass(0, orbCenterViewZ, orbitRibbons, viewMatrix, projMatrix, motion, hdrScale, cfg)
+    }
+    if (isYuJianTab3) {
+      outerOpticalFieldRenderer.drawBack(
+        model = outerGlassModel,
+        view = viewMatrix,
+        projection = projMatrix,
+        width = rw,
+        height = rh,
+        time = time,
+        hdrScale = hdrScale,
+        drawSurfaces = drawRibbons,
+        drawDetails = drawHighlights || drawParticles,
+      )
     }
 
     // Pass 5 (V3): Capture background + back ribbons ONLY for clean crystal refraction
@@ -811,6 +857,7 @@ class AIOrbScene(
             motion = motion,
           )
         )
+        if (isYuJianTab3) postProcessing.captureRefractionSnapshot()
       } else {
         core.draw(
           outerGlassModel = outerGlassModel,
@@ -832,16 +879,30 @@ class AIOrbScene(
     }
 
     // Pass 7: Front-of-glass-dome 3D organic Resident ribbons (hardware depth-tested against outer glass sphere!)
-    if (drawRibbons) {
+    if (drawRibbons && !isYuJianTab3) {
       orbitRibbons.drawPass(1, orbOriginView, scaledCoreRadius, viewMatrix, projMatrix, cameraPos, motion, hdrScale, cfg)
     }
 
     // Pass 8: Front-hemisphere jewel starbursts & foreground crystal water droplets
-    if (drawHighlights) {
+    if (drawHighlights && !isYuJianTab3) {
       energyHighlights.drawPass(1, orbCenterViewZ, orbitRibbons, viewMatrix, projMatrix, motion, hdrScale, cfg)
     }
-    if (drawParticles) {
+    if (drawParticles && !isYuJianTab3) {
       particles.drawPass(1, orbCenterViewZ, viewMatrix, projMatrix, motion, hdrScale, cfg)
+    }
+    if (isYuJianTab3) {
+      outerOpticalFieldRenderer.drawFront(
+        model = outerGlassModel,
+        view = viewMatrix,
+        projection = projMatrix,
+        width = rw,
+        height = rh,
+        time = time,
+        hdrScale = hdrScale,
+        refractionTextureId = if (drawCore) postProcessing.refractionTextureId else 0,
+        drawSurfaces = drawRibbons,
+        drawDetails = drawHighlights || drawParticles,
+      )
     }
 
     // Pass 9: High-threshold HDR Bloom + ACES Filmic + True sRGB 2.2 Composite
@@ -1146,6 +1207,24 @@ class AIOrbScene(
       yujianPassStateReadBackValid = yujian.passStateReadBackValid,
       sceneFramebufferComplete = postProcessing.isSceneFboComplete,
       refractionTextureId = postProcessing.refractionTextureId,
+      outerOpticalStatus = outerOpticalFieldRenderer.runtimeState.status,
+      outerOpticalManifestSha256 = outerOpticalFieldRenderer.runtimeState.manifestSha256,
+      outerOpticalShaderSourceSha256 = outerOpticalFieldRenderer.runtimeState.shaderSourceSha256,
+      outerOpticalRibbonProgramId = outerOpticalFieldRenderer.runtimeState.ribbonProgramId,
+      outerOpticalPointProgramId = outerOpticalFieldRenderer.runtimeState.pointProgramId,
+      outerOpticalTraceCount = outerOpticalFieldRenderer.runtimeState.traceCount,
+      outerOpticalSurfaceCount = outerOpticalFieldRenderer.runtimeState.surfaceCount,
+      outerOpticalFilamentCount = outerOpticalFieldRenderer.runtimeState.filamentCount,
+      outerOpticalHighlightCount = outerOpticalFieldRenderer.runtimeState.highlightCount,
+      outerOpticalDropletCount = outerOpticalFieldRenderer.runtimeState.dropletCount,
+      outerOpticalParticleCount = outerOpticalFieldRenderer.runtimeState.particleCount,
+      outerOpticalBackVertexCount = outerOpticalFieldRenderer.runtimeState.drawnBackVertices,
+      outerOpticalFrontVertexCount = outerOpticalFieldRenderer.runtimeState.drawnFrontVertices,
+      outerOpticalFramebufferId = outerOpticalFieldRenderer.runtimeState.framebufferId,
+      outerOpticalRefractionTextureId = outerOpticalFieldRenderer.runtimeState.refractionTextureId,
+      outerOpticalGlError = outerOpticalFieldRenderer.runtimeState.glError,
+      outerOpticalGlErrorPass = outerOpticalFieldRenderer.runtimeState.glErrorPass,
+      outerOpticalUniformReadbackValid = outerOpticalFieldRenderer.runtimeState.uniformReadbackValid,
     )
     latestTelemetryRef.set(snapshot)
     return snapshot
@@ -1158,7 +1237,7 @@ class AIOrbScene(
     mode: RenderDebugMode,
   ) {
     val shouldPublish = frameTelemetryTracker.recordFrame(frameStartNanos, System.nanoTime())
-    if (volumeJustUpdated || shouldPublish) {
+    if (volumeJustUpdated || shouldPublish || telemetryPublishRequested.getAndSet(false)) {
       onTelemetryUpdated(
         buildTelemetrySnapshot(
           timing = frameTelemetryTracker.snapshot(),
@@ -1174,6 +1253,7 @@ class AIOrbScene(
     gpuReferenceCapture.release()
     taskGpuEvidenceCapture.release()
     yujianCoreRenderer.release()
+    outerOpticalFieldRenderer.release()
     background.release()
     core.release()
     orbitRibbons.release()
@@ -1236,11 +1316,24 @@ class AIOrbScene(
       }
     }
 
-    /** Tab 3 substitutes only Pass 6 while preserving the native Demo outer-pass order. */
-    fun activeRenderPassesYuJianHybrid(mode: RenderDebugMode): List<String> =
-      activeRenderPassesV3(mode).map { pass ->
-        if (pass.startsWith("PASS_6_")) "PASS_6_YUJIAN_CORE_ONLY_SOURCE_SPHERE_FS" else pass
+    /** Tab 3 uses a REF_B-driven optical field around the source-extracted YuJian Core. */
+    fun activeRenderPassesYuJianHybrid(mode: RenderDebugMode): List<String> {
+      val hideOuter = mode.isCoreIsolated
+      val drawSurfaces = !hideOuter && mode != RenderDebugMode.OPTICS_ONLY
+      val drawDetails = !hideOuter && mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.RESIDENTS_ONLY && mode != RenderDebugMode.DEPTH_DEBUG
+      val drawCore = mode != RenderDebugMode.RIBBONS_ONLY && mode != RenderDebugMode.RESIDENTS_ONLY && mode != RenderDebugMode.OPTICS_ONLY
+      return buildList {
+        add("PASS_1_TAB1_BACKGROUND_WITH_REF_B_BOKEH")
+        if (drawSurfaces) add("PASS_2_REF_B_BACK_OPTICAL_SURFACES_AND_FILAMENTS")
+        if (drawDetails) add("PASS_3_REF_B_BACK_HIGHLIGHTS_PARTICLES_AND_DROPLETS")
+        if (drawCore) add("PASS_4_REFRACTION_SNAPSHOT_BEFORE_CORE")
+        if (drawCore) add("PASS_5_YUJIAN_CORE_SOURCE_SPHERE_FS")
+        if (drawCore) add("PASS_6_REFRACTION_SNAPSHOT_AFTER_CORE")
+        if (drawSurfaces) add("PASS_7_REF_B_FRONT_OPTICAL_SURFACES_AND_FILAMENTS")
+        if (drawDetails) add("PASS_8_REF_B_FRONT_HIGHLIGHTS_AND_DROPLETS")
+        add(if (mode == RenderDebugMode.BLOOM_OFF) "PASS_9_FINAL_COMPOSITE_BLOOM_OFF" else "PASS_9_HDR_BLOOM_ACES_SRGB_COMPOSITE")
       }
+    }
 
     /**
      * Tab 2 (`TASK_PERIMETER_DEMO`) authoritative render pass manifest reusing the EXACT SAME

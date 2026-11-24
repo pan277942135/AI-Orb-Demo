@@ -1,0 +1,2554 @@
+{
+  "schema": "AI_ORB_TAB3_OUTER_OPTICAL_RUNTIME_V1",
+  "version": "1.0.0",
+  "source": {
+    "refBSha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
+    "p0_3ContractSha256": "aa0729887570db4a0da0d3fb7a629a1a7273666ba0c7ab129b60d70bfdee9170",
+    "outerOpticalContractSha256": "9592638cdc18148f1b61157969b60c993c901f5f93ba5fc58d703cbc6f2655fc",
+    "geometryDataSha256": "b894b3fc7fc44b5b2c4f68cc10bfae10f798e350cc0f7f20ec64d22f22cd056e",
+    "extractionGate": "P0_A_PASS"
+  },
+  "referenceProjection": {
+    "canvasPx": [
+      1254,
+      1254
+    ],
+    "centerPx": [
+      626.5,
+      620.5
+    ],
+    "coreDiameterPx": 652.00476,
+    "coordinateOrigin": "top_left",
+    "note": "The scene camera and scale remain frozen; pixel positions are mapped around the projected core center without registration or warping."
+  },
+  "motion": {
+    "timeSource": "AIOrbMotionSnapshot.simTimeSec",
+    "identityPeriodsSource": "frozen P0-3 motion contract; group-to-identity attribution is recorded per trace",
+    "staticImageCannotDetermineMotion": true,
+    "residentPeriodsMs": {
+      "RESIDENT_FRONT_CYAN": 4400,
+      "RESIDENT_FRONT_GOLD": 2900,
+      "RESIDENT_BACK_GREEN_GOLD": 6100
+    }
+  },
+  "traces": [
+    {
+      "id": "RESIDENT_FRONT_CYAN-TRACE-01",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "materialClass": "CYAN_LIQUID_GLASS",
+      "depthRole": "FRONT",
+      "pointsPx": [
+        [
+          90,
+          462
+        ],
+        [
+          127,
+          492
+        ],
+        [
+          169,
+          524
+        ],
+        [
+          220,
+          553
+        ],
+        [
+          281,
+          584
+        ],
+        [
+          345,
+          616
+        ],
+        [
+          411,
+          648
+        ],
+        [
+          478,
+          680
+        ],
+        [
+          548,
+          711
+        ],
+        [
+          617,
+          742
+        ],
+        [
+          685,
+          771
+        ],
+        [
+          754,
+          799
+        ],
+        [
+          823,
+          821
+        ],
+        [
+          889,
+          831
+        ],
+        [
+          951,
+          824
+        ],
+        [
+          1009,
+          804
+        ],
+        [
+          1064,
+          778
+        ],
+        [
+          1104,
+          754
+        ]
+      ],
+      "annotationWidthPx": 30,
+      "signalWidthPx": 15.0,
+      "measuredSignalWidthPx": {
+        "p10": 5.0,
+        "p25": 7.5,
+        "p50": 15.0,
+        "p75": 28.0,
+        "p90": 29.0
+      },
+      "baseColorLinear": [
+        0.148987,
+        0.294855,
+        0.227697
+      ],
+      "phaseRad": 0.0,
+      "periodMs": 4400,
+      "sourceLengthPx": 1117.677,
+      "confidence": "PIXEL_TRACE_MEASURED; material and per-identity mapping follow frozen semantic group"
+    },
+    {
+      "id": "RESIDENT_FRONT_GOLD-TRACE-01",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "materialClass": "GOLD_FILAMENT_SURFACE",
+      "depthRole": "FRONT",
+      "pointsPx": [
+        [
+          218,
+          330
+        ],
+        [
+          271,
+          289
+        ],
+        [
+          337,
+          258
+        ],
+        [
+          408,
+          236
+        ],
+        [
+          486,
+          223
+        ],
+        [
+          560,
+          224
+        ],
+        [
+          620,
+          239
+        ],
+        [
+          681,
+          270
+        ],
+        [
+          738,
+          313
+        ],
+        [
+          789,
+          362
+        ],
+        [
+          836,
+          420
+        ],
+        [
+          881,
+          483
+        ],
+        [
+          929,
+          543
+        ],
+        [
+          982,
+          594
+        ],
+        [
+          1035,
+          636
+        ],
+        [
+          1080,
+          664
+        ]
+      ],
+      "annotationWidthPx": 15,
+      "signalWidthPx": 8.0,
+      "measuredSignalWidthPx": {
+        "p10": 3.9,
+        "p25": 5.0,
+        "p50": 8.0,
+        "p75": 12.5,
+        "p90": 15.0
+      },
+      "baseColorLinear": [
+        0.647078,
+        0.489719,
+        0.212351
+      ],
+      "phaseRad": 2.399963,
+      "periodMs": 2900,
+      "sourceLengthPx": 1062.823,
+      "confidence": "PIXEL_TRACE_MEASURED; material and per-identity mapping follow frozen semantic group"
+    },
+    {
+      "id": "RESIDENT_FRONT_GOLD-TRACE-02",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "materialClass": "GOLD_FILAMENT_SURFACE",
+      "depthRole": "FRONT",
+      "pointsPx": [
+        [
+          252,
+          350
+        ],
+        [
+          302,
+          379
+        ],
+        [
+          363,
+          408
+        ],
+        [
+          431,
+          443
+        ],
+        [
+          498,
+          481
+        ],
+        [
+          561,
+          526
+        ],
+        [
+          620,
+          571
+        ],
+        [
+          681,
+          614
+        ],
+        [
+          742,
+          657
+        ],
+        [
+          801,
+          693
+        ],
+        [
+          859,
+          717
+        ],
+        [
+          914,
+          728
+        ],
+        [
+          964,
+          717
+        ],
+        [
+          1001,
+          691
+        ]
+      ],
+      "annotationWidthPx": 13,
+      "signalWidthPx": 7.0,
+      "measuredSignalWidthPx": {
+        "p10": 2.4,
+        "p25": 3.5,
+        "p50": 7.0,
+        "p75": 11.0,
+        "p90": 12.6
+      },
+      "baseColorLinear": [
+        0.647078,
+        0.489719,
+        0.212351
+      ],
+      "phaseRad": 4.799926,
+      "periodMs": 2900,
+      "sourceLengthPx": 864.129,
+      "confidence": "PIXEL_TRACE_MEASURED; material and per-identity mapping follow frozen semantic group"
+    },
+    {
+      "id": "RESIDENT_BACK_GREEN_GOLD-TRACE-01",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "materialClass": "EMERALD_GOLD_SILK",
+      "depthRole": "BACK_GROUP_INFERENCE",
+      "pointsPx": [
+        [
+          303,
+          226
+        ],
+        [
+          376,
+          170
+        ],
+        [
+          464,
+          137
+        ],
+        [
+          555,
+          127
+        ],
+        [
+          647,
+          137
+        ],
+        [
+          732,
+          162
+        ],
+        [
+          805,
+          196
+        ],
+        [
+          866,
+          227
+        ],
+        [
+          921,
+          270
+        ]
+      ],
+      "annotationWidthPx": 42,
+      "signalWidthPx": 14.0,
+      "measuredSignalWidthPx": {
+        "p10": 5.5,
+        "p25": 7.5,
+        "p50": 14.0,
+        "p75": 15.0,
+        "p90": 16.5
+      },
+      "baseColorLinear": [
+        0.302383,
+        0.366061,
+        0.213525
+      ],
+      "phaseRad": 0.916704,
+      "periodMs": 6100,
+      "sourceLengthPx": 677.448,
+      "confidence": "PIXEL_TRACE_MEASURED; material and per-identity mapping follow frozen semantic group"
+    },
+    {
+      "id": "RESIDENT_BACK_GREEN_GOLD-TRACE-02",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "materialClass": "EMERALD_GOLD_SILK",
+      "depthRole": "BACK_GROUP_INFERENCE",
+      "pointsPx": [
+        [
+          923,
+          270
+        ],
+        [
+          973,
+          331
+        ],
+        [
+          1005,
+          403
+        ],
+        [
+          1020,
+          483
+        ],
+        [
+          1006,
+          559
+        ],
+        [
+          978,
+          631
+        ],
+        [
+          944,
+          694
+        ],
+        [
+          906,
+          753
+        ],
+        [
+          863,
+          807
+        ]
+      ],
+      "annotationWidthPx": 48,
+      "signalWidthPx": 16.0,
+      "measuredSignalWidthPx": {
+        "p10": 3.0,
+        "p25": 6.5,
+        "p50": 16.0,
+        "p75": 21.0,
+        "p90": 32.6
+      },
+      "baseColorLinear": [
+        0.302383,
+        0.366061,
+        0.213525
+      ],
+      "phaseRad": 3.316668,
+      "periodMs": 6100,
+      "sourceLengthPx": 604.386,
+      "confidence": "PIXEL_TRACE_MEASURED; material and per-identity mapping follow frozen semantic group"
+    },
+    {
+      "id": "RESIDENT_BACK_GREEN_GOLD-TRACE-03",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "materialClass": "EMERALD_GOLD_SILK",
+      "depthRole": "BACK_GROUP_INFERENCE",
+      "pointsPx": [
+        [
+          863,
+          807
+        ],
+        [
+          802,
+          861
+        ],
+        [
+          728,
+          908
+        ],
+        [
+          645,
+          938
+        ],
+        [
+          562,
+          939
+        ],
+        [
+          486,
+          914
+        ],
+        [
+          416,
+          874
+        ],
+        [
+          358,
+          826
+        ]
+      ],
+      "annotationWidthPx": 44,
+      "signalWidthPx": 8.0,
+      "measuredSignalWidthPx": {
+        "p10": 2.0,
+        "p25": 3.0,
+        "p50": 8.0,
+        "p75": 12.0,
+        "p90": 21.4
+      },
+      "baseColorLinear": [
+        0.302383,
+        0.366061,
+        0.213525
+      ],
+      "phaseRad": 5.716631,
+      "periodMs": 6100,
+      "sourceLengthPx": 576.308,
+      "confidence": "PIXEL_TRACE_MEASURED; material and per-identity mapping follow frozen semantic group"
+    },
+    {
+      "id": "RESIDENT_BACK_GREEN_GOLD-TRACE-04",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "materialClass": "EMERALD_GOLD_SILK",
+      "depthRole": "BACK_GROUP_INFERENCE",
+      "pointsPx": [
+        [
+          358,
+          826
+        ],
+        [
+          301,
+          766
+        ],
+        [
+          256,
+          695
+        ],
+        [
+          227,
+          616
+        ],
+        [
+          210,
+          531
+        ],
+        [
+          216,
+          451
+        ],
+        [
+          246,
+          373
+        ],
+        [
+          274,
+          302
+        ]
+      ],
+      "annotationWidthPx": 43,
+      "signalWidthPx": 7.5,
+      "measuredSignalWidthPx": {
+        "p10": 2.0,
+        "p25": 3.0,
+        "p50": 7.5,
+        "p75": 16.25,
+        "p90": 30.9
+      },
+      "baseColorLinear": [
+        0.302383,
+        0.366061,
+        0.213525
+      ],
+      "phaseRad": 1.833409,
+      "periodMs": 6100,
+      "sourceLengthPx": 577.773,
+      "confidence": "PIXEL_TRACE_MEASURED; material and per-identity mapping follow frozen semantic group"
+    }
+  ],
+  "projectedCrossings": [
+    {
+      "nodeId": "X01",
+      "pointPx": [
+        843.651,
+        824.129
+      ],
+      "pointNormalized": [
+        0.672768,
+        0.6572
+      ],
+      "traceIds": [
+        "RESIDENT_FRONT_CYAN-TRACE-01",
+        "RESIDENT_BACK_GREEN_GOLD-TRACE-03"
+      ],
+      "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+      "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+      "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+    },
+    {
+      "nodeId": "X02",
+      "pointPx": [
+        213.681,
+        549.407
+      ],
+      "pointNormalized": [
+        0.1704,
+        0.438124
+      ],
+      "traceIds": [
+        "RESIDENT_FRONT_CYAN-TRACE-01",
+        "RESIDENT_BACK_GREEN_GOLD-TRACE-04"
+      ],
+      "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+      "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+      "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+    },
+    {
+      "nodeId": "X03",
+      "pointPx": [
+        989.942,
+        600.293
+      ],
+      "pointNormalized": [
+        0.789427,
+        0.478703
+      ],
+      "traceIds": [
+        "RESIDENT_FRONT_GOLD-TRACE-01",
+        "RESIDENT_BACK_GREEN_GOLD-TRACE-02"
+      ],
+      "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+      "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+      "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+    },
+    {
+      "nodeId": "X04",
+      "pointPx": [
+        923.439,
+        725.923
+      ],
+      "pointNormalized": [
+        0.736395,
+        0.578886
+      ],
+      "traceIds": [
+        "RESIDENT_FRONT_GOLD-TRACE-02",
+        "RESIDENT_BACK_GREEN_GOLD-TRACE-02"
+      ],
+      "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+      "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+      "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+    },
+    {
+      "nodeId": "X05",
+      "pointPx": [
+        254.499,
+        351.449
+      ],
+      "pointNormalized": [
+        0.20295,
+        0.280263
+      ],
+      "traceIds": [
+        "RESIDENT_FRONT_GOLD-TRACE-02",
+        "RESIDENT_BACK_GREEN_GOLD-TRACE-04"
+      ],
+      "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+      "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+      "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+    },
+    {
+      "nodeId": "X06",
+      "pointPx": [
+        863.0,
+        807.0
+      ],
+      "pointNormalized": [
+        0.688198,
+        0.643541
+      ],
+      "traceIds": [
+        "RESIDENT_BACK_GREEN_GOLD-TRACE-02",
+        "RESIDENT_BACK_GREEN_GOLD-TRACE-03"
+      ],
+      "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+      "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+      "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+    },
+    {
+      "nodeId": "X07",
+      "pointPx": [
+        358.0,
+        826.0
+      ],
+      "pointNormalized": [
+        0.285486,
+        0.658692
+      ],
+      "traceIds": [
+        "RESIDENT_BACK_GREEN_GOLD-TRACE-03",
+        "RESIDENT_BACK_GREEN_GOLD-TRACE-04"
+      ],
+      "nodeType": "PROJECTED_TRACE_CROSSING_CANDIDATE",
+      "evidenceClass": "OBSERVED_2D_POLYLINE_INTERSECTION; NOT_PROOF_OF_PHYSICAL_BRANCH_OR_SAME_DEPTH",
+      "depthOrder": "UNCERTAIN_FROM_SINGLE_RGB_REFERENCE"
+    }
+  ],
+  "bokeh": [
+    {
+      "id": "BOKEH-01",
+      "centerPx": [
+        1172.0,
+        37.579
+      ],
+      "bboxXYWH": [
+        1105,
+        0,
+        135,
+        86
+      ],
+      "radiusPx": 67.5,
+      "colorLinear": [
+        0.000394,
+        0.013444,
+        0.015642
+      ],
+      "p95LuminanceLinear": 0.0109623,
+      "phaseRad": 0.0,
+      "confidence": "FROZEN_BOKEH_MASK_COMPONENT"
+    },
+    {
+      "id": "BOKEH-02",
+      "centerPx": [
+        147.0,
+        1100.0
+      ],
+      "bboxXYWH": [
+        95,
+        1042,
+        105,
+        117
+      ],
+      "radiusPx": 58.5,
+      "colorLinear": [
+        0.006178,
+        0.02019,
+        0.007814
+      ],
+      "p95LuminanceLinear": 0.0162435,
+      "phaseRad": 1.618034,
+      "confidence": "FROZEN_BOKEH_MASK_COMPONENT"
+    },
+    {
+      "id": "BOKEH-03",
+      "centerPx": [
+        1112.0,
+        1080.0
+      ],
+      "bboxXYWH": [
+        1063,
+        1036,
+        99,
+        89
+      ],
+      "radiusPx": 49.5,
+      "colorLinear": [
+        0.001062,
+        0.017047,
+        0.019741
+      ],
+      "p95LuminanceLinear": 0.0136136,
+      "phaseRad": 3.236068,
+      "confidence": "FROZEN_BOKEH_MASK_COMPONENT"
+    },
+    {
+      "id": "BOKEH-04",
+      "centerPx": [
+        64.0,
+        790.0
+      ],
+      "bboxXYWH": [
+        25,
+        741,
+        79,
+        99
+      ],
+      "radiusPx": 49.5,
+      "colorLinear": [
+        0.003352,
+        0.016877,
+        0.013207
+      ],
+      "p95LuminanceLinear": 0.0136273,
+      "phaseRad": 4.854102,
+      "confidence": "FROZEN_BOKEH_MASK_COMPONENT"
+    },
+    {
+      "id": "BOKEH-05",
+      "centerPx": [
+        34.306,
+        38.11
+      ],
+      "bboxXYWH": [
+        0,
+        0,
+        76,
+        82
+      ],
+      "radiusPx": 41.0,
+      "colorLinear": [
+        0.005053,
+        0.029932,
+        0.026711
+      ],
+      "p95LuminanceLinear": 0.0241353,
+      "phaseRad": 0.188951,
+      "confidence": "FROZEN_BOKEH_MASK_COMPONENT"
+    },
+    {
+      "id": "BOKEH-06",
+      "centerPx": [
+        58.0,
+        333.0
+      ],
+      "bboxXYWH": [
+        19,
+        292,
+        79,
+        83
+      ],
+      "radiusPx": 41.5,
+      "colorLinear": [
+        0.005555,
+        0.026526,
+        0.019116
+      ],
+      "p95LuminanceLinear": 0.0212687,
+      "phaseRad": 1.806985,
+      "confidence": "FROZEN_BOKEH_MASK_COMPONENT"
+    },
+    {
+      "id": "BOKEH-07",
+      "centerPx": [
+        785.0,
+        50.0
+      ],
+      "bboxXYWH": [
+        743,
+        13,
+        85,
+        75
+      ],
+      "radiusPx": 42.5,
+      "colorLinear": [
+        0.014531,
+        0.051141,
+        0.033825
+      ],
+      "p95LuminanceLinear": 0.0421288,
+      "phaseRad": 3.425019,
+      "confidence": "FROZEN_BOKEH_MASK_COMPONENT"
+    },
+    {
+      "id": "BOKEH-08",
+      "centerPx": [
+        1170.0,
+        1200.0
+      ],
+      "bboxXYWH": [
+        1136,
+        1161,
+        69,
+        79
+      ],
+      "radiusPx": 39.5,
+      "colorLinear": [
+        0.000109,
+        0.010542,
+        0.013463
+      ],
+      "p95LuminanceLinear": 0.0083898,
+      "phaseRad": 5.043053,
+      "confidence": "FROZEN_BOKEH_MASK_COMPONENT"
+    },
+    {
+      "id": "BOKEH-09",
+      "centerPx": [
+        110.0,
+        118.0
+      ],
+      "bboxXYWH": [
+        79,
+        90,
+        63,
+        57
+      ],
+      "radiusPx": 31.5,
+      "colorLinear": [
+        0.010446,
+        0.052601,
+        0.049286
+      ],
+      "p95LuminanceLinear": 0.0434801,
+      "phaseRad": 0.377901,
+      "confidence": "FROZEN_BOKEH_MASK_COMPONENT"
+    },
+    {
+      "id": "BOKEH-10",
+      "centerPx": [
+        1218.0,
+        438.0
+      ],
+      "bboxXYWH": [
+        1193,
+        405,
+        51,
+        67
+      ],
+      "radiusPx": 33.5,
+      "colorLinear": [
+        0.007692,
+        0.016748,
+        0.007612
+      ],
+      "p95LuminanceLinear": 0.0141564,
+      "phaseRad": 1.995935,
+      "confidence": "FROZEN_BOKEH_MASK_COMPONENT"
+    },
+    {
+      "id": "BOKEH-11",
+      "centerPx": [
+        1168.0,
+        156.0
+      ],
+      "bboxXYWH": [
+        1142,
+        126,
+        53,
+        61
+      ],
+      "radiusPx": 30.5,
+      "colorLinear": [
+        0.000223,
+        0.011487,
+        0.013416
+      ],
+      "p95LuminanceLinear": 0.009307,
+      "phaseRad": 3.613969,
+      "confidence": "FROZEN_BOKEH_MASK_COMPONENT"
+    },
+    {
+      "id": "BOKEH-12",
+      "centerPx": [
+        520.0,
+        54.0
+      ],
+      "bboxXYWH": [
+        498,
+        34,
+        45,
+        41
+      ],
+      "radiusPx": 22.5,
+      "colorLinear": [
+        0.004332,
+        0.038631,
+        0.038367
+      ],
+      "p95LuminanceLinear": 0.0310157,
+      "phaseRad": 5.232003,
+      "confidence": "FROZEN_BOKEH_MASK_COMPONENT"
+    }
+  ],
+  "droplets": [
+    {
+      "id": "DROP-01",
+      "centerPx": [
+        1025.0,
+        304.0
+      ],
+      "bboxXYWH": [
+        1008,
+        285,
+        35,
+        39
+      ],
+      "radiusPx": 18.5,
+      "colorLinear": [
+        0.414361,
+        0.511093,
+        0.445437
+      ],
+      "p95LuminanceLinear": 0.396936,
+      "depthRole": "UNCERTAIN_FROM_SINGLE_IMAGE; conservative FRONT/OFF_CORE placement is runtime inference"
+    },
+    {
+      "id": "DROP-02",
+      "centerPx": [
+        943.0,
+        895.0
+      ],
+      "bboxXYWH": [
+        927,
+        878,
+        33,
+        35
+      ],
+      "radiusPx": 17.0,
+      "colorLinear": [
+        0.050524,
+        0.09092,
+        0.062238
+      ],
+      "p95LuminanceLinear": 0.0735685,
+      "depthRole": "UNCERTAIN_FROM_SINGLE_IMAGE; conservative FRONT/OFF_CORE placement is runtime inference"
+    },
+    {
+      "id": "DROP-03",
+      "centerPx": [
+        690.0,
+        213.0
+      ],
+      "bboxXYWH": [
+        676,
+        196,
+        29,
+        35
+      ],
+      "radiusPx": 16.0,
+      "colorLinear": [
+        0.322444,
+        0.456133,
+        0.431058
+      ],
+      "p95LuminanceLinear": 0.4621582,
+      "depthRole": "UNCERTAIN_FROM_SINGLE_IMAGE; conservative FRONT/OFF_CORE placement is runtime inference"
+    },
+    {
+      "id": "DROP-04",
+      "centerPx": [
+        165.0,
+        653.0
+      ],
+      "bboxXYWH": [
+        153,
+        640,
+        25,
+        27
+      ],
+      "radiusPx": 13.0,
+      "colorLinear": [
+        0.567954,
+        0.594259,
+        0.503574
+      ],
+      "p95LuminanceLinear": 0.5128528,
+      "depthRole": "UNCERTAIN_FROM_SINGLE_IMAGE; conservative FRONT/OFF_CORE placement is runtime inference"
+    },
+    {
+      "id": "DROP-05",
+      "centerPx": [
+        853.0,
+        948.0
+      ],
+      "bboxXYWH": [
+        843,
+        937,
+        21,
+        23
+      ],
+      "radiusPx": 11.0,
+      "colorLinear": [
+        0.099353,
+        0.342668,
+        0.37909
+      ],
+      "p95LuminanceLinear": 0.2893647,
+      "depthRole": "UNCERTAIN_FROM_SINGLE_IMAGE; conservative FRONT/OFF_CORE placement is runtime inference"
+    }
+  ],
+  "particles": [
+    {
+      "id": "PARTICLE-01",
+      "centerPx": [
+        173.0,
+        266.0
+      ],
+      "bboxXYWH": [
+        168,
+        261,
+        11,
+        11
+      ],
+      "radiusPx": 5.5,
+      "colorLinear": [
+        0.005971,
+        0.04182,
+        0.04149
+      ],
+      "p95LuminanceLinear": 0.0345012,
+      "phaseRad": 0.0,
+      "depthRole": "INFERRED_PARTICLE_LAYER"
+    },
+    {
+      "id": "PARTICLE-02",
+      "centerPx": [
+        1116.0,
+        316.0
+      ],
+      "bboxXYWH": [
+        1112,
+        312,
+        9,
+        9
+      ],
+      "radiusPx": 4.5,
+      "colorLinear": [
+        0.001904,
+        0.018661,
+        0.019712
+      ],
+      "p95LuminanceLinear": 0.0150825,
+      "phaseRad": 2.399963,
+      "depthRole": "INFERRED_PARTICLE_LAYER"
+    },
+    {
+      "id": "PARTICLE-03",
+      "centerPx": [
+        102.0,
+        440.0
+      ],
+      "bboxXYWH": [
+        98,
+        436,
+        9,
+        9
+      ],
+      "radiusPx": 4.5,
+      "colorLinear": [
+        0.004779,
+        0.02306,
+        0.017394
+      ],
+      "p95LuminanceLinear": 0.0188486,
+      "phaseRad": 4.799926,
+      "depthRole": "INFERRED_PARTICLE_LAYER"
+    },
+    {
+      "id": "PARTICLE-04",
+      "centerPx": [
+        633.0,
+        1080.0
+      ],
+      "bboxXYWH": [
+        629,
+        1076,
+        9,
+        9
+      ],
+      "radiusPx": 4.5,
+      "colorLinear": [
+        0.001237,
+        0.017064,
+        0.015996
+      ],
+      "p95LuminanceLinear": 0.0134982,
+      "phaseRad": 0.916704,
+      "depthRole": "INFERRED_PARTICLE_LAYER"
+    },
+    {
+      "id": "PARTICLE-05",
+      "centerPx": [
+        1058.0,
+        245.0
+      ],
+      "bboxXYWH": [
+        1055,
+        242,
+        7,
+        7
+      ],
+      "radiusPx": 3.5,
+      "colorLinear": [
+        0.000304,
+        0.012286,
+        0.013702
+      ],
+      "p95LuminanceLinear": 0.0098411,
+      "phaseRad": 3.316668,
+      "depthRole": "INFERRED_PARTICLE_LAYER"
+    },
+    {
+      "id": "PARTICLE-06",
+      "centerPx": [
+        1090.0,
+        403.0
+      ],
+      "bboxXYWH": [
+        1087,
+        400,
+        7,
+        7
+      ],
+      "radiusPx": 3.5,
+      "colorLinear": [
+        0.005124,
+        0.021435,
+        0.018348
+      ],
+      "p95LuminanceLinear": 0.017255,
+      "phaseRad": 5.716631,
+      "depthRole": "INFERRED_PARTICLE_LAYER"
+    },
+    {
+      "id": "PARTICLE-07",
+      "centerPx": [
+        189.0,
+        553.0
+      ],
+      "bboxXYWH": [
+        186,
+        550,
+        7,
+        7
+      ],
+      "radiusPx": 3.5,
+      "colorLinear": [
+        0.5008,
+        0.5706,
+        0.437621
+      ],
+      "p95LuminanceLinear": 0.5309755,
+      "phaseRad": 1.833409,
+      "depthRole": "INFERRED_PARTICLE_LAYER"
+    },
+    {
+      "id": "PARTICLE-08",
+      "centerPx": [
+        1101.0,
+        938.0
+      ],
+      "bboxXYWH": [
+        1098,
+        935,
+        7,
+        7
+      ],
+      "radiusPx": 3.5,
+      "colorLinear": [
+        0.001214,
+        0.01385,
+        0.013558
+      ],
+      "p95LuminanceLinear": 0.0110471,
+      "phaseRad": 4.233372,
+      "depthRole": "INFERRED_PARTICLE_LAYER"
+    },
+    {
+      "id": "PARTICLE-09",
+      "centerPx": [
+        301.0,
+        1002.0
+      ],
+      "bboxXYWH": [
+        298,
+        999,
+        7,
+        7
+      ],
+      "radiusPx": 3.5,
+      "colorLinear": [
+        0.000867,
+        0.012485,
+        0.011615
+      ],
+      "p95LuminanceLinear": 0.0098193,
+      "phaseRad": 0.35015,
+      "depthRole": "INFERRED_PARTICLE_LAYER"
+    },
+    {
+      "id": "PARTICLE-10",
+      "centerPx": [
+        780.0,
+        1096.0
+      ],
+      "bboxXYWH": [
+        777,
+        1093,
+        7,
+        7
+      ],
+      "radiusPx": 3.5,
+      "colorLinear": [
+        0.197429,
+        0.145875,
+        0.047341
+      ],
+      "p95LuminanceLinear": 0.1489615,
+      "phaseRad": 2.750113,
+      "depthRole": "INFERRED_PARTICLE_LAYER"
+    }
+  ],
+  "highlightNodes": [
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-01",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        228.014,
+        571.054
+      ],
+      "bboxXYWH": [
+        221,
+        564,
+        17,
+        15
+      ],
+      "meanColorLinear": [
+        0.9943,
+        0.994122,
+        0.987733
+      ],
+      "phaseRad": 0.0,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-02",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        733.579,
+        782.842
+      ],
+      "bboxXYWH": [
+        728,
+        780,
+        12,
+        6
+      ],
+      "meanColorLinear": [
+        0.991546,
+        0.998128,
+        0.963726
+      ],
+      "phaseRad": 1.618034,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-03",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        277.0,
+        579.0
+      ],
+      "bboxXYWH": [
+        277,
+        574,
+        1,
+        11
+      ],
+      "meanColorLinear": [
+        0.979075,
+        1.0,
+        0.989506
+      ],
+      "phaseRad": 3.236068,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-04",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        300.0,
+        590.5
+      ],
+      "bboxXYWH": [
+        300,
+        587,
+        1,
+        8
+      ],
+      "meanColorLinear": [
+        1.0,
+        1.0,
+        0.944025
+      ],
+      "phaseRad": 4.854102,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-05",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        676.75,
+        761.25
+      ],
+      "bboxXYWH": [
+        674,
+        760,
+        6,
+        3
+      ],
+      "meanColorLinear": [
+        0.994478,
+        0.997771,
+        0.966872
+      ],
+      "phaseRad": 0.188951,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-06",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        429.0,
+        672.5
+      ],
+      "bboxXYWH": [
+        427,
+        672,
+        5,
+        2
+      ],
+      "meanColorLinear": [
+        0.991102,
+        0.994033,
+        0.982251
+      ],
+      "phaseRad": 1.806985,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-07",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        735.0,
+        778.667
+      ],
+      "bboxXYWH": [
+        733,
+        778,
+        5,
+        3
+      ],
+      "meanColorLinear": [
+        0.989594,
+        0.998484,
+        0.97055
+      ],
+      "phaseRad": 3.425019,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-08",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        294.2,
+        605.0
+      ],
+      "bboxXYWH": [
+        294,
+        603,
+        2,
+        5
+      ],
+      "meanColorLinear": [
+        0.992878,
+        1.0,
+        0.961196
+      ],
+      "phaseRad": 5.043053,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-09",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        443.0,
+        676.4
+      ],
+      "bboxXYWH": [
+        441,
+        676,
+        5,
+        2
+      ],
+      "meanColorLinear": [
+        0.992878,
+        0.994656,
+        0.991102
+      ],
+      "phaseRad": 0.377901,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-10",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        451.5,
+        678.0
+      ],
+      "bboxXYWH": [
+        450,
+        678,
+        4,
+        1
+      ],
+      "meanColorLinear": [
+        0.991102,
+        1.0,
+        1.0
+      ],
+      "phaseRad": 1.995935,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-11",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        299.0,
+        583.0
+      ],
+      "bboxXYWH": [
+        299,
+        582,
+        1,
+        3
+      ],
+      "meanColorLinear": [
+        1.0,
+        1.0,
+        0.865862
+      ],
+      "phaseRad": 3.613969,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-12",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        301.0,
+        599.0
+      ],
+      "bboxXYWH": [
+        301,
+        598,
+        1,
+        3
+      ],
+      "meanColorLinear": [
+        1.0,
+        1.0,
+        0.921582
+      ],
+      "phaseRad": 5.232003,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-13",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        694.0,
+        763.667
+      ],
+      "bboxXYWH": [
+        693,
+        763,
+        3,
+        2
+      ],
+      "meanColorLinear": [
+        1.0,
+        1.0,
+        0.958844
+      ],
+      "phaseRad": 0.566852,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-14",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        303.0,
+        610.5
+      ],
+      "bboxXYWH": [
+        303,
+        610,
+        1,
+        2
+      ],
+      "meanColorLinear": [
+        1.0,
+        1.0,
+        0.917334
+      ],
+      "phaseRad": 2.184886,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-15",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        464.5,
+        680.0
+      ],
+      "bboxXYWH": [
+        464,
+        680,
+        2,
+        1
+      ],
+      "meanColorLinear": [
+        0.982251,
+        1.0,
+        1.0
+      ],
+      "phaseRad": 3.80292,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_CYAN-16",
+      "semanticGroup": "RESIDENT_FRONT_CYAN",
+      "centerPx": [
+        818.5,
+        806.0
+      ],
+      "bboxXYWH": [
+        818,
+        806,
+        2,
+        1
+      ],
+      "meanColorLinear": [
+        0.982251,
+        1.0,
+        0.991102
+      ],
+      "phaseRad": 5.420954,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_GOLD-01",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "centerPx": [
+        1069.117,
+        657.364
+      ],
+      "bboxXYWH": [
+        1065,
+        651,
+        10,
+        14
+      ],
+      "meanColorLinear": [
+        0.996168,
+        0.993767,
+        0.988531
+      ],
+      "phaseRad": 0.755803,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_GOLD-02",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "centerPx": [
+        947.0,
+        561.0
+      ],
+      "bboxXYWH": [
+        947,
+        556,
+        1,
+        11
+      ],
+      "meanColorLinear": [
+        0.999198,
+        1.0,
+        0.985432
+      ],
+      "phaseRad": 2.373837,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_GOLD-03",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "centerPx": [
+        935.444,
+        541.444
+      ],
+      "bboxXYWH": [
+        934,
+        538,
+        3,
+        8
+      ],
+      "meanColorLinear": [
+        0.997059,
+        0.996079,
+        0.988176
+      ],
+      "phaseRad": 3.991871,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_GOLD-04",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "centerPx": [
+        941.0,
+        559.5
+      ],
+      "bboxXYWH": [
+        941,
+        558,
+        1,
+        4
+      ],
+      "meanColorLinear": [
+        0.997771,
+        1.0,
+        0.947307
+      ],
+      "phaseRad": 5.609905,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_GOLD-05",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "centerPx": [
+        948.0,
+        571.5
+      ],
+      "bboxXYWH": [
+        948,
+        570,
+        1,
+        4
+      ],
+      "meanColorLinear": [
+        1.0,
+        1.0,
+        0.966872
+      ],
+      "phaseRad": 0.944753,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_GOLD-06",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "centerPx": [
+        656.0,
+        251.0
+      ],
+      "bboxXYWH": [
+        655,
+        251,
+        3,
+        1
+      ],
+      "meanColorLinear": [
+        0.97934,
+        1.0,
+        0.997059
+      ],
+      "phaseRad": 2.562787,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_GOLD-07",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "centerPx": [
+        333.0,
+        390.0
+      ],
+      "bboxXYWH": [
+        332,
+        389,
+        3,
+        3
+      ],
+      "meanColorLinear": [
+        1.0,
+        1.0,
+        0.927291
+      ],
+      "phaseRad": 4.180821,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_GOLD-08",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "centerPx": [
+        330.0,
+        394.0
+      ],
+      "bboxXYWH": [
+        329,
+        393,
+        3,
+        3
+      ],
+      "meanColorLinear": [
+        1.0,
+        1.0,
+        0.921582
+      ],
+      "phaseRad": 5.798855,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_GOLD-09",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "centerPx": [
+        946.0,
+        551.0
+      ],
+      "bboxXYWH": [
+        946,
+        550,
+        1,
+        3
+      ],
+      "meanColorLinear": [
+        1.0,
+        1.0,
+        0.938686
+      ],
+      "phaseRad": 1.133704,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_GOLD-10",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "centerPx": [
+        327.5,
+        397.5
+      ],
+      "bboxXYWH": [
+        327,
+        397,
+        2,
+        2
+      ],
+      "meanColorLinear": [
+        1.0,
+        1.0,
+        0.934393
+      ],
+      "phaseRad": 2.751738,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_GOLD-11",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "centerPx": [
+        575.5,
+        534.0
+      ],
+      "bboxXYWH": [
+        575,
+        534,
+        2,
+        1
+      ],
+      "meanColorLinear": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "phaseRad": 4.369772,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_GOLD-12",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "centerPx": [
+        937.0,
+        548.5
+      ],
+      "bboxXYWH": [
+        937,
+        548,
+        1,
+        2
+      ],
+      "meanColorLinear": [
+        0.991102,
+        1.0,
+        0.930111
+      ],
+      "phaseRad": 5.987806,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_FRONT_GOLD-13",
+      "semanticGroup": "RESIDENT_FRONT_GOLD",
+      "centerPx": [
+        940.0,
+        554.5
+      ],
+      "bboxXYWH": [
+        940,
+        554,
+        1,
+        2
+      ],
+      "meanColorLinear": [
+        0.98667,
+        1.0,
+        0.938686
+      ],
+      "phaseRad": 1.322655,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-01",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        227.727,
+        575.742
+      ],
+      "bboxXYWH": [
+        216,
+        562,
+        25,
+        29
+      ],
+      "meanColorLinear": [
+        0.992967,
+        0.98986,
+        0.957799
+      ],
+      "phaseRad": 2.940689,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-02",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        247.874,
+        630.517
+      ],
+      "bboxXYWH": [
+        238,
+        623,
+        19,
+        16
+      ],
+      "meanColorLinear": [
+        0.971514,
+        0.990836,
+        0.99057
+      ],
+      "phaseRad": 4.558723,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-03",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        758.793,
+        866.724
+      ],
+      "bboxXYWH": [
+        747,
+        862,
+        22,
+        12
+      ],
+      "meanColorLinear": [
+        0.990215,
+        0.988796,
+        0.928658
+      ],
+      "phaseRad": 6.176757,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-04",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        788.211,
+        857.632
+      ],
+      "bboxXYWH": [
+        779,
+        852,
+        20,
+        13
+      ],
+      "meanColorLinear": [
+        0.993411,
+        0.987113,
+        0.934821
+      ],
+      "phaseRad": 1.511605,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-05",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        248.538,
+        617.462
+      ],
+      "bboxXYWH": [
+        247,
+        615,
+        4,
+        6
+      ],
+      "meanColorLinear": [
+        0.947998,
+        0.992434,
+        0.991102
+      ],
+      "phaseRad": 3.129639,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-06",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        786.333,
+        851.333
+      ],
+      "bboxXYWH": [
+        783,
+        850,
+        7,
+        3
+      ],
+      "meanColorLinear": [
+        0.998039,
+        0.990126,
+        0.818334
+      ],
+      "phaseRad": 4.747673,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-07",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        774.5,
+        866.5
+      ],
+      "bboxXYWH": [
+        772,
+        865,
+        6,
+        4
+      ],
+      "meanColorLinear": [
+        0.994033,
+        0.992612,
+        0.911661
+      ],
+      "phaseRad": 0.082522,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-08",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        234.0,
+        621.2
+      ],
+      "bboxXYWH": [
+        232,
+        620,
+        5,
+        3
+      ],
+      "meanColorLinear": [
+        0.928402,
+        0.996435,
+        0.996435
+      ],
+      "phaseRad": 1.700556,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-09",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        849.0,
+        811.6
+      ],
+      "bboxXYWH": [
+        847,
+        810,
+        5,
+        4
+      ],
+      "meanColorLinear": [
+        1.0,
+        0.985786,
+        0.827571
+      ],
+      "phaseRad": 3.31859,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-10",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        799.0,
+        847.4
+      ],
+      "bboxXYWH": [
+        797,
+        847,
+        5,
+        2
+      ],
+      "meanColorLinear": [
+        1.0,
+        0.992878,
+        0.83719
+      ],
+      "phaseRad": 4.936624,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-11",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        256.0,
+        393.5
+      ],
+      "bboxXYWH": [
+        256,
+        392,
+        1,
+        4
+      ],
+      "meanColorLinear": [
+        1.0,
+        0.993322,
+        0.879622
+      ],
+      "phaseRad": 0.271472,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-12",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        938.0,
+        659.0
+      ],
+      "bboxXYWH": [
+        938,
+        658,
+        1,
+        3
+      ],
+      "meanColorLinear": [
+        1.0,
+        1.0,
+        0.752942
+      ],
+      "phaseRad": 1.889506,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-13",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        937.0,
+        663.0
+      ],
+      "bboxXYWH": [
+        937,
+        662,
+        1,
+        3
+      ],
+      "meanColorLinear": [
+        1.0,
+        1.0,
+        0.775822
+      ],
+      "phaseRad": 3.50754,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-14",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        213.5,
+        588.5
+      ],
+      "bboxXYWH": [
+        213,
+        588,
+        2,
+        2
+      ],
+      "meanColorLinear": [
+        0.995545,
+        0.98667,
+        0.883767
+      ],
+      "phaseRad": 5.125574,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-15",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        247.5,
+        611.5
+      ],
+      "bboxXYWH": [
+        247,
+        611,
+        2,
+        2
+      ],
+      "meanColorLinear": [
+        0.925841,
+        0.991102,
+        0.991102
+      ],
+      "phaseRad": 0.460423,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-16",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        936.0,
+        667.5
+      ],
+      "bboxXYWH": [
+        936,
+        667,
+        1,
+        2
+      ],
+      "meanColorLinear": [
+        0.995545,
+        1.0,
+        0.814847
+      ],
+      "phaseRad": 2.078457,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-17",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        935.0,
+        670.5
+      ],
+      "bboxXYWH": [
+        935,
+        670,
+        1,
+        2
+      ],
+      "meanColorLinear": [
+        0.995545,
+        0.995545,
+        0.83077
+      ],
+      "phaseRad": 3.696491,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-18",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        804.5,
+        846.5
+      ],
+      "bboxXYWH": [
+        804,
+        846,
+        2,
+        2
+      ],
+      "meanColorLinear": [
+        1.0,
+        0.991102,
+        0.822786
+      ],
+      "phaseRad": 5.314525,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-19",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        781.5,
+        849.0
+      ],
+      "bboxXYWH": [
+        781,
+        849,
+        2,
+        1
+      ],
+      "meanColorLinear": [
+        0.991102,
+        0.991102,
+        0.850927
+      ],
+      "phaseRad": 0.649374,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-20",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        803.5,
+        849.0
+      ],
+      "bboxXYWH": [
+        803,
+        849,
+        2,
+        1
+      ],
+      "meanColorLinear": [
+        0.991102,
+        1.0,
+        0.854993
+      ],
+      "phaseRad": 2.267408,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-21",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        793.5,
+        851.0
+      ],
+      "bboxXYWH": [
+        793,
+        851,
+        2,
+        1
+      ],
+      "meanColorLinear": [
+        0.991102,
+        0.982251,
+        0.854993
+      ],
+      "phaseRad": 3.885442,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    },
+    {
+      "id": "HL-RESIDENT_BACK_GREEN_GOLD-22",
+      "semanticGroup": "RESIDENT_BACK_GREEN_GOLD",
+      "centerPx": [
+        783.5,
+        854.5
+      ],
+      "bboxXYWH": [
+        783,
+        854,
+        2,
+        2
+      ],
+      "meanColorLinear": [
+        0.995545,
+        0.991102,
+        0.795195
+      ],
+      "phaseRad": 5.503476,
+      "depthRole": "INFERRED_FROM_SEMANTIC_GROUP"
+    }
+  ],
+  "depthOcclusionGraph": {
+    "sourceImageIsSingleStaticRGB": true,
+    "nodes": [
+      {
+        "id": "RESIDENT_FRONT_CYAN",
+        "nodeType": "FROZEN_SEMANTIC_GROUP",
+        "depth": "front-associated; group match to C01 is high confidence"
+      },
+      {
+        "id": "RESIDENT_FRONT_GOLD",
+        "nodeType": "FROZEN_SEMANTIC_GROUP",
+        "depth": "front-associated; group match to A02 is medium confidence"
+      },
+      {
+        "id": "RESIDENT_BACK_GREEN_GOLD",
+        "nodeType": "AGGREGATE_FROZEN_SEMANTIC_GROUP",
+        "depth": "mixed/ambiguous; P0-3 identity roles include both FRONT and BACK"
+      },
+      {
+        "id": "C01",
+        "nodeType": "CONTRACT_RESIDENT_IDENTITY",
+        "depthRole": "FRONT",
+        "confidence": "HIGH_GROUP_MATCH; exact surface decomposition remains unresolved"
+      },
+      {
+        "id": "G01",
+        "nodeType": "CONTRACT_RESIDENT_IDENTITY",
+        "depthRole": "BACK",
+        "confidence": "LOW_IDENTITY_GEOMETRY; aggregate mask cannot isolate G01"
+      },
+      {
+        "id": "G02",
+        "nodeType": "CONTRACT_RESIDENT_IDENTITY",
+        "depthRole": "FRONT",
+        "confidence": "LOW_IDENTITY_GEOMETRY; front green identity has no dedicated frozen mask"
+      },
+      {
+        "id": "A01",
+        "nodeType": "CONTRACT_RESIDENT_IDENTITY",
+        "depthRole": "BACK",
+        "confidence": "LOW_IDENTITY_GEOMETRY; back gold identity shares an aggregate green/gold mask"
+      },
+      {
+        "id": "A02",
+        "nodeType": "CONTRACT_RESIDENT_IDENTITY",
+        "depthRole": "FRONT",
+        "confidence": "MEDIUM_GROUP_MATCH; two recorded path traces may be internal strands of one identity"
+      },
+      {
+        "id": "OVERLAP-01",
+        "nodeType": "OBSERVED_MASK_OVERLAP_NODE",
+        "pointPx": [
+          536.8762,
+          690.7889
+        ]
+      },
+      {
+        "id": "OVERLAP-02",
+        "nodeType": "OBSERVED_MASK_OVERLAP_NODE",
+        "pointPx": [
+          698.5915,
+          535.8808
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "RESIDENT_FRONT_CYAN",
+        "to": "RESIDENT_BACK_GREEN_GOLD",
+        "relation": "OBSERVED_PROJECTED_MASK_OVERLAP",
+        "overlapPixels": 3240,
+        "depthOrder": "UNKNOWN_AT_GROUP_LEVEL"
+      },
+      {
+        "from": "RESIDENT_FRONT_GOLD",
+        "to": "RESIDENT_BACK_GREEN_GOLD",
+        "relation": "OBSERVED_PROJECTED_MASK_OVERLAP",
+        "overlapPixels": 2475,
+        "depthOrder": "UNKNOWN_AT_GROUP_LEVEL"
+      },
+      {
+        "from": "G01",
+        "to": "C01",
+        "relation": "INFERRED_CONTRACT_DEPTH_ORDER",
+        "evidence": "P0-3 declared depth_role",
+        "pixelIntersectionAtIdentityLevel": "UNKNOWN"
+      },
+      {
+        "from": "G01",
+        "to": "G02",
+        "relation": "INFERRED_CONTRACT_DEPTH_ORDER",
+        "evidence": "P0-3 declared depth_role",
+        "pixelIntersectionAtIdentityLevel": "UNKNOWN"
+      },
+      {
+        "from": "G01",
+        "to": "A02",
+        "relation": "INFERRED_CONTRACT_DEPTH_ORDER",
+        "evidence": "P0-3 declared depth_role",
+        "pixelIntersectionAtIdentityLevel": "UNKNOWN"
+      },
+      {
+        "from": "A01",
+        "to": "C01",
+        "relation": "INFERRED_CONTRACT_DEPTH_ORDER",
+        "evidence": "P0-3 declared depth_role",
+        "pixelIntersectionAtIdentityLevel": "UNKNOWN"
+      },
+      {
+        "from": "A01",
+        "to": "G02",
+        "relation": "INFERRED_CONTRACT_DEPTH_ORDER",
+        "evidence": "P0-3 declared depth_role",
+        "pixelIntersectionAtIdentityLevel": "UNKNOWN"
+      },
+      {
+        "from": "A01",
+        "to": "A02",
+        "relation": "INFERRED_CONTRACT_DEPTH_ORDER",
+        "evidence": "P0-3 declared depth_role",
+        "pixelIntersectionAtIdentityLevel": "UNKNOWN"
+      }
+    ],
+    "observed": {
+      "projectedMaskOverlaps": [
+        {
+          "sourceObject": "RESIDENT_FRONT_CYAN",
+          "targetObject": "RESIDENT_BACK_GREEN_GOLD",
+          "overlapPixels": 3240,
+          "overlapCentroidPx": [
+            536.8762,
+            690.7889
+          ],
+          "projectedRelation": "MASK_OVERLAP",
+          "depthRelation": "INFERRED_FROM_FROZEN_DEPTH_ROLE_ONLY; aggregate ROI cannot attribute individual crossing order"
+        },
+        {
+          "sourceObject": "RESIDENT_FRONT_GOLD",
+          "targetObject": "RESIDENT_BACK_GREEN_GOLD",
+          "overlapPixels": 2475,
+          "overlapCentroidPx": [
+            698.5915,
+            535.8808
+          ],
+          "projectedRelation": "MASK_OVERLAP",
+          "depthRelation": "INFERRED_FROM_FROZEN_DEPTH_ROLE_ONLY; aggregate ROI cannot attribute individual crossing order"
+        },
+        {
+          "sourceObject": "RESIDENT_FRONT_CYAN",
+          "targetObject": "RESIDENT_FRONT_GOLD",
+          "overlapPixels": 0,
+          "overlapCentroidPx": null,
+          "projectedRelation": "NO_MASK_OVERLAP",
+          "depthRelation": "INFERRED_FROM_FROZEN_DEPTH_ROLE_ONLY; aggregate ROI cannot attribute individual crossing order"
+        }
+      ],
+      "annotatedTraceSegments": [
+        "RESIDENT_FRONT_CYAN-TRACE-01",
+        "RESIDENT_FRONT_GOLD-TRACE-01",
+        "RESIDENT_FRONT_GOLD-TRACE-02",
+        "RESIDENT_BACK_GREEN_GOLD-TRACE-01",
+        "RESIDENT_BACK_GREEN_GOLD-TRACE-02",
+        "RESIDENT_BACK_GREEN_GOLD-TRACE-03",
+        "RESIDENT_BACK_GREEN_GOLD-TRACE-04"
+      ]
+    },
+    "inferred": {
+      "residentIdentityDepthRoles": [
+        {
+          "id": "C01",
+          "role": "FRONT",
+          "source": "P0-3 technical_baseline.motion.resident_identity_and_motion"
+        },
+        {
+          "id": "G01",
+          "role": "BACK",
+          "source": "P0-3 technical_baseline.motion.resident_identity_and_motion"
+        },
+        {
+          "id": "G02",
+          "role": "FRONT",
+          "source": "P0-3 technical_baseline.motion.resident_identity_and_motion"
+        },
+        {
+          "id": "A01",
+          "role": "BACK",
+          "source": "P0-3 technical_baseline.motion.resident_identity_and_motion"
+        },
+        {
+          "id": "A02",
+          "role": "FRONT",
+          "source": "P0-3 technical_baseline.motion.resident_identity_and_motion"
+        }
+      ]
+    },
+    "uncertain": [
+      "The static PNG cannot uniquely recover metric Z, surface thickness, refraction path, or which aggregate mask pixels belong to G01 versus G02 versus A01.",
+      "A projected overlap does not itself prove which surface is in front; the front/back roles are taken from the frozen contract, not inferred from RGB alone.",
+      "Flow direction, phase, deformation, and temporal speed cannot be measured from a single still; periods and core rotation are contract inputs only."
+    ]
+  },
+  "runtimeParameters": {
+    "fieldDepthAxisWorldInferred": 0.34,
+    "filamentLaneCountPerTrace": 2,
+    "filamentLaneOffsetsAsFractionOfMeasuredBodyWidth": [
+      -0.28,
+      0.28
+    ],
+    "surfaceWidthSource": "frozen centerline annotation widthPx",
+    "filamentWidthSource": "REF_B cross-section chromatic signal width p50",
+    "note": "Field depth and internal filament lane offsets are implementation hypotheses and will be tuned only from captured AVD comparison; they are not claimed as direct single-image measurements."
+  }
+}

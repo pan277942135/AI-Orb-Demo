@@ -206,6 +206,17 @@ def main() -> int:
         yujian_vertex, yujian_fragment, "YUJIAN_CORE_PASS6", "YuJianCoreVertex.glsl", "YuJianCoreFragment.glsl"
     )
 
+    outer_src = (ROOT / "app/src/main/java/com/example/orb/outer/OuterOpticalFieldRenderer.kt").read_text(encoding="utf-8")
+    outer = lambda name: extract_constant(outer_src, name)
+    programs["TAB3_OUTER_RIBBON"] = compiler.link_pair(
+        outer("RIBBON_VERTEX"), outer("RIBBON_FRAGMENT"),
+        "TAB3_OUTER_OPTICAL_RIBBON", "RIBBON_VERTEX", "RIBBON_FRAGMENT",
+    )
+    programs["TAB3_OUTER_SPRITES"] = compiler.link_pair(
+        outer("POINT_VERTEX"), outer("POINT_FRAGMENT"),
+        "TAB3_OUTER_OPTICAL_SPRITES", "POINT_VERTEX", "POINT_FRAGMENT",
+    )
+
     required_core_uniforms = (
         "uDensityScale",
         "uDensityRange",
@@ -234,15 +245,35 @@ def main() -> int:
         location = compiler.gl_get_uniform_location(yujian_program, name.encode("ascii"))
         if location < 0:
             raise RuntimeError(f"YuJian Core Pass 6 uniform is inactive after linking: {name}")
-    if len(compiler.compiled_sources) != 18:
-        raise RuntimeError(f"Expected 18 production shader sources, compiled {len(compiler.compiled_sources)}")
+    required_outer_uniforms = (
+        "uCoreCenter", "uCoreRadii", "uCoreCenterViewZ", "uCoreRadiusView", "uLayerSign",
+        "uProjectionDepth", "uTime", "uPeriod", "uPhase", "uKind", "uMaterial", "uReferenceWidth",
+        "uColor", "uRefraction", "uUseRefraction",
+    )
+    outer_ribbon_program = programs["TAB3_OUTER_RIBBON"]
+    for name in required_outer_uniforms:
+        location = compiler.gl_get_uniform_location(outer_ribbon_program, name.encode("ascii"))
+        if location < 0:
+            raise RuntimeError(f"Tab 3 outer ribbon uniform is inactive after linking: {name}")
+    required_point_uniforms = (
+        "uCoreCenter", "uCoreRadii", "uCoreCenterViewZ", "uCoreRadiusView", "uLayerSign",
+        "uProjectionDepth", "uTime", "uRefraction", "uUseRefraction",
+    )
+    outer_point_program = programs["TAB3_OUTER_SPRITES"]
+    for name in required_point_uniforms:
+        location = compiler.gl_get_uniform_location(outer_point_program, name.encode("ascii"))
+        if location < 0:
+            raise RuntimeError(f"Tab 3 outer sprite uniform is inactive after linking: {name}")
+    if len(compiler.compiled_sources) != 22:
+        raise RuntimeError(f"Expected 22 production shader sources, compiled {len(compiler.compiled_sources)}")
     if compiler.gl_get_error() != GL_NO_ERROR:
         raise RuntimeError("GLES reported an error after production shader compilation/linking")
 
     print(
         f"[validate_glsl_es] PASS: {len(compiler.compiled_sources)} shader sources compiled, "
         f"{len(programs)} programs linked, {len(required_core_uniforms)} native fitted + "
-        f"{len(required_yujian_uniforms)} YuJian uniforms active."
+        f"{len(required_yujian_uniforms)} YuJian + {len(required_outer_uniforms)} Tab 3 ribbon + "
+        f"{len(required_point_uniforms)} Tab 3 sprite uniforms active."
     )
     print("[validate_glsl_es] This is shader compile/link evidence only; it does not claim hardware GPU capture.")
     return 0

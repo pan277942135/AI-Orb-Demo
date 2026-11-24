@@ -58,6 +58,20 @@ class GlShaderProgram(vertexSrc: String, fragmentSrc: String, val label: String)
     }
   }
 
+  fun setVec3Array(name: String, values: FloatArray) {
+    val loc = uniformLocation(name)
+    if (loc >= 0 && values.isNotEmpty() && values.size % 3 == 0) {
+      GLES30.glUniform3fv(loc, values.size / 3, values, 0)
+    }
+  }
+
+  fun setVec4Array(name: String, values: FloatArray) {
+    val loc = uniformLocation(name)
+    if (loc >= 0 && values.isNotEmpty() && values.size % 4 == 0) {
+      GLES30.glUniform4fv(loc, values.size / 4, values, 0)
+    }
+  }
+
   fun setInt(name: String, value: Int) {
     val loc = uniformLocation(name)
     if (loc >= 0) GLES30.glUniform1i(loc, value)

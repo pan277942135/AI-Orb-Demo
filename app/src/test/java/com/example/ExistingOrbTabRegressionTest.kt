@@ -137,15 +137,15 @@ class ExistingOrbTabRegressionTest {
   }
 
   @Test
-  fun tab3ChangesOnlyPassSixFromTheTab1OuterPassManifest() {
+  fun tab3UsesTheIndependentRefBOuterOpticalPasses() {
     val nativePasses = AIOrbScene.activeRenderPassesV3(RenderDebugMode.FULL_RENDER)
     val hybridPasses = AIOrbScene.activeRenderPassesYuJianHybrid(RenderDebugMode.FULL_RENDER)
-    assertEquals(nativePasses.size, hybridPasses.size)
-    assertEquals(nativePasses.first(), hybridPasses.first())
-    assertEquals(nativePasses.last(), hybridPasses.last())
-    nativePasses.indices.forEach { index ->
-      if (index == 5) assertEquals("PASS_6_YUJIAN_CORE_ONLY_SOURCE_SPHERE_FS", hybridPasses[index])
-      else assertEquals("Tab 3 must preserve native outer pass ${nativePasses[index]}", nativePasses[index], hybridPasses[index])
-    }
+    assertTrue(hybridPasses.contains("PASS_2_REF_B_BACK_OPTICAL_SURFACES_AND_FILAMENTS"))
+    assertTrue(hybridPasses.contains("PASS_5_YUJIAN_CORE_SOURCE_SPHERE_FS"))
+    assertTrue(hybridPasses.contains("PASS_7_REF_B_FRONT_OPTICAL_SURFACES_AND_FILAMENTS"))
+    assertTrue(hybridPasses.indexOf("PASS_2_REF_B_BACK_OPTICAL_SURFACES_AND_FILAMENTS") < hybridPasses.indexOf("PASS_5_YUJIAN_CORE_SOURCE_SPHERE_FS"))
+    assertTrue(hybridPasses.indexOf("PASS_5_YUJIAN_CORE_SOURCE_SPHERE_FS") < hybridPasses.indexOf("PASS_7_REF_B_FRONT_OPTICAL_SURFACES_AND_FILAMENTS"))
+    assertTrue("Tab 1 native pass contract remains present", nativePasses.contains("PASS_3_BACK_RIBBONS_RESIDENT_AND_SECONDARY"))
+    assertTrue("Tab 1 native pass contract remains present", nativePasses.contains("PASS_6_V3_WEBP_3D_VOLUME_RAYMARCH_AND_CRYSTAL_GLASS_SHELL"))
   }
 }

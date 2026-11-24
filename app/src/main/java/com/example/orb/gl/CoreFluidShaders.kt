@@ -192,6 +192,9 @@ uniform vec2 uResolution;
 uniform vec2 uParallax;
 uniform float uOverallIntensity;
 uniform float uHdrScale;
+uniform int uUseReferenceBokeh;
+uniform vec4 uReferenceBokeh[12];
+uniform vec3 uReferenceBokehColor[12];
 
 $GLSL_COMMON_MATH
 
@@ -267,8 +270,17 @@ void main() {
     bRad[11] = 0.058; bTint[11] = vec3(0.020, 0.080, 0.076) * 0.33;
 
     vec2 bp = p + uParallax * 0.06;
-    for (int i = 0; i < 12; i++) {
-        col += bTint[i] * softBokeh(bp, bPos[i], bRad[i]);
+    if (uUseReferenceBokeh == 1) {
+        for (int i = 0; i < 12; i++) {
+            vec4 item = uReferenceBokeh[i];
+            if (item.z > 0.0) {
+                col += uReferenceBokehColor[i] * item.w * softBokeh(bp, item.xy, item.z);
+            }
+        }
+    } else {
+        for (int i = 0; i < 12; i++) {
+            col += bTint[i] * softBokeh(bp, bPos[i], bRad[i]);
+        }
     }
 
     col *= (0.85 + 0.15 * uOverallIntensity);

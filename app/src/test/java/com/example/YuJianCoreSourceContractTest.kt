@@ -38,9 +38,9 @@ class YuJianCoreSourceContractTest {
     assertTrue(source.contains("texture(uBackTex, uvR)"))
     assertTrue(source.contains("uSphereCenter"))
     assertTrue(source.contains("uSphereRadii"))
-    assertTrue("Tab 3 uses only Pass 6 for YuJian Core", AIOrbScene.activeRenderPassesYuJianHybrid(
+    assertTrue("Tab 3 draws YuJian Core once between REF_B rear and front passes", AIOrbScene.activeRenderPassesYuJianHybrid(
       com.example.orb.config.RenderDebugMode.FULL_RENDER
-    ).count { it.startsWith("PASS_6_") } == 1)
+    ).count { it == "PASS_5_YUJIAN_CORE_SOURCE_SPHERE_FS" } == 1)
   }
 
   private fun sha256(bytes: ByteArray) = MessageDigest.getInstance("SHA-256")

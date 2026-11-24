@@ -52,7 +52,11 @@ class YuJianHybridTab3Api36Test {
     composeRule.waitUntil(timeoutMillis = 30_000) {
       scene.latestTelemetry.activeRenderMode == RenderDebugMode.RIBBONS_ONLY
     }
+    val nativeOuterSnapshot = scene.latestTelemetry
     capture("TAB1_OUTER_RESIDENTS_GPU.png", evidenceDir, scene.latestTelemetry)
+    repeat(3) { index ->
+      capture("TAB1_OUTER_RESIDENTS_GPU_R${index + 1}.png", evidenceDir, scene.latestTelemetry)
+    }
     composeRule.activity.setSceneForInstrumentation(
       OrbSceneMode.ORB_ONLY, RenderDebugMode.REFERENCE_LOCKED_FRAME, paused = true,
     )
@@ -66,6 +70,7 @@ class YuJianHybridTab3Api36Test {
       val telemetry = scene.latestTelemetry
       telemetry.coreRendererMode == OrbCoreMode.YUJIAN_CORE &&
         telemetry.yujianCoreStatus == "RENDERED" &&
+        telemetry.outerOpticalStatus == "RENDERED" &&
         telemetry.yujianShaderProgramId > 0 &&
         telemetry.yujianCoreFrameCount > 0L
     }
@@ -81,6 +86,20 @@ class YuJianHybridTab3Api36Test {
     assertTrue(hybridTelemetry.yujianNoFramebufferFeedbackLoop)
     assertTrue(hybridTelemetry.yujianPassStateReadBackValid)
     assertTrue(hybridTelemetry.sceneFramebufferComplete)
+    assertEquals(7, hybridTelemetry.outerOpticalTraceCount)
+    assertEquals(7, hybridTelemetry.outerOpticalSurfaceCount)
+    assertEquals(14, hybridTelemetry.outerOpticalFilamentCount)
+    assertEquals(51, hybridTelemetry.outerOpticalHighlightCount)
+    assertEquals(5, hybridTelemetry.outerOpticalDropletCount)
+    assertEquals(10, hybridTelemetry.outerOpticalParticleCount)
+    assertTrue(hybridTelemetry.outerOpticalRibbonProgramId > 0)
+    assertTrue(hybridTelemetry.outerOpticalPointProgramId > 0)
+    assertTrue(hybridTelemetry.outerOpticalManifestSha256.matches(Regex("[0-9a-f]{64}")))
+    assertTrue(hybridTelemetry.outerOpticalShaderSourceSha256.matches(Regex("[0-9a-f]{64}")))
+    assertTrue(hybridTelemetry.outerOpticalUniformReadbackValid)
+    assertEquals("GL_NO_ERROR", hybridTelemetry.outerOpticalGlError)
+    assertTrue(hybridTelemetry.outerOpticalBackVertexCount > 0)
+    assertTrue(hybridTelemetry.outerOpticalFrontVertexCount > 0)
     assertEquals(hybridTelemetry.refractionTextureId, hybridTelemetry.yujianCoreRefractionTextureId)
     composeRule.activity.setSceneForInstrumentation(
       OrbSceneMode.YUJIAN_HYBRID, RenderDebugMode.REFERENCE_LOCKED_FRAME, paused = true,
@@ -110,12 +129,19 @@ class YuJianHybridTab3Api36Test {
     )
     composeRule.waitUntil(timeoutMillis = 30_000) {
       scene.latestTelemetry.activeRenderMode == RenderDebugMode.RIBBONS_ONLY
+        && scene.latestTelemetry.outerOpticalStatus == "RENDERED"
     }
+    assertEquals(nativeOuterSnapshot.coreAngleDeg, scene.latestTelemetry.coreAngleDeg, 1e-4f)
+    assertEquals(nativeOuterSnapshot.coreAngularVelDegPerSec, scene.latestTelemetry.coreAngularVelDegPerSec, 1e-4f)
     capture("TAB3_OUTER_RESIDENTS_GPU.png", evidenceDir, scene.latestTelemetry)
+    repeat(3) { index ->
+      capture("TAB3_OUTER_RESIDENTS_GPU_R${index + 1}.png", evidenceDir, scene.latestTelemetry)
+    }
     composeRule.activity.setSceneForInstrumentation(OrbSceneMode.YUJIAN_HYBRID, RenderDebugMode.FULL_RENDER)
     composeRule.waitUntil(timeoutMillis = 30_000) {
       scene.latestTelemetry.activeRenderMode == RenderDebugMode.FULL_RENDER &&
-        scene.latestTelemetry.yujianCoreStatus == "RENDERED"
+        scene.latestTelemetry.yujianCoreStatus == "RENDERED" &&
+        scene.latestTelemetry.outerOpticalStatus == "RENDERED"
     }
 
     composeRule.onNodeWithTag("tab_task_perimeter").performClick()
@@ -185,6 +211,16 @@ class YuJianHybridTab3Api36Test {
       .put("drawColorAttachmentTextureId", telemetry.yujianDrawColorAttachmentTextureId)
       .put("drawFramebufferComplete", telemetry.yujianDrawFramebufferComplete)
       .put("noFramebufferFeedbackLoop", telemetry.yujianNoFramebufferFeedbackLoop)
+      .put("outerOpticalStatus", telemetry.outerOpticalStatus)
+      .put("outerOpticalManifestSha256", telemetry.outerOpticalManifestSha256)
+      .put("outerOpticalShaderSourceSha256", telemetry.outerOpticalShaderSourceSha256)
+      .put("outerOpticalTraceCount", telemetry.outerOpticalTraceCount)
+      .put("outerOpticalSurfaceCount", telemetry.outerOpticalSurfaceCount)
+      .put("outerOpticalFilamentCount", telemetry.outerOpticalFilamentCount)
+      .put("outerOpticalBackVertexCount", telemetry.outerOpticalBackVertexCount)
+      .put("outerOpticalFrontVertexCount", telemetry.outerOpticalFrontVertexCount)
+      .put("outerOpticalGlError", telemetry.outerOpticalGlError)
+      .put("outerOpticalUniformReadbackValid", telemetry.outerOpticalUniformReadbackValid)
       .put("passStateReadBackValid", telemetry.yujianPassStateReadBackValid)
       .put("sceneFramebufferComplete", telemetry.sceneFramebufferComplete)
       .put("refractionTextureIdFromScene", telemetry.refractionTextureId)
@@ -275,6 +311,24 @@ class YuJianHybridTab3Api36Test {
       .put("samplerTextureUnit", telemetry.yujianCoreSamplerTextureUnit)
       .put("uHdrScaleReadBack", telemetry.yujianCoreHdrScale)
       .put("uTimeReadBack", telemetry.yujianCoreElapsedTimeSec)
+      .put("outerOpticalStatus", telemetry.outerOpticalStatus)
+      .put("outerOpticalManifestSha256", telemetry.outerOpticalManifestSha256)
+      .put("outerOpticalShaderSourceSha256", telemetry.outerOpticalShaderSourceSha256)
+      .put("outerOpticalRibbonProgramId", telemetry.outerOpticalRibbonProgramId)
+      .put("outerOpticalPointProgramId", telemetry.outerOpticalPointProgramId)
+      .put("outerOpticalTraceCount", telemetry.outerOpticalTraceCount)
+      .put("outerOpticalSurfaceCount", telemetry.outerOpticalSurfaceCount)
+      .put("outerOpticalFilamentCount", telemetry.outerOpticalFilamentCount)
+      .put("outerOpticalHighlightCount", telemetry.outerOpticalHighlightCount)
+      .put("outerOpticalDropletCount", telemetry.outerOpticalDropletCount)
+      .put("outerOpticalParticleCount", telemetry.outerOpticalParticleCount)
+      .put("outerOpticalBackVertexCount", telemetry.outerOpticalBackVertexCount)
+      .put("outerOpticalFrontVertexCount", telemetry.outerOpticalFrontVertexCount)
+      .put("outerOpticalFramebufferId", telemetry.outerOpticalFramebufferId)
+      .put("outerOpticalRefractionTextureId", telemetry.outerOpticalRefractionTextureId)
+      .put("outerOpticalGlError", telemetry.outerOpticalGlError)
+      .put("outerOpticalGlErrorPass", telemetry.outerOpticalGlErrorPass)
+      .put("outerOpticalUniformReadbackValid", telemetry.outerOpticalUniformReadbackValid)
       .put("projectedCenterNdc", telemetry.yujianCoreProjectedCenterNdc)
       .put("projectedRadiiNdc", telemetry.yujianCoreProjectedRadiiNdc)
       .put("glError", telemetry.yujianCoreGlError)

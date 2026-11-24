@@ -6,6 +6,7 @@ import com.example.orb.geometry.OrbGeometryBuilder
 import com.example.orb.gl.CoreFluidShaders
 import com.example.orb.gl.GlMesh
 import com.example.orb.gl.GlShaderProgram
+import com.example.orb.outer.OuterOpticalBokeh
 
 /**
  * Renders the independent deep emerald-teal space backdrop with atmospheric
@@ -33,6 +34,7 @@ class AIOrbBackground {
     parallaxY: Float,
     hdrScale: Float,
     config: AIOrbConfig,
+    referenceBokeh: List<OuterOpticalBokeh>? = null,
   ) {
     val prog = program ?: return
     val mesh = quad ?: return
@@ -47,6 +49,24 @@ class AIOrbBackground {
     prog.setVec2("uParallax", parallaxX, parallaxY)
     prog.setFloat("uOverallIntensity", config.overallIntensity)
     prog.setFloat("uHdrScale", hdrScale)
+    prog.setInt("uUseReferenceBokeh", if (referenceBokeh == null) 0 else 1)
+    if (!referenceBokeh.isNullOrEmpty()) {
+      val params = FloatArray(12 * 4)
+      val colors = FloatArray(12 * 3)
+      referenceBokeh.take(12).forEachIndexed { index, bokeh ->
+        val p = index * 4
+        params[p] = bokeh.x
+        params[p + 1] = bokeh.y
+        params[p + 2] = bokeh.radius
+        params[p + 3] = bokeh.intensity
+        val c = index * 3
+        colors[c] = bokeh.color[0]
+        colors[c + 1] = bokeh.color[1]
+        colors[c + 2] = bokeh.color[2]
+      }
+      prog.setVec4Array("uReferenceBokeh[0]", params)
+      prog.setVec3Array("uReferenceBokehColor[0]", colors)
+    }
 
     mesh.draw()
     GLES30.glDepthMask(true)

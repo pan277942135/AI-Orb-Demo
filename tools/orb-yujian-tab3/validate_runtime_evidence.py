@@ -19,6 +19,12 @@ EXPECTED_SCREENSHOTS = (
     "YUJIAN_CORE_ONLY_SOURCE_SHADER_GPU.png",
     "TAB1_OUTER_RESIDENTS_GPU.png",
     "TAB3_OUTER_RESIDENTS_GPU.png",
+    "TAB1_OUTER_RESIDENTS_GPU_R1.png",
+    "TAB1_OUTER_RESIDENTS_GPU_R2.png",
+    "TAB1_OUTER_RESIDENTS_GPU_R3.png",
+    "TAB3_OUTER_RESIDENTS_GPU_R1.png",
+    "TAB3_OUTER_RESIDENTS_GPU_R2.png",
+    "TAB3_OUTER_RESIDENTS_GPU_R3.png",
 )
 
 
@@ -91,6 +97,20 @@ def main() -> None:
     assert telemetry["refractionTextureId"] == telemetry["boundTextureId"]
     assert telemetry["samplerTextureUnit"] == 0
     assert telemetry["glError"] == "GL_NO_ERROR"
+    assert telemetry["outerOpticalStatus"] == "RENDERED"
+    assert telemetry["outerOpticalManifestSha256"] == "f6cec2833160e9343d4c60e0eb10d677b9f8f67c458dceccbe5ed51d8a22b45d"
+    assert telemetry["outerOpticalTraceCount"] == 7
+    assert telemetry["outerOpticalSurfaceCount"] == 7
+    assert telemetry["outerOpticalFilamentCount"] == 14
+    assert telemetry["outerOpticalHighlightCount"] == 51
+    assert telemetry["outerOpticalDropletCount"] == 5
+    assert telemetry["outerOpticalParticleCount"] == 10
+    assert telemetry["outerOpticalRibbonProgramId"] > 0
+    assert telemetry["outerOpticalPointProgramId"] > 0
+    assert telemetry["outerOpticalUniformReadbackValid"] is True
+    assert telemetry["outerOpticalGlError"] == "GL_NO_ERROR"
+    assert telemetry["outerOpticalBackVertexCount"] > 0
+    assert telemetry["outerOpticalFrontVertexCount"] > 0
     assert telemetry["tabSwitchContextCountBeforeAndAfter"] == telemetry["contextRebuildCount"]
     assert motion["status"] == "PASS"
     assert motion["elapsedWallClockMs"] >= 20_000
