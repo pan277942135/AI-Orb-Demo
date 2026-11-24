@@ -171,6 +171,7 @@ class GlesCompiler:
 def main() -> int:
     core_src = (ROOT / "app/src/main/java/com/example/orb/gl/CoreFluidShaders.kt").read_text(encoding="utf-8")
     ribbon_src = (ROOT / "app/src/main/java/com/example/orb/gl/RibbonOpticsShaders.kt").read_text(encoding="utf-8")
+    task_src = (ROOT / "app/src/main/java/com/example/orb/task/TaskWaterLightShaders.kt").read_text(encoding="utf-8")
     core_math = extract_constant(core_src, "GLSL_COMMON_MATH")
     ribbon_math = extract_constant(ribbon_src, "GLSL_INV_SMOOTHSTEP")
 
@@ -179,6 +180,9 @@ def main() -> int:
 
     def ribbon(name: str) -> str:
         return extract_constant(ribbon_src, name).replace("$GLSL_INV_SMOOTHSTEP", ribbon_math)
+
+    def task(name: str) -> str:
+        return extract_constant(task_src, name)
 
     compiler = GlesCompiler()
     print(f"[validate_glsl_es] GLES context: {compiler.version}")
@@ -199,6 +203,15 @@ def main() -> int:
     ):
         programs[label] = compiler.link_pair(ribbon(vert), ribbon(frag), label, vert, frag)
 
+    for vert, frag, label in (
+        ("TASK_BG_VERT", "TASK_BG_FRAG", "TASK_BACKGROUND"),
+        ("PHOTO_QUAD_VERT", "PHOTO_QUAD_FRAG", "TASK_PHOTO"),
+        ("TASK_RIBBON_VERT", "TASK_RIBBON_FRAG", "TASK_RIBBON"),
+        ("PERIMETER_RIBBON_VERT", "PERIMETER_RIBBON_FRAG", "TASK_PERIMETER"),
+        ("TASK_SPARKLE_VERT", "TASK_SPARKLE_FRAG", "TASK_SPARKLE"),
+    ):
+        programs[label] = compiler.link_pair(task(vert), task(frag), label, vert, frag)
+
     required_core_uniforms = (
         "uDensityScale",
         "uDensityRange",
@@ -218,14 +231,29 @@ def main() -> int:
         location = compiler.gl_get_uniform_location(core_program, name.encode("ascii"))
         if location < 0:
             raise RuntimeError(f"Fitted core uniform is inactive after linking: {name}")
-    if len(compiler.compiled_sources) != 16:
-        raise RuntimeError(f"Expected 16 production shader sources, compiled {len(compiler.compiled_sources)}")
+
+    required_task_uniforms = {
+        "TASK_BACKGROUND": ("uBackgroundTex", "uBackgroundSizePx", "uCausticsGain"),
+        "TASK_PHOTO": ("uPhotoTex", "uPhotoSizePx", "uCornerRadiusPx"),
+        "TASK_RIBBON": ("uTaskVisualDebug", "uReveal", "uFlowTime"),
+        "TASK_PERIMETER": ("uTaskVisualDebug", "uCoverageComplete", "uLayerAlphaScale"),
+        "TASK_SPARKLE": ("uTaskVisualDebug", "uHdrScale"),
+    }
+    for program_name, uniforms in required_task_uniforms.items():
+        for name in uniforms:
+            location = compiler.gl_get_uniform_location(programs[program_name], name.encode("ascii"))
+            if location < 0:
+                raise RuntimeError(f"Task shader uniform is inactive after linking: {program_name}.{name}")
+
+    if len(compiler.compiled_sources) != 26:
+        raise RuntimeError(f"Expected 26 production shader sources (Core + Task), compiled {len(compiler.compiled_sources)}")
     if compiler.gl_get_error() != GL_NO_ERROR:
         raise RuntimeError("GLES reported an error after production shader compilation/linking")
 
     print(
         f"[validate_glsl_es] PASS: {len(compiler.compiled_sources)} shader sources compiled, "
-        f"{len(programs)} programs linked, {len(required_core_uniforms)} core fitted uniforms active."
+        f"{len(programs)} programs linked, {len(required_core_uniforms)} core fitted uniforms and "
+        f"{sum(map(len, required_task_uniforms.values()))} Task uniforms active."
     )
     print("[validate_glsl_es] This is shader compile/link evidence only; it does not claim hardware GPU capture.")
     return 0

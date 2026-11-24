@@ -13,6 +13,7 @@ data class TaskRibbonDrawStats(
   val shaderLinked: Boolean = false,
   val vaoIds: List<Int> = emptyList(),
   val vboIds: List<Int> = emptyList(),
+  val drawCallsByStream: Map<String, Int> = emptyMap(),
 )
 
 /**
@@ -22,7 +23,9 @@ data class TaskRibbonDrawStats(
  * Supports P0-4 screen-space liquid refraction via a separate refraction snapshot texture
  * and G1 GPU visibility diagnostic modes (`GEOMETRY_MAGENTA`, `ALPHA_HEATMAP`, layer isolation).
  */
-class TaskEnergyRibbonRenderer {
+class TaskEnergyRibbonRenderer(
+  taskStreamSpecs: List<TaskStreamSpec>? = null,
+) {
 
   private class StreamGpuMesh(
     val spec: TaskStreamSpec,
@@ -32,7 +35,7 @@ class TaskEnergyRibbonRenderer {
   )
 
   private var program: GlShaderProgram? = null
-  private val streams: List<StreamGpuMesh> = TaskEnergyGeometry.buildDefaultStreams().map { StreamGpuMesh(it) }
+  private val streams: List<StreamGpuMesh> = (taskStreamSpecs ?: TaskEnergyGeometry.buildDefaultStreams()).map { StreamGpuMesh(it) }
   private var cachedLayout: TaskSceneLayoutSnapshot? = null
   var lastDrawStats: TaskRibbonDrawStats = TaskRibbonDrawStats()
     private set
@@ -93,19 +96,18 @@ class TaskEnergyRibbonRenderer {
     prog.setVec2("uFboSize", fboWidth.coerceAtLeast(1).toFloat(), fboHeight.coerceAtLeast(1).toFloat())
     prog.setFloat("uRefractionPx", DEFAULT_REFRACTION_PX)
     prog.setFloat("uRefractionStrength", DEFAULT_REFRACTION_STRENGTH)
-    prog.setInt("uTaskVisualDebug", debugOptions.mode.shaderDebugId)
+    prog.setInt("uTaskVisualDebug", debugOptions.taskShaderDebugId)
     prog.setFloat("uFlowTime", snapshot.flowTimeSec)
     prog.setFloat("uHdrScale", hdrScale)
 
     var drawnVerts = 0
     var drawnCalls = 0
+    val drawnByStream = linkedMapOf<String, Int>()
 
     // Draw secondary wisps first, then main icy-blue S-stream on top
     for ((idx, item) in streams.sortedBy { it.spec.depthOffset }.withIndex()) {
       if (item.vertexCount <= 0 || item.vao == 0) continue
-      val isMain = item.spec.kind == TaskStreamKind.MAIN_ICE_STREAM
-      if (isMain && !debugOptions.showMainStream) continue
-      if (!isMain && !debugOptions.showSecondaryStreams) continue
+      if (!debugOptions.isTaskStreamEnabled(item.spec.kind)) continue
 
       // Each accompanying stream reveals smoothly with its own natural reach while main hits 1.0 at KF02
       val effectiveReveal = (snapshot.releaseProgress * item.spec.reachFraction).coerceIn(0f, 1f)
@@ -118,6 +120,7 @@ class TaskEnergyRibbonRenderer {
       GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, item.vertexCount)
       drawnVerts += item.vertexCount
       drawnCalls++
+      drawnByStream[item.spec.id] = (drawnByStream[item.spec.id] ?: 0) + 1
     }
     GLES30.glBindVertexArray(0)
     if (hasRefraction) {
@@ -131,6 +134,7 @@ class TaskEnergyRibbonRenderer {
       shaderLinked = true,
       vaoIds = streams.map { it.vao },
       vboIds = streams.map { it.vbo },
+      drawCallsByStream = drawnByStream,
     )
   }
 

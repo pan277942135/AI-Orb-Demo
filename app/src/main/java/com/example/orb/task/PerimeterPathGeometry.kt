@@ -49,6 +49,7 @@ data class PathSample(
  */
 class PerimeterPathGeometry(
   val photo: PhotoFrameGeometry,
+  kf04SideAscendRatio: Float = 0.60f,
 ) {
   val widthPx: Float = photo.widthPx.coerceAtLeast(16f)
   val heightPx: Float = photo.heightPx.coerceAtLeast(16f)
@@ -74,7 +75,9 @@ class PerimeterPathGeometry(
   val topCornerEndFrac: Float = s4TopCornerEndPx / totalHalfLengthPx
 
   /** Exact normalized arc-length fraction corresponding to 60% height up the vertical sides (KF04). */
-  val kf04SideAscendFrac: Float = (s2BottomCornerEndPx + l2Vertical * 0.60f) / totalHalfLengthPx
+  val kf04SideAscendRatio: Float = kf04SideAscendRatio.coerceIn(0f, 1f)
+  val kf04SideAscendFrac: Float =
+    (s2BottomCornerEndPx + l2Vertical * this.kf04SideAscendRatio) / totalHalfLengthPx
 
   /** Evaluates exact continuous [PathSample] at normalized progress `u in [0, 1]` along [side]. */
   fun sampleByFraction(side: PerimeterSide, fraction: Float): PathSample {

@@ -13,6 +13,7 @@ data class TaskSceneLayoutSnapshot(
   val photoFrame: PhotoFrameGeometry,
   val orbTransform: OrbViewportTransform,
   val isFromLiveComposeLayout: Boolean,
+  val visualLockSha256: String? = null,
 ) {
   val orbAnchorTopPx: Vec2 get() = orbTransform.orbAnchorTopPx
   val photoBottomCenterPx: Vec2 get() = photoFrame.bottomCenterPx
@@ -44,6 +45,7 @@ data class TaskSceneLayoutSnapshot(
       photoWindowRightPx: Float,
       photoWindowBottomPx: Float,
       photoCornerRadiusPx: Float,
+      visualLock: TaskVisualFidelityV41? = null,
     ): TaskSceneLayoutSnapshot {
       val localPhoto = PhotoFrameGeometry(
         leftPx = photoWindowLeftPx - surfaceWindowLeftPx,
@@ -55,28 +57,34 @@ data class TaskSceneLayoutSnapshot(
       val safePhoto = if (localPhoto.isValid()) {
         localPhoto
       } else {
-        PhotoFrameGeometry.canonicalForViewport(surfaceWidthPx, surfaceHeightPx)
+        PhotoFrameGeometry.canonicalForViewport(surfaceWidthPx, surfaceHeightPx, visualLock)
       }
-      val orb = OrbViewportTransform.forPhotoAndSurface(safePhoto, surfaceWidthPx, surfaceHeightPx)
+      val orb = OrbViewportTransform.forPhotoAndSurface(safePhoto, surfaceWidthPx, surfaceHeightPx, visualLock)
       return TaskSceneLayoutSnapshot(
         surfaceWidthPx = surfaceWidthPx.coerceAtLeast(64),
         surfaceHeightPx = surfaceHeightPx.coerceAtLeast(64),
         photoFrame = safePhoto,
         orbTransform = orb,
         isFromLiveComposeLayout = localPhoto.isValid(),
+        visualLockSha256 = visualLock?.lockSha256,
       )
     }
 
     /** Fallback canonical snapshot computed purely from GLSurfaceView dimensions. */
-    fun canonicalFallback(surfaceWidthPx: Int, surfaceHeightPx: Int): TaskSceneLayoutSnapshot {
-      val photo = PhotoFrameGeometry.canonicalForViewport(surfaceWidthPx, surfaceHeightPx)
-      val orb = OrbViewportTransform.forPhotoAndSurface(photo, surfaceWidthPx, surfaceHeightPx)
+    fun canonicalFallback(
+      surfaceWidthPx: Int,
+      surfaceHeightPx: Int,
+      visualLock: TaskVisualFidelityV41? = null,
+    ): TaskSceneLayoutSnapshot {
+      val photo = PhotoFrameGeometry.canonicalForViewport(surfaceWidthPx, surfaceHeightPx, visualLock)
+      val orb = OrbViewportTransform.forPhotoAndSurface(photo, surfaceWidthPx, surfaceHeightPx, visualLock)
       return TaskSceneLayoutSnapshot(
         surfaceWidthPx = surfaceWidthPx.coerceAtLeast(64),
         surfaceHeightPx = surfaceHeightPx.coerceAtLeast(64),
         photoFrame = photo,
         orbTransform = orb,
         isFromLiveComposeLayout = false,
+        visualLockSha256 = visualLock?.lockSha256,
       )
     }
   }

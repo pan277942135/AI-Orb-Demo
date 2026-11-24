@@ -1,7 +1,12 @@
 package com.example
 
 import android.graphics.Color
+import android.graphics.Bitmap
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.Bundle
+import android.view.PixelCopy
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -47,7 +52,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.orb.config.RenderDebugMode
 import com.example.orb.scene.AIOrbScene
 import com.example.orb.task.TaskGpuEvidenceCapture
+import com.example.orb.task.TaskWindowFrameCapture
 import com.example.orb.task.TaskSceneLayoutSnapshot
+import com.example.orb.task.TaskVisualFidelityV41
 import com.example.orb.ui.AIOrbCanvas
 import com.example.orb.ui.AIOrbControlsOverlay
 import com.example.orb.ui.AIOrbViewModel
@@ -86,6 +93,9 @@ class MainActivity : ComponentActivity() {
       MyApplicationTheme {
         val viewModel: AIOrbViewModel = viewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+        val taskVisualFidelity = remember(applicationContext.assets) {
+          TaskVisualFidelityV41.loadFromAssets(applicationContext.assets)
+        }
 
         var sharedScene by remember { mutableStateOf<AIOrbScene?>(null) }
         var surfaceMetrics by remember { mutableStateOf(SurfaceWindowMetrics()) }
@@ -112,6 +122,7 @@ class MainActivity : ComponentActivity() {
               photoWindowRightPx = photo.rightPx,
               photoWindowBottomPx = photo.bottomPx,
               photoCornerRadiusPx = photo.cornerRadiusPx,
+              visualLock = taskVisualFidelity,
             )
             scene.updateTaskLayout(snapshot)
           }
@@ -133,6 +144,7 @@ class MainActivity : ComponentActivity() {
               surfaceMetrics = SurfaceWindowMetrics(l, t, w, h)
             },
             enableOrbitDrag = !isTaskTab,
+            taskVisualFidelity = taskVisualFidelity,
           )
 
           // Tab 1 isolated QA Reference Master viewer (strictly Tab 1 only, never composited with GPU)
@@ -173,6 +185,7 @@ class MainActivity : ComponentActivity() {
           if (isTaskTab) {
             TaskRecognitionDemoScreen(
               evidence = uiState.taskEvidence,
+              visualLock = taskVisualFidelity,
               debugOptions = uiState.taskDebugOptions,
               captureProgress = uiState.taskCaptureProgress,
               isControlsExpanded = uiState.isTaskControlsExpanded,
@@ -188,9 +201,11 @@ class MainActivity : ComponentActivity() {
               },
               onExport6KfEvidence = {
                 val outDir = TaskGpuEvidenceCapture.resolveEvidenceDir(applicationContext)
-                sharedScene?.requestTask6KfEvidenceExport(outDir) { progress ->
-                  viewModel.reportTaskCaptureProgress(progress)
-                }
+                sharedScene?.requestTask6KfEvidenceExport(
+                  outputDir = outDir,
+                  windowCapture = TaskWindowFrameCapture(::captureTaskWindowFrame),
+                  onProgress = viewModel::reportTaskCaptureProgress,
+                )
               },
               onPhotoWindowBoundsChanged = { l, t, r, b, cr ->
                 photoMetrics = PhotoWindowMetrics(l, t, r, b, cr)
@@ -218,16 +233,18 @@ class MainActivity : ComponentActivity() {
           }
 
           // Floating Dual-Tab Segmented Switcher (`AI Orb` | `照片水光`)
-          DemoTabSwitcherBar(
-            activeTab = uiState.activeTab,
-            onSelectTab = viewModel::selectTab,
-            isLightTheme = isTaskTab,
-            modifier = Modifier
-              .align(Alignment.TopCenter)
-              .statusBarsPadding()
-              .displayCutoutPadding()
-              .padding(top = 6.dp),
-          )
+          if (uiState.taskCaptureProgress.state != com.example.orb.task.TaskGpuCaptureState.CAPTURING) {
+            DemoTabSwitcherBar(
+              activeTab = uiState.activeTab,
+              onSelectTab = viewModel::selectTab,
+              isLightTheme = isTaskTab,
+              modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+                .displayCutoutPadding()
+                .padding(top = 6.dp, end = 6.dp),
+            )
+          }
         }
       }
     }
@@ -247,6 +264,43 @@ class MainActivity : ComponentActivity() {
     controller.isAppearanceLightStatusBars = isLightBars
     controller.isAppearanceLightNavigationBars = isLightBars
     controller.hide(WindowInsetsCompat.Type.systemBars())
+  }
+
+  private fun captureTaskWindowFrame(
+    gpuFileName: String,
+    callback: (Bitmap?, String?) -> Unit,
+  ) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+      callback(null, "Window PixelCopy requires Android 8.0 or later")
+      return
+    }
+    window.decorView.post {
+      val width = window.decorView.width
+      val height = window.decorView.height
+      if (width <= 0 || height <= 0) {
+        callback(null, "Window has no drawable dimensions for $gpuFileName")
+        return@post
+      }
+      val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+      try {
+        PixelCopy.request(
+          window,
+          bitmap,
+          { result ->
+            if (result == PixelCopy.SUCCESS) {
+              callback(bitmap, null)
+            } else {
+              bitmap.recycle()
+              callback(null, "PixelCopy result=$result for $gpuFileName")
+            }
+          },
+          Handler(Looper.getMainLooper()),
+        )
+      } catch (e: RuntimeException) {
+        bitmap.recycle()
+        callback(null, "PixelCopy failed for $gpuFileName: ${e.message ?: e.javaClass.simpleName}")
+      }
+    }
   }
 }
 

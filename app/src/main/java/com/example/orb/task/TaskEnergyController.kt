@@ -81,7 +81,9 @@ data class TaskEnergySnapshot(
  * - All 11 [TaskEnergyEvent] milestones fire strictly when true `leftProgress`/`rightProgress`
  *   cross the live [PerimeterPathGeometry] corner/segment arc-length fractions
  */
-class TaskEnergyController {
+class TaskEnergyController(
+  private val visualLock: TaskVisualFidelityV41? = null,
+) {
   private var elapsedSec: Double = 0.0
   private var flowTimeSec: Double = 0.0
   private var paused: Boolean = false
@@ -97,6 +99,12 @@ class TaskEnergyController {
 
   private val emittedEvents = ArrayList<TaskEnergyEvent>(16)
   private val emittedSet = HashSet<TaskEnergyEvent>(16)
+
+  private val contactStartMs: Double get() = visualLock?.keyframes?.contactStartMs ?: T_CONTACT_START_MS
+  private val splitStartMs: Double get() = visualLock?.keyframes?.splitStartMs ?: T_SPLIT_START_MS
+  private val ascendStartMs: Double get() = visualLock?.keyframes?.ascendStartMs ?: T_ASCEND_START_MS
+  private val topJoinStartMs: Double get() = visualLock?.keyframes?.topJoinStartMs ?: T_TOP_JOIN_START_MS
+  private val loopStartMs: Double get() = visualLock?.keyframes?.loopStartMs ?: T_LOOP_START_MS
 
   val isPaused: Boolean get() = paused
   val events: List<TaskEnergyEvent> get() = emittedEvents.toList()
@@ -172,12 +180,15 @@ class TaskEnergyController {
     emittedSet.clear()
 
     val targetMs = when (targetStage) {
-      TaskEnergyStage.ORB_RELEASE -> 460L          // ~38% Orb -> Photo Bottom Center (strictly no contact)
-      TaskEnergyStage.BOTTOM_CONTACT -> 1140L      // Peak bottom-center contact glow, minimal center reveal
-      TaskEnergyStage.BOTTOM_SPLIT -> 2280L        // Advancing near bottom corners, strictly not on vertical sides
+      TaskEnergyStage.ORB_RELEASE -> solveElapsedMsForSmoothStepProgress(
+        visualLock?.keyframes?.kf01FrontRatio ?: 0.38f,
+        contactStartMs,
+      )
+      TaskEnergyStage.BOTTOM_CONTACT -> visualLock?.keyframes?.kf02CaptureMs ?: 1140L
+      TaskEnergyStage.BOTTOM_SPLIT -> visualLock?.keyframes?.kf03CaptureMs ?: 2280L
       TaskEnergyStage.SIDE_ASCEND -> solveElapsedMsForProgress(perimeter.kf04SideAscendFrac, perimeter)
-      TaskEnergyStage.TOP_JOIN -> 5120L            // Converged at top center with warm champagne-gold peak glint
-      TaskEnergyStage.PERIMETER_LOOP -> 7200L      // Steady-state continuous flowing 4-side loop, softened top glint
+      TaskEnergyStage.TOP_JOIN -> visualLock?.keyframes?.kf05CaptureMs ?: 5120L
+      TaskEnergyStage.PERIMETER_LOOP -> visualLock?.keyframes?.kf06CaptureMs ?: 7200L
     }
 
     elapsedSec = targetMs / 1000.0
@@ -197,17 +208,30 @@ class TaskEnergyController {
     val startFrac = perimeter.bottomCornerStartFrac * 0.98f
     val endFrac = perimeter.topCornerStartFrac * 0.985f
     val clampedTarget = targetProgress.coerceIn(startFrac, endFrac)
-    var lo = T_ASCEND_START_MS
-    var hi = T_TOP_JOIN_START_MS
+    var lo = ascendStartMs
+    var hi = topJoinStartMs
     repeat(28) {
       val mid = 0.5 * (lo + hi)
-      val u = ((mid - T_ASCEND_START_MS) / (T_TOP_JOIN_START_MS - T_ASCEND_START_MS)).toFloat().coerceIn(0f, 1f)
+      val u = ((mid - ascendStartMs) / (topJoinStartMs - ascendStartMs)).toFloat().coerceIn(0f, 1f)
       val prog = startFrac + smoothEaseInOut(u) * (endFrac - startFrac)
       if (prog < clampedTarget) {
         lo = mid
       } else {
         hi = mid
       }
+    }
+    return ((lo + hi) * 0.5).toLong()
+  }
+
+  /** Exact deterministic inverse of the KF01 smooth-ease curve. */
+  fun solveElapsedMsForSmoothStepProgress(targetProgress: Float, durationMs: Double = contactStartMs): Long {
+    val target = targetProgress.coerceIn(0f, 1f)
+    var lo = 0.0
+    var hi = durationMs.coerceAtLeast(1.0)
+    repeat(32) {
+      val mid = (lo + hi) * 0.5
+      val normalized = smoothEaseInOut((mid / durationMs.coerceAtLeast(1.0)).toFloat())
+      if (normalized < target) lo = mid else hi = mid
     }
     return ((lo + hi) * 0.5).toLong()
   }
@@ -240,42 +264,42 @@ class TaskEnergyController {
     val cTopStart = perimeter.topCornerStartFrac
     val cTopEnd = perimeter.topCornerEndFrac
 
-    // 1. Release stream progress: Orb Anchor Top (0.0) -> Photo Bottom Center (1.0) during [0..1000ms]
-    val rawRelease = if (tMs < T_CONTACT_START_MS) {
-      smoothEaseInOut((tMs / T_CONTACT_START_MS).toFloat())
+    // 1. Release stream progress: the frozen KF01 ratio is solved against this same curve.
+    val rawRelease = if (tMs < contactStartMs) {
+      smoothEaseInOut((tMs / contactStartMs).toFloat())
     } else {
       1.0f
     }
 
     // 2. Perimeter bidirectional progress driven strictly along unified arc-length milestones
     val rawPerimeter = when {
-      tMs < T_CONTACT_START_MS -> 0.0f
-      tMs < T_SPLIT_START_MS -> {
+      tMs < contactStartMs -> 0.0f
+      tMs < splitStartMs -> {
         // KF02 BOTTOM_CONTACT: local bottom-center activation ONLY (0 -> 0.045, strictly < bottomCornerStart)
-        val u = ((tMs - T_CONTACT_START_MS) / (T_SPLIT_START_MS - T_CONTACT_START_MS)).toFloat().coerceIn(0f, 1f)
+        val u = ((tMs - contactStartMs) / (splitStartMs - contactStartMs)).toFloat().coerceIn(0f, 1f)
         val maxContactSpread = minOf(0.048f, cBottomStart * 0.25f)
         smoothEaseOut(u) * maxContactSpread
       }
-      tMs < T_ASCEND_START_MS -> {
+      tMs < ascendStartMs -> {
         // KF03 BOTTOM_SPLIT: expands along bottom straight approaching both bottom corners (never enters sides!)
-        val u = ((tMs - T_SPLIT_START_MS) / (T_ASCEND_START_MS - T_SPLIT_START_MS)).toFloat().coerceIn(0f, 1f)
+        val u = ((tMs - splitStartMs) / (ascendStartMs - splitStartMs)).toFloat().coerceIn(0f, 1f)
         val startFrac = minOf(0.048f, cBottomStart * 0.25f)
         val endFrac = cBottomStart * 0.98f
         startFrac + smoothEaseInOut(u) * (endFrac - startFrac)
       }
-      tMs < T_TOP_JOIN_START_MS -> {
+      tMs < topJoinStartMs -> {
         // KF04 SIDE_ASCEND: smoothly rounds bottom quarter-arcs and climbs both vertical sides toward top corners
-        val u = ((tMs - T_ASCEND_START_MS) / (T_TOP_JOIN_START_MS - T_ASCEND_START_MS)).toFloat().coerceIn(0f, 1f)
+        val u = ((tMs - ascendStartMs) / (topJoinStartMs - ascendStartMs)).toFloat().coerceIn(0f, 1f)
         val startFrac = cBottomStart * 0.98f
         val endFrac = cTopStart * 0.985f
         startFrac + smoothEaseInOut(u) * (endFrac - startFrac)
       }
-      tMs < T_LOOP_START_MS -> {
+      tMs < loopStartMs -> {
         // KF05 TOP_JOIN: rounds top quarter-arcs and converges symmetrically at TOP_CENTER (1.0)
-        val u = ((tMs - T_TOP_JOIN_START_MS) / (T_LOOP_START_MS - T_TOP_JOIN_START_MS)).toFloat().coerceIn(0f, 1f)
+        val u = ((tMs - topJoinStartMs) / (loopStartMs - topJoinStartMs)).toFloat().coerceIn(0f, 1f)
         val startFrac = cTopStart * 0.985f
         // Reach exact top convergence at ~68% of KF05 window so the transient top-center golden glint shines cleanly
-        val joinU = (u / 0.68f).coerceIn(0f, 1f)
+        val joinU = (u / (visualLock?.keyframes?.kf05JoinFraction ?: 0.68f)).coerceIn(0f, 1f)
         startFrac + smoothEaseInOut(joinU) * (1.0f - startFrac)
       }
       else -> 1.0f
@@ -295,31 +319,32 @@ class TaskEnergyController {
 
     // 3. Contact intensity (peaks sharply in KF02, settles to warm subtle anchor hum in KF03-KF06)
     contactIntensity = when {
-      tMs < T_CONTACT_START_MS -> 0f
-      tMs < T_SPLIT_START_MS -> {
-        val u = ((tMs - T_CONTACT_START_MS) / (T_SPLIT_START_MS - T_CONTACT_START_MS)).toFloat().coerceIn(0f, 1f)
+      tMs < contactStartMs -> 0f
+      tMs < splitStartMs -> {
+        val u = ((tMs - contactStartMs) / (splitStartMs - contactStartMs)).toFloat().coerceIn(0f, 1f)
         0.55f + 0.45f * kotlin.math.sin(u * kotlin.math.PI).toFloat()
       }
       else -> {
-        val sinceSplitSec = ((tMs - T_SPLIT_START_MS) / 1000.0).coerceAtLeast(0.0)
+        val sinceSplitSec = ((tMs - splitStartMs) / 1000.0).coerceAtLeast(0.0)
         (0.28f + 0.60f * exp(-sinceSplitSec * 1.45).toFloat()).coerceIn(0.26f, 1.0f)
       }
     }
 
     // 4. Top-center join intensity (zero until convergence, peaks warmly in KF05, softens clearly in KF06!)
-    val joinReachMs = T_TOP_JOIN_START_MS + (T_LOOP_START_MS - T_TOP_JOIN_START_MS) * 0.68
+    val joinFraction = visualLock?.keyframes?.kf05JoinFraction ?: 0.68f
+    val joinReachMs = topJoinStartMs + (loopStartMs - topJoinStartMs) * joinFraction
     joinIntensity = when {
       !coverageComplete && tMs < joinReachMs - 140.0 -> 0f
       tMs < joinReachMs -> {
         val u = ((tMs - (joinReachMs - 140.0)) / 140.0).toFloat().coerceIn(0f, 1f)
         smoothEaseInOut(u)
       }
-      tMs < T_LOOP_START_MS -> {
-        val u = ((tMs - joinReachMs) / (T_LOOP_START_MS - joinReachMs)).toFloat().coerceIn(0f, 1f)
+      tMs < loopStartMs -> {
+        val u = ((tMs - joinReachMs) / (loopStartMs - joinReachMs)).toFloat().coerceIn(0f, 1f)
         1.0f - 0.55f * smoothEaseInOut(u)
       }
       else -> {
-        val loopSec = ((tMs - T_LOOP_START_MS) / 1000.0).coerceAtLeast(0.0)
+        val loopSec = ((tMs - loopStartMs) / 1000.0).coerceAtLeast(0.0)
         // Softens cleanly from 0.45 down to ~0.16 ambient champagne sheen in KF06
         (0.15f + 0.30f * exp(-loopSec * 1.15).toFloat()).coerceIn(0.14f, 0.46f)
       }
@@ -327,11 +352,11 @@ class TaskEnergyController {
 
     // 5. Authoritative stage classification aligned strictly to progress & timeline
     stage = when {
-      tMs < T_CONTACT_START_MS -> TaskEnergyStage.ORB_RELEASE
-      tMs < T_SPLIT_START_MS -> TaskEnergyStage.BOTTOM_CONTACT
-      tMs < T_ASCEND_START_MS -> TaskEnergyStage.BOTTOM_SPLIT
-      tMs < T_TOP_JOIN_START_MS -> TaskEnergyStage.SIDE_ASCEND
-      tMs < T_LOOP_START_MS -> TaskEnergyStage.TOP_JOIN
+      tMs < contactStartMs -> TaskEnergyStage.ORB_RELEASE
+      tMs < splitStartMs -> TaskEnergyStage.BOTTOM_CONTACT
+      tMs < ascendStartMs -> TaskEnergyStage.BOTTOM_SPLIT
+      tMs < topJoinStartMs -> TaskEnergyStage.SIDE_ASCEND
+      tMs < loopStartMs -> TaskEnergyStage.TOP_JOIN
       else -> TaskEnergyStage.PERIMETER_LOOP
     }
     // Keep corner references used so static analysis confirms milestone coupling

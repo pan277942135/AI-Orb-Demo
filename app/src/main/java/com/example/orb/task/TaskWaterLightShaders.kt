@@ -37,6 +37,9 @@ uniform vec2 uResolution;
 uniform vec2 uOrbCenterUv;
 uniform float uOrbRadiusNormH;
 uniform float uHdrScale;
+uniform sampler2D uBackgroundTex;
+uniform vec2 uBackgroundSizePx;
+uniform float uCausticsGain;
 
 float hash21(vec2 p) {
     p = fract(p * vec2(123.34, 456.21));
@@ -64,27 +67,19 @@ vec3 studioSrgbToLinearPreComp(vec3 srgb) {
 
 void main() {
     float aspect = uResolution.x / max(uResolution.y, 1.0);
+    vec2 imageAspect = vec2(uBackgroundSizePx.x / max(uBackgroundSizePx.y, 1.0), 1.0);
+    vec2 sampleUv = vUv;
+    if (aspect > imageAspect.x) {
+        sampleUv.y = (vUv.y - 0.5) * (aspect / imageAspect.x) + 0.5;
+    } else {
+        sampleUv.x = (vUv.x - 0.5) * (imageAspect.x / aspect) + 0.5;
+    }
+    sampleUv = clamp(sampleUv, vec2(0.0), vec2(1.0));
+    // Android Bitmap rows are top-down; flip the texture coordinate so the source image stays upright.
+    vec3 backgroundSrgb = texture(uBackgroundTex, vec2(sampleUv.x, 1.0 - sampleUv.y)).rgb;
+    vec3 col = pow(max(backgroundSrgb, vec3(0.0)), vec3(2.2));
 
-    // 1. Airy light-cyan aquatic studio backdrop matching FROZEN_6KF_VISUAL_SPEC
-    vec3 topIce     = vec3(0.81, 0.945, 0.975);
-    vec3 midAqua    = vec3(0.62, 0.875, 0.935);
-    vec3 lowCyan    = vec3(0.45, 0.815, 0.905);
-    vec3 deepCorner = vec3(0.38, 0.760, 0.875);
-
-    float yGrad = clamp(vUv.y, 0.0, 1.0); // 0 = bottom, 1 = top
-    vec3 baseSrgb = mix(lowCyan, midAqua, smoothstep(0.08, 0.56, yGrad));
-    baseSrgb = mix(baseSrgb, topIce, smoothstep(0.56, 0.96, yGrad));
-
-    // Soft side luminance framing (brighter mist near top-left & center-bottom, gentle teal edge vignette)
-    float sideDist = abs(vUv.x - 0.5) * 2.0;
-    baseSrgb = mix(baseSrgb, deepCorner, smoothstep(0.56, 1.12, sideDist) * 0.26);
-
-    // Soft diagonal sun-shaft veil across upper-left
-    float shaft = exp(-pow(((vUv.x - 0.36) * 0.8 + (vUv.y - 0.62) * 0.55) * 2.3, 2.0));
-    baseSrgb += vec3(0.06, 0.075, 0.07) * shaft;
-
-    // 2. P1: Focused water-surface caustic reflection pool directly beneath the shared AI Orb.
-    // Concentrates below Orb center, attenuates smoothly laterally, stays strictly below photo & Task stream!
+    // Add only the authored, low-gain moving caustic pool; the static background itself is the PNG.
     float poolCenterY = uOrbCenterUv.y - uOrbRadiusNormH * 0.44;
     float dxPool = (vUv.x - uOrbCenterUv.x) * aspect;
     float dyPool = (vUv.y - poolCenterY) * 2.65;
@@ -105,15 +100,11 @@ void main() {
     float rippleRing = 0.5 + 0.5 * sin(poolDist * 38.0 - uTime * 2.5 + n1 * 2.2);
     float ringGlow = pow(rippleRing, 3.4) * exp(-poolDist * 4.8);
 
-    vec3 col = studioSrgbToLinearPreComp(baseSrgb);
-    // Crisp shimmering pool caustics + delicate warm-gold specular floor reflection directly under Orb
-    col += vec3(0.18, 0.66, 0.84) * causticNet * poolMask * 0.56;
-    col += vec3(0.26, 0.76, 0.90) * ringGlow * poolMask * 0.34;
+    col += vec3(0.18, 0.66, 0.84) * causticNet * poolMask * 0.56 * uCausticsGain;
+    col += vec3(0.26, 0.76, 0.90) * ringGlow * poolMask * 0.34 * uCausticsGain;
     float floorGold = exp(-pow(poolDist * 4.2, 2.0)) * lateralAtten * belowTaskGate;
-    col += vec3(0.44, 0.34, 0.14) * floorGold * 0.26;
+    col += vec3(0.44, 0.34, 0.14) * floorGold * 0.26 * uCausticsGain;
 
-    // Keep strictly below Bloom bright-pass threshold (1.32) so studio background never hazes
-    col = min(col, vec3(1.10));
     fragColor = vec4(col * uHdrScale, 1.0);
 }
 """
@@ -443,6 +434,7 @@ uniform float uFlowTime;
 uniform float uSideSign;
 uniform float uCoverageComplete; // Strictly driven from real snapshot.coverageComplete (left>=0.999 && right>=0.999)
 uniform float uLayerAlphaScale;  // Bound from PerimeterWaterLightMaterial per layer
+uniform vec2 uLayerAlphaRange;   // Frozen per-layer minimum/maximum from V4.1 visual lock
 uniform float uHdrScale;
 uniform sampler2D uTaskRefractionTex;
 uniform int uHasRefractionTex;
@@ -505,7 +497,6 @@ void main() {
 
     vec3 col;
     float alpha;
-    float alphaCap;
     if (uLayerKind == 0) {
         // L1: High-contrast translucent sapphire-ice liquid film (strict frozen cap <= 0.38!)
         // Deep sapphire-cyan core + dark meniscus rim + bright specular liquid crest ensures crisp daylight visibility!
@@ -518,7 +509,6 @@ void main() {
         col += vec3(0.46, 1.06, 1.42) * liquidEdge * 0.34;
         col += frontGold * frontBoost * 0.72;
         alpha = (0.16 + 0.20 * shimmer) * bodyEnv + 0.22 * liquidEdge + 0.14 * liquidCrest + frontBoost * 0.28;
-        alphaCap = 0.38;
     } else if (uLayerKind == 1) {
         // L2: Rich emerald-green aquatic kelp veil (strict frozen cap <= 0.24, asynchronous slow plumes!)
         float plumeGate = smoothstep(0.24, 0.82, 0.5 + 0.5 * sin(s * 14.0 - uFlowTime * 1.15 + uSideSign * 1.7));
@@ -527,7 +517,6 @@ void main() {
         col = mix(emeraldDeep, jadeLight, 0.26 + 0.74 * flowA);
         col = mix(col, vec3(0.008, 0.18, 0.12), clamp(darkMeniscusRim * 0.22, 0.0, 0.25));
         alpha = (0.10 + 0.14 * vWave) * bodyEnv * (0.48 + 0.52 * plumeGate);
-        alphaCap = 0.24;
     } else {
         // L3: Slender traveling champagne-gold refractive filament (strict frozen cap <= 0.50!)
         float travelPacket = pow(clamp(0.5 + 0.5 * sin(s * 18.0 - uFlowTime * 2.55 + uSideSign * 1.2), 0.0, 1.0), 2.6);
@@ -536,11 +525,15 @@ void main() {
         vec3 champagne = vec3(2.08, 1.72, 0.96);
         col = mix(amberGold, champagne, 0.35 + 0.65 * flowB);
         alpha = fineCore * (0.18 + 0.34 * travelPacket + 0.34 * frontBoost);
-        alphaCap = 0.50;
     }
 
-    // P0-6: Apply revealMask and PerimeterWaterLightMaterial scale, then strictly enforce frozen alphaCap!
-    alpha = clamp(alpha * revealMask * uLayerAlphaScale, 0.0, alphaCap);
+    // Preserve transparent edge coverage while mapping visible liquid into the frozen
+    // per-layer range. Reveal remains a true zero-to-one multiplier after this mapping.
+    float scaledAlpha = max(alpha, 0.0) * max(uLayerAlphaScale, 0.0);
+    float alphaPresence = smoothstep(0.012, 0.075, scaledAlpha);
+    float alphaNorm = clamp(scaledAlpha / max(uLayerAlphaRange.y, 0.001), 0.0, 1.0);
+    float boundedAlpha = mix(uLayerAlphaRange.x, uLayerAlphaRange.y, alphaNorm);
+    alpha = clamp(boundedAlpha * alphaPresence * revealMask, 0.0, uLayerAlphaRange.y);
 
     // G1 ALPHA_HEATMAP: opaque visualization of real per-layer alpha after cap enforcement
     if (uTaskVisualDebug == 2) {

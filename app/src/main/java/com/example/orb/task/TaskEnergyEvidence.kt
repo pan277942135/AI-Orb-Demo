@@ -12,10 +12,18 @@ import java.util.Locale
 enum class TaskVisualDebugMode(
   val shaderDebugId: Int,
   val shortLabel: String,
+  val taskShaderDebugId: Int = 0,
+  val perimeterShaderDebugId: Int = 0,
 ) {
   NORMAL(0, "Normal"),
-  GEOMETRY_MAGENTA(1, "Magenta"),
-  ALPHA_HEATMAP(2, "Alpha"),
+  GEOMETRY_MAGENTA(1, "Both Magenta", 1, 1),
+  ALPHA_HEATMAP(2, "Both Alpha", 2, 2),
+  TASK_GEOMETRY_MAGENTA(1, "Task Magenta", 1, 0),
+  TASK_ALPHA_HEATMAP(2, "Task Alpha", 2, 0),
+  PERIMETER_GEOMETRY_MAGENTA(1, "Perimeter Magenta", 0, 1),
+  PERIMETER_ALPHA_HEATMAP(2, "Perimeter Alpha", 0, 2),
+  PERIMETER_ONLY_PRE_TONEMAP(0, "Perimeter Pre-Tone"),
+  PERIMETER_ONLY_FINAL_COMPOSITE(0, "Perimeter Final"),
   LAYER_ISOLATION(0, "Layers"),
   PRE_TONEMAP(0, "Pre-Tone"),
   FINAL_COMPOSITE(0, "Final"),
@@ -28,14 +36,30 @@ data class TaskRenderDebugOptions(
   val mode: TaskVisualDebugMode = TaskVisualDebugMode.NORMAL,
   val showMainStream: Boolean = true,
   val showSecondaryStreams: Boolean = true,
+  val showSecondaryLeftCyan: Boolean = true,
+  val showSecondaryRightFine: Boolean = true,
+  val showSecondaryEmeraldVeil: Boolean = true,
   val showL1: Boolean = true,
   val showL2: Boolean = true,
   val showL3: Boolean = true,
   val showL4: Boolean = true,
   val disableBloom: Boolean = false,
 ) {
+  val taskShaderDebugId: Int get() = mode.taskShaderDebugId
+  val perimeterShaderDebugId: Int get() = mode.perimeterShaderDebugId
+  val isShaderVisualization: Boolean
+    get() = taskShaderDebugId != 0 || perimeterShaderDebugId != 0
+
   val isTaskEnergyEnabled: Boolean
-    get() = showMainStream || showSecondaryStreams
+    get() = showMainStream || (showSecondaryStreams &&
+      (showSecondaryLeftCyan || showSecondaryRightFine || showSecondaryEmeraldVeil))
+
+  fun isTaskStreamEnabled(kind: TaskStreamKind): Boolean = when (kind) {
+    TaskStreamKind.MAIN_ICE_STREAM -> showMainStream
+    TaskStreamKind.SECONDARY_LEFT_CYAN -> showSecondaryStreams && showSecondaryLeftCyan
+    TaskStreamKind.SECONDARY_RIGHT_FINE -> showSecondaryStreams && showSecondaryRightFine
+    TaskStreamKind.SECONDARY_EMERALD_VEIL -> showSecondaryStreams && showSecondaryEmeraldVeil
+  }
 
   val isPerimeterEnabled: Boolean
     get() = showL1 || showL2 || showL3 || showL4
@@ -44,6 +68,35 @@ data class TaskRenderDebugOptions(
     val Default = TaskRenderDebugOptions()
     val GeometryMagenta = TaskRenderDebugOptions(mode = TaskVisualDebugMode.GEOMETRY_MAGENTA, disableBloom = true)
     val AlphaHeatmap = TaskRenderDebugOptions(mode = TaskVisualDebugMode.ALPHA_HEATMAP, disableBloom = true)
+    val TaskGeometryMagenta = TaskRenderDebugOptions(
+      mode = TaskVisualDebugMode.TASK_GEOMETRY_MAGENTA,
+      showL1 = false, showL2 = false, showL3 = false, showL4 = false,
+      disableBloom = true,
+    )
+    val TaskAlphaHeatmap = TaskRenderDebugOptions(
+      mode = TaskVisualDebugMode.TASK_ALPHA_HEATMAP,
+      showL1 = false, showL2 = false, showL3 = false, showL4 = false,
+      disableBloom = true,
+    )
+    val PerimeterGeometryMagenta = TaskRenderDebugOptions(
+      mode = TaskVisualDebugMode.PERIMETER_GEOMETRY_MAGENTA,
+      showMainStream = false, showSecondaryStreams = false, showL4 = false,
+      disableBloom = true,
+    )
+    val PerimeterAlphaHeatmap = TaskRenderDebugOptions(
+      mode = TaskVisualDebugMode.PERIMETER_ALPHA_HEATMAP,
+      showMainStream = false, showSecondaryStreams = false, showL4 = false,
+      disableBloom = true,
+    )
+    val PerimeterOnlyPreTonemap = TaskRenderDebugOptions(
+      mode = TaskVisualDebugMode.PERIMETER_ONLY_PRE_TONEMAP,
+      showMainStream = false, showSecondaryStreams = false, showL4 = false,
+      disableBloom = true,
+    )
+    val PerimeterOnlyFinalComposite = TaskRenderDebugOptions(
+      mode = TaskVisualDebugMode.PERIMETER_ONLY_FINAL_COMPOSITE,
+      showMainStream = false, showSecondaryStreams = false, showL4 = false,
+    )
     val PreTonemap = TaskRenderDebugOptions(mode = TaskVisualDebugMode.PRE_TONEMAP, disableBloom = true)
     val FinalComposite = TaskRenderDebugOptions(mode = TaskVisualDebugMode.FINAL_COMPOSITE)
     val TaskOff = TaskRenderDebugOptions(
@@ -122,11 +175,13 @@ data class TaskGpuDrawTelemetry(
   val taskRibbonShaderLinked: Boolean = false,
   val taskRibbonVaoIds: List<Int> = emptyList(),
   val taskRibbonVboIds: List<Int> = emptyList(),
+  val taskRibbonDrawCallsByStream: Map<String, Int> = emptyMap(),
   val perimeterVertexCount: Int = 0,
   val perimeterDrawCalls: Int = 0,
   val perimeterShaderLinked: Boolean = false,
   val perimeterVaoIds: List<Int> = emptyList(),
   val perimeterVboIds: List<Int> = emptyList(),
+  val perimeterDrawCallsByLayer: Map<String, Int> = emptyMap(),
   val sparkleCount: Int = 0,
   val sparkleDrawCalls: Int = 0,
   val sparkleUsedQuadFallback: Boolean = false,
@@ -158,6 +213,8 @@ data class TaskEnergyEvidence(
   val emittedEvents: List<TaskEnergyEvent> = emptyList(),
   val layoutSnapshot: TaskSceneLayoutSnapshot? = null,
   val photoTextureLoaded: Boolean = false,
+  val backgroundTextureLoaded: Boolean = false,
+  val backgroundLoadStatus: String = "NOT_REQUESTED",
   val debugOptions: TaskRenderDebugOptions = TaskRenderDebugOptions.Default,
   val drawTelemetry: TaskGpuDrawTelemetry = TaskGpuDrawTelemetry(),
 ) {
@@ -175,6 +232,7 @@ data class TaskEnergyEvidence(
       "rel=${String.format(Locale.US, "%.2f", taskSnapshot.releaseProgress)} " +
       "L/R=${String.format(Locale.US, "%.2f", taskSnapshot.leftProgress)} " +
       "events=${emittedEvents.size}/11 $photoDesc " +
+      "bg=$backgroundLoadStatus " +
       "vtx=${drawTelemetry.totalVertexCount} draws=${drawTelemetry.totalDrawCalls} " +
       "fbo=${drawTelemetry.fboComplete} glErr=0x${Integer.toHexString(drawTelemetry.glErrorCode)} " +
       "mode=${debugOptions.mode.name} reuse=$gpuResourcesReused"

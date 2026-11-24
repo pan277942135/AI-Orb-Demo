@@ -87,25 +87,30 @@ data class PhotoFrameGeometry(
     // Canonical normalized proportions extracted from docs/task6kf/FROZEN_6KF_REGIONS.json
     const val CANONICAL_WIDTH_RATIO = 0.75711f
     const val CANONICAL_ASPECT_W_OVER_H = 0.81647f
-    const val CANONICAL_TOP_RATIO = 0.105f
+    const val CANONICAL_TOP_RATIO = 0.08899f
     const val CANONICAL_CORNER_RADIUS_OF_W = 0.05571f
+    const val CANONICAL_REFERENCE_ASPECT = 0.56488f
 
     /**
      * Computes a responsive, resolution-independent fallback geometry for any viewport size
      * before Compose layout coordinates arrive.
      */
-    fun canonicalForViewport(surfaceWidthPx: Int, surfaceHeightPx: Int): PhotoFrameGeometry {
+    fun canonicalForViewport(
+      surfaceWidthPx: Int,
+      surfaceHeightPx: Int,
+      visualLock: TaskVisualFidelityV41? = null,
+    ): PhotoFrameGeometry {
+      if (visualLock != null) return visualLock.canonicalPhoto(surfaceWidthPx, surfaceHeightPx)
       val w = surfaceWidthPx.coerceAtLeast(64).toFloat()
       val h = surfaceHeightPx.coerceAtLeast(64).toFloat()
-      val maxPhotoH = h * 0.515f
-      var photoW = w * CANONICAL_WIDTH_RATIO
-      var photoH = photoW / CANONICAL_ASPECT_W_OVER_H
-      if (photoH > maxPhotoH) {
-        photoH = maxPhotoH
-        photoW = photoH * CANONICAL_ASPECT_W_OVER_H
-      }
-      val left = (w - photoW) * 0.5f
-      val top = h * CANONICAL_TOP_RATIO
+      val referenceHeightUnits = 1f / CANONICAL_REFERENCE_ASPECT
+      val scalePx = minOf(w, h / referenceHeightUnits)
+      val offsetX = (w - scalePx) * 0.5f
+      val offsetY = (h - referenceHeightUnits * scalePx) * 0.5f
+      val photoW = CANONICAL_WIDTH_RATIO * scalePx
+      val photoH = photoW / CANONICAL_ASPECT_W_OVER_H
+      val left = offsetX + 0.12145f * scalePx
+      val top = offsetY + (CANONICAL_TOP_RATIO / CANONICAL_REFERENCE_ASPECT) * scalePx
       val cornerR = photoW * CANONICAL_CORNER_RADIUS_OF_W
       return PhotoFrameGeometry(
         leftPx = left,

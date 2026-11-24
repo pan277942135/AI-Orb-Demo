@@ -13,6 +13,7 @@ import com.example.orb.task.PerimeterArcLengthTable
 import com.example.orb.task.PerimeterPathGeometry
 import com.example.orb.task.PerimeterRibbonLayer
 import com.example.orb.task.PerimeterRibbonMeshBuilder
+import com.example.orb.task.PerimeterRibbonStyle
 import com.example.orb.task.PerimeterSide
 import com.example.orb.task.PerimeterWaterLightMaterial
 import com.example.orb.task.PerimeterWaterLightParticles
@@ -26,6 +27,7 @@ import com.example.orb.task.TaskGpuCaptureProgress
 import com.example.orb.task.TaskGpuCaptureState
 import com.example.orb.task.TaskGpuDrawTelemetry
 import com.example.orb.task.TaskGpuEvidenceCapture
+import com.example.orb.task.TaskGpuCaptureSnapshot
 import com.example.orb.task.TaskRenderDebugOptions
 import com.example.orb.task.TaskSceneLayoutSnapshot
 import com.example.orb.task.TaskStreamKind
@@ -241,13 +243,14 @@ class TaskWaterLightVisualParityV4Test {
   @Test
   fun t07_p05AndP06EnforceFrozenL1L3WidthBoundsAndMaterialAlphaScaleCaps() {
     val photoW = canonicalPerimeter.widthPx
+    val noFlareStyle = PerimeterRibbonStyle(l1LocalFlareMinPhotoRatio = 0f, l1LocalFlareMaxPhotoRatio = 0f)
     for (side in PerimeterSide.entries) {
       for (i in 0..200) {
         val u = i / 200f
         val sPx = u * canonicalPerimeter.totalHalfLengthPx
 
         val (l1In, l1Out) = PerimeterRibbonMeshBuilder.evaluateRibbonOffsetsPx(
-          canonicalPerimeter, side, PerimeterRibbonLayer.L1_ICE_BLUE_BODY, u, sPx
+          canonicalPerimeter, side, PerimeterRibbonLayer.L1_ICE_BLUE_BODY, u, sPx, noFlareStyle
         )
         val l1WidthRatio = (l1Out - l1In) / photoW
         assertTrue("L1 width ratio must stay in [0.004, 0.012], got $l1WidthRatio", l1WidthRatio in 0.00399f..0.01201f)
@@ -265,13 +268,26 @@ class TaskWaterLightVisualParityV4Test {
     assertEquals(1.15f, mat.l2EmeraldAlphaScale, 1e-5f)
     assertEquals(1.10f, mat.l3GoldAlphaScale, 1e-5f)
     assertEquals(11, mat.dropletCountPerSide)
+    assertEquals(0.12f to 0.38f, mat.alphaRangeFor(PerimeterRibbonLayer.L1_ICE_BLUE_BODY))
+    assertEquals(0.08f to 0.24f, mat.alphaRangeFor(PerimeterRibbonLayer.L2_EMERALD_VEIL))
+    assertEquals(0.15f to 0.50f, mat.alphaRangeFor(PerimeterRibbonLayer.L3_GOLD_FILAMENT))
+
+    val cornerPx = (canonicalPerimeter.s1BottomCornerStartPx + canonicalPerimeter.s2BottomCornerEndPx) * 0.5f
+    val cornerNorm = cornerPx / canonicalPerimeter.totalHalfLengthPx
+    val (baseIn, baseOut) = PerimeterRibbonMeshBuilder.evaluateRibbonOffsetsPx(
+      canonicalPerimeter, PerimeterSide.LEFT, PerimeterRibbonLayer.L1_ICE_BLUE_BODY, cornerNorm, cornerPx, noFlareStyle
+    )
+    val (flareIn, flareOut) = PerimeterRibbonMeshBuilder.evaluateRibbonOffsetsPx(
+      canonicalPerimeter, PerimeterSide.LEFT, PerimeterRibbonLayer.L1_ICE_BLUE_BODY, cornerNorm, cornerPx
+    )
+    val extensionRatio = ((flareOut - flareIn) - (baseOut - baseIn)) / photoW
+    assertTrue("L1 corner extension must stay inside the frozen 2%-4% range", extensionRatio in 0.019f..0.041f)
 
     val frag = TaskWaterLightShaders.PERIMETER_RIBBON_FRAG
     assertTrue("PERIMETER_RIBBON_FRAG must declare uLayerAlphaScale", frag.contains("uniform float uLayerAlphaScale;"))
-    assertTrue("L1 cap must be 0.38", frag.contains("alphaCap = 0.38;"))
-    assertTrue("L2 cap must be 0.24", frag.contains("alphaCap = 0.24;"))
-    assertTrue("L3 cap must be 0.50", frag.contains("alphaCap = 0.50;"))
-    assertTrue("Alpha cap must apply AFTER uLayerAlphaScale", frag.contains("alpha = clamp(alpha * revealMask * uLayerAlphaScale, 0.0, alphaCap);"))
+    assertTrue("Per-layer alpha range must be a live uniform", frag.contains("uniform vec2 uLayerAlphaRange;"))
+    assertTrue("Visible alpha must be bounded by the configured range", frag.contains("alpha = clamp(boundedAlpha * alphaPresence * revealMask, 0.0, uLayerAlphaRange.y);"))
+    assertFalse("Frozen alpha caps must not be duplicated in GLSL", frag.contains("alphaCap ="))
   }
 
   @Test
@@ -363,17 +379,35 @@ class TaskWaterLightVisualParityV4Test {
   @Test
   fun t12_p1FocusedBottomWaterCausticsStayBelowPhotoAndBelowBloomThreshold() {
     val bgFrag = TaskWaterLightShaders.TASK_BG_FRAG
+    assertTrue("Background must sample the user-provided image texture", bgFrag.contains("uniform sampler2D uBackgroundTex;"))
+    assertTrue("Static gradient backgrounds must not replace the locked PNG", !bgFrag.contains("vec3 topIce"))
+    assertTrue("Caustics gain must come from the V4.1 visual lock", bgFrag.contains("uCausticsGain"))
     assertTrue("TASK_BG_FRAG must attenuate pool caustics laterally", bgFrag.contains("float lateralAtten = exp(-dxPool * dxPool * 8.5);"))
     assertTrue("TASK_BG_FRAG must gate pool caustics strictly below photo & Task stream", bgFrag.contains("float belowTaskGate ="))
-    assertTrue("TASK_BG_FRAG must cap luminance strictly below Bloom threshold (1.32)", bgFrag.contains("col = min(col, vec3(1.10));"))
+    assertTrue("Background caustics must scale independently from the source PNG", bgFrag.contains("* uCausticsGain"))
   }
 
   @Test
   fun t13_g1VisualDebugModesAndLayerIsolationPresetsMapAccurately() {
-    assertEquals(6, TaskVisualDebugMode.entries.size)
+    assertEquals(12, TaskVisualDebugMode.entries.size)
     assertEquals(0, TaskVisualDebugMode.NORMAL.shaderDebugId)
     assertEquals(1, TaskVisualDebugMode.GEOMETRY_MAGENTA.shaderDebugId)
     assertEquals(2, TaskVisualDebugMode.ALPHA_HEATMAP.shaderDebugId)
+    assertEquals(1, TaskRenderDebugOptions.TaskGeometryMagenta.taskShaderDebugId)
+    assertEquals(0, TaskRenderDebugOptions.TaskGeometryMagenta.perimeterShaderDebugId)
+    assertEquals(0, TaskRenderDebugOptions.PerimeterGeometryMagenta.taskShaderDebugId)
+    assertEquals(1, TaskRenderDebugOptions.PerimeterGeometryMagenta.perimeterShaderDebugId)
+    assertFalse(TaskRenderDebugOptions.TaskGeometryMagenta.isPerimeterEnabled)
+    assertFalse(TaskRenderDebugOptions.TaskAlphaHeatmap.isPerimeterEnabled)
+    assertFalse(TaskRenderDebugOptions.PerimeterGeometryMagenta.isTaskEnergyEnabled)
+    assertFalse(TaskRenderDebugOptions.PerimeterAlphaHeatmap.isTaskEnergyEnabled)
+    assertEquals(TaskVisualDebugMode.PERIMETER_ONLY_PRE_TONEMAP, TaskRenderDebugOptions.PerimeterOnlyPreTonemap.mode)
+    assertEquals(TaskVisualDebugMode.PERIMETER_ONLY_FINAL_COMPOSITE, TaskRenderDebugOptions.PerimeterOnlyFinalComposite.mode)
+    val separated = TaskRenderDebugOptions.Default.copy(showSecondaryRightFine = false)
+    assertTrue(separated.isTaskStreamEnabled(TaskStreamKind.MAIN_ICE_STREAM))
+    assertTrue(separated.isTaskStreamEnabled(TaskStreamKind.SECONDARY_LEFT_CYAN))
+    assertFalse(separated.isTaskStreamEnabled(TaskStreamKind.SECONDARY_RIGHT_FINE))
+    assertTrue(separated.isTaskStreamEnabled(TaskStreamKind.SECONDARY_EMERALD_VEIL))
 
     assertFalse(TaskRenderDebugOptions.TaskOff.isTaskEnergyEnabled)
     assertFalse(TaskRenderDebugOptions.TaskOff.isPerimeterEnabled)
@@ -444,6 +478,17 @@ class TaskWaterLightVisualParityV4Test {
       perimeterShaderLinked = true,
       perimeterVaoIds = listOf(5, 6, 7, 8, 9, 10),
       perimeterVboIds = listOf(15, 16, 17, 18, 19, 20),
+      taskRibbonDrawCallsByStream = mapOf(
+        "TASK_MAIN_ICE" to 1,
+        "TASK_SEC_LEFT_CYAN" to 1,
+        "TASK_SEC_RIGHT_FINE" to 1,
+        "TASK_SEC_EMERALD_VEIL" to 1,
+      ),
+      perimeterDrawCallsByLayer = mapOf(
+        "L1_ICE_BLUE_BODY" to 2,
+        "L2_EMERALD_VEIL" to 2,
+        "L3_GOLD_FILAMENT" to 2,
+      ),
       sparkleCount = 28,
       sparkleDrawCalls = 1,
       sparkleUsedQuadFallback = false,
@@ -473,9 +518,9 @@ class TaskWaterLightVisualParityV4Test {
   }
 
   @Test
-  fun t17_v4GpuEvidenceCaptureManifestCoversAll16RequiredFramesAndTelemetryJson() {
+  fun t17_v41GpuEvidenceManifestCoversEighteenGpuFramesAndSixWindowPairs() {
     val names = TaskGpuEvidenceCapture.CAPTURE_STEPS.map { it.fileName }
-    assertEquals(16, names.size)
+    assertEquals(18, names.size)
     val required = listOf(
       "KF01_FINAL_GPU.png",
       "KF02_FINAL_GPU.png",
@@ -483,20 +528,27 @@ class TaskWaterLightVisualParityV4Test {
       "KF04_FINAL_GPU.png",
       "KF05_FINAL_GPU.png",
       "KF06_FINAL_GPU.png",
-      "KF06_GEOMETRY_MAGENTA.png",
-      "KF06_ALPHA_HEATMAP.png",
+      "KF06_TASK_GEOMETRY_MAGENTA.png",
+      "KF06_TASK_ALPHA_HEATMAP.png",
+      "KF06_PERIMETER_GEOMETRY_MAGENTA.png",
+      "KF06_PERIMETER_ALPHA_HEATMAP.png",
       "KF06_LAYER_L1_ONLY.png",
       "KF06_LAYER_L2_ONLY.png",
       "KF06_LAYER_L3_ONLY.png",
-      "KF06_PRE_TONEMAP.png",
-      "KF06_FINAL_COMPOSITE.png",
-      "KF06_TASK_OFF_GPU.png",
-      "KF06_TASK_ONLY_GPU.png",
-      "KF06_PERIMETER_ONLY_GPU.png",
+      "KF06_PERIMETER_PRE_TONEMAP.png",
+      "KF06_PERIMETER_FINAL_COMPOSITE.png",
+      "KF06_TASK_OFF.png",
+      "KF06_TASK_ONLY.png",
+      "KF06_PERIMETER_ONLY.png",
     )
+    assertEquals(18, required.size)
     for (req in required) {
       assertTrue("Missing required V4 capture frame $req", names.contains(req))
     }
+    for (gpuName in names.take(6)) {
+      assertEquals(gpuName.replace("_FINAL_GPU.png", "_FULL_WINDOW.png"), TaskGpuEvidenceCapture.windowFileName(gpuName))
+    }
+    assertEquals(24, names.size + names.take(6).size)
 
     val json = TaskGpuEvidenceCapture.buildTelemetryJson(
       evidence = TaskEnergyEvidence(glContextInitCount = 1, webpLoadCount = 1),
@@ -504,9 +556,43 @@ class TaskWaterLightVisualParityV4Test {
       surfaceWidth = 1080,
       surfaceHeight = 2340,
     )
-    assertTrue(json.contains("AI_ORB_TASK_PERIMETER_6KF_FINAL_VISUAL_PARITY_V4"))
+    assertTrue(json.contains("AI_ORB_TASK_V41_FINAL_HIGH_FIDELITY"))
     assertTrue(json.contains("\"taskWaterLightShaderSha256\""))
-    assertTrue(json.contains("KF06_GEOMETRY_MAGENTA.png"))
+    assertTrue(json.contains("KF06_PERIMETER_FINAL_COMPOSITE.png"))
+    assertTrue(json.contains("TASK_6KF_V41_RUNTIME_TELEMETRY_1_0"))
+  }
+
+  @Test
+  fun t17b_captureSnapshotHashLocksCameraModelMotionLockAndViewport() {
+    val base = TaskGpuCaptureSnapshot.create(
+      viewAndProjection = FloatArray(32) { it.toFloat() },
+      modelTransform = FloatArray(16) { it.toFloat() },
+      coreRotationDeg = 12f,
+      motionTimeSec = 3.5,
+      visualLockSha256 = "lock",
+      viewportWidth = 1080,
+      viewportHeight = 1920,
+    )
+    val same = TaskGpuCaptureSnapshot.create(
+      viewAndProjection = FloatArray(32) { it.toFloat() },
+      modelTransform = FloatArray(16) { it.toFloat() },
+      coreRotationDeg = 12f,
+      motionTimeSec = 3.5,
+      visualLockSha256 = "lock",
+      viewportWidth = 1080,
+      viewportHeight = 1920,
+    )
+    val changed = TaskGpuCaptureSnapshot.create(
+      viewAndProjection = FloatArray(32) { if (it == 0) 1.1f else it.toFloat() },
+      modelTransform = FloatArray(16) { it.toFloat() },
+      coreRotationDeg = 12f,
+      motionTimeSec = 3.5,
+      visualLockSha256 = "lock",
+      viewportWidth = 1080,
+      viewportHeight = 1920,
+    )
+    assertEquals(base.snapshotId, same.snapshotId)
+    assertFalse(base.snapshotId == changed.snapshotId)
   }
 
   @Test
@@ -542,7 +628,7 @@ class TaskWaterLightVisualParityV4Test {
     vm.updateTaskDebugOptions(TaskRenderDebugOptions.AlphaHeatmap)
     assertEquals(TaskVisualDebugMode.ALPHA_HEATMAP, vm.uiState.value.taskDebugOptions.mode)
 
-    val capProg = TaskGpuCaptureProgress(state = TaskGpuCaptureState.COMPLETED, completedSteps = 16, totalSteps = 16)
+    val capProg = TaskGpuCaptureProgress(state = TaskGpuCaptureState.COMPLETED, completedSteps = 18, totalSteps = 18)
     vm.reportTaskCaptureProgress(capProg)
     assertEquals(TaskGpuCaptureState.COMPLETED, vm.uiState.value.taskCaptureProgress.state)
 

@@ -20,7 +20,7 @@ data class OrbViewportTransform(
 ) {
   /** Top center anchor on the outer crystal glass silhouette where Task Energy originates. */
   val orbAnchorTopPx: Vec2
-    get() = Vec2(orbCenterPx.x, orbCenterPx.y - orbDiameterPx * 0.46f)
+    get() = Vec2(orbCenterPx.x, orbCenterPx.y - orbDiameterPx * 0.5f)
 
   /** Normalized center UV in OpenGL bottom-left texture coordinates [0..1] for pool caustics. */
   val orbCenterGlUv: Vec2
@@ -69,8 +69,9 @@ data class OrbViewportTransform(
   }
 
   companion object {
-    // Frozen overview orb proportions: centerX = 0.50, diameter ≈ 0.255 * W, positioned cleanly beneath status text
-    const val CANONICAL_ORB_DIAMETER_OF_W = 0.255f
+    // Frozen V4.1 reference: center=(0.5, 0.86663H), diameter=0.2384W.
+    const val CANONICAL_ORB_DIAMETER_OF_W = 0.2384f
+    const val CANONICAL_ORB_CENTER_Y = 0.86663f
 
     /**
      * Derives the canonical Orb viewport position & size below [photo] so the Orb never collides
@@ -80,21 +81,20 @@ data class OrbViewportTransform(
       photo: PhotoFrameGeometry,
       surfaceWidthPx: Int,
       surfaceHeightPx: Int,
+      visualLock: TaskVisualFidelityV41? = null,
     ): OrbViewportTransform {
+      if (visualLock != null) return visualLock.canonicalOrb(surfaceWidthPx, surfaceHeightPx)
       val w = surfaceWidthPx.coerceAtLeast(64).toFloat()
       val h = surfaceHeightPx.coerceAtLeast(64).toFloat()
-      val availableBottomSpace = (h - photo.bottomPx).coerceAtLeast(h * 0.18f)
-      val maxDiam = minOf(w * 0.32f, availableBottomSpace * 0.56f).coerceAtLeast(18f)
-      val minDiam = minOf(w * 0.14f, maxDiam)
-      val rawDiam = w * CANONICAL_ORB_DIAMETER_OF_W
-      val diam = rawDiam.coerceIn(minDiam, maxDiam)
-      // Place Orb center ~62% down the remaining space below the photo (leaving clear room for status text + Task stream!)
-      val minCenterY = photo.bottomPx + diam * 0.62f
-      val maxCenterY = (h - diam * 0.52f).coerceAtLeast(minCenterY)
-      val desiredCenterY = photo.bottomPx + availableBottomSpace * 0.64f
-      val centerY = desiredCenterY.coerceIn(minCenterY, maxCenterY)
+      val referenceAspect = PhotoFrameGeometry.CANONICAL_REFERENCE_ASPECT
+      val referenceHeightUnits = 1f / referenceAspect
+      val scalePx = minOf(w, h / referenceHeightUnits)
+      val offsetX = (w - scalePx) * 0.5f
+      val offsetY = (h - referenceHeightUnits * scalePx) * 0.5f
+      val diam = CANONICAL_ORB_DIAMETER_OF_W * scalePx
+      val centerY = offsetY + (CANONICAL_ORB_CENTER_Y / referenceAspect) * scalePx
       return OrbViewportTransform(
-        orbCenterPx = Vec2(photo.centerX, centerY),
+        orbCenterPx = Vec2(offsetX + 0.5f * scalePx, centerY),
         orbDiameterPx = diam,
         surfaceWidthPx = surfaceWidthPx,
         surfaceHeightPx = surfaceHeightPx,

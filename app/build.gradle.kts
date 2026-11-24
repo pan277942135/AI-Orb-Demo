@@ -18,6 +18,7 @@ android {
     targetSdk = 36
     versionCode = 1
     versionName = "1.0"
+    buildConfigField("String", "GIT_SHA", "\"${providers.gradleProperty("gitSha").orElse("UNKNOWN").get()}\"")
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

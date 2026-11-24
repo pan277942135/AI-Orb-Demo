@@ -1,0 +1,195 @@
+name: AI Orb V4.1 High-Fidelity Closure
+
+on:
+  push:
+    branches: [codex/ai-orb-v41-final-high-fidelity]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  verify-v41-exact-head:
+    name: Frozen Inputs, Task GLES, Android Tests & Exact-HEAD APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact source HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install frozen-input and GLES validation dependencies
+        run: |
+          python -m pip install --upgrade pip pillow
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg libegl1 libgl1-mesa-dri
+          python -m pip install -r tools/orb-v3-generator/requirements.txt
+
+      - name: MASTER_AND_BACKGROUND_INPUT_LOCK
+        run: |
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          from PIL import Image
+
+          lock_path = Path("app/src/main/assets/task_demo/TASK_6KF_VISUAL_LOCK_V41.json")
+          docs_path = Path("docs/task6kf/TASK_6KF_VISUAL_LOCK_V41.json")
+          lock_bytes = lock_path.read_bytes()
+          assert lock_bytes == docs_path.read_bytes(), "Runtime and documentation visual locks differ"
+          lock = json.loads(lock_bytes)
+          ref = lock["reference"]
+          master = Path(ref["masterPath"]).read_bytes()
+          assert hashlib.sha256(master).hexdigest() == ref["masterSha256"], "Frozen six-keyframe master SHA mismatch"
+          config = Path("app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json").read_bytes()
+          assert hashlib.sha256(config).hexdigest() == ref["v32MasterConfigSha256"], "V3.2 master config SHA mismatch"
+          config_json = json.loads(config)
+          assert config_json["referenceMaster"]["sha256"] == ref["masterSha256"]
+          loss = json.loads(Path("docs/v3/AI_ORB_V3_2_VISUAL_LOSS.json").read_text())
+          assert loss["masterFidelityConfigSha256"] == ref["v32MasterConfigSha256"]
+          bg = Path("app/src/main/assets") / lock["background"]["assetPath"]
+          assert bg.is_file(), f"Uploaded V4.1 background is missing: {bg}"
+          with Image.open(bg) as image:
+              image.load()
+              assert image.format == "PNG", f"Background must stay a PNG, got {image.format}"
+              print(f"[BACKGROUND_INPUT PASS] direct source={bg}, dimensions={image.width}x{image.height}; SHA gate intentionally disabled")
+          assert len(lock["taskStreams"]) == 4
+          assert lock["keyframes"]["kf01FrontRatio"] == 0.38
+          assert lock["keyframes"]["kf04SideAscendRatio"] == 0.60
+          print(f"[MASTER_LOCK PASS] sixKeyframeMaster={ref['masterSha256']} config={ref['v32MasterConfigSha256']}")
+          PY
+
+      - name: WEBP_ASSET_VALIDATION
+        run: python3 tools/orb-v3-generator/validate_webp_assets.py
+
+      - name: VOLUME_CONTINUITY
+        run: python3 tools/orb-v3-generator/validate_volume_continuity.py
+
+      - name: V3_2_OFFLINE_FIT_REGRESSION
+        run: python3 tools/orb-v3-generator/fitting/validate_fit.py
+
+      - name: CANONICAL_AND_NEGATIVE_CLOSURE_TESTS
+        run: python3 tools/orb-v3-generator/test_v32_closure_gates.py
+
+      - name: Compile and link all production GLES shaders
+        env:
+          EGL_PLATFORM: surfaceless
+          XDG_CACHE_HOME: ${{ runner.temp }}
+          MESA_GLES_VERSION_OVERRIDE: '3.0'
+        run: python3 tools/orb-v3-generator/validate_glsl_es.py
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: ''
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Create debug signing key
+        run: |
+          if [ ! -f debug.keystore ]; then
+            keytool -genkeypair -v -keystore debug.keystore -storepass android -keypass android \
+              -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US" -noprompt
+          fi
+
+      - name: ALL_UNIT_TESTS
+        run: ./gradlew :app:testDebugUnitTest --console=plain -PgitSha="${GITHUB_SHA}"
+
+      - name: ANDROID_TEST_COMPILE
+        run: ./gradlew :app:compileDebugAndroidTestKotlin --console=plain -PgitSha="${GITHUB_SHA}"
+
+      - name: LINT
+        run: ./gradlew :app:lintDebug --console=plain -PgitSha="${GITHUB_SHA}"
+
+      - name: BUILD_EXACT_HEAD_DEBUG_APK
+        run: ./gradlew :app:compileDebugKotlin :app:assembleDebug --console=plain -PgitSha="${GITHUB_SHA}"
+
+      - name: Verify APK frozen assets and exact HEAD
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, shutil, zipfile
+          from pathlib import Path
+
+          expected = os.environ["EXPECTED_HEAD_SHA"]
+          import subprocess
+          actual = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          assert actual == expected, f"Exact HEAD mismatch: {actual} != {expected}"
+          lock = json.loads(Path("app/src/main/assets/task_demo/TASK_6KF_VISUAL_LOCK_V41.json").read_text())
+          lock_sha = hashlib.sha256(Path("app/src/main/assets/task_demo/TASK_6KF_VISUAL_LOCK_V41.json").read_bytes()).hexdigest()
+          apk = Path("app/build/outputs/apk/debug/app-debug.apk")
+          final = Path("AI-Orb-Demo-V4.1-HighFidelity-Final-debug.apk")
+          shutil.copy2(apk, final)
+          manifest = json.loads(Path("app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json").read_text())
+          config = Path("app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json").read_bytes()
+          expected_assets = [("assets/orb_v3/manifest/MASTER_FIDELITY_V32.json", hashlib.sha256(config).hexdigest())]
+          for item in manifest["volume"]["slices"]:
+              expected_assets.append((f"assets/orb_v3/{item['path']}", item["sha256"]))
+          for item in manifest["maps"]:
+              expected_assets.append((f"assets/orb_v3/{item['path']}", item["sha256"]))
+          assert len(manifest["volume"]["slices"]) == 32 and len(manifest["maps"]) == 3
+          with zipfile.ZipFile(final) as bundle:
+              for asset in ("task_demo/TASK_6KF_VISUAL_LOCK_V41.json", lock["background"]["assetPath"]):
+                  assert f"assets/{asset}" in bundle.namelist(), f"APK is missing {asset}"
+              for name, expected_sha in expected_assets:
+                  actual_sha = hashlib.sha256(bundle.read(name)).hexdigest()
+                  assert actual_sha == expected_sha, f"APK V3.2 asset SHA mismatch: {name}"
+              packaged_lock = bundle.read("assets/task_demo/TASK_6KF_VISUAL_LOCK_V41.json")
+              assert packaged_lock == Path("app/src/main/assets/task_demo/TASK_6KF_VISUAL_LOCK_V41.json").read_bytes()
+          apk_sha = hashlib.sha256(final.read_bytes()).hexdigest()
+          final.with_suffix(final.suffix + ".sha256").write_text(f"{apk_sha}  {final.name}\n")
+          master_config_sha = hashlib.sha256(Path("app/src/main/assets/orb_v3/manifest/MASTER_FIDELITY_V32.json").read_bytes()).hexdigest()
+          fingerprint = {
+              "schema": "AI_ORB_V41_EXACT_HEAD_BUILD_FINGERPRINT_1_0",
+              "taskId": lock["taskId"],
+              "gitCommitSha": actual,
+              "githubRunId": os.environ["GITHUB_RUN_ID"],
+              "githubRef": os.environ["GITHUB_REF"],
+              "ciRunUrl": f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
+              "referenceMasterSha256": lock["reference"]["masterSha256"],
+              "masterFidelityV32Sha256": master_config_sha,
+            "taskVisualLockSha256": lock_sha,
+              "backgroundInput": "DIRECT_USER_SUPPLIED_PNG_SHA_NOT_GATED",
+              "apkFile": final.name,
+              "apkBytes": final.stat().st_size,
+              "apkSha256": apk_sha,
+              "hardwareGpuCapture": "PENDING_REAL_GPU_CAPTURE",
+              "realDevice20SecondVisualAcceptance": "PENDING_REAL_DEVICE",
+          }
+          Path("BUILD_FINGERPRINT.json").write_text(json.dumps(fingerprint, indent=2) + "\n")
+          Path("AI_ORB_V41_SHA256SUMS").write_text(
+              f"{apk_sha}  {final.name}\n{lock_sha}  TASK_6KF_VISUAL_LOCK_V41.json\n"
+          )
+          print(json.dumps(fingerprint, indent=2))
+          print(f"[APK_ASSET_SHA PASS] {len(expected_assets)} entries: 32 WebP + 3 maps + Master config")
+          PY
+
+      - name: Upload Exact-HEAD APK and source evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-orb-v41-exact-head-debug
+          path: |
+            AI-Orb-Demo-V4.1-HighFidelity-Final-debug.apk
+            AI-Orb-Demo-V4.1-HighFidelity-Final-debug.apk.sha256
+            AI_ORB_V41_SHA256SUMS
+            BUILD_FINGERPRINT.json
+            app/build/reports/tests/testDebugUnitTest/**
+            app/src/main/assets/task_demo/TASK_6KF_VISUAL_LOCK_V41.json
+            app/src/main/assets/task_demo/background_lake_glass_v41.png

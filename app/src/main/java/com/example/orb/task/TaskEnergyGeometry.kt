@@ -156,6 +156,10 @@ object TaskEnergyGeometry {
     layout: TaskSceneLayoutSnapshot,
     s: Float,
   ): Vec2 {
+    if (spec.kind == TaskStreamKind.MAIN_ICE_STREAM) {
+      if (s <= 0f) return layout.orbAnchorTopPx
+      if (s >= 1f) return layout.photoBottomCenterPx
+    }
     val orbDiam = layout.orbTransform.orbDiameterPx.coerceAtLeast(48f)
     val startPx = layout.orbAnchorTopPx
     val endPx = layout.photoBottomCenterPx
@@ -187,9 +191,6 @@ object TaskEnergyGeometry {
   ): FloatArray {
     val safeSegs = segments.coerceAtLeast(12)
     val orbDiam = layout.orbTransform.orbDiameterPx.coerceAtLeast(48f)
-    val startPx = layout.orbAnchorTopPx
-    val endPx = layout.photoBottomCenterPx
-    val spanY = (startPx.y - endPx.y).coerceAtLeast(32f)
     val halfBaseW = orbDiam * spec.baseHalfWidthPxRatio
     val sw = layout.surfaceWidthPx.coerceAtLeast(1).toFloat()
     val sh = layout.surfaceHeightPx.coerceAtLeast(1).toFloat()
@@ -197,11 +198,7 @@ object TaskEnergyGeometry {
     // Evaluate centerline in physical pixels
     val centerPx = Array(safeSegs + 1) { i ->
       val s = i.toFloat() / safeSegs.toFloat()
-      val normPt = sampleCatmullRom2D(spec.controlPointsNorm, s)
-      Vec2(
-        x = startPx.x + normPt.x * orbDiam,
-        y = startPx.y - normPt.y * spanY,
-      )
+      evaluateCenterlinePx(spec, layout, s)
     }
 
     val verts = FloatArray((safeSegs + 1) * 2 * FLOATS_PER_VERTEX)

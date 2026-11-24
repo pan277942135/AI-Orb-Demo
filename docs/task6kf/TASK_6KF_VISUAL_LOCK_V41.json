@@ -1,0 +1,136 @@
+{
+  "schemaVersion": "AI_ORB_TASK_6KF_VISUAL_LOCK_V41_1_0",
+  "taskId": "AI_ORB_DEMO_V41_FINAL_HIGH_FIDELITY_CONVERGENCE_P0",
+  "background": {
+    "assetPath": "task_demo/background_lake_glass_v41.png",
+    "sha256": "f3dc1549919f48f939df5a6cf5baf18fb6846164c6f857df8e20cfe247b495ba",
+    "width": 852,
+    "height": 1846,
+    "fit": "ASPECT_AWARE_COVER_CENTER",
+    "causticsGain": 0.35
+  },
+  "reference": {
+    "masterPath": "public/assets/aistudio/AI_Orb_KF01-KF06_________________01802259.png",
+    "masterSha256": "01802259dc2ad6da30b7df23abc01597041342e171cfb34c29aee376b9055d0c",
+    "v32MasterConfigSha256": "e1b00b49565a3bfb4932b1b970e98da92e10028fadcbe0de9dbf74695c00bb7a"
+  },
+  "layout": {
+    "referenceAspect": 0.56488,
+    "topBar": { "backX": 0.075, "titleY": 0.044, "textColor": "#0D4E5E" },
+    "photo": {
+      "left": 0.12145,
+      "top": 0.08899,
+      "right": 0.87856,
+      "bottom": 0.6128,
+      "width": 0.75711,
+      "height": 0.52381,
+      "aspectRatio": 0.81647,
+      "cornerRadiusOfPhotoWidth": 0.05571
+    },
+    "statusText": { "centerX": 0.5, "centerY": 0.6488, "textColor": "#155D70" },
+    "orb": {
+      "centerX": 0.5,
+      "centerY": 0.86663,
+      "diameterOfWidth": 0.2384,
+      "topAnchorY": 0.7993,
+      "gapToPhotoBottom": 0.1865
+    }
+  },
+  "keyframes": {
+    "kf01FrontRatio": 0.38,
+    "kf04SideAscendRatio": 0.6,
+    "kf02CaptureMs": 1140,
+    "kf03CaptureMs": 2280,
+    "kf05CaptureMs": 5120,
+    "kf06CaptureMs": 7200,
+    "contactStartMs": 1000,
+    "splitStartMs": 1250,
+    "ascendStartMs": 2500,
+    "topJoinStartMs": 4300,
+    "loopStartMs": 5500,
+    "kf05JoinFraction": 0.68
+  },
+  "taskStreams": [
+    {
+      "id": "TASK_MAIN_ICE",
+      "kind": "MAIN_ICE_STREAM",
+      "controlPointsNorm": [[0.0,0.0],[-0.11,0.24],[0.14,0.54],[-0.07,0.8],[0.0,1.0]],
+      "baseHalfWidthOfOrbDiameter": 0.088,
+      "widthProfile": [0.86,1.18,0.96,1.08,0.72],
+      "twistCycles": 1.35,
+      "flowSpeed": 1.15,
+      "alphaScale": 0.78,
+      "depthOffset": 0.0,
+      "reachFraction": 1.0
+    },
+    {
+      "id": "TASK_SEC_LEFT_CYAN",
+      "kind": "SECONDARY_LEFT_CYAN",
+      "controlPointsNorm": [[-0.14,0.04],[-0.56,0.22],[-0.84,0.44],[-0.62,0.66],[-0.34,0.8]],
+      "baseHalfWidthOfOrbDiameter": 0.056,
+      "widthProfile": [0.55,1.05,1.12,0.72,0.14],
+      "twistCycles": 1.1,
+      "flowSpeed": 0.92,
+      "alphaScale": 0.5,
+      "depthOffset": -0.02,
+      "reachFraction": 0.8
+    },
+    {
+      "id": "TASK_SEC_RIGHT_FINE",
+      "kind": "SECONDARY_RIGHT_FINE",
+      "controlPointsNorm": [[0.14,0.03],[0.42,0.28],[0.52,0.56],[0.28,0.78],[0.08,0.96]],
+      "baseHalfWidthOfOrbDiameter": 0.038,
+      "widthProfile": [0.48,0.92,1.0,0.68,0.22],
+      "twistCycles": 1.65,
+      "flowSpeed": 1.32,
+      "alphaScale": 0.52,
+      "depthOffset": 0.01,
+      "reachFraction": 0.96
+    },
+    {
+      "id": "TASK_SEC_EMERALD_VEIL",
+      "kind": "SECONDARY_EMERALD_VEIL",
+      "controlPointsNorm": [[0.2,0.06],[0.64,0.24],[0.96,0.44],[0.86,0.64],[0.6,0.76]],
+      "baseHalfWidthOfOrbDiameter": 0.072,
+      "widthProfile": [0.5,1.18,1.24,0.78,0.12],
+      "twistCycles": 0.95,
+      "flowSpeed": 0.78,
+      "alphaScale": 0.48,
+      "depthOffset": -0.01,
+      "reachFraction": 0.78
+    }
+  ],
+  "perimeter": {
+    "l1MinWidthPhotoRatio": 0.004,
+    "l1MaxWidthPhotoRatio": 0.012,
+    "localFlareMinPhotoRatio": 0.02,
+    "localFlareMaxPhotoRatio": 0.04,
+    "l1AlphaMin": 0.12,
+    "l1AlphaMax": 0.38,
+    "l2AlphaMin": 0.08,
+    "l2AlphaMax": 0.24,
+    "l3WidthPhotoRatio": 0.0045,
+    "l3AlphaMin": 0.15,
+    "l3AlphaMax": 0.5,
+    "l1AlphaScale": 1.0,
+    "l2AlphaScale": 1.0,
+    "l3AlphaScale": 1.0,
+    "l4DropletsPerSide": 11
+  },
+  "tab2Optics": {
+    "cameraFovYDeg": 42.0,
+    "interiorTransmission": 0.75,
+    "absorptionGain": 1.12,
+    "hdrScale": 1.0,
+    "bloomThreshold": 1.32,
+    "acesExposure": 1.0
+  },
+  "capture": {
+    "width": 1080,
+    "height": 1920,
+    "requireHardwareGpu": true,
+    "perimeterRibbonDrawCalls": 6,
+    "keyframeCount": 6,
+    "realDeviceDynamicSeconds": 20
+  }
+}

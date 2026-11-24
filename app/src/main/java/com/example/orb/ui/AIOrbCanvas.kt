@@ -23,6 +23,7 @@ import com.example.orb.config.AIOrbConfig
 import com.example.orb.scene.AIOrbScene
 import com.example.orb.scene.AIOrbTelemetry
 import com.example.orb.task.TaskEnergyEvidence
+import com.example.orb.task.TaskVisualFidelityV41
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -39,6 +40,7 @@ fun AIOrbCanvas(
   onSceneReady: (AIOrbScene) -> Unit = {},
   onSurfaceWindowBoundsChanged: (Float, Float, Int, Int) -> Unit = { _, _, _, _ -> },
   enableOrbitDrag: Boolean = true,
+  taskVisualFidelity: TaskVisualFidelityV41? = null,
 ) {
   val lifecycleOwner = LocalLifecycleOwner.current
   val appAssets = LocalContext.current.applicationContext.assets
@@ -46,12 +48,17 @@ fun AIOrbCanvas(
   val latestTaskEvidenceCb by rememberUpdatedState(onTaskEvidenceUpdated)
   val latestEnableDrag by rememberUpdatedState(enableOrbitDrag)
 
-  val renderer = remember(appAssets) {
+  val visualLock = taskVisualFidelity ?: remember(appAssets) {
+    TaskVisualFidelityV41.loadFromAssets(appAssets)
+  }
+
+  val renderer = remember(appAssets, visualLock) {
     AIOrbScene(
       initialConfig = config,
       assetManager = appAssets,
       onTelemetryUpdated = { latestTelemetryCb(it) },
       onTaskEvidenceUpdated = { latestTaskEvidenceCb(it) },
+      taskVisualFidelity = visualLock,
     )
   }
 

@@ -11,6 +11,7 @@ import com.example.orb.config.RenderDebugMode
 import com.example.orb.task.PerimeterArcLengthTable
 import com.example.orb.task.PerimeterPathGeometry
 import com.example.orb.task.PerimeterWaterLightRenderer
+import com.example.orb.task.PerimeterWaterLightMaterial
 import com.example.orb.task.PhotoFrameGeometry
 import com.example.orb.task.PhotoTextureRenderer
 import com.example.orb.task.TaskEnergyController
@@ -19,11 +20,14 @@ import com.example.orb.task.TaskEnergyRibbonRenderer
 import com.example.orb.task.TaskEnergySnapshot
 import com.example.orb.task.TaskEnergyStage
 import com.example.orb.task.TaskGpuCaptureProgress
+import com.example.orb.task.TaskGpuCaptureSnapshot
+import com.example.orb.task.TaskWindowFrameCapture
 import com.example.orb.task.TaskGpuDrawTelemetry
 import com.example.orb.task.TaskGpuEvidenceCapture
 import com.example.orb.task.TaskRenderDebugOptions
 import com.example.orb.task.TaskSceneLayoutSnapshot
 import com.example.orb.task.TaskVisualDebugMode
+import com.example.orb.task.TaskVisualFidelityV41
 import com.example.orb.v3.GpuCaptureProgress
 import com.example.orb.v3.MasterFidelityV32
 import com.example.orb.v3.OrbCameraBuilder
@@ -90,6 +94,7 @@ class AIOrbScene(
   private val assetManager: AssetManager? = null,
   private val onTelemetryUpdated: (AIOrbTelemetry) -> Unit = {},
   private val onTaskEvidenceUpdated: (TaskEnergyEvidence) -> Unit = {},
+  private val taskVisualFidelity: TaskVisualFidelityV41? = assetManager?.let(TaskVisualFidelityV41::loadFromAssets),
 ) : GLSurfaceView.Renderer {
 
   private val configRef = AtomicReference(initialConfig)
@@ -109,10 +114,27 @@ class AIOrbScene(
   private val postProcessing = AIOrbPostProcessing()
 
   // Tab 2 additive renderers & deterministic 6KF Task Energy controller (strictly inactive on Tab 1)
-  private val photoTextureRenderer = PhotoTextureRenderer()
-  private val taskEnergyRenderer = TaskEnergyRibbonRenderer()
-  private val perimeterRenderer = PerimeterWaterLightRenderer()
-  private val taskEnergyController = TaskEnergyController()
+  private val photoTextureRenderer = PhotoTextureRenderer(taskVisualFidelity)
+  private val taskEnergyRenderer = TaskEnergyRibbonRenderer(taskVisualFidelity?.taskStreams)
+  private val perimeterRenderer = PerimeterWaterLightRenderer(
+    material = taskVisualFidelity?.perimeter?.let {
+      PerimeterWaterLightMaterial(
+        l1IceAlphaScale = it.l1AlphaScale,
+        l2EmeraldAlphaScale = it.l2AlphaScale,
+        l3GoldAlphaScale = it.l3AlphaScale,
+        dropletCountPerSide = it.l4DropletsPerSide,
+        l1AlphaMin = it.l1AlphaMin,
+        l1AlphaMax = it.l1AlphaMax,
+        l2AlphaMin = it.l2AlphaMin,
+        l2AlphaMax = it.l2AlphaMax,
+        l3AlphaMin = it.l3AlphaMin,
+        l3AlphaMax = it.l3AlphaMax,
+      )
+    } ?: PerimeterWaterLightMaterial(),
+    visualLock = taskVisualFidelity,
+  )
+  private val taskEnergyController = TaskEnergyController(taskVisualFidelity)
+  private var taskCaptureController: TaskEnergyController? = null
   private val taskGpuEvidenceCapture = TaskGpuEvidenceCapture()
   private val taskDebugOptionsRef = AtomicReference(TaskRenderDebugOptions.Default)
   private val lastTaskDrawTelemetryRef = AtomicReference(TaskGpuDrawTelemetry())
@@ -162,6 +184,8 @@ class AIOrbScene(
 
   private val frameTelemetryTracker = FrameTelemetryStatsTracker()
   private var wasCapturingV32LastFrame: Boolean = false
+  private var wasCapturingTaskLastFrame: Boolean = false
+  private var taskCaptureFrozenMotion: AIOrbMotionSnapshot? = null
 
   private var glVendor: String = "Unknown"
   private var glRenderer: String = "Unknown"
@@ -203,14 +227,20 @@ class AIOrbScene(
   }
 
   /**
-   * Triggers the Tab 2 V4 one-click 16-frame production GLES 3.0 evidence capture
+   * Triggers the Tab 2 V4.1 one-click production GLES + Window evidence capture
    * directly on the active GL thread (zero Compose UI/status bar).
    */
   fun requestTask6KfEvidenceExport(
     outputDir: File,
+    windowCapture: TaskWindowFrameCapture?,
     onProgress: (TaskGpuCaptureProgress) -> Unit,
   ): Boolean {
-    return taskGpuEvidenceCapture.requestCapture(outputDir, onProgress)
+    return taskGpuEvidenceCapture.requestCapture(
+      outputDirectory = outputDir,
+      onProgress = onProgress,
+      windowCapture = windowCapture,
+      hardwareGpuAvailable = !isSoftwareRenderer,
+    )
   }
 
   /**
@@ -271,7 +301,7 @@ class AIOrbScene(
 
   fun currentTaskEvidence(): TaskEnergyEvidence {
     val layout = taskLayoutRef.get() ?: if (surfaceWidth >= 64 && surfaceHeight >= 64) {
-      TaskSceneLayoutSnapshot.canonicalFallback(surfaceWidth, surfaceHeight)
+      TaskSceneLayoutSnapshot.canonicalFallback(surfaceWidth, surfaceHeight, taskVisualFidelity)
     } else {
       null
     }
@@ -286,6 +316,8 @@ class AIOrbScene(
       emittedEvents = evs,
       layoutSnapshot = layout,
       photoTextureLoaded = photoTextureRenderer.isPhotoTextureLoaded,
+      backgroundTextureLoaded = photoTextureRenderer.isBackgroundTextureLoaded,
+      backgroundLoadStatus = photoTextureRenderer.backgroundLoadStatus,
       debugOptions = taskDebugOptionsRef.get(),
       drawTelemetry = lastTaskDrawTelemetryRef.get(),
     )
@@ -394,7 +426,7 @@ class AIOrbScene(
     ) {
       return live
     }
-    return TaskSceneLayoutSnapshot.canonicalFallback(sw, sh)
+    return TaskSceneLayoutSnapshot.canonicalFallback(sw, sh, taskVisualFidelity)
   }
 
   private fun resolvePerimeterTable(photo: PhotoFrameGeometry): PerimeterArcLengthTable {
@@ -402,7 +434,12 @@ class AIOrbScene(
     if (prev != null && cachedPerimeterPhoto == photo) {
       return prev
     }
-    val table = PerimeterArcLengthTable(PerimeterPathGeometry(photo))
+    val table = PerimeterArcLengthTable(
+      PerimeterPathGeometry(
+        photo = photo,
+        kf04SideAscendRatio = taskVisualFidelity?.keyframes?.kf04SideAscendRatio ?: 0.60f,
+      )
+    )
     cachedPerimeterPhoto = photo
     cachedPerimeterTable = table
     return table
@@ -437,6 +474,7 @@ class AIOrbScene(
           renderHeight = postProcessing.renderHeight,
           layout = layout,
           hdrScale = postProcessing.hdrScale,
+          assetManager = assetManager,
         )
       } else {
         background.draw(
@@ -490,14 +528,26 @@ class AIOrbScene(
 
     val motion: AIOrbMotionSnapshot
     val simDeltaSec: Double
+    val taskCaptureActive = isTaskDemo && taskGpuEvidenceCapture.isCapturing
     if (frozenCaptureSnapshot != null) {
       motion = frozenCaptureSnapshot.motion
       simDeltaSec = 0.0
       wasCapturingV32LastFrame = true
+    } else if (taskCaptureActive) {
+      motion = taskCaptureFrozenMotion ?: motionController.step(0.0, effectiveOrbCfg).also {
+        taskCaptureFrozenMotion = it
+      }
+      simDeltaSec = 0.0
+      wasCapturingTaskLastFrame = true
     } else {
       // If we just resumed from a frozen 6-frame capture, step with zero jump on the first live frame
-      val effectiveRawDt = if (wasCapturingV32LastFrame) {
+      if (taskCaptureFrozenMotion != null) {
+        taskCaptureFrozenMotion = null
+        wasCapturingTaskLastFrame = true
+      }
+      val effectiveRawDt = if (wasCapturingV32LastFrame || wasCapturingTaskLastFrame) {
         wasCapturingV32LastFrame = false
+        wasCapturingTaskLastFrame = false
         0.0
       } else {
         rawDt
@@ -715,14 +765,18 @@ class AIOrbScene(
 
     val captureStep = taskGpuEvidenceCapture.currentStepOrNull()
     val effectiveTaskDebug = captureStep?.debugOptions ?: taskDebugOptionsRef.get()
-    val taskSnap = synchronized(taskLock) {
-      taskEnergyController.ensureStarted()
+    val taskSnapAndEvents = synchronized(taskLock) {
       if (captureStep != null) {
-        taskEnergyController.jumpToKeyframe(captureStep.stage, perimeterTable.geometry)
+        val captureController = taskCaptureController
+          ?: TaskEnergyController(taskVisualFidelity).also { taskCaptureController = it }
+        captureController.jumpToKeyframe(captureStep.stage, perimeterTable.geometry) to captureController.events
       } else {
-        taskEnergyController.step(simDeltaSec, perimeterTable.geometry)
+        taskCaptureController = null
+        taskEnergyController.ensureStarted()
+        taskEnergyController.step(simDeltaSec, perimeterTable.geometry) to taskEnergyController.events
       }
     }
+    val taskSnap = taskSnapAndEvents.first
 
     val scaledCoreRadius = (taskOrbCfg.coreScale * taskOrbCfg.coreShellScale).coerceAtLeast(0.4f)
     val taskCamDist = layout.orbTransform.computeCameraDistance(fovYDeg, scaledCoreRadius)
@@ -754,7 +808,7 @@ class AIOrbScene(
     postProcessing.beginScenePass()
 
     // Pass 1: Light-cyan daylight aquatic studio backdrop + focused pool caustics beneath Orb
-    photoTextureRenderer.drawBackground(time, rw, rh, layout, hdrScale)
+    photoTextureRenderer.drawBackground(time, rw, rh, layout, hdrScale, assetManager)
 
     // Pass 2: Single rounded fishing photo (`fishing_photo.webp`) aligned to exact live Compose frame
     photoTextureRenderer.drawPhoto(layout, hdrScale, assetManager)
@@ -784,8 +838,8 @@ class AIOrbScene(
       config = taskOrbCfg,
       isSoftwareRenderer = isSoftwareRenderer,
       fidelity = masterFidelity,
-      taskInteriorTransmission = TAB2_ORB_INTERIOR_TRANSMISSION,
-      taskAbsorptionGain = TAB2_ORB_ABSORPTION_GAIN,
+      taskInteriorTransmission = taskVisualFidelity?.tab2Optics?.interiorTransmission ?: TAB2_ORB_INTERIOR_TRANSMISSION,
+      taskAbsorptionGain = taskVisualFidelity?.tab2Optics?.absorptionGain ?: TAB2_ORB_ABSORPTION_GAIN,
     )
 
     // Pass 8-9: SHARED V3 AI Orb front-of-glass-dome 5 Residents, starbursts & crystal droplets
@@ -822,10 +876,9 @@ class AIOrbScene(
 
     // Pass 12: Shared HDR Bloom (>1.32f threshold preserves crisp photo & cyan bg) + ACES + sRGB
     // (or PRE_TONEMAP diagnostic direct linear Scene FBO inspection)
-    val preTonemap = effectiveTaskDebug.mode == TaskVisualDebugMode.PRE_TONEMAP
-    val forceBloomOff = effectiveTaskDebug.disableBloom ||
-      effectiveTaskDebug.mode == TaskVisualDebugMode.GEOMETRY_MAGENTA ||
-      effectiveTaskDebug.mode == TaskVisualDebugMode.ALPHA_HEATMAP
+    val preTonemap = effectiveTaskDebug.mode == TaskVisualDebugMode.PRE_TONEMAP ||
+      effectiveTaskDebug.mode == TaskVisualDebugMode.PERIMETER_ONLY_PRE_TONEMAP
+    val forceBloomOff = effectiveTaskDebug.disableBloom || effectiveTaskDebug.isShaderVisualization
     postProcessing.executePostProcessToScreen(
       config = taskOrbCfg,
       preTonemapBypass = preTonemap,
@@ -843,11 +896,13 @@ class AIOrbScene(
         taskRibbonShaderLinked = tStats.shaderLinked,
         taskRibbonVaoIds = tStats.vaoIds,
         taskRibbonVboIds = tStats.vboIds,
+        taskRibbonDrawCallsByStream = tStats.drawCallsByStream,
         perimeterVertexCount = pStats.vertexCount,
         perimeterDrawCalls = pStats.drawCalls,
         perimeterShaderLinked = pStats.shaderLinked,
         perimeterVaoIds = pStats.vaoIds,
         perimeterVboIds = pStats.vboIds,
+        perimeterDrawCallsByLayer = pStats.drawCallsByLayer,
         sparkleCount = pStats.sparkleCount,
         sparkleDrawCalls = pStats.sparkleDrawCalls,
         sparkleUsedQuadFallback = pStats.usedQuadFallback,
@@ -861,6 +916,19 @@ class AIOrbScene(
 
     // Capture zero-UI GL frame if user triggered V4 6KF GPU evidence export
     if (captureStep != null) {
+      val cameraMatrices = FloatArray(taskViewMatrix.size + taskProjMatrix.size).also {
+        System.arraycopy(taskViewMatrix, 0, it, 0, taskViewMatrix.size)
+        System.arraycopy(taskProjMatrix, 0, it, taskViewMatrix.size, taskProjMatrix.size)
+      }
+      val captureSnapshot = TaskGpuCaptureSnapshot.create(
+        viewAndProjection = cameraMatrices,
+        modelTransform = outerGlassModel,
+        coreRotationDeg = motion.coreRotationAngleDeg,
+        motionTimeSec = motion.simTimeSec,
+        visualLockSha256 = taskVisualFidelity?.lockSha256 ?: "UNAVAILABLE",
+        viewportWidth = surfaceWidth,
+        viewportHeight = surfaceHeight,
+      )
       val captureTel = buildTelemetrySnapshot(
         timing = frameTelemetryTracker.snapshot(),
         coreAngleDeg = AIOrbMotionController.wrapAngleDeg(motion.coreRotationAngleDeg),
@@ -870,8 +938,15 @@ class AIOrbScene(
       taskGpuEvidenceCapture.captureCurrentGlFrameIfActive(
         surfaceWidth = surfaceWidth,
         surfaceHeight = surfaceHeight,
-        evidence = currentTaskEvidence(),
+        evidence = currentTaskEvidence().copy(
+          taskSnapshot = taskSnap,
+          emittedEvents = taskSnapAndEvents.second,
+          layoutSnapshot = layout,
+          debugOptions = effectiveTaskDebug,
+          drawTelemetry = lastTaskDrawTelemetryRef.get(),
+        ),
         telemetry = captureTel,
+        snapshot = captureSnapshot,
       )
     }
 

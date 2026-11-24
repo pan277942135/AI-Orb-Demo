@@ -19,11 +19,23 @@ data class PerimeterWaterLightMaterial(
   val l2EmeraldAlphaScale: Float = 1.15f,
   val l3GoldAlphaScale: Float = 1.10f,
   val dropletCountPerSide: Int = 11,
+  val l1AlphaMin: Float = 0.12f,
+  val l1AlphaMax: Float = 0.38f,
+  val l2AlphaMin: Float = 0.08f,
+  val l2AlphaMax: Float = 0.24f,
+  val l3AlphaMin: Float = 0.15f,
+  val l3AlphaMax: Float = 0.50f,
 ) {
   fun alphaScaleFor(layer: PerimeterRibbonLayer): Float = when (layer) {
     PerimeterRibbonLayer.L1_ICE_BLUE_BODY -> l1IceAlphaScale
     PerimeterRibbonLayer.L2_EMERALD_VEIL -> l2EmeraldAlphaScale
     PerimeterRibbonLayer.L3_GOLD_FILAMENT -> l3GoldAlphaScale
+  }
+
+  fun alphaRangeFor(layer: PerimeterRibbonLayer): Pair<Float, Float> = when (layer) {
+    PerimeterRibbonLayer.L1_ICE_BLUE_BODY -> l1AlphaMin to l1AlphaMax
+    PerimeterRibbonLayer.L2_EMERALD_VEIL -> l2AlphaMin to l2AlphaMax
+    PerimeterRibbonLayer.L3_GOLD_FILAMENT -> l3AlphaMin to l3AlphaMax
   }
 
   companion object {
@@ -42,6 +54,7 @@ data class PerimeterDrawStats(
   val shaderLinked: Boolean = false,
   val vaoIds: List<Int> = emptyList(),
   val vboIds: List<Int> = emptyList(),
+  val drawCallsByLayer: Map<String, Int> = emptyMap(),
   val sparkleCount: Int = 0,
   val sparkleDrawCalls: Int = 0,
   val usedQuadFallback: Boolean = false,
@@ -239,7 +252,17 @@ class PerimeterWaterLightParticles(
  */
 class PerimeterWaterLightRenderer(
   val material: PerimeterWaterLightMaterial = PerimeterWaterLightMaterial(),
+  private val visualLock: TaskVisualFidelityV41? = null,
 ) {
+  private val ribbonStyle = visualLock?.perimeter?.let {
+    PerimeterRibbonStyle(
+      l1MinWidthPhotoRatio = it.l1MinWidth,
+      l1MaxWidthPhotoRatio = it.l1MaxWidth,
+      l1LocalFlareMinPhotoRatio = it.localFlareMin,
+      l1LocalFlareMaxPhotoRatio = it.localFlareMax,
+      l3WidthPhotoRatio = it.l3Width,
+    )
+  } ?: PerimeterRibbonStyle()
   private class StripGpuMesh(
     val side: PerimeterSide,
     val layer: PerimeterRibbonLayer,
@@ -344,6 +367,7 @@ class PerimeterWaterLightRenderer(
 
     var drawnRibbonVerts = 0
     var drawnRibbonCalls = 0
+    val drawnByLayer = linkedMapOf<String, Int>()
 
     // 1. Draw L2 Emerald Veil -> L1 Icy-Blue Body -> L3 Champagne Gold Filament along unified arc-length strips
     val hasActivePerimeter = snapshot.leftProgress > 0.001f || snapshot.rightProgress > 0.001f || snapshot.coverageComplete
@@ -359,7 +383,7 @@ class PerimeterWaterLightRenderer(
       rProg.setVec2("uFboSize", fboWidth.coerceAtLeast(1).toFloat(), fboHeight.coerceAtLeast(1).toFloat())
       rProg.setFloat("uRefractionPx", TaskEnergyRibbonRenderer.DEFAULT_REFRACTION_PX)
       rProg.setFloat("uRefractionStrength", TaskEnergyRibbonRenderer.DEFAULT_REFRACTION_STRENGTH)
-      rProg.setInt("uTaskVisualDebug", debugOptions.mode.shaderDebugId)
+      rProg.setInt("uTaskVisualDebug", debugOptions.perimeterShaderDebugId)
       rProg.setFloat("uFlowTime", snapshot.flowTimeSec)
       rProg.setFloat("uPhotoWidthPx", table.geometry.widthPx)
       // P0-1: Strictly driven from real snapshot.coverageComplete (left>=0.999 && right>=0.999), never stage label!
@@ -381,6 +405,8 @@ class PerimeterWaterLightRenderer(
 
         rProg.setInt("uLayerKind", strip.layer.shaderLayerId)
         rProg.setFloat("uLayerAlphaScale", material.alphaScaleFor(strip.layer))
+        val alphaRange = material.alphaRangeFor(strip.layer)
+        rProg.setVec2("uLayerAlphaRange", alphaRange.first, alphaRange.second)
         rProg.setFloat("uSideSign", sideSign)
         rProg.setFloat("uRevealProgress", progress)
 
@@ -388,6 +414,8 @@ class PerimeterWaterLightRenderer(
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, strip.vertexCount)
         drawnRibbonVerts += strip.vertexCount
         drawnRibbonCalls++
+        val layerName = strip.layer.name
+        drawnByLayer[layerName] = (drawnByLayer[layerName] ?: 0) + 1
       }
       GLES30.glBindVertexArray(0)
       if (hasRefraction) {
@@ -409,7 +437,7 @@ class PerimeterWaterLightRenderer(
         sProg.use()
         sProg.setInt("uUseQuad", if (useQuad) 1 else 0)
         sProg.setFloat("uHdrScale", hdrScale)
-        sProg.setInt("uTaskVisualDebug", debugOptions.mode.shaderDebugId)
+        sProg.setInt("uTaskVisualDebug", debugOptions.perimeterShaderDebugId)
 
         if (useQuad && quadVao != 0 && quadVbo != 0) {
           val quadVerts = particles.buildQuadVertices(sparkleCount, layout.surfaceWidthPx, layout.surfaceHeightPx)
@@ -468,6 +496,7 @@ class PerimeterWaterLightRenderer(
       shaderLinked = true,
       vaoIds = strips.map { it.vao },
       vboIds = strips.map { it.vbo },
+      drawCallsByLayer = drawnByLayer,
       sparkleCount = sparkleCount,
       sparkleDrawCalls = sparkleCalls,
       usedQuadFallback = usedQuadFallback,
@@ -498,6 +527,7 @@ class PerimeterWaterLightRenderer(
         layer = strip.layer,
         surfaceWidthPx = layout.surfaceWidthPx,
         surfaceHeightPx = layout.surfaceHeightPx,
+        style = ribbonStyle,
       )
       strip.vertexCount = verts.size / PerimeterRibbonMeshBuilder.FLOATS_PER_VERTEX
 

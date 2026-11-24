@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -74,6 +75,7 @@ import com.example.orb.task.TaskGpuCaptureProgress
 import com.example.orb.task.TaskGpuCaptureState
 import com.example.orb.task.TaskRenderDebugOptions
 import com.example.orb.task.TaskVisualDebugMode
+import com.example.orb.task.TaskVisualFidelityV41
 import java.util.Locale
 
 private val AquaticInkPrimary = Color(0xFF0B4657)
@@ -95,6 +97,7 @@ private val AccentAquaticTeal = Color(0xFF0A8FA8)
 @Composable
 fun TaskRecognitionDemoScreen(
   evidence: TaskEnergyEvidence,
+  visualLock: TaskVisualFidelityV41,
   debugOptions: TaskRenderDebugOptions,
   captureProgress: TaskGpuCaptureProgress,
   isControlsExpanded: Boolean,
@@ -122,105 +125,97 @@ fun TaskRecognitionDemoScreen(
   }
 
   BoxWithConstraints(
-    modifier = modifier
-      .fillMaxSize()
-      .statusBarsPadding()
-      .displayCutoutPadding()
-      .navigationBarsPadding(),
+    modifier = modifier.fillMaxSize(),
   ) {
     val maxAvailHeight = maxHeight
-    val maxAvailWidth = maxWidth
-    // Match frozen overview photo proportion (~75.7% width, capped cleanly for tablets/landscape)
-    // while guaranteeing generous bottom clearance (~34% height) for status text + shared V3 Orb!
-    val targetPhotoWidth = minOf(
-      maxAvailWidth * PhotoFrameGeometry.CANONICAL_WIDTH_RATIO,
-      (maxAvailHeight * 0.50f) * PhotoFrameGeometry.CANONICAL_ASPECT_W_OVER_H,
-      440.dp,
-    ).coerceAtLeast(140.dp)
-    val cornerRadiusDp = targetPhotoWidth * PhotoFrameGeometry.CANONICAL_CORNER_RADIUS_OF_W
+    val viewWidthPx = with(density) { maxWidth.toPx() }
+    val viewHeightPx = with(density) { maxAvailHeight.toPx() }
+    val aspectFit = visualLock.aspectFit(viewWidthPx.toInt(), viewHeightPx.toInt())
+    val scaleDp = with(density) { aspectFit.scalePx.toDp() }
+    val photoWidthDp = scaleDp * visualLock.photo.width
+    val photoHeightDp = scaleDp * visualLock.photo.height / visualLock.referenceAspect
+    val photoLeftDp = with(density) { aspectFit.x(visualLock.photo.left).toDp() }
+    val photoTopDp = with(density) { aspectFit.y(visualLock.photo.top).toDp() }
+    val cornerRadiusDp = photoWidthDp * visualLock.photo.cornerRadiusOfWidth
+    val titleCenterYDp = with(density) { aspectFit.y(visualLock.topBar.titleY).toDp() }
+    val backCenterXDp = with(density) { aspectFit.x(visualLock.topBar.backX).toDp() }
+    val headerColor = Color(android.graphics.Color.parseColor(visualLock.topBar.textColorHex))
+    val statusTextColor = Color(android.graphics.Color.parseColor(visualLock.statusTextColorHex))
 
-    Column(
-      horizontalAlignment = Alignment.CenterHorizontally,
+    // The same reference-aspect fit drives Compose and GPU geometry. Child offsets are
+    // overlays and therefore never perturb photo/orb anchors between KF01 and KF06.
+    IconButton(
+      onClick = onBackToOrb,
       modifier = Modifier
-        .fillMaxSize()
-        .padding(top = 56.dp), // Clean clearance below top floating Segmented Tab Switcher
+        .align(Alignment.TopStart)
+        .offset(x = backCenterXDp - 24.dp, y = titleCenterYDp - 24.dp)
+        .minimumInteractiveComponentSize()
+        .testTag("task_back_button"),
     ) {
-      // Top navigation row: `<` + centered `拍照识鱼`
-      Box(
-        modifier = Modifier
-          .fillMaxWidth()
-          .widthIn(max = 600.dp)
-          .padding(horizontal = 8.dp)
-          .height(48.dp),
-      ) {
-        IconButton(
-          onClick = onBackToOrb,
-          modifier = Modifier
-            .align(Alignment.CenterStart)
-            .minimumInteractiveComponentSize()
-            .testTag("task_back_button"),
-        ) {
-          Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = stringResource(R.string.cd_task_back),
-            tint = AquaticInkPrimary,
-            modifier = Modifier.size(24.dp),
-          )
-        }
-
-        Text(
-          text = stringResource(R.string.task_header_title),
-          style = MaterialTheme.typography.titleMedium.copy(
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            letterSpacing = 0.4.sp,
-          ),
-          color = AquaticInkPrimary,
-          textAlign = TextAlign.Center,
-          modifier = Modifier
-            .align(Alignment.Center)
-            .testTag("task_header_title"),
-        )
-      }
-
-      Spacer(modifier = Modifier.height(6.dp))
-
-      // Transparent aspect-locked Photo Frame container: reports EXACT physical window pixels
-      // to AIOrbScene so GPU photo quad, Task contact point, and Perimeter WaterLight align to 0px!
-      Box(
-        modifier = Modifier
-          .width(targetPhotoWidth)
-          .aspectRatio(PhotoFrameGeometry.CANONICAL_ASPECT_W_OVER_H)
-          .testTag("task_photo_frame_anchor")
-          .onGloballyPositioned { coords ->
-            val rect = coords.boundsInWindow()
-            if (rect.width > 8f && rect.height > 8f) {
-              val cornerPx: Float = with(density) { cornerRadiusDp.toPx() }
-              onPhotoWindowBoundsChanged(rect.left, rect.top, rect.right, rect.bottom, cornerPx)
-            }
-          },
-      )
-
-      Spacer(modifier = Modifier.height(18.dp))
-
-      // Centered recognition status caption directly beneath photo & above shared V3 AI Orb
-      Text(
-        text = stringResource(R.string.task_status_understanding),
-        style = MaterialTheme.typography.bodyLarge.copy(
-          fontSize = 15.sp,
-          fontWeight = FontWeight.Medium,
-          letterSpacing = 0.6.sp,
-        ),
-        color = AquaticInkSecondary,
-        textAlign = TextAlign.Center,
-        modifier = Modifier
-          .padding(horizontal = 24.dp)
-          .testTag("task_status_understanding"),
+      Icon(
+        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+        contentDescription = stringResource(R.string.cd_task_back),
+        tint = headerColor,
+        modifier = Modifier.size(24.dp),
       )
     }
 
-    // Default-collapsed bottom-right floating 6KF Playback & V4 GPU Diagnostic Panel
+    Text(
+      text = stringResource(R.string.task_header_title),
+      style = MaterialTheme.typography.titleMedium.copy(
+        fontSize = 18.sp,
+        fontWeight = FontWeight.SemiBold,
+        letterSpacing = 0.4.sp,
+      ),
+      color = headerColor,
+      textAlign = TextAlign.Center,
+      modifier = Modifier
+        .align(Alignment.TopCenter)
+        .offset(y = titleCenterYDp - 12.dp)
+        .fillMaxWidth()
+        .height(24.dp)
+        .testTag("task_header_title"),
+    )
+
+    // Transparent layout anchor only; the actual photo is drawn by PhotoTextureRenderer.
     Box(
+      modifier = Modifier
+        .align(Alignment.TopStart)
+        .offset(x = photoLeftDp, y = photoTopDp)
+        .width(photoWidthDp)
+        .height(photoHeightDp)
+        .testTag("task_photo_frame_anchor")
+        .onGloballyPositioned { coords ->
+          val rect = coords.boundsInWindow()
+          if (rect.width > 8f && rect.height > 8f) {
+            val cornerPx: Float = with(density) { cornerRadiusDp.toPx() }
+            onPhotoWindowBoundsChanged(rect.left, rect.top, rect.right, rect.bottom, cornerPx)
+          }
+        },
+    )
+
+    val statusCenterYDp = with(density) { aspectFit.y(visualLock.statusText.y).toDp() }
+    Text(
+      text = stringResource(R.string.task_status_understanding),
+      style = MaterialTheme.typography.bodyLarge.copy(
+        fontSize = 15.sp,
+        fontWeight = FontWeight.Medium,
+        letterSpacing = 0.6.sp,
+      ),
+      color = statusTextColor,
+      textAlign = TextAlign.Center,
+      modifier = Modifier
+        .align(Alignment.TopCenter)
+        .offset(y = statusCenterYDp - 14.dp)
+        .fillMaxWidth()
+        .height(28.dp)
+        .testTag("task_status_understanding"),
+    )
+
+    val isEvidenceCaptureActive = captureProgress.state == TaskGpuCaptureState.CAPTURING
+
+    // Default-collapsed bottom-right floating 6KF Playback & V4 GPU Diagnostic Panel
+    if (!isEvidenceCaptureActive) Box(
       modifier = Modifier
         .align(Alignment.BottomEnd)
         .padding(end = 14.dp, bottom = 12.dp),
@@ -317,6 +312,12 @@ fun TaskRecognitionDemoScreen(
                   style = MaterialTheme.typography.labelSmall,
                   color = AquaticInkSecondary,
                   modifier = Modifier.testTag("task_gpu_telemetry_label"),
+                )
+                Text(
+                  text = "Background ${evidence.backgroundLoadStatus}",
+                  style = MaterialTheme.typography.labelSmall,
+                  color = if (evidence.backgroundTextureLoaded) AquaticInkSecondary else Color(0xFF9A4D20),
+                  modifier = Modifier.testTag("task_background_asset_status"),
                 )
               }
               IconButton(
@@ -485,6 +486,15 @@ fun TaskRecognitionDemoScreen(
               }
               TaskLayerToggleChip("Sec", debugOptions.showSecondaryStreams, "task_layer_sec") {
                 onUpdateDebugOptions(debugOptions.copy(showSecondaryStreams = !debugOptions.showSecondaryStreams))
+              }
+              TaskLayerToggleChip("Left Cyan", debugOptions.showSecondaryLeftCyan, "task_layer_left_cyan") {
+                onUpdateDebugOptions(debugOptions.copy(showSecondaryLeftCyan = !debugOptions.showSecondaryLeftCyan))
+              }
+              TaskLayerToggleChip("Right Fine", debugOptions.showSecondaryRightFine, "task_layer_right_fine") {
+                onUpdateDebugOptions(debugOptions.copy(showSecondaryRightFine = !debugOptions.showSecondaryRightFine))
+              }
+              TaskLayerToggleChip("Emerald Veil", debugOptions.showSecondaryEmeraldVeil, "task_layer_emerald_veil") {
+                onUpdateDebugOptions(debugOptions.copy(showSecondaryEmeraldVeil = !debugOptions.showSecondaryEmeraldVeil))
               }
               TaskLayerToggleChip("L1", debugOptions.showL1, "task_layer_l1") {
                 onUpdateDebugOptions(debugOptions.copy(showL1 = !debugOptions.showL1))

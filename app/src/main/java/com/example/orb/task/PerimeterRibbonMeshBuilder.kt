@@ -16,6 +16,15 @@ enum class PerimeterRibbonLayer(val shaderLayerId: Int) {
   L3_GOLD_FILAMENT(2),
 }
 
+/** Frozen V4.1 perimeter geometry ratios, all measured against the photo width. */
+data class PerimeterRibbonStyle(
+  val l1MinWidthPhotoRatio: Float = 0.004f,
+  val l1MaxWidthPhotoRatio: Float = 0.012f,
+  val l1LocalFlareMinPhotoRatio: Float = 0.02f,
+  val l1LocalFlareMaxPhotoRatio: Float = 0.04f,
+  val l3WidthPhotoRatio: Float = 0.0045f,
+)
+
 /**
  * Builds GPU triangle-strip vertex data strictly from [PerimeterArcLengthTable] along `outwardNormal`
  * so ZERO liquid ribbon geometry ever crosses into the photo interior!
@@ -78,6 +87,7 @@ object PerimeterRibbonMeshBuilder {
     layer: PerimeterRibbonLayer,
     sNorm: Float,
     sPx: Float,
+    style: PerimeterRibbonStyle = PerimeterRibbonStyle(),
   ): Pair<Float, Float> {
     val photoW = geo.widthPx.coerceAtLeast(64f)
     val sideSign = if (side == PerimeterSide.LEFT) -1f else 1f
@@ -87,11 +97,17 @@ object PerimeterRibbonMeshBuilder {
 
     return when (layer) {
       PerimeterRibbonLayer.L1_ICE_BLUE_BODY -> {
-        // Strictly within frozen 0.4%–1.2% PhotoW core band (local optical flare handled cleanly via L2/shader)
-        val rawW = photoW * (0.0040f + 0.0030f * waveA + 0.0045f * waveB) * cornerFlare
-        val baseW = rawW.coerceIn(photoW * 0.0040f, photoW * 0.0120f)
+        // Keep the liquid body inside its width band. Apply the independent 2%–4%
+        // optical extension only at rounded corners, smoothly along arc length.
+        val width = style.l1MinWidthPhotoRatio +
+          (style.l1MaxWidthPhotoRatio - style.l1MinWidthPhotoRatio) * (0.45f * waveA + 0.55f * waveB)
+        val baseW = photoW * width.coerceIn(style.l1MinWidthPhotoRatio, style.l1MaxWidthPhotoRatio)
+        val cornerAmount = ((cornerFlare - 1f) / 0.22f).coerceIn(0f, 1f)
+        val flareRatio = style.l1LocalFlareMinPhotoRatio +
+          (style.l1LocalFlareMaxPhotoRatio - style.l1LocalFlareMinPhotoRatio) * (0.5f * waveA + 0.5f * waveB)
+        val localFlare = photoW * flareRatio * cornerAmount
         val innerOffsetPx = 0.5f
-        innerOffsetPx to (innerOffsetPx + baseW)
+        innerOffsetPx to (innerOffsetPx + baseW + localFlare)
       }
       PerimeterRibbonLayer.L2_EMERALD_VEIL -> {
         // Smoothly undulating emerald aquatic veil hugging corners & vertical flanks (local flare up to ~3.4% PhotoW)
@@ -104,7 +120,7 @@ object PerimeterRibbonMeshBuilder {
       PerimeterRibbonLayer.L3_GOLD_FILAMENT -> {
         // Slender champagne-gold specular thread (~0.45% PhotoW total width: halfW = 0.00225 * PhotoW)
         val centerOut = photoW * (0.0042f + 0.0038f * waveA)
-        val halfW = (photoW * 0.00225f).coerceAtLeast(1.4f)
+        val halfW = (photoW * style.l3WidthPhotoRatio * 0.5f).coerceAtLeast(1.4f)
         val innerOffsetPx = (centerOut - halfW).coerceAtLeast(0.5f)
         val outerOffsetPx = innerOffsetPx + halfW * 2.0f
         innerOffsetPx to outerOffsetPx
@@ -118,6 +134,7 @@ object PerimeterRibbonMeshBuilder {
     layer: PerimeterRibbonLayer,
     surfaceWidthPx: Int,
     surfaceHeightPx: Int,
+    style: PerimeterRibbonStyle = PerimeterRibbonStyle(),
   ): FloatArray {
     val samples = table.rawSamples(side)
     val n = samples.size
@@ -140,6 +157,7 @@ object PerimeterRibbonMeshBuilder {
         layer = layer,
         sNorm = sNorm,
         sPx = sample.arcLengthPx,
+        style = style,
       )
 
       val pInner = pos + outN * innerOffsetPx
