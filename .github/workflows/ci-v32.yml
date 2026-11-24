@@ -716,6 +716,7 @@ jobs:
           cat "$OUT/logs/tab3_motion_instrumentation.txt"
           grep -q 'OK (1 test)' "$OUT/logs/tab3_motion_instrumentation.txt"
           adb exec-out run-as "$APP_ID" cat files/tab3_hybrid/TAB3_MOTION_20S_RUNTIME.json > "$OUT/captures/TAB3_MOTION_20S_RUNTIME.json"
+          adb exec-out run-as "$APP_ID" cat files/tab3_hybrid/RUNTIME_TELEMETRY.json > "$OUT/captures/RUNTIME_TELEMETRY.json"
           adb pull /sdcard/AI_ORB_DEMO_TAB3_FINAL_20S.mp4 "$OUT/AI_ORB_DEMO_TAB3_FINAL_20S.mp4"
           python3 tools/orb-yujian-tab3/validate_runtime_evidence.py \
             --evidence-dir "$OUT/captures" \
