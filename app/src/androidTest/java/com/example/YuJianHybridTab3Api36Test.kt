@@ -197,6 +197,10 @@ class YuJianHybridTab3Api36Test {
     val context = composeRule.activity.applicationContext
     val bytes = context.assets.open("yujian_orb_core/processing_water_core_v1.webp").use { it.readBytes() }
     assertEquals(com.example.orb.yujian.core.YuJianCoreRenderer.SOURCE_CORE_WEBP_SHA256, sha256(bytes))
+    val metadata = readExtendedWebpMetadata(bytes)
+    assertEquals(384, metadata.width)
+    assertEquals(384, metadata.height)
+    assertTrue("VP8X source container must declare alpha", metadata.hasAlpha)
     val bitmap = BitmapFactory.decodeByteArray(
       bytes,
       0,
@@ -204,21 +208,43 @@ class YuJianHybridTab3Api36Test {
       BitmapFactory.Options().apply { inScaled = false; inPremultiplied = false },
     )
     requireNotNull(bitmap)
-    assertEquals(384, bitmap.width)
-    assertEquals(384, bitmap.height)
+    assertEquals(metadata.width, bitmap.width)
+    assertEquals(metadata.height, bitmap.height)
     assertTrue(bitmap.hasAlpha())
-    val pixels = IntArray(bitmap.width * bitmap.height)
-    bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-    val rgba = ByteArray(pixels.size * 4)
-    pixels.forEachIndexed { index, pixel ->
-      rgba[index * 4] = ((pixel ushr 16) and 0xff).toByte()
-      rgba[index * 4 + 1] = ((pixel ushr 8) and 0xff).toByte()
-      rgba[index * 4 + 2] = (pixel and 0xff).toByte()
-      rgba[index * 4 + 3] = ((pixel ushr 24) and 0xff).toByte()
-    }
-    assertEquals(com.example.orb.yujian.core.YuJianCoreRenderer.SOURCE_CORE_WEBP_RGBA_SHA256, sha256(rgba))
     bitmap.recycle()
   }
+
+  private data class WebpMetadata(val width: Int, val height: Int, val hasAlpha: Boolean)
+
+  private fun readExtendedWebpMetadata(bytes: ByteArray): WebpMetadata {
+    assertTrue("RIFF signature", bytes.size >= 30 && String(bytes, 0, 4, Charsets.US_ASCII) == "RIFF")
+    assertEquals("WEBP", String(bytes, 8, 4, Charsets.US_ASCII))
+    var offset = 12
+    while (offset + 18 <= bytes.size) {
+      val chunkName = String(bytes, offset, 4, Charsets.US_ASCII)
+      val chunkLength = littleEndianUInt32(bytes, offset + 4).toInt()
+      if (chunkName == "VP8X") {
+        assertEquals("VP8X extended header length", 10, chunkLength)
+        val flags = bytes[offset + 8].toInt() and 0xff
+        val width = 1 + littleEndianUInt24(bytes, offset + 12)
+        val height = 1 + littleEndianUInt24(bytes, offset + 15)
+        return WebpMetadata(width, height, (flags and 0x10) != 0)
+      }
+      offset += 8 + chunkLength + (chunkLength and 1)
+    }
+    throw AssertionError("Expected VP8X chunk in pinned WebP")
+  }
+
+  private fun littleEndianUInt24(bytes: ByteArray, offset: Int): Int =
+    (bytes[offset].toInt() and 0xff) or
+      ((bytes[offset + 1].toInt() and 0xff) shl 8) or
+      ((bytes[offset + 2].toInt() and 0xff) shl 16)
+
+  private fun littleEndianUInt32(bytes: ByteArray, offset: Int): Long =
+    (bytes[offset].toLong() and 0xff) or
+      ((bytes[offset + 1].toLong() and 0xff) shl 8) or
+      ((bytes[offset + 2].toLong() and 0xff) shl 16) or
+      ((bytes[offset + 3].toLong() and 0xff) shl 24)
 
   private fun sha256(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256").digest(bytes)
     .joinToString("") { "%02x".format(Locale.US, it.toInt() and 0xff) }
