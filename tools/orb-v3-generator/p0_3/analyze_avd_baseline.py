@@ -124,6 +124,9 @@ def build_api36_evidence_archive(evidence: Path, first_manifest: dict, first_tel
     motion_report = evidence / "P04_VIDEO_CAPTURE_REPORT.json"
     if motion_report.is_file():
         shutil.copy2(motion_report, video_root / motion_report.name)
+    motion_limitation = evidence / "P04_CAPTURE_LIMITATION.json"
+    if motion_limitation.is_file():
+        shutil.copy2(motion_limitation, video_root / motion_limitation.name)
     motion_frames = evidence / "motion_frames"
     if motion_frames.is_dir():
         shutil.copytree(motion_frames, video_root / "frames", dirs_exist_ok=True)
@@ -889,6 +892,7 @@ def main() -> None:
     archive_paths = [
         api_zip,
         evidence / "MOTION_20S.mp4",
+        evidence / "P04_CAPTURE_LIMITATION.json",
         evidence / "android_api.txt",
         evidence / "avd_model.txt",
         evidence / "motion_duration_seconds.txt",
