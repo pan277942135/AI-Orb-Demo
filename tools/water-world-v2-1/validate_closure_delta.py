@@ -15,8 +15,13 @@ OBJECTS={"fish":[f"WW_FISH_{n:02d}" for n in range(1,5)],"resident":["G01","G02"
 REQUIRED_MASKS=("source_full_mask.png","source_visible_mask.png","occlusion_mask.png","confidence_mask.png","boundary_overlay.png","source_roi.json","segmentation_report.json")
 
 def sha_bytes(data:bytes)->str:return hashlib.sha256(data).hexdigest()
+def asset_hash_matches(data:bytes,expected:str)->bool:return sha_bytes(data)==expected
 def load(path:Path):return json.loads(path.read_text(encoding="utf-8-sig"))
 def _numbers(value):return list(value.values()) if isinstance(value,dict) else [value]
+
+def stale_status_tokens(text:str)->list[str]:
+    tokens=("BLOCKED_MASTER_SOURCE","NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE","master_region_id=null","calibrated_transform=null")
+    return [token for token in tokens if token in text]
 
 def threshold_failures(metrics:dict)->list[str]:
     failures=[]
@@ -34,6 +39,18 @@ def threshold_failures(metrics:dict)->list[str]:
         if direction=="max" and any(v>target for v in vals):failures.append(name)
     return failures
 
+def object_acceptance_failures(metrics:dict)->list[str]:
+    """A numeric score cannot override incomplete or low-confidence ground truth."""
+    failures=[]
+    per=metrics.get("per_object",{})
+    for oid in [x for rows in OBJECTS.values() for x in rows]:
+        row=per.get(oid)
+        if not isinstance(row,dict):
+            failures.append(f"object_metric_missing:{oid}")
+        elif row.get("status")!="PASS":
+            failures.append(f"object_not_accepted:{oid}:{row.get('status','MISSING')}")
+    return failures
+
 def object_contract_errors(metrics:dict,mapping:dict,scene:dict)->list[str]:
     errors=[]; expected=[x for rows in OBJECTS.values() for x in rows]
     ids=[o.get("object_id") for o in mapping.get("objects",[])]
@@ -41,6 +58,7 @@ def object_contract_errors(metrics:dict,mapping:dict,scene:dict)->list[str]:
     if len(ids)!=14 or set(ids)!=set(expected) or len(set(ids))!=14:errors.append("asset_mapping_object_set")
     if len(scene_ids)!=14 or set(scene_ids)!=set(expected) or len(set(scene_ids))!=14:errors.append("scene_graph_object_set")
     per=metrics.get("per_object",{})
+    scene_by={o.get("object_id"):o for o in scene.get("objects",[]) if isinstance(o,dict)}
     if set(per)!=set(expected):errors.append("per_object_metric_set")
     for oid in expected:
         row=per.get(oid,{})
@@ -51,6 +69,9 @@ def object_contract_errors(metrics:dict,mapping:dict,scene:dict)->list[str]:
         if not gt.get("occlusion_mask") or not gt.get("confidence_mask"):errors.append(f"occlusion_or_confidence_missing:{oid}")
         if entry.get("master_region_id") is None:errors.append(f"master_region_missing:{oid}")
         if entry.get("candidate_transform") is None:errors.append(f"transform_missing:{oid}")
+        scene_entry=scene_by.get(oid,{})
+        for key in ("source_resource_path","source_sha256","master_region_id","candidate_transform","depth_order","material_binding","metric_status"):
+            if entry.get(key)!=scene_entry.get(key):errors.append(f"scene_mapping_mismatch:{oid}:{key}")
     camera=scene.get("static_camera",{})
     if camera.get("canvas_px")!=[1254,1254] or camera.get("projection")!="2D orthographic source-pixel registration":errors.append("static_camera_contract")
     fov=camera.get("physical_fov","UNRESOLVED")
@@ -82,14 +103,13 @@ def validate_package(package:Path,archive:Path,master:Path|None=None)->dict:
     scene_path=package/"03_SCENE_GRAPH/scene_graph_v2_1.json"
     try:
         metrics,mapping,scene=load(metrics_path),load(mapping_path),load(scene_path)
-        visual=threshold_failures(metrics)
+        visual=threshold_failures(metrics)+object_acceptance_failures(metrics)
         structural=object_contract_errors(metrics,mapping,scene)+master_layer_errors(metrics)
         if metrics.get("master_sha256")!=MASTER_SHA:structural.append("metrics_master_sha")
         if mapping.get("master_sha256")!=MASTER_SHA:structural.append("mapping_master_sha")
         if metrics.get("overall_status") not in {"BLOCKED_GROUND_TRUTH_UNCERTAIN","WORK1_5_VALIDATION_FAILED"}:structural.append("false_visual_status")
         checks.append({"check":"frozen_visual_thresholds","status":"PASS" if not visual else "FAIL","detail":{"failures":visual,"gate_status":metrics.get("gate_status")}})
         checks.append({"check":"scene_and_object_contracts","status":"PASS" if not structural else "FAIL","detail":{"errors":structural}})
-        if visual:failures.extend(["visual:"+x for x in visual])
         if structural:failures.extend(structural)
     except Exception as exc:
         failures.append("metrics_or_contract_read");checks.append({"check":"metrics_or_contract_read","status":"FAIL","detail":str(exc)})
@@ -113,6 +133,15 @@ def validate_package(package:Path,archive:Path,master:Path|None=None)->dict:
             except Exception as exc:gt_errors.append(f"decode:{oid}/{name}:{exc}")
     checks.append({"check":"ground_truth_masks_and_reports","status":"PASS" if not gt_errors else "FAIL","detail":{"object_count":14,"errors":gt_errors}})
     if gt_errors:failures.append("ground_truth_masks")
+    asset_errors=[]
+    try:
+        for entry in mapping.get("objects",[]):
+            asset=package/entry["source_resource_path"]
+            if not asset.is_file() or not asset_hash_matches(asset.read_bytes(),entry.get("source_sha256","")):
+                asset_errors.append(entry.get("object_id","unknown"))
+    except Exception as exc:asset_errors.append(str(exc))
+    checks.append({"check":"object_source_asset_sha","status":"PASS" if not asset_errors else "FAIL","detail":{"errors":asset_errors}})
+    if asset_errors:failures.append("object_source_asset_sha")
     source_copy=package/"02_CALIBRATED_ASSETS/V2_ORIGINAL"
     try:
         names=[p for p in source_copy.rglob("*") if p.is_file()]
@@ -148,8 +177,7 @@ def validate_package(package:Path,archive:Path,master:Path|None=None)->dict:
     for path in active:
         if path.is_file():
             text=path.read_text(encoding="utf-8",errors="replace")
-            for token in ("BLOCKED_MASTER_SOURCE","NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE","master_region_id=null","calibrated_transform=null"):
-                if token in text:stale.append(f"{path.relative_to(package)}:{token}")
+            for token in stale_status_tokens(text):stale.append(f"{path.relative_to(package)}:{token}")
     checks.append({"check":"no_stale_source_unavailable_contracts","status":"PASS" if not stale else "FAIL","detail":{"stale":stale}})
     if stale:failures.append("stale_contracts")
     zip_errors=[];zip_detail={}
@@ -170,11 +198,28 @@ def validate_package(package:Path,archive:Path,master:Path|None=None)->dict:
     except Exception as exc:zip_errors.append(str(exc))
     checks.append({"check":"final_zip_crc_and_sha_manifest","status":"PASS" if not zip_errors else "FAIL","detail":{"summary":zip_detail,"errors":zip_errors}})
     if zip_errors:failures.append("final_zip_integrity")
-    metric_failed=bool(visual)
+    consistency=[]
+    try:
+        metric_sha=sha_bytes(metrics_path.read_bytes())
+        for rel,ids in [("01_ANALYSIS/master_fish_geometry.json",OBJECTS["fish"]),
+                        ("01_ANALYSIS/master_resident_geometry.json",OBJECTS["resident"]),
+                        ("01_ANALYSIS/master_ecology_geometry.json",OBJECTS["plant"]+OBJECTS["rock"])]:
+            geometry=load(package/rel)
+            if geometry.get("canonical_metrics_sha256")!=metric_sha:consistency.append(f"canonical_sha:{rel}")
+            if geometry.get("canonical_metrics")!={oid:metrics.get("per_object",{}).get(oid) for oid in ids}:
+                consistency.append(f"canonical_values:{rel}")
+        for rel in ("03_STATIC_RECOMPOSITION/static_recomposition.png","03_STATIC_RECOMPOSITION/master_reference.png",
+                    "03_STATIC_RECOMPOSITION/master_overlay.png","03_STATIC_RECOMPOSITION/difference_heatmap.png"):
+            with Image.open(package/rel) as im:
+                if im.size!=(1254,1254):consistency.append(f"render_dimensions:{rel}:{im.size}")
+    except Exception as exc:consistency.append(str(exc))
+    checks.append({"check":"canonical_metric_and_render_consistency","status":"PASS" if not consistency else "FAIL","detail":{"errors":consistency}})
+    if consistency:failures.append("metric_or_render_consistency")
+    metric_failed=bool(visual) or metrics.get("overall_status")!="PASS"
     status="BLOCKED_GROUND_TRUTH_UNCERTAIN" if metrics.get("overall_status")=="BLOCKED_GROUND_TRUTH_UNCERTAIN" else "WORK1_5_VALIDATION_FAILED"
     result={"schema_version":"water-world-v2-1-closure-validation/2.0","master_source_status":"MASTER_SOURCE_READY" if good else "MASTER_SOURCE_INVALID",
       "work_status":status,"visual_acceptance_status":"PASS" if not metric_failed else "FAIL","package_integrity_status":"PASS" if not failures else "FAIL",
-      "checks":checks,"visual_failures":visual,"failure_codes":failures,"exit_code":20 if failures or metric_failed else 0}
+      "checks":checks,"visual_failures":visual,"package_integrity_failures":failures,"exit_code":20 if failures or metric_failed else 0}
     out=package/"06_VALIDATION/validation_manifest.json";out.parent.mkdir(parents=True,exist_ok=True)
     out.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     return result

@@ -372,7 +372,8 @@ def validate_final_zip(path: Path) -> list[str]:
             if bad:
                 return [f"FINAL_ZIP_CRC_FAILED:{bad}"]
             names = set(archive.namelist())
-            manifest_name = next((n for n in ("MANIFEST/sha256_manifest.txt", "WATER_WORLD_V2_1/MANIFEST/sha256_manifest.txt", "08_MANIFEST/sha256_manifest.txt") if n in names), None)
+            manifest_name = next((n for n in ("MANIFEST/sha256_manifest.txt", "WATER_WORLD_V2_1/MANIFEST/sha256_manifest.txt",
+                                               "08_MANIFEST/sha256_manifest.txt", "WATER_WORLD_V2_1/08_MANIFEST/sha256_manifest.txt") if n in names), None)
             if not manifest_name:
                 return ["FINAL_ZIP_SHA256_MANIFEST_MISSING"]
             failures = []
@@ -459,7 +460,7 @@ def run_validation(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
         "validation_scope": args.scope,
         "preflight_status": "WORK1_5_VALIDATION_FAILED" if preflight_failed else "PREFLIGHT_PASS",
         "master_source_status": "NOT_CHECKED",
-        "static_resource_status": "BLOCKED_MASTER_SOURCE",
+        "static_resource_status": "NOT_EVALUATED_IN_PREFLIGHT",
         "motion_contract_status": "MOTION_CONTRACT_READY" if not any(c["check"] == "motion_contract" and c["status"] == "FAIL" for c in checks) else "WORK1_5_VALIDATION_FAILED",
         "overall_status": None,
         "work1_5_status": None,

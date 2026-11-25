@@ -4,7 +4,9 @@ import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from validate_closure_delta import EXPECTED, OBJECTS, master_layer_errors, object_contract_errors, threshold_failures
+from validate_closure_delta import (EXPECTED, OBJECTS, asset_hash_matches, master_layer_errors,
+                                    object_acceptance_failures, object_contract_errors,
+                                    stale_status_tokens, threshold_failures)
 
 
 def valid_fixtures():
@@ -79,6 +81,29 @@ class ClosureContractTests(unittest.TestCase):
         metrics, _, _ = valid_fixtures()
         metrics["comparison"]["master_used_as_composition_layer"] = True
         self.assertEqual(master_layer_errors(metrics), ["master_used_as_composition_layer"])
+
+    def test_wrong_source_asset_sha_fails(self):
+        self.assertFalse(asset_hash_matches(b"changed source", "0" * 64))
+
+    def test_stale_source_unavailable_status_fails(self):
+        self.assertEqual(stale_status_tokens("status=BLOCKED_MASTER_SOURCE"), ["BLOCKED_MASTER_SOURCE"])
+
+    def test_missing_object_source_sha_fails(self):
+        metrics, mapping, scene = valid_fixtures()
+        mapping["objects"][0]["source_sha256"] = ""
+        self.assertTrue(any(x.startswith("source_sha_missing:") for x in object_contract_errors(metrics, mapping, scene)))
+
+    def test_incomplete_ground_truth_cannot_pass_object_gate(self):
+        metrics, _, _ = valid_fixtures()
+        metrics["per_object"]["WW_FISH_03"]["status"] = "BLOCKED_GROUND_TRUTH_UNCERTAIN"
+        self.assertEqual(object_acceptance_failures(metrics), [
+            "object_not_accepted:WW_FISH_03:BLOCKED_GROUND_TRUTH_UNCERTAIN"
+        ])
+
+    def test_scene_mapping_divergence_fails(self):
+        metrics, mapping, scene = valid_fixtures()
+        scene["objects"][0]["candidate_transform"] = {"state": "different"}
+        self.assertTrue(any(x.startswith("scene_mapping_mismatch:") for x in object_contract_errors(metrics, mapping, scene)))
 
 
 if __name__ == "__main__":

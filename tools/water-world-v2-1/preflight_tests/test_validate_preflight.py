@@ -148,6 +148,15 @@ class ClosureArtifactTests(unittest.TestCase):
             archive.writestr("MANIFEST/sha256_manifest.txt", f"{digest}  payload.bin\n")
         self.assertEqual([], validator.validate_final_zip(self.final_zip))
 
+    def test_final_zip_with_packaged_root_manifest_passes(self):
+        payload = b"verified payload"
+        digest = validator.sha256_bytes(payload)
+        with zipfile.ZipFile(self.final_zip, "w") as archive:
+            archive.writestr("WATER_WORLD_V2_1/payload.bin", payload)
+            archive.writestr("WATER_WORLD_V2_1/08_MANIFEST/sha256_manifest.txt",
+                             f"{digest}  WATER_WORLD_V2_1/payload.bin\n")
+        self.assertEqual([], validator.validate_final_zip(self.final_zip))
+
     def test_empty_final_zip_manifest_fails(self):
         with zipfile.ZipFile(self.final_zip, "w") as archive:
             archive.writestr("payload.bin", b"payload")
