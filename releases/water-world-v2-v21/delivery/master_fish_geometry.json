@@ -1,0 +1,197 @@
+{
+  "schema_version": "water-world-fish-geometry/1.0",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "segmentation": {
+    "method": "warm high-value pixel mask within source-registered fish ROIs; contour box includes pale blue fins by manual full-resolution edge registration",
+    "threshold": {
+      "R_min": 78,
+      "G_min": 72,
+      "R_over_B": 1.08,
+      "G_over_B": 1.06,
+      "R_plus_G_min": 215
+    },
+    "confidence": "MEDIUM"
+  },
+  "fish": [
+    {
+      "id": "WW_FISH_01",
+      "source_mask_bbox_px": [
+        698,
+        461,
+        871,
+        536
+      ],
+      "registered_silhouette_bbox_px": [
+        676,
+        452,
+        874,
+        544
+      ],
+      "source_color_mask_centroid_px": [
+        776.0379474940335,
+        499.37852028639617
+      ],
+      "source_color_mask_area_px": 4190,
+      "aspect_ratio_registered": 2.152173913043478,
+      "facing": "right",
+      "opacity_source": "opaque RGB source pixels; estimated scene opacity 1.0",
+      "occlusion": "inside front glass, no fish-fish mask overlap after nearest-seed partition",
+      "position_confidence": "HIGH_FOR_BOX_MEDIUM_FOR_COLOR_SEGMENTATION",
+      "asset_transform": {
+        "source_asset": "05_FISH/fish_01.png",
+        "source_alpha_bbox": [
+          16,
+          17,
+          1664,
+          607
+        ],
+        "target_bbox_px": [
+          676,
+          452,
+          874,
+          544
+        ],
+        "render_mask_threshold_alpha": 32
+      },
+      "source_asset_sha256": "056b55e6f61fb353b8db2fa8631176a4caca330f2f1d5460eba9a7a72d8cc134",
+      "iou_against_source_color_mask": 0.4189102564102564,
+      "center_error_over_canvas": 0.0014779210331334303,
+      "tail_fin_geometry": "static silhouette retained in V2 raster; no independent fin rig is claimed"
+    },
+    {
+      "id": "WW_FISH_02",
+      "source_mask_bbox_px": [
+        510,
+        523,
+        647,
+        578
+      ],
+      "registered_silhouette_bbox_px": [
+        478,
+        517,
+        653,
+        585
+      ],
+      "source_color_mask_centroid_px": [
+        573.082085948817,
+        549.0535972959923
+      ],
+      "source_color_mask_area_px": 2071,
+      "aspect_ratio_registered": 2.573529411764706,
+      "facing": "right",
+      "opacity_source": "opaque RGB source pixels; estimated scene opacity 1.0",
+      "occlusion": "inside front glass, no fish-fish mask overlap after nearest-seed partition",
+      "position_confidence": "HIGH_FOR_BOX_MEDIUM_FOR_COLOR_SEGMENTATION",
+      "asset_transform": {
+        "source_asset": "05_FISH/fish_02.png",
+        "source_alpha_bbox": [
+          16,
+          15,
+          1289,
+          452
+        ],
+        "target_bbox_px": [
+          478,
+          517,
+          653,
+          585
+        ],
+        "render_mask_threshold_alpha": 32
+      },
+      "source_asset_sha256": "565b78326a259484fb78a542cb7c2f0ce8cf831eb080c28b1bf93a469615bbd8",
+      "iou_against_source_color_mask": 0.30696959344038266,
+      "center_error_over_canvas": 0.003051052881316533,
+      "tail_fin_geometry": "static silhouette retained in V2 raster; no independent fin rig is claimed"
+    },
+    {
+      "id": "WW_FISH_03",
+      "source_mask_bbox_px": [
+        612,
+        553,
+        748,
+        612
+      ],
+      "registered_silhouette_bbox_px": [
+        606,
+        552,
+        752,
+        619
+      ],
+      "source_color_mask_centroid_px": [
+        683.4096,
+        587.0634666666666
+      ],
+      "source_color_mask_area_px": 1875,
+      "aspect_ratio_registered": 2.1791044776119404,
+      "facing": "right",
+      "opacity_source": "opaque RGB source pixels; estimated scene opacity 1.0",
+      "occlusion": "inside front glass, no fish-fish mask overlap after nearest-seed partition",
+      "position_confidence": "HIGH_FOR_BOX_MEDIUM_FOR_COLOR_SEGMENTATION",
+      "asset_transform": {
+        "source_asset": "05_FISH/fish_03.png",
+        "source_alpha_bbox": [
+          18,
+          17,
+          959,
+          364
+        ],
+        "target_bbox_px": [
+          606,
+          552,
+          752,
+          619
+        ],
+        "render_mask_threshold_alpha": 32
+      },
+      "source_asset_sha256": "c8def6b8d5e66463b903a2fa329f2e1f354067598931233b0e29c966d32ef6d1",
+      "iou_against_source_color_mask": 0.3443425076452599,
+      "center_error_over_canvas": 0.0013359329527292117,
+      "tail_fin_geometry": "static silhouette retained in V2 raster; no independent fin rig is claimed"
+    },
+    {
+      "id": "WW_FISH_04",
+      "source_mask_bbox_px": [
+        537,
+        635,
+        663,
+        689
+      ],
+      "registered_silhouette_bbox_px": [
+        530,
+        625,
+        666,
+        690
+      ],
+      "source_color_mask_centroid_px": [
+        601.0301369863014,
+        657.3057534246575
+      ],
+      "source_color_mask_area_px": 1825,
+      "aspect_ratio_registered": 2.0923076923076924,
+      "facing": "right",
+      "opacity_source": "opaque RGB source pixels; estimated scene opacity 1.0",
+      "occlusion": "inside front glass, no fish-fish mask overlap after nearest-seed partition",
+      "position_confidence": "HIGH_FOR_BOX_MEDIUM_FOR_COLOR_SEGMENTATION",
+      "asset_transform": {
+        "source_asset": "05_FISH/fish_04.png",
+        "source_alpha_bbox": [
+          14,
+          13,
+          898,
+          355
+        ],
+        "target_bbox_px": [
+          530,
+          625,
+          666,
+          690
+        ],
+        "render_mask_threshold_alpha": 32
+      },
+      "source_asset_sha256": "714a0afa95e6c3d802044bbb745334875bd79640960b35ee40bc4125a2d3b44d",
+      "iou_against_source_color_mask": 0.4105991883504416,
+      "center_error_over_canvas": 0.0007610972564930666,
+      "tail_fin_geometry": "static silhouette retained in V2 raster; no independent fin rig is claimed"
+    }
+  ]
+}

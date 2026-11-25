@@ -1,0 +1,186 @@
+{
+  "schema_version": "water-world-v2-1-delta-validation/1.0",
+  "validation_scope": "master/static/package closure delta only",
+  "work1_5_status": "WORK1_5_VALIDATION_FAILED",
+  "master_source_status": "MASTER_SOURCE_READY",
+  "visual_acceptance_status": "FAIL",
+  "final_zip_status": "PASS",
+  "prior_gate_policy": "V2 archive integrity, 21/21 tests, and 47/28 Motion Graph results carried forward without rerun as instructed.",
+  "checks": [
+    {
+      "check": "master_byte_identity",
+      "status": "PASS",
+      "detail": {
+        "bytes": 2256234,
+        "sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589"
+      }
+    },
+    {
+      "check": "master_png_decode_metadata",
+      "status": "PASS",
+      "detail": {
+        "dimensions": [
+          1254,
+          1254
+        ],
+        "mode": "RGB"
+      }
+    },
+    {
+      "check": "artifact:01_ANALYSIS/master_sphere_geometry.json",
+      "status": "PASS",
+      "detail": {
+        "bytes": 1337
+      }
+    },
+    {
+      "check": "artifact:01_ANALYSIS/master_fish_geometry.json",
+      "status": "PASS",
+      "detail": {
+        "bytes": 5880
+      }
+    },
+    {
+      "check": "artifact:01_ANALYSIS/master_resident_geometry.json",
+      "status": "PASS",
+      "detail": {
+        "bytes": 88289
+      }
+    },
+    {
+      "check": "artifact:01_ANALYSIS/master_ecology_geometry.json",
+      "status": "PASS",
+      "detail": {
+        "bytes": 6726
+      }
+    },
+    {
+      "check": "artifact:01_ANALYSIS/master_occlusion_graph.json",
+      "status": "PASS",
+      "detail": {
+        "bytes": 1375
+      }
+    },
+    {
+      "check": "artifact:03_STATIC_RECOMPOSITION/static_recomposition.png",
+      "status": "PASS",
+      "detail": {
+        "bytes": 1607098
+      }
+    },
+    {
+      "check": "artifact:03_STATIC_RECOMPOSITION/master_reference.png",
+      "status": "PASS",
+      "detail": {
+        "bytes": 2256234
+      }
+    },
+    {
+      "check": "artifact:03_STATIC_RECOMPOSITION/master_overlay.png",
+      "status": "PASS",
+      "detail": {
+        "bytes": 1920839
+      }
+    },
+    {
+      "check": "artifact:03_STATIC_RECOMPOSITION/difference_heatmap.png",
+      "status": "PASS",
+      "detail": {
+        "bytes": 144043
+      }
+    },
+    {
+      "check": "artifact:03_STATIC_RECOMPOSITION/region_comparison.png",
+      "status": "PASS",
+      "detail": {
+        "bytes": 728434
+      }
+    },
+    {
+      "check": "artifact:03_STATIC_RECOMPOSITION/visual_metrics.json",
+      "status": "PASS",
+      "detail": {
+        "bytes": 3998
+      }
+    },
+    {
+      "check": "visual_thresholds",
+      "status": "FAIL",
+      "detail": {
+        "failed": [
+          "fish_iou",
+          "resident_bidirectional_chamfer_over_radius",
+          "plant_iou",
+          "rock_iou"
+        ],
+        "measured_gate_status": {
+          "sphere_iou": "PASS",
+          "sphere_center_error_over_diameter": "PASS",
+          "sphere_diameter_error": "PASS",
+          "fish_iou": "FAIL",
+          "fish_center_error_over_canvas": "PASS",
+          "resident_bidirectional_chamfer_over_radius": "FAIL",
+          "resident_width_error": "PASS",
+          "plant_iou": "FAIL",
+          "rock_iou": "FAIL"
+        }
+      }
+    },
+    {
+      "check": "inherited_v2_file_copy_identity",
+      "status": "PASS",
+      "detail": {
+        "files": 65,
+        "mismatches": []
+      }
+    },
+    {
+      "check": "final_v2_1_zip",
+      "status": "PASS",
+      "detail": {
+        "summary": {
+          "member_count": 191,
+          "crc": "PASS",
+          "manifest": "WATER_WORLD_V2_1/08_MANIFEST/sha256_manifest.txt"
+        },
+        "errors": []
+      }
+    },
+    {
+      "check": "prior_v2_archive_audit",
+      "status": "CARRIED_FORWARD_PASS",
+      "detail": {
+        "sha256": "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095",
+        "members": 65,
+        "embedded_hashes": "63/63",
+        "source_commit": "d53492d055c69af346bf188d4fe3c07bc8c220c7"
+      }
+    },
+    {
+      "check": "prior_validator_regression",
+      "status": "CARRIED_FORWARD_PASS",
+      "detail": {
+        "passed": 21,
+        "total": 21,
+        "rerun": false
+      }
+    },
+    {
+      "check": "prior_motion_graph",
+      "status": "CARRIED_FORWARD_PASS",
+      "detail": {
+        "elements": 47,
+        "nodes": 47,
+        "dependencies": 28,
+        "rerun": false
+      }
+    }
+  ],
+  "visual_metrics_gate_failures": [
+    "fish_iou",
+    "resident_bidirectional_chamfer_over_radius",
+    "plant_iou",
+    "rock_iou"
+  ],
+  "exit_code": 20
+}

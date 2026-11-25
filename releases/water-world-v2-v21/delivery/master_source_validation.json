@@ -1,0 +1,16 @@
+{
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "png_magic": "PASS",
+  "png_decode": "PASS",
+  "file_bytes": 2256234,
+  "dimensions_px": [
+    1254,
+    1254
+  ],
+  "mode": "RGB",
+  "has_alpha": false,
+  "icc_profile_sha256": "NONE",
+  "source_branch": "assets/water-world-v2-v21-calibration",
+  "source_commit": "1662bbf9de671b0bb1fa5ce1891a1df3e49703b6",
+  "source_path": "releases/water-world-v2-v21/奇幻水晶球中的水下生态世界 (1).png"
+}

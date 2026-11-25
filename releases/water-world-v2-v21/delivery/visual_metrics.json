@@ -1,0 +1,111 @@
+{
+  "schema_version": "water-world-v2-1-visual-metrics/1.0",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "comparison": {
+    "master_dimensions_px": [
+      1254,
+      1254
+    ],
+    "recomposition_dimensions_px": [
+      1254,
+      1254
+    ],
+    "color_space": "sRGB RGB; no resizing or registration after source measurement",
+    "render_type": "CPU_STATIC_RECOMPOSITION_FROM_INDEPENDENT_V2_ASSETS",
+    "gpu_render": false,
+    "master_used_as_composition_layer": false
+  },
+  "thresholds": {
+    "sphere_iou": {
+      "min": 0.98
+    },
+    "sphere_center_error_over_diameter": {
+      "max": 0.005
+    },
+    "sphere_diameter_error": {
+      "max": 0.01
+    },
+    "fish_iou": {
+      "min": 0.9
+    },
+    "fish_center_error_over_canvas": {
+      "max": 0.01
+    },
+    "resident_bidirectional_chamfer_over_radius": {
+      "max": 0.015
+    },
+    "resident_width_error": {
+      "max": 0.05
+    },
+    "plant_iou": {
+      "min": 0.85
+    },
+    "rock_iou": {
+      "min": 0.85
+    }
+  },
+  "metrics": {
+    "sphere_iou": 0.9947694058244142,
+    "sphere_center_error_over_diameter": 0.0010450466720216967,
+    "sphere_diameter_error": 0.0004481369843779967,
+    "fish_iou": {
+      "WW_FISH_01": 0.4189102564102564,
+      "WW_FISH_02": 0.30696959344038266,
+      "WW_FISH_03": 0.3443425076452599,
+      "WW_FISH_04": 0.4105991883504416
+    },
+    "fish_center_error_over_canvas": {
+      "WW_FISH_01": 0.0014779210331334303,
+      "WW_FISH_02": 0.003051052881316533,
+      "WW_FISH_03": 0.0013359329527292117,
+      "WW_FISH_04": 0.0007610972564930666
+    },
+    "resident_bidirectional_chamfer_over_radius": {
+      "G01": 0.013569892646397153,
+      "G02": 0.00909883629962014,
+      "A01": 0.013141318044706807,
+      "A02": 0.009853598492286583,
+      "C01": 0.028323699261833892
+    },
+    "resident_width_error": {
+      "G01": 0.03430510235642324,
+      "G02": 0.03020422961516771,
+      "A01": 0.0,
+      "A02": 0.0,
+      "C01": 0.0
+    },
+    "plant_iou": {
+      "plant_left": 0.11967664258685931,
+      "plant_right": 0.18667480729603908
+    },
+    "rock_iou": {
+      "rock_01": 0.6290402672444926,
+      "rock_02": 0.46589641789713165,
+      "rock_03": 0.32685688908626626
+    }
+  },
+  "gate_status": {
+    "sphere_iou": "PASS",
+    "sphere_center_error_over_diameter": "PASS",
+    "sphere_diameter_error": "PASS",
+    "fish_iou": "FAIL",
+    "fish_center_error_over_canvas": "PASS",
+    "resident_bidirectional_chamfer_over_radius": "FAIL",
+    "resident_width_error": "PASS",
+    "plant_iou": "FAIL",
+    "rock_iou": "FAIL"
+  },
+  "overall_status": "FAIL",
+  "metric_method_notes": {
+    "sphere": "Fitted source circle versus independently rendered measured circle; fit residuals and inlier count are included in sphere geometry JSON.",
+    "fish": "Source warm-pixel segmentation inside fixed source-registered ROIs versus independent V2 alpha assets resized to source-registered silhouette boxes; source threshold can omit cool translucent fins, so IoU confidence is MEDIUM.",
+    "resident": "Per-ID hue/saturation mask within source-registered path corridors. Chamfer compares source-supported visible trace segments to the rendered centerline; gaps are interpolated in the static composition from adjacent samples and a low-confidence curve prior, with their fraction listed per resident. Same-hue crossings remain ambiguous.",
+    "plants": "Source HSV mask within full-resolution registered foliage bounds; cyan-green transparent leaf edges are excluded; MEDIUM_LOW.",
+    "rocks": "Source blue-green texture mask within measured object envelopes; contact shadows/moss edges are ambiguous; MEDIUM_LOW."
+  },
+  "limitations": [
+    "Static CPU reconstruction only; no GPU or motion fidelity is claimed.",
+    "Resident identities at same-color overlaps remain partly ambiguous.",
+    "Composite asset set does not reproduce all source-specific caustic microstructure, refraction, volumetric haze and fine glow."
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "schema_version": "water-world-occlusion-graph/1.0",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "layers": [
+    {
+      "id": "background",
+      "order": 0
+    },
+    {
+      "id": "back_residents",
+      "order": 10
+    },
+    {
+      "id": "water_body",
+      "order": 20
+    },
+    {
+      "id": "plants_back",
+      "order": 30
+    },
+    {
+      "id": "rocks",
+      "order": 40
+    },
+    {
+      "id": "fish",
+      "order": 50
+    },
+    {
+      "id": "front_residents",
+      "order": 60
+    },
+    {
+      "id": "glass_back_arc",
+      "order": 70
+    },
+    {
+      "id": "glass_front_arc",
+      "order": 80
+    }
+  ],
+  "relations": [
+    {
+      "behind": "fish",
+      "in_front_of": "water_body"
+    },
+    {
+      "behind": "fish",
+      "in_front_of": "plants_back"
+    },
+    {
+      "behind": "glass_back_arc",
+      "in_front_of": "sphere_interior"
+    },
+    {
+      "behind": "glass_front_arc",
+      "in_front_of": "fish"
+    },
+    {
+      "behind": "front_residents",
+      "in_front_of": "sphere_interior"
+    }
+  ],
+  "uncertainties": [
+    "The static source does not uniquely resolve Resident identity at same-color crossings.",
+    "Glass refraction merges some plant, fish and rim edges.",
+    "Fish-to-fish overlap is absent at silhouette threshold but light bloom overlaps visually."
+  ]
+}
