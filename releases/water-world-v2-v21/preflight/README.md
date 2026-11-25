@@ -1,7 +1,7 @@
-# WATER WORLD V2.1 Preflight
+# WATER WORLD V2.1 Work 1.5
 
-This repository directory contains read-only V2 asset audit results, motion schemas and GPU input contracts. It is not the completed calibrated V2.1 asset package.
+This package contains the V2 integrity audit, motion registry/graph, Validator, tests and GPU input contracts. It is **not** a completed calibrated V2.1 asset package.
 
-Status: BLOCKED_MASTER_SOURCE. The user confirms the inline image is the sole master, but its raw PNG bytes are not available to this execution. No asset calibration, visual composite, master overlay, diff heatmap or V2.1 asset ZIP is included. Work 2 is not started.
+Status: `WORK1_5_BLOCKED_MASTER_SOURCE`. The current uploaded `奇幻水晶球中的水下生态世界.png` is the sole frozen master by user instruction. The image is visible in chat, but its original PNG bytes are not mounted in this execution workspace, so pixel calibration, overlays, heatmaps, visual metrics and the final V2.1 ZIP cannot be produced without fabricating evidence.
 
-V2 archive: 11,678,323 bytes; SHA256 6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095. All 65 entries were streamed, 63 internal hashes verified, and all raster/JSON/SVG content parsed. Motion and GPU files are preflight contracts only.
+The source V2 ZIP remains unchanged (11,678,323 bytes; SHA256 `6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095`). Its 65 members were extracted and audited; 63 embedded checksums pass. Validator preflight passes; closure correctly exits 10 while the master source bytes are unavailable. See `FINAL_WORK1_5_DELIVERY_REPORT.md` for measured results.

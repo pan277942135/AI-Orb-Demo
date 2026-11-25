@@ -13,7 +13,7 @@
 - Parse/decode/checksum errors: 0
 - The original ZIP remains unchanged.
 
-A complete virtual member-by-member audit was streamed from the original ZIP. Physical extraction was not performed because the workspace had about 2 MiB free, less than the 11.7 MB archive. The original files were decoded/read directly from ZIP memory and inventory is in asset_audit_ledger.csv.
+A complete member-by-member audit was first streamed from the original ZIP. After temporary cache cleanup, the original archive was also physically extracted to `/workspace/WATER_WORLD_WORK/V2_EXTRACTED/full` (65 files, about 12 MB). The original ZIP was retained unchanged. Inventory is in asset_audit_ledger.csv.
 
 ## Category inventory
 

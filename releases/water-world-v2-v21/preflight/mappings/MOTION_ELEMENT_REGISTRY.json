@@ -63,7 +63,14 @@
         "transfer_to_water_world": false
       },
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "runtime_inputs": [
+        "spatial_volume_3d",
+        "shared_frame_snapshot"
+      ],
+      "pivot_status": "SOURCE_DOMAIN_ORIGIN_VERIFIED_NOT_DENSITY_CENTROID",
+      "pivot_semantics": "AI Orb texture sample domain origin only; not density-weighted centroid and not an approved Water World pivot.",
+      "water_world_pivot_approved": false
     },
     {
       "element_id": "CORE_FLUID",
@@ -97,7 +104,12 @@
       "asset_status": "AVAILABLE_VOLUME_AND_DETAIL_MAP",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "runtime_inputs": [
+        "volume_sample_position",
+        "flow_direction"
+      ]
     },
     {
       "element_id": "CORE_FILAMENT",
@@ -128,7 +140,11 @@
       "asset_status": "ASSET_NOT_AVAILABLE_AS_INDEPENDENT_GEOMETRY",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
+      "runtime_inputs": [
+        "filament_depth"
+      ]
     },
     {
       "element_id": "CORE_PARTICLES",
@@ -159,7 +175,11 @@
       "asset_status": "ASSET_NOT_AVAILABLE_AS_INTERNAL_CORE_SET",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
+      "runtime_inputs": [
+        "particle_depth"
+      ]
     },
     {
       "element_id": "CORE_DENSITY",
@@ -190,7 +210,12 @@
       "asset_status": "AVAILABLE_LINEAR_ALPHA_CHANNEL",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "runtime_inputs": [
+        "sampled_density",
+        "density_field"
+      ]
     },
     {
       "element_id": "CORE_COLOR",
@@ -221,7 +246,12 @@
       "asset_status": "AVAILABLE_SRGB_RGB_CHANNEL",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "runtime_inputs": [
+        "sampled_color",
+        "material_sample"
+      ]
     },
     {
       "element_id": "CORE_CAUSTICS",
@@ -253,7 +283,13 @@
       "asset_status": "AVAILABLE_2D_STATIC_MAP",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "runtime_inputs": [
+        "light_field",
+        "density_and_normal",
+        "caustic_attenuation"
+      ]
     },
     {
       "element_id": "CORE_GLASS",
@@ -286,7 +322,17 @@
       "asset_status": "AVAILABLE_RUNTIME_SHADER_AND_ENV_MAP",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "runtime_inputs": [
+        "refraction_input",
+        "refractive_index_input",
+        "absorption_path",
+        "transmission_color",
+        "internal_caustic_radiance",
+        "filament_depth",
+        "particle_depth"
+      ]
     },
     {
       "element_id": "WW_BACKGROUND",
@@ -382,7 +428,8 @@
       "asset_status": "AVAILABLE_MAPS_NO_TIME_SEQUENCE",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_SPHERE",
@@ -445,7 +492,8 @@
       "asset_status": "AVAILABLE_MASK_ONLY_MATERIAL_UNVERIFIED",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_GLASS_FRONT",
@@ -477,7 +525,8 @@
       "asset_status": "AVAILABLE_MASK_ONLY_MATERIAL_UNVERIFIED",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_FISH_01",
@@ -509,7 +558,8 @@
       "asset_status": "AVAILABLE_CUTOUT_AND_MESH_NO_ANIMATED_RIG",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_FISH_01_TAIL",
@@ -540,7 +590,8 @@
       "asset_status": "ASSET_NOT_AVAILABLE_AS_SEPARATE_RIGGED_PART",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
     },
     {
       "element_id": "WW_FISH_01_FINS",
@@ -571,7 +622,8 @@
       "asset_status": "ASSET_NOT_AVAILABLE_AS_SEPARATE_RIGGED_PART",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
     },
     {
       "element_id": "WW_FISH_02",
@@ -603,7 +655,8 @@
       "asset_status": "AVAILABLE_CUTOUT_AND_MESH_NO_ANIMATED_RIG",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_FISH_02_TAIL",
@@ -634,7 +687,8 @@
       "asset_status": "ASSET_NOT_AVAILABLE_AS_SEPARATE_RIGGED_PART",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
     },
     {
       "element_id": "WW_FISH_02_FINS",
@@ -665,7 +719,8 @@
       "asset_status": "ASSET_NOT_AVAILABLE_AS_SEPARATE_RIGGED_PART",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
     },
     {
       "element_id": "WW_FISH_03",
@@ -697,7 +752,8 @@
       "asset_status": "AVAILABLE_CUTOUT_AND_MESH_NO_ANIMATED_RIG",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_FISH_03_TAIL",
@@ -728,7 +784,8 @@
       "asset_status": "ASSET_NOT_AVAILABLE_AS_SEPARATE_RIGGED_PART",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
     },
     {
       "element_id": "WW_FISH_03_FINS",
@@ -759,7 +816,8 @@
       "asset_status": "ASSET_NOT_AVAILABLE_AS_SEPARATE_RIGGED_PART",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
     },
     {
       "element_id": "WW_FISH_04",
@@ -791,7 +849,8 @@
       "asset_status": "AVAILABLE_CUTOUT_AND_MESH_NO_ANIMATED_RIG",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_FISH_04_TAIL",
@@ -822,7 +881,8 @@
       "asset_status": "ASSET_NOT_AVAILABLE_AS_SEPARATE_RIGGED_PART",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
     },
     {
       "element_id": "WW_FISH_04_FINS",
@@ -853,7 +913,8 @@
       "asset_status": "ASSET_NOT_AVAILABLE_AS_SEPARATE_RIGGED_PART",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
     },
     {
       "element_id": "WW_RESIDENT_G01",
@@ -885,7 +946,8 @@
       "asset_status": "AVAILABLE_VECTOR_PATH_ESTIMATED",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_RESIDENT_G02",
@@ -917,7 +979,8 @@
       "asset_status": "AVAILABLE_VECTOR_PATH_ESTIMATED",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_RESIDENT_A01",
@@ -949,7 +1012,8 @@
       "asset_status": "AVAILABLE_VECTOR_PATH_ESTIMATED",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_RESIDENT_A02",
@@ -981,7 +1045,8 @@
       "asset_status": "AVAILABLE_VECTOR_PATH_ESTIMATED",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_RESIDENT_C01",
@@ -1013,7 +1078,8 @@
       "asset_status": "AVAILABLE_VECTOR_PATH_ESTIMATED",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_PLANT_LEFT",
@@ -1079,7 +1145,8 @@
       "asset_status": "ASSET_NOT_AVAILABLE_AS_SEPARATE_LEAF_GEOMETRY",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
     },
     {
       "element_id": "WW_PLANT_RIGHT",
@@ -1145,7 +1212,8 @@
       "asset_status": "ASSET_NOT_AVAILABLE_AS_SEPARATE_LEAF_GEOMETRY",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
     },
     {
       "element_id": "WW_ROCK_01",
@@ -1273,7 +1341,8 @@
       "asset_status": "AVAILABLE_SPRITE_AND_PLACEMENT_NO_TIME_REFERENCE",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_BUBBLE_B02",
@@ -1305,7 +1374,8 @@
       "asset_status": "AVAILABLE_SPRITE_AND_PLACEMENT_NO_TIME_REFERENCE",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_BUBBLE_B03",
@@ -1337,7 +1407,8 @@
       "asset_status": "AVAILABLE_SPRITE_AND_PLACEMENT_NO_TIME_REFERENCE",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_BUBBLE_B04",
@@ -1369,7 +1440,8 @@
       "asset_status": "AVAILABLE_SPRITE_AND_PLACEMENT_NO_TIME_REFERENCE",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_BUBBLE_B05",
@@ -1401,7 +1473,8 @@
       "asset_status": "AVAILABLE_SPRITE_AND_PLACEMENT_NO_TIME_REFERENCE",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_BUBBLE_B06",
@@ -1433,7 +1506,8 @@
       "asset_status": "AVAILABLE_SPRITE_AND_PLACEMENT_NO_TIME_REFERENCE",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_BUBBLE_B07",
@@ -1465,7 +1539,8 @@
       "asset_status": "AVAILABLE_SPRITE_AND_PLACEMENT_NO_TIME_REFERENCE",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_BUBBLE_B08",
@@ -1497,7 +1572,8 @@
       "asset_status": "AVAILABLE_SPRITE_AND_PLACEMENT_NO_TIME_REFERENCE",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     },
     {
       "element_id": "WW_BUBBLE_B09",
@@ -1529,7 +1605,8 @@
       "asset_status": "AVAILABLE_SPRITE_AND_PLACEMENT_NO_TIME_REFERENCE",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
     }
   ]
 }

@@ -1,39 +1,75 @@
-# WATER WORLD V2.1 Preflight Delivery Report
+# WATER WORLD V2.1 — Final Work 1.5 Delivery Report
 
-## Final state
+## 1. Final status
 
-BLOCKED_MASTER_SOURCE. The user confirmed the inline upload is the unique frozen reference. The execution environment exposes it as an inline display only; no original PNG bytes or downloadable attachment handle are available. The task therefore cannot compute source hash/metadata or perform pixel calibration, recompose, overlays, heatmaps or visual acceptance.
+**`WORK1_5_BLOCKED_MASTER_SOURCE`**. The currently uploaded `奇幻水晶球中的水下生态世界.png` is locked as the sole visual master, as instructed. The conversation exposes its rendered image, but this execution workspace has no readable original PNG bytes or downloadable attachment handle. No substitute image was used. The master is not hash- or pixel-validated here; source-derived calibration and visual acceptance therefore remain blocked.
 
-## V2 source package
+Independent work is complete: V2 package audit and extraction, Validator repair and tests, 47-element Motion Graph validation, and Core Motion input/output contract checks. This is not a closed or visually accepted V2.1 package.
 
-The original V2 archive remains unchanged: 11,678,323 bytes, SHA256 6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095. All 65 entries were streamed and parsed; 63 internal SHA256 entries pass. No checksum, image, JSON or SVG errors were found. Because free disk was about 2 MiB, the 12.3 MB uncompressed archive was not physically extracted; the ZIP was fully read in place.
+## 2. V2 source package
 
-KEEP unchanged: 65 source entries. RECALIBRATE: 0; REPAIR: 0; REGENERATE: 0. These decisions reflect preservation only and do not assert visual suitability. V2 placements and Resident curves are estimated in source metadata.
+- File: `WATER_WORLD_V2_ASSETS.zip`
+- Size: 11,678,323 bytes
+- SHA256: `6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095`
+- ZIP CRC: PASS
+- Members: 65
+- Embedded checksums: 63/63 PASS
+- Raster decode count: 35; JSON/SVG parsing: PASS
+- Physical extraction: 65 files extracted to `/workspace/WATER_WORLD_WORK/V2_EXTRACTED/full` (about 12 MB)
 
-## Static visual work
+The original ZIP and its contents were not modified. These checks establish package integrity, not visual suitability against the master.
 
-Fish/Resident/object transforms, geometry, overlays, difference metrics and static recomposition: NOT RUN, blocked by raw master access. No V2.1 calibrated ZIP exists. The previous V2 preview was not used as truth or submitted as reconstructed output.
+## 3. Resource decision ledger
 
-## AI Orb core and motion readiness
+| Action | Count | Evidence / meaning |
+|---|---:|---|
+| KEEP | 65 source files, byte-for-byte | Preserved as the unmodified V2 source package; not approved as master-calibrated output |
+| RECALIBRATE | 0 | Not run; exact master pixels are unavailable to the execution tools |
+| REPAIR | 0 | No V2 source asset defect was proven by the integrity audit |
+| REGENERATE | 0 | Not run; no source-derived replacement was created |
 
-The AI Orb audit is read-only against local source HEAD 7e556babd2bdbad75ce22c1c57d19b386fd2a3c6. It found 32 256x256 spatial Z slices and three 2D maps; they are not animation frames. Core filament geometry and an internal particle dataset are not independently available. Motion registry and dependency graph are written; unverified Water World rates, phases, amplitudes and frequencies remain null.
+No guessed placements, Resident paths, fish geometry, overlays, heatmaps, or recomposition images are presented as master-derived results.
 
-## GPU contracts
+## 4. Static visual acceptance
 
-Static camera/texture/alpha/pass/shader/resource-lifecycle/diagnostics and Work 2/Core Motion contracts are defined. No renderer, GPU upload, capture or APK was created. Formats and hardware behavior still require API36 implementation testing.
+- Frozen master identity: user-confirmed current upload; sole reference.
+- Raw PNG metadata and pixel measurements: BLOCKED.
+- Master geometry extraction: NOT RUN.
+- Static recomposition, overlay, difference heatmap, and visual metric report: NOT RUN.
+- Final calibrated V2.1 ZIP: NOT CREATED.
 
-## GitHub delivery
+The original V2 archive is not being represented as a V2.1 calibrated delivery.
 
-- Preflight branch: assets/water-world-v2-v21-calibration, based on assets/water-world-v2-release at 4cd7a31dd7d3b2ca482c31138e5d8f0da8a113e1.
-- Draft PR #3: https://github.com/pan277942135/AI-Orb-Demo/pull/3; base release branch and head preflight branch.
-- Remote preflight documents: 65 files; all GitHub blob SHA-1 values match their corresponding local Git blob IDs. The SHA256SUMS file also covers the 63 other deliverable files.
-- No V2.1 asset ZIP or preview was uploaded because no calibrated files were produced.
-- Main remains at 07ce54a6657edc57b2106d734b57ca3cec87545e. PR #2 remains open and Draft; it was not modified.
+## 5. Motion and Core input/output validation
 
-## Readiness summary
+- Registry: 47 unique element IDs.
+- Graph: 47 nodes; exact registry-node set match.
+- Dependencies: 28; no duplicate edges, dangling references, or dependency cycles.
+- Core dependency outputs are checked against destination `runtime_inputs` tokens.
+- Unknown Water World motion values remain null. Unavailable assets are not marked ready.
+- `CORE_VOLUME` pivot `[0,0,0]` means the AI Orb source-domain origin only. It is explicitly not the density-weighted centroid and is not approved as the Water World master pivot.
+- Dynamic motion evidence, target rates, phases, amplitudes, and frequencies remain unvalidated from the static upload.
 
-- Static Resource Readiness: BLOCKED_MASTER_SOURCE
-- Motion Schema: READY; Motion Asset: PARTIAL; Motion Reference: NOT_READY; Motion Parameters: NOT_VALIDATED
-- GPU Contract: PRELIMINARY_READY; hardware verification NOT_RUN
-- Overall: BLOCKED_MASTER_SOURCE
-- Work 2: not started; this report does not authorize automatic start
+The source project’s motion settings are evidence about AI Orb only and were not copied into Water World parameters.
+
+## 6. Validator tests and exit codes
+
+`python -B -m unittest discover -s tools/water-world-v2-1/tests -p 'test_*.py' -v`
+
+**21/21 tests PASS**, covering valid, missing and corrupt PNGs; SHA/ICC mismatch; missing analysis; overlay, heatmap and final ZIP omissions; graph node/edge/cycle errors; invalid temporal values; Core inputs/outputs; and blocked/failure exit statuses.
+
+Actual validator runs:
+
+- `--scope preflight`: `PREFLIGHT_PASS`, exit code 0.
+- `--scope closure`: `WORK1_5_BLOCKED_MASTER_SOURCE`, exit code 10.
+- Failed validation checks return 20; internal errors return 30.
+
+The complete JSON evidence is in `06_VALIDATION/validation_manifest.json` and `06_VALIDATION/validator_test_results.json`.
+
+## 7. GitHub delivery
+
+The existing Draft PR #3 and its existing branch are the only intended remote target. This work does not create another PR, change Main, or modify PR #2. The final branch SHA and PR check result are recorded after updating and verifying PR #3.
+
+## 8. Remaining work
+
+Only source-dependent steps remain blocked: read the original PNG bytes, bind real metadata to its master manifest, extract pixel geometry, calibrate static assets, generate the comparison artifacts and final V2.1 ZIP, then perform the subsequent GPU implementation checks. The current image remains the sole master; no replacement is requested.

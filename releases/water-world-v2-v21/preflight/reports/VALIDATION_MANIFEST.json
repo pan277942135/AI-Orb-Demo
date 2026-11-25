@@ -1,6 +1,23 @@
 {
-  "schema_version": "water-world-v2-1-preflight-validation/1.0",
-  "overall_status": "BLOCKED_MASTER_SOURCE",
+  "schema_version": "water-world-v2-1-validator/2.0",
+  "validation_scope": "closure",
+  "preflight_status": "PREFLIGHT_PASS",
+  "master_source_status": "BLOCKED_MASTER_SOURCE",
+  "static_resource_status": "BLOCKED_MASTER_SOURCE",
+  "motion_contract_status": "MOTION_CONTRACT_READY",
+  "overall_status": "WORK1_5_BLOCKED_MASTER_SOURCE",
+  "work1_5_status": "WORK1_5_BLOCKED_MASTER_SOURCE",
+  "archive": {
+    "members": 65,
+    "internal_sha_count": 63,
+    "verified_sha_count": 63,
+    "raster_decoded": 35
+  },
+  "core_assets": {
+    "asset_count": 35,
+    "errors": [],
+    "manifest_sha256": "ca27fb75cfca60c2dece58cd7a99a12059e27600be41481f12172eaf920d2d10"
+  },
   "checks": [
     {
       "check": "v2_archive_sha256",
@@ -8,59 +25,80 @@
       "detail": "11678323 bytes; 6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095"
     },
     {
-      "check": "v2_archive_members",
+      "check": "v2_zip_crc",
+      "status": "PASS",
+      "detail": "all CRCs passed"
+    },
+    {
+      "check": "v2_member_count",
       "status": "PASS",
       "detail": "65 files"
     },
     {
-      "check": "v2_internal_checksums",
+      "check": "v2_internal_sha256",
       "status": "PASS",
       "detail": "63/63 verified"
     },
     {
       "check": "v2_parse_decode",
       "status": "PASS",
-      "detail": "0 errors"
+      "detail": {
+        "raster_decoded": 35,
+        "errors": []
+      }
     },
     {
-      "check": "motion_unique_ids",
+      "check": "motion_contract",
       "status": "PASS",
-      "detail": "47 unique of 47"
+      "detail": {
+        "element_count": 47,
+        "node_count": 47,
+        "dependency_count": 28,
+        "cycle_check": "PASS"
+      }
     },
     {
-      "check": "motion_models",
+      "check": "core_asset_count",
       "status": "PASS",
-      "detail": "all motion models are allowed"
+      "detail": "35 files; 32 spatial slices + 3 maps"
     },
     {
-      "check": "motion_parent_refs",
+      "check": "core_asset_hash_decode",
       "status": "PASS",
-      "detail": "[]"
+      "detail": []
     },
     {
-      "check": "motion_dependency_refs",
+      "check": "gpu_contract_files",
       "status": "PASS",
-      "detail": "28 edges; dangling=0"
+      "detail": []
     },
     {
-      "check": "unknown_motion_values_null",
-      "status": "PASS",
-      "detail": "[]"
-    },
-    {
-      "check": "core_35_webp_assets",
-      "status": "PASS",
-      "detail": "35 assets; errors=0"
-    },
-    {
-      "check": "gpu_contract_documents",
-      "status": "PASS",
-      "detail": "[]"
-    },
-    {
-      "check": "master_raw_source",
+      "check": "master_source",
       "status": "BLOCKED",
-      "detail": "raw PNG bytes not available; pixel analysis and visual acceptance cannot run"
+      "detail": "raw PNG file bytes are unavailable"
+    },
+    {
+      "check": "v2_physical_extraction",
+      "status": "PASS",
+      "detail": "65 files extracted to /workspace/WATER_WORLD_WORK/V2_EXTRACTED/full; source ZIP unchanged"
+    },
+    {
+      "check": "validator_regression_tests",
+      "status": "PASS",
+      "detail": "21 passed, 0 failed; see validator_test_results.json"
+    }
+  ],
+  "exit_code": 10,
+  "scope_results": [
+    {
+      "scope": "preflight",
+      "status": "PREFLIGHT_PASS",
+      "exit_code": 0
+    },
+    {
+      "scope": "closure",
+      "status": "WORK1_5_BLOCKED_MASTER_SOURCE",
+      "exit_code": 10
     }
   ]
 }

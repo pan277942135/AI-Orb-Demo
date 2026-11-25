@@ -1,0 +1,43 @@
+{
+  "suite": "tools/water-world-v2-1/tests/test_validate_preflight.py",
+  "command": "python -B -m unittest discover -s tools/water-world-v2-1/tests -p 'test_*.py' -v",
+  "date": "2026-11-25",
+  "result": "PASS",
+  "tests_passed": 21,
+  "tests_failed": 0,
+  "cases": [
+    "normal_png_passes",
+    "missing_file_fails",
+    "corrupted_png_fails_decode",
+    "sha_mismatch_fails",
+    "icc_mismatch_fails",
+    "master_without_analysis_fails",
+    "missing_overlay_is_reported",
+    "missing_heatmap_is_reported",
+    "missing_final_zip_is_reported",
+    "graph_missing_node_fails",
+    "dangling_edge_fails",
+    "filled_unknown_motion_value_fails",
+    "dependency_cycle_fails",
+    "missing_core_input_output_contract_fails",
+    "blocked_master_returns_exit_10",
+    "failed_check_returns_exit_20",
+    "unavailable_asset_cannot_be_marked_ready",
+    "malformed_runtime_input_fails_without_crashing",
+    "internal_error_returns_exit_30",
+    "final_zip_with_verified_manifest_passes",
+    "empty_final_zip_manifest_fails"
+  ],
+  "validator_runs": [
+    {
+      "scope": "preflight",
+      "status": "PREFLIGHT_PASS",
+      "exit_code": 0
+    },
+    {
+      "scope": "closure",
+      "status": "WORK1_5_BLOCKED_MASTER_SOURCE",
+      "exit_code": 10
+    }
+  ]
+}
