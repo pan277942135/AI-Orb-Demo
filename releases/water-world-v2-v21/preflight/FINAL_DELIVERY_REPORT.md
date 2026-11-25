@@ -68,7 +68,9 @@ The complete JSON evidence is in `06_VALIDATION/validation_manifest.json` and `0
 
 ## 7. GitHub delivery
 
-The existing Draft PR #3 and its existing branch are the only intended remote target. This work does not create another PR, change Main, or modify PR #2. The final branch SHA and PR check result are recorded after updating and verifying PR #3.
+The existing Draft PR #3 was updated on `assets/water-world-v2-v21-calibration`; no new PR was created. The remote tree contains all 71 package files, and every remote Git blob ID matches the corresponding local file. The branch update used an expected-HEAD check without force. Main stayed at its audited SHA and PR #2 was not modified. The current exact commit SHA is available from the live [PR #3 commit list](https://github.com/pan277942135/AI-Orb-Demo/pull/3/commits).
+
+The final code/test tree has 21/21 local Validator tests passing, with Preflight exit 0 and full-closure exit 10. GitHub Actions and commit status checks returned no run/status for this documentation-and-tooling commit; remote CI is therefore **NOT_RUN**, not PASS.
 
 ## 8. Remaining work
 

@@ -10,6 +10,9 @@
 | Validator regression suite | PASS | 21/21 unit tests pass |
 | Validator Preflight | PASS | Real package run: `PREFLIGHT_PASS`, exit 0 |
 | Validator full closure | BLOCKED_MASTER_SOURCE | Real package run exits 10; no master pixels or final visual artifacts are fabricated |
+| Exact-HEAD package transfer | PASS | All 71 local package Git blob IDs match the remote PR #3 branch tree |
+| GitHub Actions / commit statuses | NOT_RUN | No workflow run or commit status exists for the pushed tooling/report commit |
+| PR #3 delivery | PASS | Existing PR #3 updated; remains Draft/Open on the same branch |
 | Motion registry and graph | PASS | 47 unique IDs/nodes, 28 edges; node sets match; no duplicate/dangling/cyclic dependencies |
 | Core input/output contract | PASS | Required dependency outputs match destination runtime input tokens |
 | AI Orb 35 WebP source audit | PASS | All manifest hashes, dimensions and RGBA decoding pass |

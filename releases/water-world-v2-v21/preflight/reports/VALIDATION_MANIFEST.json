@@ -86,6 +86,16 @@
       "check": "validator_regression_tests",
       "status": "PASS",
       "detail": "21 passed, 0 failed; see validator_test_results.json"
+    },
+    {
+      "check": "exact_head_remote_tree",
+      "status": "PASS",
+      "detail": "71/71 remote Git blob IDs match local package files on PR #3 branch"
+    },
+    {
+      "check": "github_actions",
+      "status": "NOT_RUN",
+      "detail": "No workflow run or commit status was returned for this commit"
     }
   ],
   "exit_code": 10,
@@ -100,5 +110,14 @@
       "status": "WORK1_5_BLOCKED_MASTER_SOURCE",
       "exit_code": 10
     }
-  ]
+  ],
+  "github_delivery": {
+    "pr_number": 3,
+    "branch": "assets/water-world-v2-v21-calibration",
+    "state": "OPEN_DRAFT",
+    "remote_file_count": 71,
+    "local_remote_blob_mismatches": 0,
+    "github_actions": "NOT_RUN",
+    "commit_statuses": "NOT_RUN"
+  }
 }
