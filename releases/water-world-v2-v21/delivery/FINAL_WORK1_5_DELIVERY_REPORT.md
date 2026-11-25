@@ -1,73 +1,70 @@
-# WATER WORLD V2.1 — Work 1.5 Repair and Work 2 Input Status
+# WATER WORLD V2.1 Repair and Work 2 Static Input Readiness Report
 
-**Final status: `BLOCKED_GROUND_TRUTH_UNCERTAIN` / `WORK1_5_VALIDATION_FAILED`.** Master lock, static resources, contracts and package integrity are verified. Frozen visual acceptance failed; `WORK2_STATIC_INPUT_READY` is not claimed.
+**Status:** `BLOCKED_GROUND_TRUTH_UNCERTAIN`
 
-## Source lock and package
+**Master:** `fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589` verified, 1254×1254 RGB, 2,256,234 bytes. **GPU:** NOT_RUN.
 
-- Master: `releases/water-world-v2-v21/奇幻水晶球中的水下生态世界 (1).png` at immutable source commit `1662bbf9de671b0bb1fa5ce1891a1df3e49703b6`.
-- Master SHA-256: `fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589`; 2,256,234 bytes; 1254×1254 RGB; no alpha/ICC.
-- Original V2 archive SHA-256: `6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095`; 65 source files preserved and 63 embedded hashes verified.
-- Final package: `WATER_WORLD_V2_1_ASSETS.zip`; 65,409,370 bytes; SHA-256 `b5bf75bc7f8b9b0b6d377272887238a4fc142e8dc5acb7278da74e336ad1a466`; 384 archive members; CRC and 382 internal SHA entries verified.
-- The master remains comparison-only; CPU composition uses independent V2 source assets.
+## Verified causes and repairs
 
-## Confirmed causes and repairs
+The earlier fish color threshold omitted cool, translucent fins. A documented seeded GrabCut mask and deterministic rigid-transform fitting were applied; original V2 fish PNG bytes remain unchanged. The prior Resident scoring path measured a master-derived trace against itself. The independent composition now uses original V2 SVG curves, while direct source trace evidence is stored separately. Resident width cross-sections are contaminated by same-color crossings and optical highlights; width error is null and fails the gate. Plant/rock boundaries overlap reflection, glass, moss and contact shadows, so their resource defects remain hypotheses rather than confirmed causes.
 
-- Fish measurement: a warm-color-only mask excluded cool, translucent fins. Ground Truth now records seeded GrabCut masks and confidence, and fish transforms were fitted without changing the 65 original V2 files. F03 is still below threshold.
-- Resident measurement: the former scoring path reused master-derived traced curves in its own composition. The revised CPU compositor uses the original V2 Resident SVG paths. Direct-source coverage is still below 90% for four residents, identities cross at overlaps, and width error is left null rather than inferred.
-- Plant/rock boundaries overlap glass, highlights, moss, foliage and contact shadows. Their asset defects remain hypotheses; those original assets are kept unchanged pending reliable segmentation.
-- F03 optimization round 2 optimizer objective: `0.866947 → `0.868489` (+0.001542). Canonical compositor IoU: `0.863860 → `0.863828` (-0.000032). The optimizer improvement did not reproduce in the canonical renderer; no third blind fit was applied.
+Round 2 F03 optimizer objective: 0.866947 → 0.868489 (+0.001542), threshold 0.90; optimizer did not converge. Canonical CPU composition: 0.863860 → 0.863828 (-0.000032). The direct objective change was not reproduced by the independent compositor.
+Round 3 constrained F03 continuation: direct IoU 0.868489 → 0.868489 (+0.000000); canonical composition 0.863828 → 0.863828 (+0.000000). SciPy differential_evolution seed 2026, maxiter 180, 3681 evaluations, converged=True; transform unchanged. F03 remains below 0.90 with MEDIUM Ground Truth confidence; three quantified rounds are exhausted without a canonical gain.
 
-## Frozen visual gates
+## Per-object root-cause matrix
 
-| Object / gate | Measurement | Frozen target | Result |
-|---|---:|---:|---|
-| Sphere IoU | 0.994769406 | ≥ 0.98 | PASS |
-| Sphere center / diameter | 0.001046399 | ≤ 0.005 | PASS |
-| Sphere diameter error | 0.001334252 | ≤ 0.01 | PASS |
-| WW_FISH_01 IoU / center error | 0.909198532 / 0.000928786 | IoU ≥0.90 / center ≤0.01 | PASS |
-| WW_FISH_02 IoU / center error | 0.905118110 / 0.001684996 | IoU ≥0.90 / center ≤0.01 | PASS |
-| WW_FISH_03 IoU / center error | 0.863827796 / 0.000792379 | IoU ≥0.90 / center ≤0.01 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
-| WW_FISH_04 IoU / center error | 0.905691504 / 0.000952729 | IoU ≥0.90 / center ≤0.01 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
-| Resident G01 Chamfer / width error / direct coverage | 0.018048434 / None / 0.759091 | ≤0.015 / ≤0.05 / direct coverage ≥0.90 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
-| Resident G02 Chamfer / width error / direct coverage | 0.054997487 / None / 0.618182 | ≤0.015 / ≤0.05 / direct coverage ≥0.90 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
-| Resident A01 Chamfer / width error / direct coverage | 0.003860978 / None / 0.927273 | ≤0.015 / ≤0.05 / direct coverage ≥0.90 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
-| Resident A02 Chamfer / width error / direct coverage | 0.014787654 / None / 0.700000 | ≤0.015 / ≤0.05 / direct coverage ≥0.90 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
-| Resident C01 Chamfer / width error / direct coverage | 0.102781165 / None / 0.300000 | ≤0.015 / ≤0.05 / direct coverage ≥0.90 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
-| plant_left IoU | 0.228472717 | ≥0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
-| plant_right IoU | 0.203391929 | ≥0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
-| rock_01 IoU | 0.300660283 | ≥0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
-| rock_02 IoU | 0.134502383 | ≥0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
-| rock_03 IoU | 0.208041532 | ≥0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| Object | Root cause class | Root cause / fix | Source SHA | Prior same metric | Current | Threshold | Status |
+|---|---|---|---|---:|---:|---:|---|
+| WW_FISH_01 | SOURCE_CONFIRMED | The earlier warm-color threshold omitted cool, translucent fin pixels; this was a Ground Truth measurement defect, not evidence of a source PNG defect. A seeded GrabCut full-fin mask and rigid transform fit are used; the original fish PNG is byte-identical. Current confidence is MEDIUM_HIGH and the canonical IoU gate is PASS. / RECALIBRATE_TRANSFORM_ONLY: retain the original V2 PNG and use the documented full-fin mask plus fitted rigid transform; no source pixels are modified. The current numeric IoU and confidence gates pass. | `056b55e6f61fb353b8db2fa8631176a4caca330f2f1d5460eba9a7a72d8cc134` | 0.9091985320232036 | 0.9091985320232036 | 0.9 | PASS |
+| WW_FISH_02 | SOURCE_CONFIRMED | The earlier warm-color threshold omitted cool, translucent fin pixels; this was a Ground Truth measurement defect, not evidence of a source PNG defect. A seeded GrabCut full-fin mask and rigid transform fit are used; the original fish PNG is byte-identical. Current confidence is MEDIUM_HIGH and the canonical IoU gate is PASS. / RECALIBRATE_TRANSFORM_ONLY: retain the original V2 PNG and use the documented full-fin mask plus fitted rigid transform; no source pixels are modified. The current numeric IoU and confidence gates pass. | `565b78326a259484fb78a542cb7c2f0ce8cf831eb080c28b1bf93a469615bbd8` | 0.9051181102362205 | 0.9051181102362205 | 0.9 | PASS |
+| WW_FISH_03 | SOURCE_CONFIRMED | The earlier warm-color threshold omitted cool, translucent fin pixels; this was a Ground Truth measurement defect, not evidence of a source PNG defect. A seeded GrabCut full-fin mask and rigid transform fit are used; the original fish PNG is byte-identical. Current confidence is MEDIUM and the canonical IoU gate is BLOCKED_GROUND_TRUTH_UNCERTAIN. / RECALIBRATE_TRANSFORM_ONLY: retain the original V2 PNG and use the documented full-fin mask plus fitted rigid transform; no source pixels are modified. F03 remains below threshold after three quantified rounds; stop blind fitting against medium-confidence Ground Truth. | `c8def6b8d5e66463b903a2fa329f2e1f354067598931233b0e29c966d32ef6d1` | 0.863859649122807 | 0.8638277959756668 | 0.9 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| WW_FISH_04 | SOURCE_CONFIRMED | The earlier warm-color threshold omitted cool, translucent fin pixels; this was a Ground Truth measurement defect, not evidence of a source PNG defect. A seeded GrabCut full-fin mask and rigid transform fit are used; the original fish PNG is byte-identical. Current confidence is MEDIUM and the canonical IoU gate is BLOCKED_GROUND_TRUTH_UNCERTAIN. / RECALIBRATE_TRANSFORM_ONLY: retain the original V2 PNG and use the documented full-fin mask plus fitted rigid transform; no source pixels are modified. Numeric IoU passes, but medium Ground Truth confidence blocks acceptance. | `714a0afa95e6c3d802044bbb745334875bd79640960b35ee40bc4125a2d3b44d` | 0.9056915039868023 | 0.9056915039868023 | 0.9 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| G01 | SOURCE_CONFIRMED | The earlier score reused master-traced geometry as the independent asset trace, which made the comparison circular. The canonical composition now uses the original V2 SVG paths; direct source trace coverage and identity/width ambiguity are recorded separately. Direct coverage is 0.759090909090909; width error remains null. / KEEP_SOURCE_UNMODIFIED: score the original V2 SVG path against source-visible Ground Truth, retain only directly traced source coverage, and keep unresolved width/path portions null instead of interpolating or assuming occlusion. | `ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b` | 0.018048433734203187 | 0.018048433734203187 | 0.015 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| G02 | SOURCE_CONFIRMED | The earlier score reused master-traced geometry as the independent asset trace, which made the comparison circular. The canonical composition now uses the original V2 SVG paths; direct source trace coverage and identity/width ambiguity are recorded separately. Direct coverage is 0.6181818181818182; width error remains null. / KEEP_SOURCE_UNMODIFIED: score the original V2 SVG path against source-visible Ground Truth, retain only directly traced source coverage, and keep unresolved width/path portions null instead of interpolating or assuming occlusion. | `ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b` | 0.05499748668699491 | 0.05499748668699491 | 0.015 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| A01 | SOURCE_CONFIRMED | The earlier score reused master-traced geometry as the independent asset trace, which made the comparison circular. The canonical composition now uses the original V2 SVG paths; direct source trace coverage and identity/width ambiguity are recorded separately. Direct coverage is 0.9272727272727272; width error remains null. / KEEP_SOURCE_UNMODIFIED: score the original V2 SVG path against source-visible Ground Truth, retain only directly traced source coverage, and keep unresolved width/path portions null instead of interpolating or assuming occlusion. | `ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b` | 0.0038609780021807037 | 0.0038609780021807037 | 0.015 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| A02 | SOURCE_CONFIRMED | The earlier score reused master-traced geometry as the independent asset trace, which made the comparison circular. The canonical composition now uses the original V2 SVG paths; direct source trace coverage and identity/width ambiguity are recorded separately. Direct coverage is 0.7; width error remains null. / KEEP_SOURCE_UNMODIFIED: score the original V2 SVG path against source-visible Ground Truth, retain only directly traced source coverage, and keep unresolved width/path portions null instead of interpolating or assuming occlusion. | `ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b` | 0.014787653661809374 | 0.014787653661809374 | 0.015 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| C01 | SOURCE_CONFIRMED | The earlier score reused master-traced geometry as the independent asset trace, which made the comparison circular. The canonical composition now uses the original V2 SVG paths; direct source trace coverage and identity/width ambiguity are recorded separately. Direct coverage is 0.3; width error remains null. / KEEP_SOURCE_UNMODIFIED: score the original V2 SVG path against source-visible Ground Truth, retain only directly traced source coverage, and keep unresolved width/path portions null instead of interpolating or assuming occlusion. | `ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b` | 0.10278116483342134 | 0.10278116483342134 | 0.015 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| plant_left | HYPOTHESIS | HYPOTHESIS: V2 placement/shape mismatch is possible, but transparent leaf edges overlap glass and Resident light; source boundary not conclusive. / KEEP_SOURCE_UNMODIFIED: current color-mask coverage is not trusted because translucent cyan-green leaf edges and overlaps are ambiguous; do not infer a source defect or alter transform until a boundary-credible mask is available. | `bc958efc305204b0d35c2675645dd7ebac3d1da97ae93362c8532855e5076998` | 0.2284727171319679 | 0.2284727171319679 | 0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| plant_right | HYPOTHESIS | HYPOTHESIS: V2 placement/shape mismatch is possible, but transparent leaf edges overlap glass and Resident light; source boundary not conclusive. / KEEP_SOURCE_UNMODIFIED: current color-mask coverage is not trusted because translucent cyan-green leaf edges and overlaps are ambiguous; do not infer a source defect or alter transform until a boundary-credible mask is available. | `f0437ca0643b5c8d6e1b25a9117390a66764bf80e8beea206e082b0c5732a172` | 0.2033919286952216 | 0.2033919286952216 | 0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| rock_01 | HYPOTHESIS | HYPOTHESIS: V2 placement/shape mismatch is possible, but rock edges overlap moss, plants, highlights and contact shadows; source boundary not conclusive. / KEEP_SOURCE_UNMODIFIED: current color-mask coverage cannot separate rock from moss, reflections and contact shadow; do not infer a source defect or alter transform until object boundaries are resolved. | `0128e55605b0063450d46abbbac06d2b16976faa17dacb1657b53c8b538e1986` | 0.3006602831177058 | 0.3006602831177058 | 0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| rock_02 | HYPOTHESIS | HYPOTHESIS: V2 placement/shape mismatch is possible, but rock edges overlap moss, plants, highlights and contact shadows; source boundary not conclusive. / KEEP_SOURCE_UNMODIFIED: current color-mask coverage cannot separate rock from moss, reflections and contact shadow; do not infer a source defect or alter transform until object boundaries are resolved. | `50238eb18b944dfdc2a1af7dbe577dde02f8a03f3220686d2cb5a43487a37315` | 0.13450238282515153 | 0.13450238282515153 | 0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| rock_03 | HYPOTHESIS | HYPOTHESIS: V2 placement/shape mismatch is possible, but rock edges overlap moss, plants, highlights and contact shadows; source boundary not conclusive. / KEEP_SOURCE_UNMODIFIED: current color-mask coverage cannot separate rock from moss, reflections and contact shadow; do not infer a source defect or alter transform until object boundaries are resolved. | `5d6a78e23b1ee4e96c0acb8894e2876205b601aceb4d1ef22e3fac8458e94a99` | 0.20804153165394934 | 0.20804153165394934 | 0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
 
-All metrics use `canonical_metrics.py`, full precision, common 1254×1254 coordinates, and alpha-mask threshold 128. Low/incomplete Ground Truth cannot pass based on a numeric score alone.
+## Work 2 static inputs
 
-## Static evidence and automation
+The scene graph carries 14 IDs, V2 asset paths and SHA values, master regions, candidate transforms or partial paths, confidence, depth/material and mask references. Resident centerlines, width profiles, identity and occlusion uncertainty are separate files. Camera is 1254×1254 image-space orthographic; physical FOV/distance remain unresolved. Motion graph remains 47 nodes / 28 edges and all Water World temporal numeric parameters are null. The 32 WebP slices are spatial Z samples, not time frames.
 
-- CPU recomposition reproducibility: **PASS**, 6 output SHA comparisons; all matched.
-- Historical preflight suite: **22/22 PASS** (21 original checks retained plus one ZIP-manifest path regression).
-- New closure suite: **21/21 PASS**; Python compile PASS.
-- Motion Graph: **47 nodes / 28 dependencies PASS**, temporal values remain null.
-- Original V2 archive and source copy SHA: **PASS**; source copy 65 files / 63 embedded SHA entries.
-- New strict closure validator: package integrity **PASS**, visual acceptance **FAIL**, exit 20.
-- Legacy strict closure validator: master **MASTER_SOURCE_READY**, final ZIP integrity PASS, visual metrics FAIL, exit 20.
-- GitHub Exact-HEAD CI is triggered by the final delivery commit; its run and conclusion will be recorded in PR #3. No GPU, animation or device run is included.
-
-## Evidence files
-
-- `static_recomposition.png`, `master_reference.png`, `master_overlay.png`, `difference_heatmap.png`, `region_comparison.png`
-- `object_comparisons/` contains 14 object-level crops.
-- `visual_metrics.json`, `validation_manifest.json`, `legacy_closure_validation.json`, `validator_test_results.json`, `recomposition_reproducibility.json`.
-- Full reproducible contracts, Ground Truth masks, source copies and scripts are in the ZIP.
+Independent CPU recomposition, overlay, difference heatmap, region comparison and 14 per-object comparisons are included. They are not GPU evidence. `WORK2_STATIC_INPUT_READY` is not satisfied.
 
 ## Remaining blockers
 
-- F03 fish Ground Truth/IoU remains under the 0.90 gate; F04 has unresolved source confidence despite numeric IoU over threshold.
-- Resident direct-source coverage/identity and all five width measurements remain unresolved; width remains null.
-- Plant and rock complete/visible boundaries remain low confidence.
-- Therefore `WORK2_STATIC_INPUT_READY` and CLOSED statuses are not valid. GPU static-input execution, dynamics and APK are outside this task.
+- Fish F03 IoU remains below 0.90; F03/F04 Ground Truth confidence is MEDIUM.
+- Resident G01/G02/A02/C01 direct coverage is below 90%; A01 identity remains ambiguous. Width gates are unresolved for all five.
+- Plant/rock boundaries cannot yet be separated confidently from optical effects and overlaps.
+- GPU renderer, animation, API36 and APK are outside this work and remain NOT_RUN.
 
-## GitHub
+## Current status
 
-- Branch: `assets/water-world-v2-v21-calibration`; PR #3 remains Open/Draft.
-- Package download (branch URL): [Download WATER_WORLD_V2_1_ASSETS.zip](https://raw.githubusercontent.com/pan277942135/AI-Orb-Demo/assets/water-world-v2-v21-calibration/releases/water-world-v2-v21/delivery/WATER_WORLD_V2_1_ASSETS.zip).
-- PR: https://github.com/pan277942135/AI-Orb-Demo/pull/3. Exact final commit SHA and CI URL are recorded in the updated PR description.
+`BLOCKED_GROUND_TRUTH_UNCERTAIN`. Source available and verified; object fidelity/measurement is still blocked. No GPU PASS or Work 2 readiness is claimed.
+
+
+## Automated validation
+
+Local automated checks: **PASS**
+
+Exact-HEAD GitHub CI: **PENDING_EXACT_HEAD_CI**
+
+Visual acceptance: **BLOCKED_GROUND_TRUTH_UNCERTAIN**
+
+| Check | Result | Count / detail |
+|---|---|---|
+| legacy_preflight_unit_tests | PASS | 22 tests; exit 0 |
+| closure_unit_tests | PASS | 21 tests; exit 0 |
+| python_compile | PASS | None tests; exit 0 |
+| Master source | PASS | `fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589`; 2256234 bytes |
+| Original V2 ZIP | PASS | `6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095`; 65 files; CRC PASS |
+| V2 source copy | PASS | 63/63 embedded SHA entries; 65 files |
+| Motion Graph | PASS | 47 nodes / 28 dependencies |
+| CPU recomposition reproducibility | PASS | 6 SHA-256 outputs compared between clean runs |
+
+These are local source/validator checks. They do not establish GPU or visual acceptance. The frozen visual gates remain independently evaluated by `visual_metrics.json`.

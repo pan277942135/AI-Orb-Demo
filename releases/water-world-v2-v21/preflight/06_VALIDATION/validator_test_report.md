@@ -1,7 +1,9 @@
 # V2.1 Validator Test Report
 
-Local automated checks: **PASS**  
-Exact-HEAD GitHub CI: **PENDING_EXACT_HEAD_CI**  
+Local automated checks: **PASS**
+
+Exact-HEAD GitHub CI: **PENDING_EXACT_HEAD_CI**
+
 Visual acceptance: **BLOCKED_GROUND_TRUTH_UNCERTAIN**
 
 | Check | Result | Count / detail |

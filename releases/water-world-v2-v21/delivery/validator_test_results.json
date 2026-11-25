@@ -97,7 +97,7 @@
         "test_unavailable_asset_cannot_be_marked_ready (test_validate_preflight.MotionGraphTests.test_unavailable_asset_cannot_be_marked_ready) ... ok",
         "",
         "----------------------------------------------------------------------",
-        "Ran 22 tests in 0.030s",
+        "Ran 22 tests in 0.053s",
         "",
         "OK"
       ]
@@ -120,7 +120,7 @@
         "test_wrong_source_asset_sha_fails (test_closure_contract.ClosureContractTests.test_wrong_source_asset_sha_fails) ... ok",
         "",
         "----------------------------------------------------------------------",
-        "Ran 21 tests in 0.003s",
+        "Ran 21 tests in 0.004s",
         "",
         "OK"
       ]

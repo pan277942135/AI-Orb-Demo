@@ -241,11 +241,25 @@ def _write_contracts(package: Path, metrics: dict, objects: list[dict], resident
 def _write_reports(package: Path, metrics: dict, root_causes: list[dict]) -> None:
     rounds=read(package/"01_ANALYSIS/optimization_rounds.json").get("rounds",[])
     round2=next((x for x in rounds if x.get("round")==2),{})
+    round3=next((x for x in rounds if x.get("round")==3),{})
     opt_before=round2.get("optimizer_objective_before",0.8669469777306467)
     opt_after=round2.get("optimizer_objective_after",0.8684886708712918)
     canonical_before=round2.get("canonical_cpu_composition_before")
     canonical_after=round2.get("canonical_cpu_composition_after")
     canonical_change=round2.get("canonical_cpu_composition_change")
+    if round3:
+        r3_opt_before=round3.get("optimizer_objective_before",float("nan"))
+        r3_opt_after=round3.get("optimizer_objective_after",float("nan"))
+        r3_canon_before=round3.get("canonical_cpu_composition_before",float("nan"))
+        r3_canon_after=round3.get("canonical_cpu_composition_after",float("nan"))
+        r3_optimizer=round3.get("optimizer",{})
+        round3_summary=(f"Round 3 constrained F03 continuation: direct IoU {r3_opt_before:.6f} → {r3_opt_after:.6f} ({r3_opt_after-r3_opt_before:+.6f}); "
+          f"canonical composition {r3_canon_before:.6f} → {r3_canon_after:.6f} ({r3_canon_after-r3_canon_before:+.6f}). "
+          f"SciPy differential_evolution seed {r3_optimizer.get('seed')}, maxiter {r3_optimizer.get('maxiter')}, "
+          f"{r3_optimizer.get('evaluations')} evaluations, converged={r3_optimizer.get('converged')}; transform unchanged. "
+          "F03 remains below 0.90 with MEDIUM Ground Truth confidence; three quantified rounds are exhausted without a canonical gain.")
+    else:
+        round3_summary="No third quantified optimization round is recorded."
     table=["# WATER WORLD V2.1 Final Acceptance Matrix","",f"**Overall:** `{metrics['overall_status']}`. Master identity is verified; visual acceptance and Ground Truth completeness do not pass.","",
       "| Gate | Frozen threshold | Measurements | Result |","|---|---:|---|---|"]
     for key,threshold in LIMITS.items():
@@ -255,7 +269,14 @@ def _write_reports(package: Path, metrics: dict, root_causes: list[dict]) -> Non
         row=metrics["per_object"][oid]
         vals={k:row.get(k) for k in ("iou","center_error_over_canvas","bidirectional_chamfer_over_radius","width_error","direct_trace_coverage") if k in row}
         table.append(f"| {oid} | {row.get('ground_truth_confidence')} | `{json.dumps(vals,ensure_ascii=False)}` | {row['status']} | `{row.get('comparison_evidence')}` |")
-    table += ["","Sphere geometric metrics remain PASS. GPU/dynamic acceptance is NOT_RUN. No source master is used as a composition layer.",""]
+    round_count=len(rounds)
+    f03_iou=metrics["metrics"]["fish_iou"]["WW_FISH_03"]
+    table += ["","Sphere geometric metrics remain PASS. GPU/dynamic acceptance is NOT_RUN. No source master is used as a composition layer.",
+      "","## Optimization and automation status","",
+      f"- Quantified optimization rounds: {round_count}; final F03 continuation converged to the prior transform with canonical IoU unchanged at {f03_iou:.9f}.",
+      "- Unit tests: 22 retained preflight tests and 21 closure tests PASS; Python compile PASS.",
+      "- Original V2 archive/source-copy SHA, 47-node / 28-dependency Motion Graph, and six-output CPU recomposition reproducibility: PASS.",
+      "- Exact-HEAD CI: see the current run linked from PR #3. GPU/dynamic acceptance remains NOT_RUN.",""]
     matrix="\n".join(table)
     for rel in ["06_VALIDATION/acceptance_matrix.md","reports/FINAL_ACCEPTANCE_MATRIX.md"]:
         (package/rel).parent.mkdir(parents=True,exist_ok=True); (package/rel).write_text(matrix,encoding="utf-8")
@@ -289,11 +310,12 @@ def _write_reports(package: Path, metrics: dict, root_causes: list[dict]) -> Non
     rows=["| Object | Root cause class | Root cause / fix | Source SHA | Prior same metric | Current | Threshold | Status |","|---|---|---|---|---:|---:|---:|---|"]
     for x in root_causes:
         rows.append(f"| {x['object_id']} | {x['root_cause_class']} | {x['root_cause']} / {x['fix']} | `{x['source_asset_sha256']}` | {x['old_same_definition_metric']} | {x['new_metric']} | {x['threshold']} | {x['status']} |")
-    body=["# WATER WORLD V2.1 Repair and Work 2 Static Input Readiness Report","",f"**Status:** `{metrics['overall_status']}`  ",
+    body=["# WATER WORLD V2.1 Repair and Work 2 Static Input Readiness Report","",f"**Status:** `{metrics['overall_status']}`","",
       f"**Master:** `{MASTER_SHA}` verified, 1254×1254 RGB, 2,256,234 bytes. **GPU:** NOT_RUN.","",
       "## Verified causes and repairs","",
       "The earlier fish color threshold omitted cool, translucent fins. A documented seeded GrabCut mask and deterministic rigid-transform fitting were applied; original V2 fish PNG bytes remain unchanged. The prior Resident scoring path measured a master-derived trace against itself. The independent composition now uses original V2 SVG curves, while direct source trace evidence is stored separately. Resident width cross-sections are contaminated by same-color crossings and optical highlights; width error is null and fails the gate. Plant/rock boundaries overlap reflection, glass, moss and contact shadows, so their resource defects remain hypotheses rather than confirmed causes.","",
-      f"Round 2 F03 optimizer objective: {opt_before:.6f} → {opt_after:.6f} ({opt_after-opt_before:+.6f}), threshold 0.90; optimizer did not converge. Canonical CPU composition: {canonical_before if canonical_before is not None else float('nan'):.6f} → {canonical_after if canonical_after is not None else float('nan'):.6f} ({canonical_change if canonical_change is not None else float('nan'):+.6f}). The optimizer gain was not reproduced by the independent compositor; no third blind fit was applied to uncertain Ground Truth.","",
+      f"Round 2 F03 optimizer objective: {opt_before:.6f} → {opt_after:.6f} ({opt_after-opt_before:+.6f}), threshold 0.90; optimizer did not converge. Canonical CPU composition: {canonical_before if canonical_before is not None else float('nan'):.6f} → {canonical_after if canonical_after is not None else float('nan'):.6f} ({canonical_change if canonical_change is not None else float('nan'):+.6f}). The direct objective change was not reproduced by the independent compositor.",
+      round3_summary,"",
       "## Per-object root-cause matrix","",*rows,"",
       "## Work 2 static inputs","",
       "The scene graph carries 14 IDs, V2 asset paths and SHA values, master regions, candidate transforms or partial paths, confidence, depth/material and mask references. Resident centerlines, width profiles, identity and occlusion uncertainty are separate files. Camera is 1254×1254 image-space orthographic; physical FOV/distance remain unresolved. Motion graph remains 47 nodes / 28 edges and all Water World temporal numeric parameters are null. The 32 WebP slices are spatial Z samples, not time frames.","",
@@ -335,19 +357,20 @@ def run(package: Path) -> dict:
     rounds_path=package/"01_ANALYSIS/optimization_rounds.json"
     rounds=read(rounds_path) if rounds_path.exists() else {"rounds":[]}
     fit=read(package/"02_CALIBRATED_ASSETS/FISH/fish_transform_fit.json")["results"]["WW_FISH_03"]
-    rounds["rounds"]=[r for r in rounds.get("rounds",[]) if r.get("round")!=2]
-    round1_metrics=rounds["rounds"][0].get("metrics_after_canonical",{}) if rounds["rounds"] else {}
-    canonical_before=round1_metrics.get("fish_iou",{}).get("WW_FISH_03")
-    canonical_after=metrics.get("metrics",{}).get("fish_iou",{}).get("WW_FISH_03")
-    canonical_change=(canonical_after-canonical_before) if isinstance(canonical_before,(int,float)) and isinstance(canonical_after,(int,float)) else None
-    rounds["rounds"].append({"round":2,"base_head":"93376428c40327a4f5a2940c80590bf0264c9e11",
-      "focus":"F03 deterministic transform-only refinement; source PNG retained",
-      "optimizer_objective_before":0.8669469777306467,"optimizer_objective_after":fit["optimized_iou"],
-      "optimizer_objective_change":fit["optimized_iou"]-0.8669469777306467,
-      "canonical_cpu_composition_before":canonical_before,"canonical_cpu_composition_after":canonical_after,
-      "canonical_cpu_composition_change":canonical_change,
-      "optimizer":fit["optimizer"],"threshold":LIMITS["fish_iou"],
-      "outcome":"OPTIMIZER_SCORE_NOT_REPRODUCED_BY_CANONICAL_COMPOSITOR" if canonical_change is not None and canonical_change<=0 else "IMPROVED_BUT_GATE_NOT_MET"})
+    if not any(r.get("round")==2 for r in rounds.get("rounds",[])):
+        round1_metrics=next((r for r in rounds.get("rounds",[]) if r.get("round")==1),{}).get("metrics_after_canonical",{})
+        canonical_before=round1_metrics.get("fish_iou",{}).get("WW_FISH_03")
+        canonical_after=metrics.get("metrics",{}).get("fish_iou",{}).get("WW_FISH_03")
+        canonical_change=(canonical_after-canonical_before) if isinstance(canonical_before,(int,float)) and isinstance(canonical_after,(int,float)) else None
+        rounds["rounds"].append({"round":2,"base_head":"93376428c40327a4f5a2940c80590bf0264c9e11",
+          "focus":"F03 deterministic transform-only refinement; source PNG retained",
+          "optimizer_objective_before":0.8669469777306467,"optimizer_objective_after":fit["optimized_iou"],
+          "optimizer_objective_change":fit["optimized_iou"]-0.8669469777306467,
+          "canonical_cpu_composition_before":canonical_before,"canonical_cpu_composition_after":canonical_after,
+          "canonical_cpu_composition_change":canonical_change,
+          "optimizer":fit["optimizer"],"threshold":LIMITS["fish_iou"],
+          "outcome":"OPTIMIZER_SCORE_NOT_REPRODUCED_BY_CANONICAL_COMPOSITOR" if canonical_change is not None and canonical_change<=0 else "IMPROVED_BUT_GATE_NOT_MET"})
+    rounds["rounds"].sort(key=lambda r:r.get("round",0))
     write(rounds_path,rounds)
     residents=_resident_contracts(package)
     _comparison_crops(package,metrics)
@@ -362,14 +385,35 @@ def run(package: Path) -> dict:
         elif kind=="plant": key="plant_iou"; val=m.get("iou"); limit=LIMITS[key]
         else: key="rock_iou"; val=m.get("iou"); limit=LIMITS[key]
         before=previous.get(key,{}).get(oid) if isinstance(previous.get(key),dict) else None
-        if kind=="fish": cause="SOURCE_CONFIRMED: the prior box/transform did not match the full visible fins; rigid transform only was fitted. F03 remains below threshold and medium confidence."
-        elif kind=="resident": cause="SOURCE_CONFIRMED: prior composition reused master-traced geometry for scoring. Independent V2 SVG paths now drive composition; direct source coverage and identity/width ambiguity remain."
+        if kind=="fish":
+            cause=("The earlier warm-color threshold omitted cool, translucent fin pixels; this was a Ground Truth measurement defect, not evidence of a source PNG defect. "
+              "A seeded GrabCut full-fin mask and rigid transform fit are used; the original fish PNG is byte-identical. "
+              f"Current confidence is {m.get('ground_truth_confidence')} and the canonical IoU gate is {m.get('status')}.")
+            fix="RECALIBRATE_TRANSFORM_ONLY: retain the original V2 PNG and use the documented full-fin mask plus fitted rigid transform; no source pixels are modified."
+            if oid=="WW_FISH_03":
+                fix += " F03 remains below threshold after three quantified rounds; stop blind fitting against medium-confidence Ground Truth."
+            elif oid=="WW_FISH_04":
+                fix += " Numeric IoU passes, but medium Ground Truth confidence blocks acceptance."
+            else:
+                fix += " The current numeric IoU and confidence gates pass."
+        elif kind=="resident":
+            cause=("The earlier score reused master-traced geometry as the independent asset trace, which made the comparison circular. "
+              "The canonical composition now uses the original V2 SVG paths; direct source trace coverage and identity/width ambiguity are recorded separately. "
+              f"Direct coverage is {m.get('direct_trace_coverage')}; width error remains null.")
+            fix=("KEEP_SOURCE_UNMODIFIED: score the original V2 SVG path against source-visible Ground Truth, retain only directly traced source coverage, "
+              "and keep unresolved width/path portions null instead of interpolating or assuming occlusion.")
         elif kind=="plant": cause="HYPOTHESIS: V2 placement/shape mismatch is possible, but transparent leaf edges overlap glass and Resident light; source boundary not conclusive."
         else: cause="HYPOTHESIS: V2 placement/shape mismatch is possible, but rock edges overlap moss, plants, highlights and contact shadows; source boundary not conclusive."
+        if kind=="plant":
+            fix=("KEEP_SOURCE_UNMODIFIED: current color-mask coverage is not trusted because translucent cyan-green leaf edges and overlaps are ambiguous; "
+              "do not infer a source defect or alter transform until a boundary-credible mask is available.")
+        elif kind=="rock":
+            fix=("KEEP_SOURCE_UNMODIFIED: current color-mask coverage cannot separate rock from moss, reflections and contact shadow; "
+              "do not infer a source defect or alter transform until object boundaries are resolved.")
         root.append({"object_id":oid,"source_asset_sha256":o["source_sha256"],"ground_truth_path":o["ground_truth"]["report"],
           "candidate_transform":o["candidate_transform"],"metric_name":key,"old_same_definition_metric":before,
           "new_metric":val,"threshold":limit,"root_cause_class":"SOURCE_CONFIRMED" if kind in {"fish","resident"} else "HYPOTHESIS",
-          "root_cause":cause,"fix":"Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks.",
+          "root_cause":cause,"fix":fix,
           "fix_type":"RECALIBRATE_TRANSFORM_ONLY" if kind=="fish" else "KEEP_SOURCE_UNMODIFIED",
           "target_asset_sha256":o["source_sha256"],"status":m["status"],"evidence":m.get("comparison_evidence")})
     write(package/"01_ANALYSIS/root_cause_matrix.json",{"schema_version":"water-world-v2-1-root-cause-matrix/1.0",

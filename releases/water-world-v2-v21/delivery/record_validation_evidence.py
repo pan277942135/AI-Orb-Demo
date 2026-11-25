@@ -97,8 +97,8 @@ def run(repo: Path, package: Path, v2_archive: Path) -> dict:
     validation = package / "06_VALIDATION"
     validation.mkdir(parents=True, exist_ok=True)
     (validation / "validator_test_results.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    rows = ["# V2.1 Validator Test Report", "", f"Local automated checks: **{result['local_automated_checks']}**  ",
-            f"Exact-HEAD GitHub CI: **{result['exact_head_ci']}**  ",
+    rows = ["# V2.1 Validator Test Report", "", f"Local automated checks: **{result['local_automated_checks']}**", "",
+            f"Exact-HEAD GitHub CI: **{result['exact_head_ci']}**", "",
             f"Visual acceptance: **{result['visual_acceptance']}**", "",
             "| Check | Result | Count / detail |", "|---|---|---|"]
     for suite in suites:

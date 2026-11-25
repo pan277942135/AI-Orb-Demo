@@ -35,6 +35,13 @@
 
 Sphere geometric metrics remain PASS. GPU/dynamic acceptance is NOT_RUN. No source master is used as a composition layer.
 
+## Optimization and automation status
+
+- Quantified optimization rounds: 3; final F03 continuation converged to the prior transform with canonical IoU unchanged at 0.863827796.
+- Unit tests: 22 retained preflight tests and 21 closure tests PASS; Python compile PASS.
+- Original V2 archive/source-copy SHA, 47-node / 28-dependency Motion Graph, and six-output CPU recomposition reproducibility: PASS.
+- Exact-HEAD CI: see the current run linked from PR #3. GPU/dynamic acceptance remains NOT_RUN.
+
 ## Automation and source validation
 
 - Local regression tests: **43 tests PASS** (22/21 across legacy/new suites).

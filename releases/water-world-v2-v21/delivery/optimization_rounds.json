@@ -93,6 +93,30 @@
       },
       "threshold": 0.9,
       "outcome": "OPTIMIZER_SCORE_NOT_REPRODUCED_BY_CANONICAL_COMPOSITOR"
+    },
+    {
+      "round": 3,
+      "base_head": "55e74bb8bd8d7e7ac22776cbde5eb7f2df86ab80",
+      "focus": "Constrained deterministic continuation of F03 transform fit; source mask and source asset unchanged",
+      "optimizer_objective_before": 0.8684886708712918,
+      "optimizer_objective_after": 0.8684886708712918,
+      "optimizer_objective_change": 0.0,
+      "canonical_cpu_composition_before": 0.8638277959756668,
+      "canonical_cpu_composition_after": 0.8638277959756668,
+      "canonical_cpu_composition_change": 0.0,
+      "threshold": 0.9,
+      "ground_truth_confidence": "MEDIUM",
+      "optimizer": {
+        "algorithm": "SciPy differential_evolution",
+        "seed": 2026,
+        "maxiter": 180,
+        "popsize": 7,
+        "converged": true,
+        "evaluations": 3681
+      },
+      "transform_unchanged": true,
+      "source_asset_modified": false,
+      "outcome": "CONVERGED_TO_PREVIOUS_TRANSFORM_NO_CANONICAL_GAIN_GATE_STILL_BLOCKED"
     }
   ]
 }
