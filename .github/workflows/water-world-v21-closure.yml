@@ -36,14 +36,16 @@ jobs:
           test "$(sha256sum "$MASTER" | awk '{print $1}')" = "$MASTER_SHA256"
           test "$(stat -c %s "$MASTER")" = 2256234
           python - <<'PY'
-          from PIL import Image
-          import os
+          import struct
+          from pathlib import Path
           path = 'releases/water-world-v2-v21/奇幻水晶球中的水下生态世界 (1).png'
-          with Image.open(path) as im:
-              assert im.format == 'PNG'
-              assert im.size == (1254, 1254)
-              assert im.mode == 'RGB'
-              assert 'A' not in im.getbands()
+          data = Path(path).read_bytes()
+          assert data[:8] == b'\x89PNG\r\n\x1a\n'
+          length, kind = struct.unpack('>I4s', data[8:16])
+          assert length == 13 and kind == b'IHDR'
+          width, height, bit_depth, color_type, compression, filter_method, interlace = struct.unpack('>IIBBBBB', data[16:29])
+          assert (width, height) == (1254, 1254)
+          assert color_type == 2  # RGB, no alpha channel
           print('MASTER_SOURCE_LOCK=PASS')
           PY
           test "$(sha256sum releases/water-world-v2/WATER_WORLD_V2_ASSETS.zip | awk '{print $1}')" = "$V2_ARCHIVE_SHA256"
