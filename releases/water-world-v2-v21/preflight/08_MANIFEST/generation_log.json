@@ -1,0 +1,42 @@
+{
+  "schema_version": "water-world-v2-1-generation-log/1.0",
+  "result": "PREFLIGHT_ONLY_BLOCKED_MASTER_SOURCE",
+  "v2_source_archive": {
+    "bytes": 11678323,
+    "sha256": "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095",
+    "modified": false
+  },
+  "master_source": {
+    "user_confirmed_inline_image": true,
+    "raw_png_bytes_accessible": false,
+    "hash_computed": false
+  },
+  "assets": {
+    "kept_original_entries": 65,
+    "recalibrated": 0,
+    "repaired": 0,
+    "regenerated": 0,
+    "v2_1_asset_zip_built": false
+  },
+  "core_reference": {
+    "repo_head": "7e556babd2bdbad75ce22c1c57d19b386fd2a3c6",
+    "assets_audited": 35,
+    "assets_modified": false
+  },
+  "outputs": [
+    "V2 full stream audit",
+    "AI Orb core asset audit",
+    "motion registry and dependency graph",
+    "GPU input contracts",
+    "preflight validation"
+  ],
+  "not_generated": [
+    "calibrated V2.1 asset ZIP",
+    "static recomposition",
+    "master overlay",
+    "difference heatmap",
+    "visual metric report",
+    "GPU capture",
+    "APK"
+  ]
+}

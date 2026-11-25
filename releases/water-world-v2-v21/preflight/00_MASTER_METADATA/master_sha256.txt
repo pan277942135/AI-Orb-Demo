@@ -1,0 +1,1 @@
+BLOCKED_MASTER_SOURCE: raw PNG bytes are not accessible in this execution workspace; SHA256 not computed.

@@ -1,0 +1,74 @@
+{
+  "schema_version": "water-world-scene-graph/2.1-preflight",
+  "source_archive_sha256": "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095",
+  "inherited_v2_scene_graph": {
+    "name": "Water World V2 Reconstruction",
+    "canvas_px": [
+      1254,
+      1254
+    ],
+    "source_lock": "user-uploaded inline image only; checksum omitted by request",
+    "layers": [
+      {
+        "id": "background",
+        "asset": "01_BACKGROUND/background.png",
+        "depth": 0,
+        "blend": "normal"
+      },
+      {
+        "id": "resident_back",
+        "asset": "02_RESIDENT/residents.svg",
+        "depth": 10,
+        "blend": "additive"
+      },
+      {
+        "id": "sphere_back_glass",
+        "asset": "03_SPHERE/glass_back_arc_mask.png",
+        "depth": 20,
+        "blend": "screen"
+      },
+      {
+        "id": "water",
+        "asset": "04_WATER/waterbed.png",
+        "mask": "03_SPHERE/cavity_alpha.png",
+        "depth": 30
+      },
+      {
+        "id": "plants",
+        "assets": "06_PLANTS",
+        "depth": 40
+      },
+      {
+        "id": "rocks",
+        "assets": "07_ROCKS/individual",
+        "depth": 50
+      },
+      {
+        "id": "fish",
+        "placements": "05_FISH/fish_scene_placements.json",
+        "depth": 60
+      },
+      {
+        "id": "glass_front",
+        "asset": "03_SPHERE/glass_front_arc_mask.png",
+        "depth": 70
+      },
+      {
+        "id": "bubbles",
+        "asset": "09_BUBBLES/bubble_sprite.png",
+        "placements": "09_BUBBLES/bubble_placements.json",
+        "depth": 80
+      },
+      {
+        "id": "resident_front",
+        "asset": "02_RESIDENT/residents.svg",
+        "depth": 90
+      }
+    ],
+    "confidence": "all placements and sphere geometry are visual estimates",
+    "delivery": "assets only; no Android renderer, animation, or APK"
+  },
+  "calibrated": false,
+  "master_region_mapping": "UNAVAILABLE_MASTER",
+  "status": "BLOCKED_MASTER_SOURCE"
+}

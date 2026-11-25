@@ -1,0 +1,462 @@
+{
+  "schema_version": "motion-dependency-graph/1.0",
+  "domains": [
+    "CORE_INTERNAL",
+    "RESIDENT_PERIMETER",
+    "ECOSYSTEM",
+    "WATER_SYSTEM",
+    "GLASS_OPTICS"
+  ],
+  "independence_rules": [
+    "CORE_INTERNAL transforms never mutate perimeter resident transforms",
+    "RESIDENT_PERIMETER motion clocks are independent per resident ID",
+    "WATER_SYSTEM time is shared through MotionTimelineContract but element parameters remain independent"
+  ],
+  "nodes": [
+    {
+      "element_id": "CORE_CAUSTICS",
+      "domain": "CORE_INTERNAL"
+    },
+    {
+      "element_id": "CORE_COLOR",
+      "domain": "CORE_INTERNAL"
+    },
+    {
+      "element_id": "CORE_DENSITY",
+      "domain": "CORE_INTERNAL"
+    },
+    {
+      "element_id": "CORE_FILAMENT",
+      "domain": "CORE_INTERNAL"
+    },
+    {
+      "element_id": "CORE_FLUID",
+      "domain": "CORE_INTERNAL"
+    },
+    {
+      "element_id": "CORE_GLASS",
+      "domain": "CORE_INTERNAL"
+    },
+    {
+      "element_id": "CORE_PARTICLES",
+      "domain": "CORE_INTERNAL"
+    },
+    {
+      "element_id": "CORE_VOLUME",
+      "domain": "CORE_INTERNAL"
+    },
+    {
+      "element_id": "WW_BACKGROUND",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_BUBBLE_B01",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_BUBBLE_B02",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_BUBBLE_B03",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_BUBBLE_B04",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_BUBBLE_B05",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_BUBBLE_B06",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_BUBBLE_B07",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_BUBBLE_B08",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_BUBBLE_B09",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_FISH_01",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_FISH_01_FINS",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_FISH_01_TAIL",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_FISH_02",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_FISH_02_FINS",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_FISH_02_TAIL",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_FISH_03",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_FISH_03_FINS",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_FISH_03_TAIL",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_FISH_04",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_FISH_04_FINS",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_FISH_04_TAIL",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_GLASS_BACK",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_GLASS_FRONT",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_PLANT_LEFT",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_PLANT_LEFT_LEAVES",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_PLANT_RIGHT",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_PLANT_RIGHT_LEAVES",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_RESIDENT_A01",
+      "domain": "RESIDENT_PERIMETER"
+    },
+    {
+      "element_id": "WW_RESIDENT_A02",
+      "domain": "RESIDENT_PERIMETER"
+    },
+    {
+      "element_id": "WW_RESIDENT_C01",
+      "domain": "RESIDENT_PERIMETER"
+    },
+    {
+      "element_id": "WW_RESIDENT_G01",
+      "domain": "RESIDENT_PERIMETER"
+    },
+    {
+      "element_id": "WW_RESIDENT_G02",
+      "domain": "RESIDENT_PERIMETER"
+    },
+    {
+      "element_id": "WW_ROCK_01",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_ROCK_02",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_ROCK_03",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_SPHERE",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_WATERBED",
+      "domain": "ECOSYSTEM"
+    },
+    {
+      "element_id": "WW_WATER_SURFACE",
+      "domain": "WATER_SYSTEM"
+    }
+  ],
+  "edges": [
+    {
+      "source": "CORE_VOLUME",
+      "target": "CORE_FLUID",
+      "dependency_type": "GEOMETRY_AND_SAMPLING",
+      "outputs": [
+        "volume_sample_position",
+        "flow_direction"
+      ],
+      "affected_pass": "CORE_INTERNAL"
+    },
+    {
+      "source": "CORE_VOLUME",
+      "target": "CORE_DENSITY",
+      "dependency_type": "GEOMETRY_AND_SAMPLING",
+      "outputs": [
+        "sampled_density"
+      ],
+      "affected_pass": "CORE_INTERNAL"
+    },
+    {
+      "source": "CORE_VOLUME",
+      "target": "CORE_COLOR",
+      "dependency_type": "GEOMETRY_AND_SAMPLING",
+      "outputs": [
+        "sampled_color"
+      ],
+      "affected_pass": "CORE_INTERNAL"
+    },
+    {
+      "source": "CORE_VOLUME",
+      "target": "CORE_CAUSTICS",
+      "dependency_type": "GEOMETRY_AND_SAMPLING",
+      "outputs": [
+        "light_field"
+      ],
+      "affected_pass": "CORE_INTERNAL"
+    },
+    {
+      "source": "CORE_VOLUME",
+      "target": "CORE_GLASS",
+      "dependency_type": "GEOMETRY_AND_SAMPLING",
+      "outputs": [
+        "refraction_input"
+      ],
+      "affected_pass": "CORE_INTERNAL"
+    },
+    {
+      "source": "CORE_FLUID",
+      "target": "CORE_DENSITY",
+      "dependency_type": "FLOW_AND_DEFORMATION",
+      "outputs": [
+        "density_field"
+      ],
+      "affected_pass": "CORE_INTERNAL"
+    },
+    {
+      "source": "CORE_FLUID",
+      "target": "CORE_COLOR",
+      "dependency_type": "FLOW_AND_DEFORMATION",
+      "outputs": [
+        "material_sample"
+      ],
+      "affected_pass": "CORE_INTERNAL"
+    },
+    {
+      "source": "CORE_FLUID",
+      "target": "CORE_CAUSTICS",
+      "dependency_type": "FLOW_AND_DEFORMATION",
+      "outputs": [
+        "density_and_normal"
+      ],
+      "affected_pass": "CORE_INTERNAL"
+    },
+    {
+      "source": "CORE_FLUID",
+      "target": "CORE_GLASS",
+      "dependency_type": "FLOW_AND_DEFORMATION",
+      "outputs": [
+        "refractive_index_input"
+      ],
+      "affected_pass": "CORE_INTERNAL"
+    },
+    {
+      "source": "CORE_DENSITY",
+      "target": "CORE_CAUSTICS",
+      "dependency_type": "DENSITY_FIELD",
+      "outputs": [
+        "caustic_attenuation"
+      ],
+      "affected_pass": "CORE_INTERNAL"
+    },
+    {
+      "source": "CORE_DENSITY",
+      "target": "CORE_GLASS",
+      "dependency_type": "OCCLUSION_AND_TRANSMISSION",
+      "outputs": [
+        "absorption_path"
+      ],
+      "affected_pass": "GLASS_OPTICS"
+    },
+    {
+      "source": "CORE_COLOR",
+      "target": "CORE_GLASS",
+      "dependency_type": "MATERIAL_SAMPLE",
+      "outputs": [
+        "transmission_color"
+      ],
+      "affected_pass": "GLASS_OPTICS"
+    },
+    {
+      "source": "CORE_CAUSTICS",
+      "target": "CORE_GLASS",
+      "dependency_type": "OPTICAL_RESPONSE",
+      "outputs": [
+        "internal_caustic_radiance"
+      ],
+      "affected_pass": "GLASS_OPTICS"
+    },
+    {
+      "source": "CORE_FILAMENT",
+      "target": "CORE_GLASS",
+      "dependency_type": "DEPTH_AND_OCCLUSION",
+      "outputs": [
+        "filament_depth"
+      ],
+      "affected_pass": "GLASS_OPTICS"
+    },
+    {
+      "source": "CORE_PARTICLES",
+      "target": "CORE_GLASS",
+      "dependency_type": "DEPTH_AND_OCCLUSION",
+      "outputs": [
+        "particle_depth"
+      ],
+      "affected_pass": "GLASS_OPTICS"
+    },
+    {
+      "source": "WW_FISH_01",
+      "target": "WW_FISH_01_TAIL",
+      "dependency_type": "PARENT_TRANSFORM",
+      "outputs": [
+        "tail_anchor"
+      ],
+      "affected_pass": "ECOSYSTEM"
+    },
+    {
+      "source": "WW_FISH_01",
+      "target": "WW_FISH_01_FINS",
+      "dependency_type": "PARENT_TRANSFORM",
+      "outputs": [
+        "fin_anchor"
+      ],
+      "affected_pass": "ECOSYSTEM"
+    },
+    {
+      "source": "WW_FISH_02",
+      "target": "WW_FISH_02_TAIL",
+      "dependency_type": "PARENT_TRANSFORM",
+      "outputs": [
+        "tail_anchor"
+      ],
+      "affected_pass": "ECOSYSTEM"
+    },
+    {
+      "source": "WW_FISH_02",
+      "target": "WW_FISH_02_FINS",
+      "dependency_type": "PARENT_TRANSFORM",
+      "outputs": [
+        "fin_anchor"
+      ],
+      "affected_pass": "ECOSYSTEM"
+    },
+    {
+      "source": "WW_FISH_03",
+      "target": "WW_FISH_03_TAIL",
+      "dependency_type": "PARENT_TRANSFORM",
+      "outputs": [
+        "tail_anchor"
+      ],
+      "affected_pass": "ECOSYSTEM"
+    },
+    {
+      "source": "WW_FISH_03",
+      "target": "WW_FISH_03_FINS",
+      "dependency_type": "PARENT_TRANSFORM",
+      "outputs": [
+        "fin_anchor"
+      ],
+      "affected_pass": "ECOSYSTEM"
+    },
+    {
+      "source": "WW_FISH_04",
+      "target": "WW_FISH_04_TAIL",
+      "dependency_type": "PARENT_TRANSFORM",
+      "outputs": [
+        "tail_anchor"
+      ],
+      "affected_pass": "ECOSYSTEM"
+    },
+    {
+      "source": "WW_FISH_04",
+      "target": "WW_FISH_04_FINS",
+      "dependency_type": "PARENT_TRANSFORM",
+      "outputs": [
+        "fin_anchor"
+      ],
+      "affected_pass": "ECOSYSTEM"
+    },
+    {
+      "source": "WW_PLANT_LEFT",
+      "target": "WW_PLANT_LEFT_LEAVES",
+      "dependency_type": "PARENT_DEFORMATION",
+      "outputs": [
+        "root_anchor",
+        "deformation_weight"
+      ],
+      "affected_pass": "ECOSYSTEM"
+    },
+    {
+      "source": "WW_PLANT_RIGHT",
+      "target": "WW_PLANT_RIGHT_LEAVES",
+      "dependency_type": "PARENT_DEFORMATION",
+      "outputs": [
+        "root_anchor",
+        "deformation_weight"
+      ],
+      "affected_pass": "ECOSYSTEM"
+    },
+    {
+      "source": "WW_WATER_SURFACE",
+      "target": "WW_PLANT_LEFT",
+      "dependency_type": "ENVIRONMENTAL_FLOW",
+      "outputs": [
+        "sway_input"
+      ],
+      "affected_pass": "WATER_SYSTEM"
+    },
+    {
+      "source": "WW_WATER_SURFACE",
+      "target": "WW_PLANT_RIGHT",
+      "dependency_type": "ENVIRONMENTAL_FLOW",
+      "outputs": [
+        "sway_input"
+      ],
+      "affected_pass": "WATER_SYSTEM"
+    },
+    {
+      "source": "WW_WATER_SURFACE",
+      "target": "WW_WATERBED",
+      "dependency_type": "NORMAL_AND_CAUSTIC_RESPONSE",
+      "outputs": [
+        "water_shading"
+      ],
+      "affected_pass": "WATER_SYSTEM"
+    }
+  ]
+}

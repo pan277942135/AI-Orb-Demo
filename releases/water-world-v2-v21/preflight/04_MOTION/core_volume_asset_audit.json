@@ -1,0 +1,510 @@
+{
+  "source_head": "7e556babd2bdbad75ce22c1c57d19b386fd2a3c6",
+  "manifest_path": "app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json",
+  "manifest_sha256": "ca27fb75cfca60c2dece58cd7a99a12059e27600be41481f12172eaf920d2d10",
+  "asset_files": [
+    {
+      "path": "maps/emerald_distribution.webp",
+      "bytes": 157210,
+      "sha256": "722ed270e1979f558c288d912edd5754ed3db05cb3b026a3dfbbef6c6ebc2cba",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "R=emerald_curtain, G=silk_grain, B=meniscus_ripple, A=absorption_mod",
+      "color_space": "LINEAR_DATA",
+      "gpu_format": "GL_RGBA8"
+    },
+    {
+      "path": "optics/caustics.webp",
+      "bytes": 129344,
+      "sha256": "fe87aa5612d64faf1d6081c97eabbbf1cefd37f54c7d2de5f78d06bb1833a9ab",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "R=primary_curved_caustics, G=secondary_curved_caustics, B=fine_filaments, A=convergence_nodes",
+      "color_space": "LINEAR_DATA",
+      "gpu_format": "GL_RGBA8"
+    },
+    {
+      "path": "optics/glass_environment.webp",
+      "bytes": 16686,
+      "sha256": "0f4e50d174d50474ce53bac6d4673d1ac6182c712b93819a823ac2615031ef3a",
+      "dimensions": [
+        512,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "RGB=equirectangular_crystal_studio_env, A=specular_weight",
+      "color_space": "SRGB",
+      "gpu_format": "GL_SRGB8_ALPHA8"
+    },
+    {
+      "path": "volume/fluid_color_z00.webp",
+      "bytes": 1016,
+      "sha256": "e484debced8ddf2b2dd974d0d533eda810e1d7432a17832ef3634a7e736a3c0c",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 0
+    },
+    {
+      "path": "volume/fluid_color_z01.webp",
+      "bytes": 4360,
+      "sha256": "0e74176fa474e9de9e7d01b2998cf7ed161fb0e2e00725efcc4db53e631c3795",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 1
+    },
+    {
+      "path": "volume/fluid_color_z02.webp",
+      "bytes": 8152,
+      "sha256": "a5fe6a01fd5fe0731b2c5917d3f154ffe301fdf89651cb5f36e71b9afa509dbe",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 2
+    },
+    {
+      "path": "volume/fluid_color_z03.webp",
+      "bytes": 14780,
+      "sha256": "dc78e2020854b4c5b00d3926d3d43ef14c37da273402b57a565a4c13e0c7f2d7",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 3
+    },
+    {
+      "path": "volume/fluid_color_z04.webp",
+      "bytes": 20440,
+      "sha256": "ae2eafe37638f691dc1556ea4fd50853affe70cac06541f036dd8c7257fe0499",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 4
+    },
+    {
+      "path": "volume/fluid_color_z05.webp",
+      "bytes": 23888,
+      "sha256": "27a8d63bd402c57a8f085a0db63ed91d18fa70ea081d2d25ab6b7b2161d13d68",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 5
+    },
+    {
+      "path": "volume/fluid_color_z06.webp",
+      "bytes": 26438,
+      "sha256": "240e075c1b5bc0391d4ae693851b1756c023f2540486cd3a1ad43250301aafef",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 6
+    },
+    {
+      "path": "volume/fluid_color_z07.webp",
+      "bytes": 27290,
+      "sha256": "ce08f2e791ddae88401e6e837f559c9f17bf4d24f05ac2172f84cae5be56e3ee",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 7
+    },
+    {
+      "path": "volume/fluid_color_z08.webp",
+      "bytes": 26082,
+      "sha256": "e8798b0fb13692efc2fa171676c4dc57fe7b3803a0ad642c16329db9b69b0694",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 8
+    },
+    {
+      "path": "volume/fluid_color_z09.webp",
+      "bytes": 24480,
+      "sha256": "b1983f0cd691044d3286fd4b35ab27362341db948c1a98b5557ac1fc4a385741",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 9
+    },
+    {
+      "path": "volume/fluid_color_z10.webp",
+      "bytes": 23674,
+      "sha256": "64b44ee259b1975a900aea78d5278bf853e0db5a09e0a9ced07486304cba459e",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 10
+    },
+    {
+      "path": "volume/fluid_color_z11.webp",
+      "bytes": 25216,
+      "sha256": "e046fbbb5c1f664bbbab75d1ae577e781a14b7a3e84b13ab140e6d2314f0d62f",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 11
+    },
+    {
+      "path": "volume/fluid_color_z12.webp",
+      "bytes": 27484,
+      "sha256": "763124282eaf6e149054364b6ea3e0e510ff80619fab488ce62aeb6d4e222f8a",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 12
+    },
+    {
+      "path": "volume/fluid_color_z13.webp",
+      "bytes": 29706,
+      "sha256": "9b1f8ad537b8d39a025b460f96beb846aef7aaaf4d0cc4568c8f4fb0f8f8d9a7",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 13
+    },
+    {
+      "path": "volume/fluid_color_z14.webp",
+      "bytes": 31220,
+      "sha256": "7dc29dd3f5b622bf9225c471dde56288edb7a82690712531f79ba67b922454c7",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 14
+    },
+    {
+      "path": "volume/fluid_color_z15.webp",
+      "bytes": 30858,
+      "sha256": "9fa0df3c950415a74468cb1e01ca569dbd757bc18b4105b8d4c8ecac221030e9",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 15
+    },
+    {
+      "path": "volume/fluid_color_z16.webp",
+      "bytes": 31410,
+      "sha256": "547447d73e40a48112b6900ed79c8c350fa332571bb8491280dd47dfc9132841",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 16
+    },
+    {
+      "path": "volume/fluid_color_z17.webp",
+      "bytes": 31562,
+      "sha256": "fb8874cb36b6dad2ec4ca8947a5524b37b0fd8ac28779efb969a793f6b0c759a",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 17
+    },
+    {
+      "path": "volume/fluid_color_z18.webp",
+      "bytes": 33192,
+      "sha256": "d72c156fde525872d7c4adf1f64500bf16a178a53b3558bcb6a2050308d035fd",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 18
+    },
+    {
+      "path": "volume/fluid_color_z19.webp",
+      "bytes": 35018,
+      "sha256": "57d329fbd514fa8db5cd4f6242ce9942faa4d960ea7e334e2b572c5ac4127a72",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 19
+    },
+    {
+      "path": "volume/fluid_color_z20.webp",
+      "bytes": 36216,
+      "sha256": "8549ca934945cf9dca8b471a2f0d36dce58ee665f4424366145adcc07f7489fb",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 20
+    },
+    {
+      "path": "volume/fluid_color_z21.webp",
+      "bytes": 36682,
+      "sha256": "7db20cc5c1713844c38a06781dc60a4cfc7e2ac4f3d4a82b7d3a81f75dc9c8e5",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 21
+    },
+    {
+      "path": "volume/fluid_color_z22.webp",
+      "bytes": 38250,
+      "sha256": "0dc499a7f873e2648ad112440212361fb51108ef8e338c1ab37683edcbce6c26",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 22
+    },
+    {
+      "path": "volume/fluid_color_z23.webp",
+      "bytes": 38834,
+      "sha256": "990f617ca4b17211b69226ca094d334f66da7ea02afd808c98486f114800d812",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 23
+    },
+    {
+      "path": "volume/fluid_color_z24.webp",
+      "bytes": 37046,
+      "sha256": "baf050809fbe56c4e2c31b03d8b3a2929c77d7a8e027a5403ddab2e5f041aefa",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 24
+    },
+    {
+      "path": "volume/fluid_color_z25.webp",
+      "bytes": 32584,
+      "sha256": "c0963b2e848ab070ac75e8e6202ab29004acfc66e1710f01767fd45cde449052",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 25
+    },
+    {
+      "path": "volume/fluid_color_z26.webp",
+      "bytes": 28634,
+      "sha256": "c94a61b6da2df4e2d7e5f192b6a2a1bc2937fc873a70491d6018d0e86625c36f",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 26
+    },
+    {
+      "path": "volume/fluid_color_z27.webp",
+      "bytes": 23196,
+      "sha256": "95bfda3135fec3b3ed47e8ec3fdb99d79e539ddeea78f33087ca0c4fdd9c9aa8",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 27
+    },
+    {
+      "path": "volume/fluid_color_z28.webp",
+      "bytes": 18582,
+      "sha256": "2d82e1fcf40502f139ac62d97f0b59f1961e6f0feeb8f4f4a59a4e8eae16c43c",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 28
+    },
+    {
+      "path": "volume/fluid_color_z29.webp",
+      "bytes": 12748,
+      "sha256": "92784cee073c09bce70863ede80a97056a5ad5cf201492fc56abd5be83a272e0",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 29
+    },
+    {
+      "path": "volume/fluid_color_z30.webp",
+      "bytes": 6482,
+      "sha256": "bc3d925a247036a67183ee846d876b57963da936219e0880d39f9a0a3de14bae",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 30
+    },
+    {
+      "path": "volume/fluid_color_z31.webp",
+      "bytes": 1288,
+      "sha256": "5a0e20c709bccd1c369ee3899c852469e62171845b14a8d0e7aa959c9a9aaa38",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "semantics": "spatial Z slice; RGB=sRGB color, A=linear density",
+      "color_space": "SRGB_RGB_LINEAR_ALPHA",
+      "gpu_format": "GL_SRGB8_ALPHA8",
+      "zIndex": 31
+    }
+  ],
+  "alpha_summary": {
+    "voxel_count": 2097152,
+    "min": 0,
+    "max": 255,
+    "percentiles_u8": {
+      "10": 0.0,
+      "50": 0.0,
+      "75": 14.0,
+      "90": 76.0,
+      "95": 109.0
+    },
+    "fraction_alpha_gt_0_14": 0.2149944305419922,
+    "density_threshold_u8": 35.7
+  },
+  "validation": "PASS",
+  "errors": []
+}

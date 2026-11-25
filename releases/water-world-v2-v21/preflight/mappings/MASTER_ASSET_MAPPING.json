@@ -1,0 +1,256 @@
+{
+  "schema_version": "master-asset-mapping/2.1-preflight",
+  "master_source_status": "BLOCKED_MASTER_SOURCE",
+  "objects": [
+    {
+      "object_id": "fish_01",
+      "object_type": "fish",
+      "source_path": "WATER_WORLD_V2/05_FISH/fish_01.png",
+      "source_mask_path": "WATER_WORLD_V2/10_DEPTH/occlusion_masks/fish_01_alpha.png",
+      "source_mesh_path": "WATER_WORLD_V2/05_FISH/meshes/fish_01_mesh.json",
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": {
+        "center": [
+          0.69,
+          0.397
+        ],
+        "width_d": 0.205,
+        "facing": "right",
+        "depth_order": 0.52
+      },
+      "confidence": "UNKNOWN",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    },
+    {
+      "object_id": "fish_02",
+      "object_type": "fish",
+      "source_path": "WATER_WORLD_V2/05_FISH/fish_02.png",
+      "source_mask_path": "WATER_WORLD_V2/10_DEPTH/occlusion_masks/fish_02_alpha.png",
+      "source_mesh_path": "WATER_WORLD_V2/05_FISH/meshes/fish_02_mesh.json",
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": {
+        "center": [
+          0.455,
+          0.448
+        ],
+        "width_d": 0.165,
+        "facing": "right",
+        "depth_order": 0.6
+      },
+      "confidence": "UNKNOWN",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    },
+    {
+      "object_id": "fish_03",
+      "object_type": "fish",
+      "source_path": "WATER_WORLD_V2/05_FISH/fish_03.png",
+      "source_mask_path": "WATER_WORLD_V2/10_DEPTH/occlusion_masks/fish_03_alpha.png",
+      "source_mesh_path": "WATER_WORLD_V2/05_FISH/meshes/fish_03_mesh.json",
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": {
+        "center": [
+          0.56,
+          0.481
+        ],
+        "width_d": 0.155,
+        "facing": "right",
+        "depth_order": 0.66
+      },
+      "confidence": "UNKNOWN",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    },
+    {
+      "object_id": "fish_04",
+      "object_type": "fish",
+      "source_path": "WATER_WORLD_V2/05_FISH/fish_04.png",
+      "source_mask_path": "WATER_WORLD_V2/10_DEPTH/occlusion_masks/fish_04_alpha.png",
+      "source_mesh_path": "WATER_WORLD_V2/05_FISH/meshes/fish_04_mesh.json",
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": {
+        "center": [
+          0.476,
+          0.535
+        ],
+        "width_d": 0.145,
+        "facing": "right",
+        "depth_order": 0.72
+      },
+      "confidence": "UNKNOWN",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    },
+    {
+      "object_id": "G01",
+      "object_type": "residents",
+      "source_path": "WATER_WORLD_V2/02_RESIDENT/residents.svg",
+      "source_mask_path": null,
+      "source_mesh_path": null,
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": null,
+      "confidence": "estimated",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    },
+    {
+      "object_id": "G02",
+      "object_type": "residents",
+      "source_path": "WATER_WORLD_V2/02_RESIDENT/residents.svg",
+      "source_mask_path": null,
+      "source_mesh_path": null,
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": null,
+      "confidence": "estimated",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    },
+    {
+      "object_id": "A01",
+      "object_type": "residents",
+      "source_path": "WATER_WORLD_V2/02_RESIDENT/residents.svg",
+      "source_mask_path": null,
+      "source_mesh_path": null,
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": null,
+      "confidence": "estimated",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    },
+    {
+      "object_id": "A02",
+      "object_type": "residents",
+      "source_path": "WATER_WORLD_V2/02_RESIDENT/residents.svg",
+      "source_mask_path": null,
+      "source_mesh_path": null,
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": null,
+      "confidence": "estimated",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    },
+    {
+      "object_id": "C01",
+      "object_type": "residents",
+      "source_path": "WATER_WORLD_V2/02_RESIDENT/residents.svg",
+      "source_mask_path": null,
+      "source_mesh_path": null,
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": null,
+      "confidence": "estimated",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    },
+    {
+      "object_id": "plant_left",
+      "object_type": "plants",
+      "source_path": "WATER_WORLD_V2/06_PLANTS/plant_left/plant_left.png",
+      "source_mask_path": "WATER_WORLD_V2/10_DEPTH/occlusion_masks/plant_left_alpha.png",
+      "source_mesh_path": null,
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": {
+        "anchor": [
+          0.24,
+          0.765
+        ],
+        "scale": [
+          0.34,
+          0.4
+        ],
+        "root_at_v": 1.0
+      },
+      "confidence": "LOW",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    },
+    {
+      "object_id": "plant_right",
+      "object_type": "plants",
+      "source_path": "WATER_WORLD_V2/06_PLANTS/plant_right/plant_right.png",
+      "source_mask_path": "WATER_WORLD_V2/10_DEPTH/occlusion_masks/plant_right_alpha.png",
+      "source_mesh_path": null,
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": {
+        "anchor": [
+          0.78,
+          0.765
+        ],
+        "scale": [
+          0.22,
+          0.36
+        ],
+        "root_at_v": 1.0
+      },
+      "confidence": "LOW",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    },
+    {
+      "object_id": "rock_01",
+      "object_type": "rocks",
+      "source_path": "WATER_WORLD_V2/individual/rock_01.png",
+      "source_mask_path": "WATER_WORLD_V2/masks/rock_01_alpha.png",
+      "source_mesh_path": null,
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": {
+        "center": [
+          0.48,
+          0.695
+        ],
+        "scale": [
+          0.18,
+          0.105
+        ],
+        "depth_order": 0.78
+      },
+      "confidence": "UNKNOWN",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    },
+    {
+      "object_id": "rock_02",
+      "object_type": "rocks",
+      "source_path": "WATER_WORLD_V2/individual/rock_02.png",
+      "source_mask_path": "WATER_WORLD_V2/masks/rock_02_alpha.png",
+      "source_mesh_path": null,
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": {
+        "center": [
+          0.63,
+          0.679
+        ],
+        "scale": [
+          0.15,
+          0.083
+        ],
+        "depth_order": 0.8
+      },
+      "confidence": "UNKNOWN",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    },
+    {
+      "object_id": "rock_03",
+      "object_type": "rocks",
+      "source_path": "WATER_WORLD_V2/individual/rock_03.png",
+      "source_mask_path": "WATER_WORLD_V2/masks/rock_03_alpha.png",
+      "source_mesh_path": null,
+      "master_region_id": null,
+      "calibrated_transform": null,
+      "source_estimate": {
+        "center": [
+          0.57,
+          0.744
+        ],
+        "scale": [
+          0.085,
+          0.06
+        ],
+        "depth_order": 0.82
+      },
+      "confidence": "UNKNOWN",
+      "visual_status": "NOT_COMPARABLE_MASTER_BYTES_UNAVAILABLE"
+    }
+  ]
+}

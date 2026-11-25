@@ -1,0 +1,51 @@
+{
+  "schema_version": "water-world-v2-1-thresholds/1.0",
+  "status": "PROVISIONAL_RAW_MASTER_REQUIRED",
+  "thresholds": [
+    {
+      "metric": "sphere_silhouette_iou",
+      "target": ">=0.98",
+      "status": "NOT_RUN_MASTER_SOURCE_BLOCKED"
+    },
+    {
+      "metric": "sphere_center_error_over_diameter",
+      "target": "<=0.005",
+      "status": "NOT_RUN_MASTER_SOURCE_BLOCKED"
+    },
+    {
+      "metric": "sphere_diameter_error",
+      "target": "<=0.01",
+      "status": "NOT_RUN_MASTER_SOURCE_BLOCKED"
+    },
+    {
+      "metric": "fish_silhouette_iou_each",
+      "target": ">=0.90",
+      "status": "NOT_RUN_MASTER_SOURCE_BLOCKED"
+    },
+    {
+      "metric": "fish_center_error_over_canvas_each",
+      "target": "<=0.01",
+      "status": "NOT_RUN_MASTER_SOURCE_BLOCKED"
+    },
+    {
+      "metric": "resident_bidirectional_chamfer_over_radius",
+      "target": "<=0.015",
+      "status": "NOT_RUN_MASTER_SOURCE_BLOCKED"
+    },
+    {
+      "metric": "resident_width_error",
+      "target": "<=0.05",
+      "status": "NOT_RUN_MASTER_SOURCE_BLOCKED"
+    },
+    {
+      "metric": "plant_silhouette_iou_each",
+      "target": ">=0.85",
+      "status": "NOT_RUN_MASTER_SOURCE_BLOCKED"
+    },
+    {
+      "metric": "rock_silhouette_iou_each",
+      "target": ">=0.85",
+      "status": "NOT_RUN_MASTER_SOURCE_BLOCKED"
+    }
+  ]
+}
