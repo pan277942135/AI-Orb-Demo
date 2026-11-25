@@ -310,5 +310,88 @@
       "rock_02": 0.46589641789713165,
       "rock_03": 0.32685688908626626
     }
+  },
+  "canonical_metrics_sha256": "331a513e7b31247d9487c21bbb1d0a3670347af216be1d27f14ae6cd41647faa",
+  "canonical_metrics": {
+    "plant_left": {
+      "kind": "plant",
+      "iou": 0.2284727171319679,
+      "threshold_iou": 0.85,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "source_visible_area_px": 55748,
+      "asset_visible_area_px": 23545,
+      "ground_truth_confidence": "LOW",
+      "comparison_crop_px": [
+        219,
+        409,
+        470,
+        924
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/plant_left.png"
+    },
+    "plant_right": {
+      "kind": "plant",
+      "iou": 0.2033919286952216,
+      "threshold_iou": 0.85,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "source_visible_area_px": 20964,
+      "asset_visible_area_px": 8199,
+      "ground_truth_confidence": "MEDIUM_LOW",
+      "comparison_crop_px": [
+        807,
+        502,
+        998,
+        865
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/plant_right.png"
+    },
+    "rock_01": {
+      "kind": "rock",
+      "iou": 0.3006602831177058,
+      "threshold_iou": 0.85,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "source_visible_area_px": 12340,
+      "asset_visible_area_px": 41043,
+      "ground_truth_confidence": "LOW",
+      "comparison_crop_px": [
+        338,
+        695,
+        684,
+        902
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/rock_01.png"
+    },
+    "rock_02": {
+      "kind": "rock",
+      "iou": 0.13450238282515153,
+      "threshold_iou": 0.85,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "source_visible_area_px": 2907,
+      "asset_visible_area_px": 21613,
+      "ground_truth_confidence": "MEDIUM_LOW",
+      "comparison_crop_px": [
+        700,
+        694,
+        914,
+        883
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/rock_02.png"
+    },
+    "rock_03": {
+      "kind": "rock",
+      "iou": 0.20804153165394934,
+      "threshold_iou": 0.85,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "source_visible_area_px": 8621,
+      "asset_visible_area_px": 26051,
+      "ground_truth_confidence": "LOW",
+      "comparison_crop_px": [
+        482,
+        768,
+        814,
+        938
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/rock_03.png"
+    }
   }
 }

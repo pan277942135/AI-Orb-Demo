@@ -1,77 +1,66 @@
-# WATER WORLD V2.1 — Final Work 1.5 Delivery Report
+# WATER WORLD V2.1 Repair and Work 2 Static Input Readiness Report
 
-## 1. Final status
+**Status:** `BLOCKED_GROUND_TRUTH_UNCERTAIN`  
+**Master:** `fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589` verified, 1254×1254 RGB, 2,256,234 bytes. **GPU:** NOT_RUN.
 
-**`WORK1_5_BLOCKED_MASTER_SOURCE`**. The currently uploaded `奇幻水晶球中的水下生态世界.png` is locked as the sole visual master, as instructed. The conversation exposes its rendered image, but this execution workspace has no readable original PNG bytes or downloadable attachment handle. No substitute image was used. The master is not hash- or pixel-validated here; source-derived calibration and visual acceptance therefore remain blocked.
+## Verified causes and repairs
 
-Independent work is complete: V2 package audit and extraction, Validator repair and tests, 47-element Motion Graph validation, and Core Motion input/output contract checks. This is not a closed or visually accepted V2.1 package.
+The earlier fish color threshold omitted cool, translucent fins. A documented seeded GrabCut mask and deterministic rigid-transform fitting were applied; original V2 fish PNG bytes remain unchanged. The prior Resident scoring path measured a master-derived trace against itself. The independent composition now uses original V2 SVG curves, while direct source trace evidence is stored separately. Resident width cross-sections are contaminated by same-color crossings and optical highlights; width error is null and fails the gate. Plant/rock boundaries overlap reflection, glass, moss and contact shadows, so their resource defects remain hypotheses rather than confirmed causes.
 
-## 2. V2 source package
+Round 2 F03 optimizer objective: 0.866947 → 0.868489 (+0.001542), threshold 0.90; optimizer did not converge. Canonical CPU composition: 0.863860 → 0.863828 (-0.000032). The optimizer gain was not reproduced by the independent compositor; no third blind fit was applied to uncertain Ground Truth.
 
-- File: `WATER_WORLD_V2_ASSETS.zip`
-- Size: 11,678,323 bytes
-- SHA256: `6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095`
-- ZIP CRC: PASS
-- Members: 65
-- Embedded checksums: 63/63 PASS
-- Raster decode count: 35; JSON/SVG parsing: PASS
-- Physical extraction: 65 files extracted to `/workspace/WATER_WORLD_WORK/V2_EXTRACTED/full` (about 12 MB)
+## Per-object root-cause matrix
 
-The original ZIP and its contents were not modified. These checks establish package integrity, not visual suitability against the master.
+| Object | Root cause class | Root cause / fix | Source SHA | Prior same metric | Current | Threshold | Status |
+|---|---|---|---|---:|---:|---:|---|
+| WW_FISH_01 | SOURCE_CONFIRMED | SOURCE_CONFIRMED: the prior box/transform did not match the full visible fins; rigid transform only was fitted. F03 remains below threshold and medium confidence. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `056b55e6f61fb353b8db2fa8631176a4caca330f2f1d5460eba9a7a72d8cc134` | 0.9091985320232036 | 0.9091985320232036 | 0.9 | PASS |
+| WW_FISH_02 | SOURCE_CONFIRMED | SOURCE_CONFIRMED: the prior box/transform did not match the full visible fins; rigid transform only was fitted. F03 remains below threshold and medium confidence. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `565b78326a259484fb78a542cb7c2f0ce8cf831eb080c28b1bf93a469615bbd8` | 0.9051181102362205 | 0.9051181102362205 | 0.9 | PASS |
+| WW_FISH_03 | SOURCE_CONFIRMED | SOURCE_CONFIRMED: the prior box/transform did not match the full visible fins; rigid transform only was fitted. F03 remains below threshold and medium confidence. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `c8def6b8d5e66463b903a2fa329f2e1f354067598931233b0e29c966d32ef6d1` | 0.863859649122807 | 0.8638277959756668 | 0.9 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| WW_FISH_04 | SOURCE_CONFIRMED | SOURCE_CONFIRMED: the prior box/transform did not match the full visible fins; rigid transform only was fitted. F03 remains below threshold and medium confidence. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `714a0afa95e6c3d802044bbb745334875bd79640960b35ee40bc4125a2d3b44d` | 0.9056915039868023 | 0.9056915039868023 | 0.9 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| G01 | SOURCE_CONFIRMED | SOURCE_CONFIRMED: prior composition reused master-traced geometry for scoring. Independent V2 SVG paths now drive composition; direct source coverage and identity/width ambiguity remain. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b` | 0.018048433734203187 | 0.018048433734203187 | 0.015 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| G02 | SOURCE_CONFIRMED | SOURCE_CONFIRMED: prior composition reused master-traced geometry for scoring. Independent V2 SVG paths now drive composition; direct source coverage and identity/width ambiguity remain. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b` | 0.05499748668699491 | 0.05499748668699491 | 0.015 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| A01 | SOURCE_CONFIRMED | SOURCE_CONFIRMED: prior composition reused master-traced geometry for scoring. Independent V2 SVG paths now drive composition; direct source coverage and identity/width ambiguity remain. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b` | 0.0038609780021807037 | 0.0038609780021807037 | 0.015 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| A02 | SOURCE_CONFIRMED | SOURCE_CONFIRMED: prior composition reused master-traced geometry for scoring. Independent V2 SVG paths now drive composition; direct source coverage and identity/width ambiguity remain. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b` | 0.014787653661809374 | 0.014787653661809374 | 0.015 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| C01 | SOURCE_CONFIRMED | SOURCE_CONFIRMED: prior composition reused master-traced geometry for scoring. Independent V2 SVG paths now drive composition; direct source coverage and identity/width ambiguity remain. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b` | 0.10278116483342134 | 0.10278116483342134 | 0.015 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| plant_left | HYPOTHESIS | HYPOTHESIS: V2 placement/shape mismatch is possible, but transparent leaf edges overlap glass and Resident light; source boundary not conclusive. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `bc958efc305204b0d35c2675645dd7ebac3d1da97ae93362c8532855e5076998` | 0.2284727171319679 | 0.2284727171319679 | 0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| plant_right | HYPOTHESIS | HYPOTHESIS: V2 placement/shape mismatch is possible, but transparent leaf edges overlap glass and Resident light; source boundary not conclusive. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `f0437ca0643b5c8d6e1b25a9117390a66764bf80e8beea206e082b0c5732a172` | 0.2033919286952216 | 0.2033919286952216 | 0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| rock_01 | HYPOTHESIS | HYPOTHESIS: V2 placement/shape mismatch is possible, but rock edges overlap moss, plants, highlights and contact shadows; source boundary not conclusive. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `0128e55605b0063450d46abbbac06d2b16976faa17dacb1657b53c8b538e1986` | 0.3006602831177058 | 0.3006602831177058 | 0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| rock_02 | HYPOTHESIS | HYPOTHESIS: V2 placement/shape mismatch is possible, but rock edges overlap moss, plants, highlights and contact shadows; source boundary not conclusive. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `50238eb18b944dfdc2a1af7dbe577dde02f8a03f3220686d2cb5a43487a37315` | 0.13450238282515153 | 0.13450238282515153 | 0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
+| rock_03 | HYPOTHESIS | HYPOTHESIS: V2 placement/shape mismatch is possible, but rock edges overlap moss, plants, highlights and contact shadows; source boundary not conclusive. / Recalibrate only the source transform for fish; keep other original textures unchanged and wait for reliable masks. | `5d6a78e23b1ee4e96c0acb8894e2876205b601aceb4d1ef22e3fac8458e94a99` | 0.20804153165394934 | 0.20804153165394934 | 0.85 | BLOCKED_GROUND_TRUTH_UNCERTAIN |
 
-## 3. Resource decision ledger
+## Work 2 static inputs
 
-| Action | Count | Evidence / meaning |
-|---|---:|---|
-| KEEP | 65 source files, byte-for-byte | Preserved as the unmodified V2 source package; not approved as master-calibrated output |
-| RECALIBRATE | 0 | Not run; exact master pixels are unavailable to the execution tools |
-| REPAIR | 0 | No V2 source asset defect was proven by the integrity audit |
-| REGENERATE | 0 | Not run; no source-derived replacement was created |
+The scene graph carries 14 IDs, V2 asset paths and SHA values, master regions, candidate transforms or partial paths, confidence, depth/material and mask references. Resident centerlines, width profiles, identity and occlusion uncertainty are separate files. Camera is 1254×1254 image-space orthographic; physical FOV/distance remain unresolved. Motion graph remains 47 nodes / 28 edges and all Water World temporal numeric parameters are null. The 32 WebP slices are spatial Z samples, not time frames.
 
-No guessed placements, Resident paths, fish geometry, overlays, heatmaps, or recomposition images are presented as master-derived results.
+Independent CPU recomposition, overlay, difference heatmap, region comparison and 14 per-object comparisons are included. They are not GPU evidence. `WORK2_STATIC_INPUT_READY` is not satisfied.
 
-## 4. Static visual acceptance
+## Remaining blockers
 
-- Frozen master identity: user-confirmed current upload; sole reference.
-- Raw PNG metadata and pixel measurements: BLOCKED.
-- Master geometry extraction: NOT RUN.
-- Static recomposition, overlay, difference heatmap, and visual metric report: NOT RUN.
-- Final calibrated V2.1 ZIP: NOT CREATED.
+- Fish F03 IoU remains below 0.90; F03/F04 Ground Truth confidence is MEDIUM.
+- Resident G01/G02/A02/C01 direct coverage is below 90%; A01 identity remains ambiguous. Width gates are unresolved for all five.
+- Plant/rock boundaries cannot yet be separated confidently from optical effects and overlaps.
+- GPU renderer, animation, API36 and APK are outside this work and remain NOT_RUN.
 
-The original V2 archive is not being represented as a V2.1 calibrated delivery.
+## Current status
 
-## 5. Motion and Core input/output validation
+`BLOCKED_GROUND_TRUTH_UNCERTAIN`. Source available and verified; object fidelity/measurement is still blocked. No GPU PASS or Work 2 readiness is claimed.
 
-- Registry: 47 unique element IDs.
-- Graph: 47 nodes; exact registry-node set match.
-- Dependencies: 28; no duplicate edges, dangling references, or dependency cycles.
-- Core dependency outputs are checked against destination `runtime_inputs` tokens.
-- Unknown Water World motion values remain null. Unavailable assets are not marked ready.
-- `CORE_VOLUME` pivot `[0,0,0]` means the AI Orb source-domain origin only. It is explicitly not the density-weighted centroid and is not approved as the Water World master pivot.
-- Dynamic motion evidence, target rates, phases, amplitudes, and frequencies remain unvalidated from the static upload.
 
-The source project’s motion settings are evidence about AI Orb only and were not copied into Water World parameters.
+## Automated validation
 
-## 6. Validator tests and exit codes
+Local automated checks: **PASS**  
+Exact-HEAD GitHub CI: **PENDING_EXACT_HEAD_CI**  
+Visual acceptance: **BLOCKED_GROUND_TRUTH_UNCERTAIN**
 
-`python -B -m unittest discover -s tools/water-world-v2-1/tests -p 'test_*.py' -v`
+| Check | Result | Count / detail |
+|---|---|---|
+| legacy_preflight_unit_tests | PASS | 22 tests; exit 0 |
+| closure_unit_tests | PASS | 21 tests; exit 0 |
+| python_compile | PASS | None tests; exit 0 |
+| Master source | PASS | `fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589`; 2256234 bytes |
+| Original V2 ZIP | PASS | `6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095`; 65 files; CRC PASS |
+| V2 source copy | PASS | 63/63 embedded SHA entries; 65 files |
+| Motion Graph | PASS | 47 nodes / 28 dependencies |
+| CPU recomposition reproducibility | PASS | 6 SHA-256 outputs compared between clean runs |
 
-**21/21 tests PASS**, covering valid, missing and corrupt PNGs; SHA/ICC mismatch; missing analysis; overlay, heatmap and final ZIP omissions; graph node/edge/cycle errors; invalid temporal values; Core inputs/outputs; and blocked/failure exit statuses.
-
-Actual validator runs:
-
-- `--scope preflight`: `PREFLIGHT_PASS`, exit code 0.
-- `--scope closure`: `WORK1_5_BLOCKED_MASTER_SOURCE`, exit code 10.
-- Failed validation checks return 20; internal errors return 30.
-
-The complete JSON evidence is in `06_VALIDATION/validation_manifest.json` and `06_VALIDATION/validator_test_results.json`.
-
-## 7. GitHub delivery
-
-The existing Draft PR #3 was updated on `assets/water-world-v2-v21-calibration`; no new PR was created. The remote tree contains all 71 package files, and every remote Git blob ID matches the corresponding local file. The branch update used an expected-HEAD check without force. Main stayed at its audited SHA and PR #2 was not modified. The current exact commit SHA is available from the live [PR #3 commit list](https://github.com/pan277942135/AI-Orb-Demo/pull/3/commits).
-
-The final code/test tree has 21/21 local Validator tests passing, with Preflight exit 0 and full-closure exit 10. GitHub Actions and commit status checks returned no run/status for this documentation-and-tooling commit; remote CI is therefore **NOT_RUN**, not PASS.
-
-## 8. Remaining work
-
-Only source-dependent steps remain blocked: read the original PNG bytes, bind real metadata to its master manifest, extract pixel geometry, calibrate static assets, generate the comparison artifacts and final V2.1 ZIP, then perform the subsequent GPU implementation checks. The current image remains the sole master; no replacement is requested.
+These are local source/validator checks. They do not establish GPU or visual acceptance. The frozen visual gates remain independently evaluated by `visual_metrics.json`.

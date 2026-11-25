@@ -1,13 +1,18 @@
-# Validator Regression Test Report
+# V2.1 Validator Test Report
 
-Run date: 2026-11-25
+Local automated checks: **PASS**  
+Exact-HEAD GitHub CI: **PENDING_EXACT_HEAD_CI**  
+Visual acceptance: **BLOCKED_GROUND_TRUTH_UNCERTAIN**
 
-Command: `python -B -m unittest discover -s tools/water-world-v2-1/tests -p 'test_*.py' -v`
+| Check | Result | Count / detail |
+|---|---|---|
+| legacy_preflight_unit_tests | PASS | 22 tests; exit 0 |
+| closure_unit_tests | PASS | 21 tests; exit 0 |
+| python_compile | PASS | None tests; exit 0 |
+| Master source | PASS | `fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589`; 2256234 bytes |
+| Original V2 ZIP | PASS | `6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095`; 65 files; CRC PASS |
+| V2 source copy | PASS | 63/63 embedded SHA entries; 65 files |
+| Motion Graph | PASS | 47 nodes / 28 dependencies |
+| CPU recomposition reproducibility | PASS | 6 SHA-256 outputs compared between clean runs |
 
-Result: **21 passed, 0 failed**.
-
-Coverage includes successful/missing/corrupt PNGs, SHA and ICC mismatch, absent master analysis, missing overlay/heatmap/final ZIP, missing graph node, dangling edge, dependency cycle, filled unknown motion value, Core input/output consistency, and the BLOCKED/FAIL exit codes.
-
-The real package Preflight returned `PREFLIGHT_PASS` / exit 0. The real full closure returned `WORK1_5_BLOCKED_MASTER_SOURCE` / exit 10 because the original master PNG bytes are not accessible to this execution workspace.
-
-The pushed PR #3 tree contains the exact tested Validator and test files; all 71 remote package blob IDs match local files. GitHub Actions and commit status checks returned no run/status for the tooling/report commit, so hosted CI is marked NOT_RUN.
+These are local source/validator checks. They do not establish GPU or visual acceptance. The frozen visual gates remain independently evaluated by `visual_metrics.json`.

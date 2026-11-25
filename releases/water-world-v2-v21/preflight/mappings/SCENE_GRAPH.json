@@ -1,5 +1,5 @@
 {
-  "schema_version": "water-world-scene-graph/2.1-preflight",
+  "schema_version": "water-world-scene-graph/2.3",
   "source_archive_sha256": "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095",
   "inherited_v2_scene_graph": {
     "name": "Water World V2 Reconstruction",
@@ -68,7 +68,777 @@
     "confidence": "all placements and sphere geometry are visual estimates",
     "delivery": "assets only; no Android renderer, animation, or APK"
   },
-  "calibrated": false,
-  "master_region_mapping": "UNAVAILABLE_MASTER",
-  "status": "BLOCKED_MASTER_SOURCE"
+  "master_region_mapping": "01_ANALYSIS/master_*_geometry.json",
+  "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+  "source_lock": {
+    "sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+    "file_bytes": 2256234,
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGB",
+    "alpha": false,
+    "icc": "NONE",
+    "repository": "pan277942135/AI-Orb-Demo",
+    "branch": "assets/water-world-v2-v21-calibration",
+    "commit": "1662bbf9de671b0bb1fa5ce1891a1df3e49703b6",
+    "path": "releases/water-world-v2-v21/奇幻水晶球中的水下生态世界 (1).png"
+  },
+  "calibration_note": "Source verified; Sphere gates PASS. F03/F04, Resident identity/width and plant/rock boundaries remain uncertain. CPU only; GPU NOT_RUN.",
+  "calibration_status": "PARTIAL_MEASURED_WITH_OBJECT_LEVEL_BLOCKERS",
+  "static_camera": {
+    "status": "FROZEN_IMAGE_SPACE_ORTHOGRAPHIC",
+    "canvas_px": [
+      1254,
+      1254
+    ],
+    "origin": "top-left pixel center",
+    "x_axis": "right",
+    "y_axis": "down",
+    "normalized_uv": {
+      "u": "x/1254",
+      "v": "y/1254"
+    },
+    "projection": "2D orthographic source-pixel registration",
+    "sphere_center_px": [
+      626.4757504075296,
+      596.3441299453135
+    ],
+    "sphere_radius_px": 422.2986621604988,
+    "physical_fov": "UNRESOLVED_FROM_SINGLE_STATIC_IMAGE",
+    "physical_camera_distance": "UNRESOLVED_FROM_SINGLE_STATIC_IMAGE"
+  },
+  "objects": [
+    {
+      "object_id": "WW_FISH_01",
+      "object_type": "fish",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/05_FISH/fish_01.png",
+      "source_sha256": "056b55e6f61fb353b8db2fa8631176a4caca330f2f1d5460eba9a7a72d8cc134",
+      "master_region_id": "MASTER_FISH_01",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/WW_FISH_01/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_01/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_01/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_01/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_01/confidence_mask.png",
+        "roi_px": [
+          668,
+          448,
+          880,
+          547
+        ]
+      },
+      "candidate_transform": {
+        "source_asset": "05_FISH/fish_01.png",
+        "source_alpha_bbox": [
+          18,
+          20,
+          1662,
+          605
+        ],
+        "center_px": [
+          775.4009187342031,
+          497.94248601586395
+        ],
+        "scale_px_per_source_pixel_xy": [
+          0.11783958115647696,
+          0.14276799740428528
+        ],
+        "rotation_degrees": -5.944183437812665,
+        "render_mask_threshold_alpha": 32,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 50,
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "FISH_RGBA_TEXTURE",
+      "texture": {
+        "format": "PNG",
+        "mode": "RGBA",
+        "dimensions_px": [
+          1680,
+          624
+        ],
+        "has_alpha": true,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "confidence": "MEDIUM_HIGH",
+      "metric_status": "PASS",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/WW_FISH_01.png",
+      "geometry_evidence": "01_ANALYSIS/master_fish_geometry.json"
+    },
+    {
+      "object_id": "WW_FISH_02",
+      "object_type": "fish",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/05_FISH/fish_02.png",
+      "source_sha256": "565b78326a259484fb78a542cb7c2f0ce8cf831eb080c28b1bf93a469615bbd8",
+      "master_region_id": "MASTER_FISH_02",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/WW_FISH_02/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_02/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_02/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_02/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_02/confidence_mask.png",
+        "roi_px": [
+          483,
+          516,
+          660,
+          587
+        ]
+      },
+      "candidate_transform": {
+        "source_asset": "05_FISH/fish_02.png",
+        "source_alpha_bbox": [
+          19,
+          20,
+          1278,
+          437
+        ],
+        "center_px": [
+          568.865281239133,
+          550.8255230340772
+        ],
+        "scale_px_per_source_pixel_xy": [
+          0.12308216104914912,
+          0.15600419496360074
+        ],
+        "rotation_degrees": -4.139674741161528,
+        "render_mask_threshold_alpha": 32,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 50,
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "FISH_RGBA_TEXTURE",
+      "texture": {
+        "format": "PNG",
+        "mode": "RGBA",
+        "dimensions_px": [
+          1301,
+          464
+        ],
+        "has_alpha": true,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "confidence": "MEDIUM_HIGH",
+      "metric_status": "PASS",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/WW_FISH_02.png",
+      "geometry_evidence": "01_ANALYSIS/master_fish_geometry.json"
+    },
+    {
+      "object_id": "WW_FISH_03",
+      "object_type": "fish",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/05_FISH/fish_03.png",
+      "source_sha256": "c8def6b8d5e66463b903a2fa329f2e1f354067598931233b0e29c966d32ef6d1",
+      "master_region_id": "MASTER_FISH_03",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/WW_FISH_03/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_03/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_03/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_03/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_03/confidence_mask.png",
+        "roi_px": [
+          610,
+          555,
+          758,
+          621
+        ]
+      },
+      "candidate_transform": {
+        "source_asset": "05_FISH/fish_03.png",
+        "source_alpha_bbox": [
+          18,
+          19,
+          958,
+          362
+        ],
+        "center_px": [
+          679.8983790004559,
+          587.1881544436371
+        ],
+        "scale_px_per_source_pixel_xy": [
+          0.14870309825115316,
+          0.1737414251867658
+        ],
+        "rotation_degrees": -5.492249938260886,
+        "render_mask_threshold_alpha": 32,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 50,
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "FISH_RGBA_TEXTURE",
+      "texture": {
+        "format": "PNG",
+        "mode": "RGBA",
+        "dimensions_px": [
+          976,
+          381
+        ],
+        "has_alpha": true,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "confidence": "MEDIUM",
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/WW_FISH_03.png",
+      "geometry_evidence": "01_ANALYSIS/master_fish_geometry.json"
+    },
+    {
+      "object_id": "WW_FISH_04",
+      "object_type": "fish",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/05_FISH/fish_04.png",
+      "source_sha256": "714a0afa95e6c3d802044bbb745334875bd79640960b35ee40bc4125a2d3b44d",
+      "master_region_id": "MASTER_FISH_04",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/WW_FISH_04/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_04/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_04/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_04/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/WW_FISH_04/confidence_mask.png",
+        "roi_px": [
+          529,
+          630,
+          670,
+          698
+        ]
+      },
+      "candidate_transform": {
+        "source_asset": "05_FISH/fish_04.png",
+        "source_alpha_bbox": [
+          18,
+          28,
+          893,
+          336
+        ],
+        "center_px": [
+          598.9882857598897,
+          657.2937247443667
+        ],
+        "scale_px_per_source_pixel_xy": [
+          0.14762647671314652,
+          0.17360157710270432
+        ],
+        "rotation_degrees": -4.779930355981316,
+        "render_mask_threshold_alpha": 32,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 50,
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "FISH_RGBA_TEXTURE",
+      "texture": {
+        "format": "PNG",
+        "mode": "RGBA",
+        "dimensions_px": [
+          912,
+          367
+        ],
+        "has_alpha": true,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "confidence": "MEDIUM",
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/WW_FISH_04.png",
+      "geometry_evidence": "01_ANALYSIS/master_fish_geometry.json"
+    },
+    {
+      "object_id": "G01",
+      "object_type": "resident",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "master_region_id": "MASTER_RESIDENT_G01",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/G01/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/G01/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/G01/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/G01/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/G01/confidence_mask.png",
+        "roi_px": [
+          147,
+          80,
+          1144,
+          730
+        ]
+      },
+      "candidate_transform": {
+        "kind": "PARTIAL_SOURCE_TRACE",
+        "centerline_ref": "02_CALIBRATED_ASSETS/RESIDENT/resident_centerlines.json#G01",
+        "coverage": 0.759090909090909,
+        "width": "UNRESOLVED"
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": "BACK_AND_RIGHT_FRONT",
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "SVG_RESIDENT_RIBBON",
+      "texture": {
+        "format": "SVG",
+        "mode": "VECTOR",
+        "dimensions_px": "viewBox in source SVG",
+        "has_alpha": true,
+        "alpha_mode": "SVG_STROKE_ALPHA"
+      },
+      "confidence": "MEDIUM",
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/G01.png",
+      "geometry_evidence": "01_ANALYSIS/master_resident_geometry.json"
+    },
+    {
+      "object_id": "G02",
+      "object_type": "resident",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "master_region_id": "MASTER_RESIDENT_G02",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/G02/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/G02/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/G02/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/G02/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/G02/confidence_mask.png",
+        "roi_px": [
+          198,
+          145,
+          1230,
+          775
+        ]
+      },
+      "candidate_transform": {
+        "kind": "PARTIAL_SOURCE_TRACE",
+        "centerline_ref": "02_CALIBRATED_ASSETS/RESIDENT/resident_centerlines.json#G02",
+        "coverage": 0.6181818181818182,
+        "width": "UNRESOLVED"
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": "BACK",
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "SVG_RESIDENT_RIBBON",
+      "texture": {
+        "format": "SVG",
+        "mode": "VECTOR",
+        "dimensions_px": "viewBox in source SVG",
+        "has_alpha": true,
+        "alpha_mode": "SVG_STROKE_ALPHA"
+      },
+      "confidence": "MEDIUM",
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/G02.png",
+      "geometry_evidence": "01_ANALYSIS/master_resident_geometry.json"
+    },
+    {
+      "object_id": "A01",
+      "object_type": "resident",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "master_region_id": "MASTER_RESIDENT_A01",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/A01/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/A01/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/A01/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/A01/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/A01/confidence_mask.png",
+        "roi_px": [
+          20,
+          425,
+          935,
+          1170
+        ]
+      },
+      "candidate_transform": {
+        "kind": "PARTIAL_SOURCE_TRACE",
+        "centerline_ref": "02_CALIBRATED_ASSETS/RESIDENT/resident_centerlines.json#A01",
+        "coverage": 0.9272727272727272,
+        "width": "UNRESOLVED"
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": "BACK_AND_LEFT_FRONT",
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "SVG_RESIDENT_RIBBON",
+      "texture": {
+        "format": "SVG",
+        "mode": "VECTOR",
+        "dimensions_px": "viewBox in source SVG",
+        "has_alpha": true,
+        "alpha_mode": "SVG_STROKE_ALPHA"
+      },
+      "confidence": "MEDIUM",
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/A01.png",
+      "geometry_evidence": "01_ANALYSIS/master_resident_geometry.json"
+    },
+    {
+      "object_id": "A02",
+      "object_type": "resident",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "master_region_id": "MASTER_RESIDENT_A02",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/A02/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/A02/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/A02/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/A02/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/A02/confidence_mask.png",
+        "roi_px": [
+          205,
+          710,
+          1060,
+          1160
+        ]
+      },
+      "candidate_transform": {
+        "kind": "PARTIAL_SOURCE_TRACE",
+        "centerline_ref": "02_CALIBRATED_ASSETS/RESIDENT/resident_centerlines.json#A02",
+        "coverage": 0.7,
+        "width": "UNRESOLVED"
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": "FRONT_LOWER",
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "SVG_RESIDENT_RIBBON",
+      "texture": {
+        "format": "SVG",
+        "mode": "VECTOR",
+        "dimensions_px": "viewBox in source SVG",
+        "has_alpha": true,
+        "alpha_mode": "SVG_STROKE_ALPHA"
+      },
+      "confidence": "MEDIUM",
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/A02.png",
+      "geometry_evidence": "01_ANALYSIS/master_resident_geometry.json"
+    },
+    {
+      "object_id": "C01",
+      "object_type": "resident",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "master_region_id": "MASTER_RESIDENT_C01",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/C01/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/C01/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/C01/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/C01/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/C01/confidence_mask.png",
+        "roi_px": [
+          155,
+          745,
+          1230,
+          1208
+        ]
+      },
+      "candidate_transform": {
+        "kind": "PARTIAL_SOURCE_TRACE",
+        "centerline_ref": "02_CALIBRATED_ASSETS/RESIDENT/resident_centerlines.json#C01",
+        "coverage": 0.3,
+        "width": "UNRESOLVED"
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": "FRONT_LOWER_RIGHT",
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "SVG_RESIDENT_RIBBON",
+      "texture": {
+        "format": "SVG",
+        "mode": "VECTOR",
+        "dimensions_px": "viewBox in source SVG",
+        "has_alpha": true,
+        "alpha_mode": "SVG_STROKE_ALPHA"
+      },
+      "confidence": "LOW",
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/C01.png",
+      "geometry_evidence": "01_ANALYSIS/master_resident_geometry.json"
+    },
+    {
+      "object_id": "plant_left",
+      "object_type": "plant",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/06_PLANTS/plant_left/plant_left.png",
+      "source_sha256": "bc958efc305204b0d35c2675645dd7ebac3d1da97ae93362c8532855e5076998",
+      "master_region_id": "MASTER_PLANT_PLANT_LEFT",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/plant_left/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/plant_left/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/plant_left/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/plant_left/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/plant_left/confidence_mask.png",
+        "roi_px": [
+          220,
+          410,
+          493,
+          1000
+        ]
+      },
+      "candidate_transform": {
+        "source_asset": "06_PLANTS/plant_left/plant_left.png",
+        "source_alpha_bbox": [
+          10,
+          10,
+          899,
+          1210
+        ],
+        "target_bbox_px": [
+          235,
+          425,
+          426,
+          882
+        ],
+        "render_mask_threshold_alpha": 32,
+        "candidate_only": true,
+        "rotation_degrees": null
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 30,
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "PLANT_RGBA_SPRITE",
+      "texture": {
+        "format": "PNG",
+        "mode": "RGBA",
+        "dimensions_px": [
+          910,
+          1221
+        ],
+        "has_alpha": true,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "confidence": "LOW",
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/plant_left.png",
+      "geometry_evidence": "01_ANALYSIS/master_ecology_geometry.json"
+    },
+    {
+      "object_id": "plant_right",
+      "object_type": "plant",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/06_PLANTS/plant_right/plant_right.png",
+      "source_sha256": "f0437ca0643b5c8d6e1b25a9117390a66764bf80e8beea206e082b0c5732a172",
+      "master_region_id": "MASTER_PLANT_PLANT_RIGHT",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/plant_right/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/plant_right/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/plant_right/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/plant_right/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/plant_right/confidence_mask.png",
+        "roi_px": [
+          819,
+          510,
+          993,
+          895
+        ]
+      },
+      "candidate_transform": {
+        "source_asset": "06_PLANTS/plant_right/plant_right.png",
+        "source_alpha_bbox": [
+          12,
+          10,
+          572,
+          1316
+        ],
+        "target_bbox_px": [
+          825,
+          520,
+          969,
+          850
+        ],
+        "render_mask_threshold_alpha": 32,
+        "candidate_only": true,
+        "rotation_degrees": null
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 30,
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "PLANT_RGBA_SPRITE",
+      "texture": {
+        "format": "PNG",
+        "mode": "RGBA",
+        "dimensions_px": [
+          584,
+          1327
+        ],
+        "has_alpha": true,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "confidence": "MEDIUM_LOW",
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/plant_right.png",
+      "geometry_evidence": "01_ANALYSIS/master_ecology_geometry.json"
+    },
+    {
+      "object_id": "rock_01",
+      "object_type": "rock",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/07_ROCKS/individual/rock_01.png",
+      "source_sha256": "0128e55605b0063450d46abbbac06d2b16976faa17dacb1657b53c8b538e1986",
+      "master_region_id": "MASTER_ROCK_01",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/rock_01/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/rock_01/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/rock_01/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/rock_01/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/rock_01/confidence_mask.png",
+        "roi_px": [
+          348,
+          700,
+          647,
+          858
+        ]
+      },
+      "candidate_transform": {
+        "source_asset": "07_ROCKS/individual/rock_01.png",
+        "source_alpha_bbox": [
+          8,
+          8,
+          607,
+          497
+        ],
+        "target_bbox_px": [
+          356,
+          713,
+          666,
+          884
+        ],
+        "render_mask_threshold_alpha": 32,
+        "candidate_only": true,
+        "rotation_degrees": null
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 40,
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "ROCK_RGBA_SPRITE",
+      "texture": {
+        "format": "PNG",
+        "mode": "RGBA",
+        "dimensions_px": [
+          615,
+          505
+        ],
+        "has_alpha": true,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "confidence": "LOW",
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/rock_01.png",
+      "geometry_evidence": "01_ANALYSIS/master_ecology_geometry.json"
+    },
+    {
+      "object_id": "rock_02",
+      "object_type": "rock",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/07_ROCKS/individual/rock_02.png",
+      "source_sha256": "50238eb18b944dfdc2a1af7dbe577dde02f8a03f3220686d2cb5a43487a37315",
+      "master_region_id": "MASTER_ROCK_02",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/rock_02/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/rock_02/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/rock_02/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/rock_02/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/rock_02/confidence_mask.png",
+        "roi_px": [
+          724,
+          705,
+          891,
+          853
+        ]
+      },
+      "candidate_transform": {
+        "source_asset": "07_ROCKS/individual/rock_02.png",
+        "source_alpha_bbox": [
+          6,
+          8,
+          536,
+          258
+        ],
+        "target_bbox_px": [
+          718,
+          712,
+          896,
+          865
+        ],
+        "render_mask_threshold_alpha": 32,
+        "candidate_only": true,
+        "rotation_degrees": null
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 40,
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "ROCK_RGBA_SPRITE",
+      "texture": {
+        "format": "PNG",
+        "mode": "RGBA",
+        "dimensions_px": [
+          544,
+          266
+        ],
+        "has_alpha": true,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "confidence": "MEDIUM_LOW",
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/rock_02.png",
+      "geometry_evidence": "01_ANALYSIS/master_ecology_geometry.json"
+    },
+    {
+      "object_id": "rock_03",
+      "object_type": "rock",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/07_ROCKS/individual/rock_03.png",
+      "source_sha256": "5d6a78e23b1ee4e96c0acb8894e2876205b601aceb4d1ef22e3fac8458e94a99",
+      "master_region_id": "MASTER_ROCK_03",
+      "ground_truth": {
+        "report": "01_ANALYSIS/ground_truth/objects/rock_03/segmentation_report.json",
+        "full_mask": "01_ANALYSIS/ground_truth/objects/rock_03/source_full_mask.png",
+        "visible_mask": "01_ANALYSIS/ground_truth/objects/rock_03/source_visible_mask.png",
+        "occlusion_mask": "01_ANALYSIS/ground_truth/objects/rock_03/occlusion_mask.png",
+        "confidence_mask": "01_ANALYSIS/ground_truth/objects/rock_03/confidence_mask.png",
+        "roi_px": [
+          470,
+          786,
+          770,
+          927
+        ]
+      },
+      "candidate_transform": {
+        "source_asset": "07_ROCKS/individual/rock_03.png",
+        "source_alpha_bbox": [
+          8,
+          7,
+          265,
+          219
+        ],
+        "target_bbox_px": [
+          545,
+          785,
+          796,
+          920
+        ],
+        "render_mask_threshold_alpha": 32,
+        "candidate_only": true,
+        "rotation_degrees": null
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 40,
+      "alpha": "independent V2 source texture; master appearance cutout is reference-only",
+      "occlusion_status": "NO_CONFIRMED_OCCLUDED_OBJECT_PIXELS; UNKNOWN_REGIONS_REMAIN_UNKNOWN",
+      "material_binding": "ROCK_RGBA_SPRITE",
+      "texture": {
+        "format": "PNG",
+        "mode": "RGBA",
+        "dimensions_px": [
+          273,
+          227
+        ],
+        "has_alpha": true,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "confidence": "LOW",
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "metric_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/rock_03.png",
+      "geometry_evidence": "01_ANALYSIS/master_ecology_geometry.json"
+    }
+  ],
+  "occlusion_graph": "01_ANALYSIS/master_occlusion_graph.json"
 }

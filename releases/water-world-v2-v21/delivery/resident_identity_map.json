@@ -1,0 +1,66 @@
+{
+  "schema_version": "water-world-v2-1-resident-identity/1.0",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "residents": {
+    "G01": {
+      "master_region_id": "MASTER_RESIDENT_G01",
+      "v2_color": "#9fe226",
+      "master_hue_range_degrees": [
+        45,
+        125
+      ],
+      "direct_trace_coverage": 0.759090909090909,
+      "ambiguity": "G02/C01 gold identity and A01/A02 cyan identity remain ambiguous at same-color crossings.",
+      "confidence": "MEDIUM",
+      "status": "IDENTITY_UNRESOLVED"
+    },
+    "G02": {
+      "master_region_id": "MASTER_RESIDENT_G02",
+      "v2_color": "#ffc247",
+      "master_hue_range_degrees": [
+        10,
+        70
+      ],
+      "direct_trace_coverage": 0.6181818181818182,
+      "ambiguity": "G02/C01 gold identity and A01/A02 cyan identity remain ambiguous at same-color crossings.",
+      "confidence": "MEDIUM",
+      "status": "IDENTITY_UNRESOLVED"
+    },
+    "A01": {
+      "master_region_id": "MASTER_RESIDENT_A01",
+      "v2_color": "#37e7ef",
+      "master_hue_range_degrees": [
+        135,
+        225
+      ],
+      "direct_trace_coverage": 0.9272727272727272,
+      "ambiguity": "G02/C01 gold identity and A01/A02 cyan identity remain ambiguous at same-color crossings.",
+      "confidence": "MEDIUM",
+      "status": "IDENTITY_UNRESOLVED"
+    },
+    "A02": {
+      "master_region_id": "MASTER_RESIDENT_A02",
+      "v2_color": "#15d8ed",
+      "master_hue_range_degrees": [
+        135,
+        225
+      ],
+      "direct_trace_coverage": 0.7,
+      "ambiguity": "G02/C01 gold identity and A01/A02 cyan identity remain ambiguous at same-color crossings.",
+      "confidence": "MEDIUM",
+      "status": "IDENTITY_UNRESOLVED"
+    },
+    "C01": {
+      "master_region_id": "MASTER_RESIDENT_C01",
+      "v2_color": "#f6bb48",
+      "master_hue_range_degrees": [
+        10,
+        70
+      ],
+      "direct_trace_coverage": 0.3,
+      "ambiguity": "G02/C01 gold identity and A01/A02 cyan identity remain ambiguous at same-color crossings.",
+      "confidence": "LOW",
+      "status": "IDENTITY_UNRESOLVED"
+    }
+  }
+}

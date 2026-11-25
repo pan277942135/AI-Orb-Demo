@@ -5,19 +5,26 @@ The master is used only to measure/compare. Production-style composition uses th
 independent V2 component assets. No GPU render is produced by this script.
 """
 from __future__ import annotations
+import argparse
 import hashlib, json, math, shutil, zipfile
 from pathlib import Path
 from io import BytesIO
 import numpy as np
+import cv2
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from scipy import ndimage as ndi
 from scipy.optimize import least_squares
 from scipy.spatial import cKDTree
 from scipy.signal import savgol_filter
 
-PKG = Path(__file__).resolve().parents[2]
+_parser = argparse.ArgumentParser(add_help=True)
+_parser.add_argument("--package-root", type=Path)
+_args, _unknown = _parser.parse_known_args()
+PKG = (_args.package_root.resolve() if _args.package_root else Path(__file__).resolve().parents[2])
 MASTER = PKG / "inputs/master/奇幻水晶球中的水下生态世界.png"
-V2 = Path("/workspace/WATER_WORLD_WORK/V2_EXTRACTED/full/WATER_WORLD_V2")
+V2 = PKG / "02_CALIBRATED_ASSETS/V2_ORIGINAL"
+if not V2.is_dir() or sum(1 for p in V2.rglob("*") if p.is_file()) != 65:
+    V2 = Path("/workspace/WATER_WORLD_WORK/V2_EXTRACTED/full/WATER_WORLD_V2")
 ZIP_OUT = PKG.parent / "WATER_WORLD_V2_1_ASSETS.zip"
 W, H = 1254, 1254
 MASTER_SHA = "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589"
@@ -82,6 +89,32 @@ def put_asset(canvas: Image.Image, asset_path: Path, target_box: list[int], alph
     outmask[y:y+am.shape[0], x:x+am.shape[1]] = am
     return outmask, {"source_asset": str(asset_path.relative_to(V2)), "source_alpha_bbox": srcbbox,
                      "target_bbox_px": target_box, "render_mask_threshold_alpha": 32}
+
+
+def put_asset_affine(canvas: Image.Image, asset_path: Path, transform: dict, alpha_threshold=32):
+    """Apply one recorded XY scale/rotation/center transform to a straight-alpha PNG."""
+    source=Image.open(asset_path).convert("RGBA")
+    rgba=np.asarray(source)
+    alpha=rgba[:,:,3]
+    yy,xx=np.where(alpha>alpha_threshold)
+    if not len(xx): raise ValueError(f"asset has no visible alpha: {asset_path}")
+    bbox=[int(xx.min()),int(yy.min()),int(xx.max()+1),int(yy.max()+1)]
+    crop=rgba[bbox[1]:bbox[3],bbox[0]:bbox[2],:]
+    h,w=crop.shape[:2]
+    cx,cy=map(float,transform["center_px"])
+    sx,sy=map(float,transform["scale_px_per_source_pixel_xy"])
+    theta=math.radians(float(transform["rotation_degrees"]))
+    co,si=math.cos(theta),math.sin(theta)
+    scx,scy=(w-1)/2.0,(h-1)/2.0
+    a,b,c,d=sx*co,-sy*si,sx*si,sy*co
+    matrix=np.asarray([[a,b,cx-a*scx-b*scy],[c,d,cy-c*scx-d*scy]],dtype=np.float32)
+    warped=cv2.warpAffine(crop,matrix,(W,H),flags=cv2.INTER_LANCZOS4,borderMode=cv2.BORDER_CONSTANT,borderValue=(0,0,0,0))
+    rendered=Image.fromarray(warped,"RGBA")
+    canvas.alpha_composite(rendered)
+    outmask=warped[:,:,3]>32
+    return outmask,{"source_asset":str(asset_path.relative_to(V2)),"source_alpha_bbox":bbox,
+      "center_px":[cx,cy],"scale_px_per_source_pixel_xy":[sx,sy],"rotation_degrees":float(transform["rotation_degrees"]),
+      "render_mask_threshold_alpha":32,"alpha_mode":"STRAIGHT_ALPHA"}
 
 # Verify the exact frozen source and make source metadata factual.
 raw = MASTER.read_bytes()
@@ -191,6 +224,9 @@ def rgb_candidate(tile):
     return (R>78)&(G>72)&(R>B*1.08)&(G>B*1.06)&((R+G)>215)
 fish_boxes={"WW_FISH_01":[676,452,874,544],"WW_FISH_02":[478,517,653,585],
             "WW_FISH_03":[606,552,752,619],"WW_FISH_04":[530,625,666,690]}
+fit_path=PKG/"02_CALIBRATED_ASSETS/FISH/fish_transform_fit.json"
+fish_fit=jsonload(fit_path) if fit_path.is_file() else {"results":{}}
+fish_transforms={key:value.get("transform") for key,value in fish_fit.get("results",{}).items() if value.get("transform")}
 fish_centers_seed={"WW_FISH_01":[785,500],"WW_FISH_02":[578,550],"WW_FISH_03":[686,588],"WW_FISH_04":[598,657]}
 fish_src_masks={}; fish_out_masks={}; fish_rows=[]; fish_assets=[]
 # Candidate per bounding ROI; tie-breaking is by nearest registered fish center.
@@ -222,7 +258,11 @@ for idx,(fid,box) in enumerate(fish_boxes.items(),1):
     silhouette_bbox=box
     source_asset=V2/f"05_FISH/fish_{idx:02d}.png"
     # Asset order in V2 follows scene order: 01 top-right, 02 left-mid, 03 center, 04 lower-left.
-    outmask,asset_transform=put_asset(Image.new("RGBA",(W,H),(0,0,0,0)),source_asset,silhouette_bbox,4)
+    temp=Image.new("RGBA",(W,H),(0,0,0,0))
+    if fid in fish_transforms:
+        outmask,asset_transform=put_asset_affine(temp,source_asset,fish_transforms[fid],32)
+    else:
+        outmask,asset_transform=put_asset(temp,source_asset,silhouette_bbox,4)
     fish_out_masks[fid]=outmask
     metrics_iou=iou(sm,outmask)
     yy2,xx2=np.where(outmask); outcent=[float(xx2.mean()),float(yy2.mean())]
@@ -421,21 +461,31 @@ jwrite(PKG/"01_ANALYSIS/master_occlusion_graph.json",occ)
 # Render an independent CPU scene from V2 assets; source master is never composited into this output.
 background=Image.open(V2/"01_BACKGROUND/background.png").convert("RGBA").resize((W,H),Image.Resampling.LANCZOS)
 canvas=background.copy()
-# Trace paths and measured widths, split around the sphere to maintain back/front ordering.
+# The rendered Resident paths are the original V2 resource curves, not the
+# source-traced curves used as ground truth. This avoids measuring a path
+# against a copy of itself.
+independent_resident_paths=[]
+for resident in res_data["residents"]:
+    rid=resident["id"]
+    color=tuple(int(resident["color"].lstrip("#")[i:i+2],16) for i in (0,2,4))
+    width=float(resident["width_px"])
+    for segment_index, segment in enumerate(resident["segments"]):
+        controls=np.asarray(segment,dtype=float)*np.array([W,H])
+        points=cubic(*controls,np.linspace(0,1,220))
+        is_front=(rid in ("A02","C01")) or (rid=="G01" and segment_index==1) or (rid=="A01" and segment_index==1)
+        independent_resident_paths.append({"id":rid,"points":points,"width":width,"color":color,"front":is_front})
+
+# Draw only directly source-supported traced path pieces as comparison evidence.
+# The independent composition below uses the original curves above.
 def resident_layer(front=False):
     layer=Image.new("RGBA",(W,H),(0,0,0,0)); draw=ImageDraw.Draw(layer)
-    for rid,segments,width,color in resident_render_paths:
-        isfront=rid in ("A01","A02","C01")
-        if front != isfront: continue
-        for p in segments:
-            points=p["traced"]
-            # Source-supported pixels refine the path; short color gaps are interpolated from adjacent
-            # source samples, while the legacy curve is only a low-confidence continuation prior.
-            poly=[tuple(map(float,q)) for q in points]
-            col=tuple(color)
-            draw.line(poly,fill=(col[0],col[1],col[2],30),width=max(3,int(width*2.5)),joint="curve")
-            draw.line(poly,fill=(col[0],col[1],col[2],160),width=max(2,int(width)),joint="curve")
-            draw.line(poly,fill=(225,250,248,58),width=max(1,int(width*0.22)),joint="curve")
+    for path in independent_resident_paths:
+        if front != path["front"]: continue
+        poly=[tuple(map(float,q)) for q in path["points"]]
+        col=path["color"]; width=path["width"]
+        draw.line(poly,fill=(col[0],col[1],col[2],30),width=max(3,int(width*2.5)),joint="curve")
+        draw.line(poly,fill=(col[0],col[1],col[2],160),width=max(2,int(width)),joint="curve")
+        draw.line(poly,fill=(225,250,248,58),width=max(1,int(width*0.22)),joint="curve")
     return layer.filter(ImageFilter.GaussianBlur(0.35))
 canvas.alpha_composite(resident_layer(False))
 # Sphere water body using the unmodified V2 waterbed texture clipped by the measured source contour.
@@ -488,7 +538,10 @@ for idx,(name,box) in enumerate(rock_boxes.items(),1):
 fish_output_masks={}
 for idx,(fid,box) in enumerate(fish_boxes.items(),1):
     asset=V2/f"05_FISH/fish_{idx:02d}.png"
-    om,trans=put_asset(canvas,asset,box,4)
+    if fid in fish_transforms:
+        om,trans=put_asset_affine(canvas,asset,fish_transforms[fid],32)
+    else:
+        om,trans=put_asset(canvas,asset,box,4)
     fish_output_masks[fid]=om
 # Bubble sprite instances are placed at source-measured visible bubble centers; all remain independent.
 bubble_centers=[[733,145],[1059,174],[1088,270],[104,322],[83,364],[157,694],[97,693],[998,861],[837,1025],[742,1024],[326,1060],[558,1121],[810,1195]]
@@ -539,30 +592,31 @@ for row in fish_rows:
     fish_center_err[fid]=float(math.dist([px.mean(),py.mean()],[qx.mean(),qy.mean()])/math.hypot(W,H))
     row["composition_mask_iou_against_source_color_pixels"]=fish_iou[fid]
     row["composition_center_error_over_canvas"]=fish_center_err[fid]
-# Resident line masks are independently rasterized from traced curves and measured widths.
-resident_chamfer={}; resident_width_err={}; resident_render_masks={}
-for rid,paths,width,color in resident_render_paths:
-    m=Image.new("L",(W,H),0); d=ImageDraw.Draw(m)
-    for p in paths:
-        points=p["traced"]; valid=p["valid"]; start=None
-        for i,ok in enumerate(list(valid)+[False]):
-            if ok and start is None: start=i
-            elif not ok and start is not None:
-                if i-start>=4:
-                    poly=[tuple(map(float,xy_)) for xy_ in points[start:i]]
-                    d.line(poly,fill=255,width=max(1,int(round(width))),joint="curve")
-                start=None
-    rm=np.asarray(m)>127; resident_render_masks[rid]=rm
+# Resident masks and centerlines are rasterized from the original V2 SVG asset.
+# Source-traced geometry is kept as Ground Truth evidence only.
+resident_chamfer={}; resident_width_err={}; resident_render_masks={}; resident_centerline_masks={}
+resident_source_width={r["id"]:float(r.get("source_measured_median_width_px",0.0)) for r in resident_rows}
+for resident in res_data["residents"]:
+    rid=resident["id"]
+    thick=Image.new("L",(W,H),0); thick_draw=ImageDraw.Draw(thick)
+    center=Image.new("L",(W,H),0); center_draw=ImageDraw.Draw(center)
+    for path in independent_resident_paths:
+        if path["id"] != rid: continue
+        points=[tuple(map(float,q)) for q in path["points"]]
+        center_draw.line(points,fill=255,width=1,joint="curve")
+        thick_draw.line(points,fill=255,width=max(1,int(round(path["width"]))),joint="curve")
+    rm=np.asarray(thick)>127; cm=np.asarray(center)>127
+    resident_render_masks[rid]=rm; resident_centerline_masks[rid]=cm
     tm=resident_masks[rid]
-    ty,tx=np.where(tm); ry_,rx_=np.where(rm)
+    ty,tx=np.where(tm); ry_,rx_=np.where(cm)
     if len(tx) and len(rx_):
-        dt_t=ndi.distance_transform_edt(~tm); dt_r=ndi.distance_transform_edt(~rm)
+        dt_t=ndi.distance_transform_edt(~tm); dt_r=ndi.distance_transform_edt(~cm)
         cd=float((dt_t[ry_,rx_].mean()+dt_r[ty,tx].mean())/2/radius)
     else: cd=1.0
     resident_chamfer[rid]=cd
-    sourcew=next(row["source_measured_median_width_px"] for row in resident_rows if row["id"]==rid)
-    renderw=float(max(1,int(round(width))))
-    resident_width_err[rid]=float(abs(renderw-sourcew)/max(sourcew,1))
+    sourcew=resident_source_width.get(rid,0.0)
+    renderw=float(resident["width_px"])
+    resident_width_err[rid]=float(abs(renderw-sourcew)/max(sourcew,1.0))
 # Mask IoU for plants/rocks uses source ROI/chroma/object segmentation, see confidence notes.
 plant_metrics={k:iou(plant_src[k],plant_output_masks[k]) for k in plant_boxes}
 rock_metrics={k:iou(rock_src[k],rock_output_masks[k]) for k in rock_boxes}
@@ -637,14 +691,16 @@ jwrite(PKG/"01_ANALYSIS/master_analysis.json",master_analysis)
 # Export source and output masks for reproducible evidence overlays.
 for name,mask in [("composition_sphere_outer",sphere_output_mask),*[(f"composition_fish_{k.lower()}",v) for k,v in fish_output_masks.items()],
                   *[(f"composition_resident_{k.lower()}",v) for k,v in resident_render_masks.items()],
+                  *[(f"composition_resident_centerline_{k.lower()}",v) for k,v in resident_centerline_masks.items()],
                   *[(f"composition_plant_{k}",v) for k,v in plant_output_masks.items()],
                   *[(f"composition_rock_{k}",v) for k,v in rock_output_masks.items()]]:
     save_mask(PKG/f"01_ANALYSIS/masks/{name}.png",mask)
 
 # Preserve the 65-file V2 source tree byte-for-byte inside the V2.1 package.
 v2copy=PKG/"02_CALIBRATED_ASSETS/V2_ORIGINAL"
-if v2copy.exists(): shutil.rmtree(v2copy)
-shutil.copytree(V2,v2copy)
+if V2.resolve() != v2copy.resolve():
+    if v2copy.exists(): shutil.rmtree(v2copy)
+    shutil.copytree(V2,v2copy)
 # Verify copied source files exactly by relative path and SHA.
 source_files=sorted(p for p in V2.rglob("*") if p.is_file())
 copy_files=sorted(p for p in v2copy.rglob("*") if p.is_file())

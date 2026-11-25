@@ -10,7 +10,7 @@
       "format": "PNG",
       "dimensions": "1254x1254",
       "alpha_mode": "RGB",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "01_BACKGROUND/background.png",
@@ -19,7 +19,7 @@
       "format": "PNG",
       "dimensions": "1254x1254",
       "alpha_mode": "RGB",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "05_FISH/fish_01.png",
@@ -28,7 +28,7 @@
       "format": "PNG",
       "dimensions": "1680x624",
       "alpha_mode": "RGBA / straightness UNVERIFIED",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "06_PLANTS/plant_left/plant_left.png",
@@ -37,7 +37,7 @@
       "format": "PNG",
       "dimensions": "910x1221",
       "alpha_mode": "RGBA / straightness UNVERIFIED",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "07_ROCKS/rock_atlas.png",
@@ -46,7 +46,7 @@
       "format": "PNG",
       "dimensions": "2172x724",
       "alpha_mode": "RGBA / straightness UNVERIFIED",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "06_PLANTS/plant_right/plant_right.png",
@@ -55,7 +55,7 @@
       "format": "PNG",
       "dimensions": "584x1327",
       "alpha_mode": "RGBA / straightness UNVERIFIED",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "05_FISH/fish_02.png",
@@ -64,7 +64,7 @@
       "format": "PNG",
       "dimensions": "1301x464",
       "alpha_mode": "RGBA / straightness UNVERIFIED",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "10_DEPTH/sphere_relative_depth_16bit.png",
@@ -73,7 +73,7 @@
       "format": "PNG",
       "dimensions": "1254x1254",
       "alpha_mode": "I;16",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "07_ROCKS/individual/rock_01.png",
@@ -82,7 +82,7 @@
       "format": "PNG",
       "dimensions": "615x505",
       "alpha_mode": "RGBA / straightness UNVERIFIED",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "04_WATER/water_normal_tangent.png",
@@ -91,7 +91,7 @@
       "format": "PNG",
       "dimensions": "512x512",
       "alpha_mode": "RGB",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "05_FISH/fish_04.png",
@@ -100,7 +100,7 @@
       "format": "PNG",
       "dimensions": "912x367",
       "alpha_mode": "RGBA / straightness UNVERIFIED",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "05_FISH/fish_03.png",
@@ -109,7 +109,7 @@
       "format": "PNG",
       "dimensions": "976x381",
       "alpha_mode": "RGBA / straightness UNVERIFIED",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "07_ROCKS/individual/rock_02.png",
@@ -118,7 +118,7 @@
       "format": "PNG",
       "dimensions": "544x266",
       "alpha_mode": "RGBA / straightness UNVERIFIED",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "10_DEPTH/occlusion_masks/plant_left_alpha.png",
@@ -127,7 +127,7 @@
       "format": "PNG",
       "dimensions": "910x1221",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "10_DEPTH/occlusion_masks/plant_right_alpha.png",
@@ -136,7 +136,7 @@
       "format": "PNG",
       "dimensions": "584x1327",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "12_PREVIEW/RECONSTRUCTION_PREVIEW.jpg",
@@ -145,7 +145,7 @@
       "format": "JPG",
       "dimensions": "1254x1254",
       "alpha_mode": "RGB",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "04_WATER/caustics/caustics_height.png",
@@ -154,7 +154,7 @@
       "format": "PNG",
       "dimensions": "512x512",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "10_DEPTH/occlusion_masks/fish_01_alpha.png",
@@ -163,7 +163,7 @@
       "format": "PNG",
       "dimensions": "1680x624",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "07_ROCKS/individual/rock_03.png",
@@ -172,7 +172,7 @@
       "format": "PNG",
       "dimensions": "273x227",
       "alpha_mode": "RGBA / straightness UNVERIFIED",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "10_DEPTH/occlusion_masks/fish_02_alpha.png",
@@ -181,7 +181,7 @@
       "format": "PNG",
       "dimensions": "1301x464",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "10_DEPTH/occlusion_masks/fish_04_alpha.png",
@@ -190,7 +190,7 @@
       "format": "PNG",
       "dimensions": "912x367",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "07_ROCKS/masks/rock_01_alpha.png",
@@ -199,7 +199,7 @@
       "format": "PNG",
       "dimensions": "615x505",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "10_DEPTH/occlusion_masks/rock_01_alpha.png",
@@ -208,7 +208,7 @@
       "format": "PNG",
       "dimensions": "615x505",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "10_DEPTH/occlusion_masks/fish_03_alpha.png",
@@ -217,7 +217,7 @@
       "format": "PNG",
       "dimensions": "976x381",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "07_ROCKS/masks/rock_02_alpha.png",
@@ -226,7 +226,7 @@
       "format": "PNG",
       "dimensions": "544x266",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "10_DEPTH/occlusion_masks/rock_02_alpha.png",
@@ -235,7 +235,7 @@
       "format": "PNG",
       "dimensions": "544x266",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "11_MANIFEST/ASSET_MANIFEST.json",
@@ -244,7 +244,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "07_ROCKS/masks/rock_03_alpha.png",
@@ -253,7 +253,7 @@
       "format": "PNG",
       "dimensions": "273x227",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "10_DEPTH/occlusion_masks/rock_03_alpha.png",
@@ -262,7 +262,7 @@
       "format": "PNG",
       "dimensions": "273x227",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "09_BUBBLES/bubble_sprite.png",
@@ -271,7 +271,7 @@
       "format": "PNG",
       "dimensions": "128x128",
       "alpha_mode": "RGBA / straightness UNVERIFIED",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "05_FISH/meshes/fish_02_mesh.json",
@@ -280,7 +280,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "05_FISH/meshes/fish_01_mesh.json",
@@ -289,7 +289,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "05_FISH/meshes/fish_04_mesh.json",
@@ -298,7 +298,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "05_FISH/meshes/fish_03_mesh.json",
@@ -307,7 +307,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "11_MANIFEST/asset_inventory.json",
@@ -316,7 +316,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "11_MANIFEST/SHA256SUMS",
@@ -325,7 +325,7 @@
       "format": "NO_EXTENSION",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "11_MANIFEST/preflight_sha256.txt",
@@ -334,7 +334,7 @@
       "format": "TXT",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "03_SPHERE/glass_shell_mask.png",
@@ -343,7 +343,7 @@
       "format": "PNG",
       "dimensions": "1254x1254",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "11_MANIFEST/VALIDATION_REPORT.md",
@@ -352,7 +352,7 @@
       "format": "MD",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "03_SPHERE/sphere_outer_mask.png",
@@ -361,7 +361,7 @@
       "format": "PNG",
       "dimensions": "1254x1254",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "03_SPHERE/cavity_alpha.png",
@@ -370,7 +370,7 @@
       "format": "PNG",
       "dimensions": "1254x1254",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "11_MANIFEST/generation_ledger.csv",
@@ -379,7 +379,7 @@
       "format": "CSV",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "02_RESIDENT/residents.json",
@@ -388,7 +388,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "03_SPHERE/glass_front_arc_mask.png",
@@ -397,7 +397,7 @@
       "format": "PNG",
       "dimensions": "1254x1254",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "03_SPHERE/glass_back_arc_mask.png",
@@ -406,7 +406,7 @@
       "format": "PNG",
       "dimensions": "1254x1254",
       "alpha_mode": "L",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "WATER_WORLD_V2_ASSET_DELIVERY_REPORT.md",
@@ -415,7 +415,7 @@
       "format": "MD",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "04_WATER/water_relative_depth_16bit.png",
@@ -424,7 +424,7 @@
       "format": "PNG",
       "dimensions": "512x512",
       "alpha_mode": "I;16",
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "07_ROCKS/rock_placements.json",
@@ -433,7 +433,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "05_FISH/fish_scene_placements.json",
@@ -442,7 +442,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "11_MANIFEST/trim_report.json",
@@ -451,7 +451,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "02_RESIDENT/residents.svg",
@@ -460,7 +460,7 @@
       "format": "SVG",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "09_BUBBLES/bubble_placements.json",
@@ -469,7 +469,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "11_MANIFEST/FINAL_ACCEPTANCE_MATRIX.md",
@@ -478,7 +478,7 @@
       "format": "MD",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "11_MANIFEST/scene_graph.json",
@@ -487,7 +487,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "07_ROCKS/atlas_components.json",
@@ -496,7 +496,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "11_MANIFEST/capability_audit.md",
@@ -505,7 +505,7 @@
       "format": "MD",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "03_SPHERE/sphere_geometry.json",
@@ -514,7 +514,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "06_PLANTS/plant_placements.json",
@@ -523,7 +523,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "11_MANIFEST/RESOURCE_PACKAGE_LAYOUT.md",
@@ -532,7 +532,7 @@
       "format": "MD",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "08_LIGHTING/lighting_rig.json",
@@ -541,7 +541,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "11_MANIFEST/source_lock_report.md",
@@ -550,7 +550,7 @@
       "format": "MD",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "04_WATER/water_material.json",
@@ -559,7 +559,7 @@
       "format": "JSON",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "README.md",
@@ -568,7 +568,7 @@
       "format": "MD",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "00_MASTER/SOURCE_LOCK.md",
@@ -577,7 +577,7 @@
       "format": "MD",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     },
     {
       "path": "12_PREVIEW/README.md",
@@ -586,7 +586,12 @@
       "format": "MD",
       "dimensions": null,
       "alpha_mode": null,
-      "decision": "KEEP_PENDING_MASTER_CALIBRATION"
+      "decision": "KEEP_SOURCE_UNMODIFIED"
     }
-  ]
+  ],
+  "master_source_status": "MASTER_SOURCE_READY",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "visual_acceptance_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+  "source_bytes_modified": false,
+  "calibration_note": "65 original V2 files remain byte-identical. Only fish placement transforms were recalibrated; other object edits are held for Ground Truth."
 }

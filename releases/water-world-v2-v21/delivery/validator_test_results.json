@@ -1,0 +1,155 @@
+{
+  "schema_version": "water-world-v2-1-validation-evidence/1.0",
+  "local_automated_checks": "PASS",
+  "exact_head_ci": "PENDING_EXACT_HEAD_CI",
+  "visual_acceptance": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+  "cpu_recomposition_reproducibility": "PASS",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "v2_archive_sha256": "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095",
+  "checks": {
+    "master_source": {
+      "status": "PASS",
+      "sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+      "bytes": 2256234
+    },
+    "original_v2_archive": {
+      "status": "PASS",
+      "sha256": "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095",
+      "members": 65,
+      "validator_summary": {
+        "members": 65,
+        "internal_sha_count": 63,
+        "verified_sha_count": 63,
+        "raster_decoded": 35
+      },
+      "checks": [
+        {
+          "check": "v2_archive_sha256",
+          "status": "PASS",
+          "detail": "11678323 bytes; 6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095"
+        },
+        {
+          "check": "v2_zip_crc",
+          "status": "PASS",
+          "detail": "all CRCs passed"
+        },
+        {
+          "check": "v2_member_count",
+          "status": "PASS",
+          "detail": "65 files"
+        },
+        {
+          "check": "v2_internal_sha256",
+          "status": "PASS",
+          "detail": "63/63 verified"
+        },
+        {
+          "check": "v2_parse_decode",
+          "status": "PASS",
+          "detail": {
+            "raster_decoded": 35,
+            "errors": []
+          }
+        }
+      ]
+    },
+    "original_v2_copy": {
+      "status": "PASS",
+      "files": 65,
+      "embedded_sha_entries": 63,
+      "verified_sha_entries": 63
+    },
+    "motion_graph": {
+      "status": "PASS",
+      "nodes": 47,
+      "dependencies": 28,
+      "detail": {
+        "element_count": 47,
+        "node_count": 47,
+        "dependency_count": 28,
+        "cycle_check": "PASS"
+      }
+    },
+    "cpu_recomposition_reproducibility": {
+      "status": "PASS",
+      "artifacts_compared": 6,
+      "mismatched_artifacts": []
+    }
+  },
+  "test_suites": [
+    {
+      "name": "legacy_preflight_unit_tests",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/water-world-v2-1/preflight_tests",
+        "-p",
+        "test_validate_preflight.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "tests_run": 22,
+      "result": "PASS",
+      "output_tail": [
+        "test_unavailable_asset_cannot_be_marked_ready (test_validate_preflight.MotionGraphTests.test_unavailable_asset_cannot_be_marked_ready) ... ok",
+        "",
+        "----------------------------------------------------------------------",
+        "Ran 22 tests in 0.030s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "closure_unit_tests",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/water-world-v2-1/tests",
+        "-v"
+      ],
+      "exit_code": 0,
+      "tests_run": 21,
+      "result": "PASS",
+      "output_tail": [
+        "test_wrong_source_asset_sha_fails (test_closure_contract.ClosureContractTests.test_wrong_source_asset_sha_fails) ... ok",
+        "",
+        "----------------------------------------------------------------------",
+        "Ran 21 tests in 0.003s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "python_compile",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "py_compile",
+        "tools/water-world-v2-1/analyze_recompose_master.py",
+        "tools/water-world-v2-1/build_package.py",
+        "tools/water-world-v2-1/calibrate_transforms.py",
+        "tools/water-world-v2-1/canonical_metrics.py",
+        "tools/water-world-v2-1/finalize_inputs.py",
+        "tools/water-world-v2-1/ground_truth.py",
+        "tools/water-world-v2-1/preflight_tests/test_validate_preflight.py",
+        "tools/water-world-v2-1/record_validation_evidence.py",
+        "tools/water-world-v2-1/tests/test_canonical_metrics.py",
+        "tools/water-world-v2-1/tests/test_closure_contract.py",
+        "tools/water-world-v2-1/validate_closure_delta.py",
+        "tools/water-world-v2-1/validate_preflight.py",
+        "tools/water-world-v2-1/verify_recomposition_reproducibility.py"
+      ],
+      "exit_code": 0,
+      "tests_run": null,
+      "result": "PASS",
+      "output_tail": []
+    }
+  ],
+  "test_count_total": 43
+}

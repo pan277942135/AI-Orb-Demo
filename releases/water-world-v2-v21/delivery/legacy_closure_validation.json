@@ -1,0 +1,144 @@
+{
+  "schema_version": "water-world-v2-1-closure-validation/2.0",
+  "master_source_status": "MASTER_SOURCE_READY",
+  "work_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+  "visual_acceptance_status": "FAIL",
+  "package_integrity_status": "PASS",
+  "checks": [
+    {
+      "check": "master_lock",
+      "status": "PASS",
+      "detail": {
+        "bytes": 2256234,
+        "sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+        "dimensions": [
+          1254,
+          1254
+        ],
+        "mode": "RGB"
+      }
+    },
+    {
+      "check": "frozen_visual_thresholds",
+      "status": "FAIL",
+      "detail": {
+        "failures": [
+          "fish_iou",
+          "resident_bidirectional_chamfer_over_radius",
+          "metric_unmeasured:resident_width_error",
+          "plant_iou",
+          "rock_iou",
+          "object_not_accepted:WW_FISH_03:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+          "object_not_accepted:WW_FISH_04:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+          "object_not_accepted:G01:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+          "object_not_accepted:G02:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+          "object_not_accepted:A01:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+          "object_not_accepted:A02:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+          "object_not_accepted:C01:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+          "object_not_accepted:plant_left:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+          "object_not_accepted:plant_right:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+          "object_not_accepted:rock_01:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+          "object_not_accepted:rock_02:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+          "object_not_accepted:rock_03:BLOCKED_GROUND_TRUTH_UNCERTAIN"
+        ],
+        "gate_status": {
+          "sphere_iou": "PASS",
+          "sphere_center_error_over_diameter": "PASS",
+          "sphere_diameter_error": "PASS",
+          "fish_iou": "FAIL",
+          "fish_center_error_over_canvas": "PASS",
+          "resident_bidirectional_chamfer_over_radius": "FAIL",
+          "resident_width_error": "FAIL",
+          "plant_iou": "FAIL",
+          "rock_iou": "FAIL"
+        }
+      }
+    },
+    {
+      "check": "scene_and_object_contracts",
+      "status": "PASS",
+      "detail": {
+        "errors": []
+      }
+    },
+    {
+      "check": "ground_truth_masks_and_reports",
+      "status": "PASS",
+      "detail": {
+        "object_count": 14,
+        "errors": []
+      }
+    },
+    {
+      "check": "object_source_asset_sha",
+      "status": "PASS",
+      "detail": {
+        "errors": []
+      }
+    },
+    {
+      "check": "original_v2_copy_identity",
+      "status": "PASS",
+      "detail": {
+        "files": 65,
+        "embedded_hashes": 63,
+        "verified": 63,
+        "errors": []
+      }
+    },
+    {
+      "check": "motion_graph_47_28",
+      "status": "PASS",
+      "detail": {
+        "errors": []
+      }
+    },
+    {
+      "check": "no_stale_source_unavailable_contracts",
+      "status": "PASS",
+      "detail": {
+        "stale": []
+      }
+    },
+    {
+      "check": "final_zip_crc_and_sha_manifest",
+      "status": "PASS",
+      "detail": {
+        "summary": {
+          "members": 384,
+          "crc": "PASS",
+          "manifest": "WATER_WORLD_V2_1/08_MANIFEST/sha256_manifest.txt"
+        },
+        "errors": []
+      }
+    },
+    {
+      "check": "canonical_metric_and_render_consistency",
+      "status": "PASS",
+      "detail": {
+        "errors": []
+      }
+    }
+  ],
+  "visual_failures": [
+    "fish_iou",
+    "resident_bidirectional_chamfer_over_radius",
+    "metric_unmeasured:resident_width_error",
+    "plant_iou",
+    "rock_iou",
+    "object_not_accepted:WW_FISH_03:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+    "object_not_accepted:WW_FISH_04:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+    "object_not_accepted:G01:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+    "object_not_accepted:G02:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+    "object_not_accepted:A01:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+    "object_not_accepted:A02:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+    "object_not_accepted:C01:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+    "object_not_accepted:plant_left:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+    "object_not_accepted:plant_right:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+    "object_not_accepted:rock_01:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+    "object_not_accepted:rock_02:BLOCKED_GROUND_TRUTH_UNCERTAIN",
+    "object_not_accepted:rock_03:BLOCKED_GROUND_TRUTH_UNCERTAIN"
+  ],
+  "package_integrity_failures": [],
+  "exit_code": 20
+}

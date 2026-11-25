@@ -1,12 +1,6 @@
 {
-  "schema_version": "water-world-resident-geometry/1.0",
+  "schema_version": "water-world-resident-geometry/2.0",
   "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
-  "trace_method": "source hue/saturation samples constrained to a local tube around each legacy semantic identity path; centerline smoothed with Savitzky-Golay; no temporal inference",
-  "source_color_threshold": {
-    "saturation_min": 0.23,
-    "value_min": 0.23,
-    "outside_sphere_radius_px": 413.2986621604988
-  },
   "residents": [
     {
       "id": "G01",
@@ -932,7 +926,6 @@
         }
       ],
       "source_trace_coverage": 0.8454545454545455,
-      "interpolated_fraction": 0.15454545454545454,
       "source_measured_median_width_px": 6.767828935632369,
       "static_width_error": 0.0,
       "bidirectional_chamfer_over_sphere_radius": 0.0183447097918438,
@@ -945,7 +938,15 @@
         "frequency": null,
         "flow_velocity": null,
         "deformation_rate": null
-      }
+      },
+      "direct_source_trace": "01_ANALYSIS/ground_truth/objects/G01/direct_source_trace.json",
+      "centerline_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "width_profile_ref": "02_CALIBRATED_ASSETS/RESIDENT/resident_width_profiles.json#G01",
+      "width_measurement_status": "UNRESOLVED_IDENTITY_AND_OPTICAL_EDGE_AMBIGUITY",
+      "identity_status": "IDENTITY_UNRESOLVED",
+      "occlusion_status": "UNKNOWN_GAPS_RETAINED",
+      "unobserved_fraction": 0.24090909090909096,
+      "legacy_svg_prior_not_used_as_direct_measurement": true
     },
     {
       "id": "G02",
@@ -1871,7 +1872,6 @@
         }
       ],
       "source_trace_coverage": 0.5590909090909091,
-      "interpolated_fraction": 0.4409090909090909,
       "source_measured_median_width_px": 14.560219778561036,
       "static_width_error": 0.0,
       "bidirectional_chamfer_over_sphere_radius": 0.01615685644360813,
@@ -1886,7 +1886,15 @@
         "frequency": null,
         "flow_velocity": null,
         "deformation_rate": null
-      }
+      },
+      "direct_source_trace": "01_ANALYSIS/ground_truth/objects/G02/direct_source_trace.json",
+      "centerline_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "width_profile_ref": "02_CALIBRATED_ASSETS/RESIDENT/resident_width_profiles.json#G02",
+      "width_measurement_status": "UNRESOLVED_IDENTITY_AND_OPTICAL_EDGE_AMBIGUITY",
+      "identity_status": "IDENTITY_UNRESOLVED",
+      "occlusion_status": "UNKNOWN_GAPS_RETAINED",
+      "unobserved_fraction": 0.38181818181818183,
+      "legacy_svg_prior_not_used_as_direct_measurement": true
     },
     {
       "id": "A01",
@@ -2812,7 +2820,6 @@
         }
       ],
       "source_trace_coverage": 0.33181818181818185,
-      "interpolated_fraction": 0.6681818181818182,
       "source_measured_median_width_px": 10.0,
       "static_width_error": 0.0,
       "bidirectional_chamfer_over_sphere_radius": 0.0188280223393038,
@@ -2827,7 +2834,15 @@
         "frequency": null,
         "flow_velocity": null,
         "deformation_rate": null
-      }
+      },
+      "direct_source_trace": "01_ANALYSIS/ground_truth/objects/A01/direct_source_trace.json",
+      "centerline_status": "PASS",
+      "width_profile_ref": "02_CALIBRATED_ASSETS/RESIDENT/resident_width_profiles.json#A01",
+      "width_measurement_status": "UNRESOLVED_IDENTITY_AND_OPTICAL_EDGE_AMBIGUITY",
+      "identity_status": "IDENTITY_UNRESOLVED",
+      "occlusion_status": "UNKNOWN_GAPS_RETAINED",
+      "unobserved_fraction": 0.07272727272727275,
+      "legacy_svg_prior_not_used_as_direct_measurement": true
     },
     {
       "id": "A02",
@@ -3753,7 +3768,6 @@
         }
       ],
       "source_trace_coverage": 0.42727272727272725,
-      "interpolated_fraction": 0.5727272727272728,
       "source_measured_median_width_px": 10.0,
       "static_width_error": 0.0,
       "bidirectional_chamfer_over_sphere_radius": 0.015701471216623457,
@@ -3768,7 +3782,15 @@
         "frequency": null,
         "flow_velocity": null,
         "deformation_rate": null
-      }
+      },
+      "direct_source_trace": "01_ANALYSIS/ground_truth/objects/A02/direct_source_trace.json",
+      "centerline_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "width_profile_ref": "02_CALIBRATED_ASSETS/RESIDENT/resident_width_profiles.json#A02",
+      "width_measurement_status": "UNRESOLVED_IDENTITY_AND_OPTICAL_EDGE_AMBIGUITY",
+      "identity_status": "IDENTITY_UNRESOLVED",
+      "occlusion_status": "UNKNOWN_GAPS_RETAINED",
+      "unobserved_fraction": 0.30000000000000004,
+      "legacy_svg_prior_not_used_as_direct_measurement": true
     },
     {
       "id": "C01",
@@ -4694,7 +4716,6 @@
         }
       ],
       "source_trace_coverage": 0.38181818181818183,
-      "interpolated_fraction": 0.6181818181818182,
       "source_measured_median_width_px": 3.0,
       "static_width_error": 0.5,
       "bidirectional_chamfer_over_sphere_radius": 0.024272224924718738,
@@ -4709,7 +4730,118 @@
         "frequency": null,
         "flow_velocity": null,
         "deformation_rate": null
-      }
+      },
+      "direct_source_trace": "01_ANALYSIS/ground_truth/objects/C01/direct_source_trace.json",
+      "centerline_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "width_profile_ref": "02_CALIBRATED_ASSETS/RESIDENT/resident_width_profiles.json#C01",
+      "width_measurement_status": "UNRESOLVED_IDENTITY_AND_OPTICAL_EDGE_AMBIGUITY",
+      "identity_status": "IDENTITY_UNRESOLVED",
+      "occlusion_status": "UNKNOWN_GAPS_RETAINED",
+      "unobserved_fraction": 0.7,
+      "legacy_svg_prior_not_used_as_direct_measurement": true
     }
-  ]
+  ],
+  "canonical_metrics": {
+    "G01": {
+      "kind": "resident",
+      "bidirectional_chamfer_over_radius": 0.018048433734203187,
+      "width_error": null,
+      "source_median_width_px": 19.0,
+      "width_measurement_status": "UNRESOLVED_IDENTITY_AND_OPTICAL_EDGE_AMBIGUITY",
+      "v2_svg_width_px": 20.0,
+      "direct_trace_coverage": 0.759090909090909,
+      "threshold_chamfer_over_radius": 0.015,
+      "threshold_width_error": 0.05,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "MEDIUM",
+      "comparison_crop_px": [
+        131,
+        78,
+        1152,
+        723
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/G01.png"
+    },
+    "G02": {
+      "kind": "resident",
+      "bidirectional_chamfer_over_radius": 0.05499748668699491,
+      "width_error": null,
+      "source_median_width_px": 38.75,
+      "width_measurement_status": "UNRESOLVED_IDENTITY_AND_OPTICAL_EDGE_AMBIGUITY",
+      "v2_svg_width_px": 11.0,
+      "direct_trace_coverage": 0.6181818181818182,
+      "threshold_chamfer_over_radius": 0.015,
+      "threshold_width_error": 0.05,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "MEDIUM",
+      "comparison_crop_px": [
+        207,
+        157,
+        1247,
+        783
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/G02.png"
+    },
+    "A01": {
+      "kind": "resident",
+      "bidirectional_chamfer_over_radius": 0.0038609780021807037,
+      "width_error": null,
+      "source_median_width_px": 38.25,
+      "width_measurement_status": "UNRESOLVED_IDENTITY_AND_OPTICAL_EDGE_AMBIGUITY",
+      "v2_svg_width_px": 10.0,
+      "direct_trace_coverage": 0.9272727272727272,
+      "threshold_chamfer_over_radius": 0.015,
+      "threshold_width_error": 0.05,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "MEDIUM",
+      "comparison_crop_px": [
+        32,
+        418,
+        910,
+        1150
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/A01.png"
+    },
+    "A02": {
+      "kind": "resident",
+      "bidirectional_chamfer_over_radius": 0.014787653661809374,
+      "width_error": null,
+      "source_median_width_px": 26.5,
+      "width_measurement_status": "UNRESOLVED_IDENTITY_AND_OPTICAL_EDGE_AMBIGUITY",
+      "v2_svg_width_px": 9.0,
+      "direct_trace_coverage": 0.7,
+      "threshold_chamfer_over_radius": 0.015,
+      "threshold_width_error": 0.05,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "MEDIUM",
+      "comparison_crop_px": [
+        222,
+        721,
+        1210,
+        1181
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/A02.png"
+    },
+    "C01": {
+      "kind": "resident",
+      "bidirectional_chamfer_over_radius": 0.10278116483342134,
+      "width_error": null,
+      "source_median_width_px": 6.0,
+      "width_measurement_status": "UNRESOLVED_IDENTITY_AND_OPTICAL_EDGE_AMBIGUITY",
+      "v2_svg_width_px": 8.0,
+      "direct_trace_coverage": 0.3,
+      "threshold_chamfer_over_radius": 0.015,
+      "threshold_width_error": 0.05,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "LOW",
+      "comparison_crop_px": [
+        157,
+        734,
+        1247,
+        1194
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/C01.png"
+    }
+  },
+  "canonical_metrics_sha256": "331a513e7b31247d9487c21bbb1d0a3670347af216be1d27f14ae6cd41647faa"
 }

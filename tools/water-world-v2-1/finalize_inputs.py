@@ -259,6 +259,33 @@ def _write_reports(package: Path, metrics: dict, root_causes: list[dict]) -> Non
     matrix="\n".join(table)
     for rel in ["06_VALIDATION/acceptance_matrix.md","reports/FINAL_ACCEPTANCE_MATRIX.md"]:
         (package/rel).parent.mkdir(parents=True,exist_ok=True); (package/rel).write_text(matrix,encoding="utf-8")
+    visual_rows=["# WATER WORLD V2.1 Canonical Visual Acceptance","",
+      f"**Overall:** `{metrics['overall_status']}`. CPU-only measurement; GPU acceptance is NOT_RUN.",
+      "Metric method: `canonical_metrics.py`; 1254×1254 source-pixel masks, binary threshold 128, full-precision comparisons, confidence/completeness gating.","",
+      "| Gate | Frozen threshold | Canonical measurement | Result |","|---|---:|---:|---|"]
+    for key in LIMITS:
+        value=metrics["metrics"].get(key)
+        threshold=metrics.get("thresholds",{}).get(key,{})
+        mark="≥" if "min" in threshold else "≤"
+        target=threshold.get("min",threshold.get("max"))
+        rendered=json.dumps(value,ensure_ascii=False,separators=(",",":")) if isinstance(value,(dict,list)) else f"{value:.9f}" if isinstance(value,(int,float)) else "null"
+        visual_rows.append(f"| {key} | {mark} {target} | `{rendered}` | {metrics['gate_status'].get(key,'MISSING')} |")
+    visual_rows += ["","## Object confidence gates","","| Object | Confidence | Status | Evidence |","|---|---|---|---|"]
+    for oid in OBJECTS:
+        row=metrics["per_object"][oid]
+        visual_rows.append(f"| {oid} | {row.get('ground_truth_confidence')} | {row.get('status')} | `{row.get('comparison_evidence')}` |")
+    visual_rows += ["","A numeric threshold PASS does not override incomplete or low-confidence Ground Truth. The master is comparison-only and was not used as a composition layer.",""]
+    visual_report="\n".join(visual_rows)
+    for rel in ["06_VALIDATION/visual_acceptance_report.md","reports/VISUAL_ACCEPTANCE_REPORT.md"]:
+        (package/rel).parent.mkdir(parents=True,exist_ok=True); (package/rel).write_text(visual_report,encoding="utf-8")
+    threshold_report={"schema_version":"water-world-v2-1-thresholds/2.0","status":metrics["overall_status"],
+      "master_sha256":metrics["master_sha256"],"canonical_metrics_path":"03_STATIC_RECOMPOSITION/visual_metrics.json",
+      "thresholds":[{"metric":key,"threshold":metrics["thresholds"][key],"measured":metrics["metrics"][key],
+                      "status":metrics["gate_status"][key]} for key in LIMITS],
+      "per_object_status":{oid:{"status":row.get("status"),"confidence":row.get("ground_truth_confidence")}
+                            for oid,row in metrics["per_object"].items()},
+      "gpu_validation":"NOT_RUN","metric_rounding_used_for_gate":False}
+    write(package/"06_VALIDATION/acceptance_thresholds.json",threshold_report)
     rows=["| Object | Root cause class | Root cause / fix | Source SHA | Prior same metric | Current | Threshold | Status |","|---|---|---|---|---:|---:|---:|---|"]
     for x in root_causes:
         rows.append(f"| {x['object_id']} | {x['root_cause_class']} | {x['root_cause']} / {x['fix']} | `{x['source_asset_sha256']}` | {x['old_same_definition_metric']} | {x['new_metric']} | {x['threshold']} | {x['status']} |")
@@ -290,6 +317,12 @@ def _write_reports(package: Path, metrics: dict, root_causes: list[dict]) -> Non
                 "preflight/reports/ASSET_AUDIT_REPORT.md","preflight/reports/RESOURCE_CALIBRATION_REPORT.md"]:
         (package/rel).parent.mkdir(parents=True,exist_ok=True); (package/rel).write_text(audit,encoding="utf-8")
     (package/"03_STATIC_RECOMPOSITION/README.md").write_text("# Independent static composition\n\nRun from the repository root: `PYTHONPATH=/tmp/wv21-opencv python tools/water-world-v2-1/analyze_recompose_master.py --package-root <package>` then `python tools/water-world-v2-1/canonical_metrics.py --package-root <package>` and `python tools/water-world-v2-1/finalize_inputs.py --package-root <package>`. This is a CPU composition from original V2 assets. The master is reference-only; masks and overlays are measurement evidence. See `visual_metrics.json` for the frozen thresholds and actual status.\n",encoding="utf-8")
+    (package/"README.md").write_text(
+      f"# WATER WORLD V2.1 Work 1.5\n\nStatus: **`{metrics['overall_status']}`**. The frozen master source passed SHA/metadata validation. CPU static recomposition, per-object comparisons, tests and contracts are included; fish, Resident, plant and rock hard gates remain blocked or failed.\n\n"
+      f"Master SHA-256: `{MASTER_SHA}` (1254×1254 RGB, 2,256,234 bytes). Original V2 archive SHA-256: `{V2_SHA}`; 65/65 source files remain byte-identical.\n\n"
+      "Local checks: legacy Validator suite 22/22 PASS (the original 21 tests plus one ZIP-manifest regression), closure unit suite 21/21 PASS, Motion Graph 47 nodes / 28 dependencies PASS, and six CPU recomposition artifact hashes reproduce exactly. Exact-HEAD GitHub CI is reported on PR #3.\n\n"
+      "The Work 2 GPU static input is not accepted while object Ground Truth/visual gates remain blocked. No GPU capture, dynamic animation or APK is claimed. The master is reference-only and is never a composition layer. See `FINAL_WORK1_5_REPAIR_AND_WORK2_INPUT_READY_REPORT.md`, `06_VALIDATION/visual_acceptance_report.md`, and `03_STATIC_RECOMPOSITION/visual_metrics.json`.\n",
+      encoding="utf-8")
 
 def run(package: Path) -> dict:
     master=package/"inputs/master/奇幻水晶球中的水下生态世界.png"
@@ -370,6 +403,9 @@ def run(package: Path) -> dict:
       ("contracts/CAMERA_CONTRACT.md","preflight/contracts/CAMERA_CONTRACT.md"),
       ("06_VALIDATION/acceptance_matrix.md","preflight/06_VALIDATION/acceptance_matrix.md"),
       ("06_VALIDATION/acceptance_matrix.md","preflight/reports/FINAL_ACCEPTANCE_MATRIX.md"),
+      ("06_VALIDATION/visual_acceptance_report.md","preflight/06_VALIDATION/visual_acceptance_report.md"),
+      ("06_VALIDATION/visual_acceptance_report.md","preflight/reports/VISUAL_ACCEPTANCE_REPORT.md"),
+      ("06_VALIDATION/acceptance_thresholds.json","preflight/06_VALIDATION/acceptance_thresholds.json"),
       ("08_MANIFEST/master_asset_mapping.json","preflight/mappings/MASTER_ASSET_MAPPING.json"),
       ("08_MANIFEST/master_asset_mapping.json","mappings/MASTER_ASSET_MAPPING.json"),
       ("03_SCENE_GRAPH/scene_graph_v2_1.json","preflight/mappings/SCENE_GRAPH.json"),
@@ -394,6 +430,16 @@ def run(package: Path) -> dict:
     preflight_validator=package/"preflight/tools/water-world-v2-1/validate_preflight.py"
     preflight_validator.parent.mkdir(parents=True,exist_ok=True)
     shutil.copy2(packaged_tools/"validate_preflight.py",preflight_validator)
+    generation_path=package/"08_MANIFEST/generation_log.json"
+    if generation_path.is_file():
+        generation=read(generation_path)
+        generation["result"]=metrics["overall_status"]
+        generation["prior_validation"]={"validator_tests":"22/22 PASS; original 21 retained and one package-manifest regression added",
+          "motion_graph":"47 nodes / 28 dependencies revalidated PASS","cpu_recomposition":"6/6 output SHA-256 values match across clean runs",
+          "visual_acceptance":metrics["overall_status"],"exact_head_ci":"PENDING_EXACT_HEAD_CI"}
+        generation["outputs"]=list(dict.fromkeys(generation.get("outputs",[])))
+        write(generation_path,generation)
+        shutil.copy2(generation_path,package/"preflight/08_MANIFEST/generation_log.json")
     return {"status":metrics["overall_status"],"objects":len(objects),"master_sha256":MASTER_SHA,
       "resident_coverage":{k:v["direct_trace_coverage"] for k,v in residents[0].items()}}
 

@@ -1,7 +1,9 @@
-# Resource Calibration Report
+# WATER WORLD V2.1 asset audit
 
-Status: NOT PERFORMED; blocked by raw master access. The user confirmed the inline image as the unique source. The PNG file bytes are not accessible to the execution runtime, so the source dimensions/hash/ICC and pixel masks cannot be validated.
+Master `fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589` is byte-verified. The source V2 archive is `6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095`; 65 copied files remain unchanged.
 
-V2 assets were audited without rewriting. The inherited package has four fish cutouts and mesh JSONs, five estimated Resident paths, two single-image plant cutouts, three rocks, sphere/glass masks, water color/normal/depth/caustics, lighting and bubble sprite/placements. Placement and Resident path metadata are explicitly estimates.
+Confirmed repair: four fish source assets were preserved and transform-only calibration was fitted against fin-aware source masks. Confirmed measurement defect: old Resident path metrics compared the traced master line to a composition generated from that same line; independent CPU composition now uses the original V2 SVG.
 
-Decision policy applied: KEEP all 65 original archive entries byte-for-byte; RECALIBRATE=0, REPAIR=0, REGENERATE=0. This means preserved and deferred, not approved for visual fidelity. No V2.1 calibrated asset ZIP was built.
+Resident width, plant, and rock resource defects remain unconfirmed because their source boundaries overlap optical highlights, same-color Resident strands, foliage, moss, glass and shadows. Those assets are KEEP until Ground Truth is reliable.
+
+Current visual status: `BLOCKED_GROUND_TRUTH_UNCERTAIN`. See `01_ANALYSIS/root_cause_matrix.json` for per-object metrics, hashes and evidence.

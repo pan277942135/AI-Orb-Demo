@@ -1,5 +1,3 @@
-# Camera Contract
+# Work 2 static camera contract
 
-The master canvas is 1254x1254 per inherited V2 scene metadata; final camera framing remains uncalibrated until raw master bytes are analyzed. Asset placement coordinates use normalized canvas estimates. Contract origin is top-left for these source coordinates, with x right and y down. For normalized u,v in [0,1], canvas pixel is (u*W,v*H); the conventional clip mapping is x=2u-1, y=1-2v. This is a coordinate conversion contract, not evidence of calibrated geometry.
-
-World, master, object-local, view and clip spaces must be explicit. Content scale/offset and aspect behavior must preserve the square reference canvas. Core motion uses Core Local 3D and never changes screen-space coordinates directly.
+Source canvas: 1254×1254; top-left origin; +X right; +Y down; UV=(x/1254,y/1254). Use 2D image-space orthographic registration. Sphere center/radius are frozen in `01_ANALYSIS/master_sphere_geometry.json`. Physical FOV/distance are unresolved from a single static image. GPU camera capture is NOT_RUN.

@@ -15,9 +15,11 @@
     "OPTICAL_RESPONSE"
   ],
   "source_constraints": {
-    "water_world_master_status": "BLOCKED_MASTER_SOURCE",
+    "water_world_master_status": "MASTER_SOURCE_READY",
     "dynamic_video_available": false,
-    "unverified_numeric_motion_fields_must_be_null": true
+    "unverified_numeric_motion_fields_must_be_null": true,
+    "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+    "visual_acceptance_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN"
   },
   "elements": [
     {
@@ -46,8 +48,8 @@
       "loop_mode": null,
       "interpolation": null,
       "reference_evidence": [
-        "AI-Orb-Demo/app/src/main/assets/orb_v3/volume/fluid_color_z00.webp..z31.webp",
-        "AI-Orb-Demo/app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json"
+        "app/src/main/assets/orb_v3/volume/fluid_color_z00.webp..z31.webp",
+        "app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json"
       ],
       "confidence": "HIGH_ASSET_STRUCTURE",
       "motion_status": "NEEDS_TEMPORAL_REFERENCE",
@@ -70,7 +72,9 @@
       ],
       "pivot_status": "SOURCE_DOMAIN_ORIGIN_VERIFIED_NOT_DENSITY_CENTROID",
       "pivot_semantics": "AI Orb texture sample domain origin only; not density-weighted centroid and not an approved Water World pivot.",
-      "water_world_pivot_approved": false
+      "water_world_pivot_approved": false,
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "CORE_FLUID",
@@ -94,10 +98,10 @@
       "loop_mode": null,
       "interpolation": null,
       "reference_evidence": [
-        "AI-Orb-Demo/app/src/main/assets/orb_v3/volume/fluid_color_z00.webp..z31.webp",
-        "AI-Orb-Demo/app/src/main/assets/orb_v3/maps/emerald_distribution.webp",
-        "AI-Orb-Demo/app/src/main/java/com/example/orb/scene/AIOrbFluidMath.kt",
-        "AI-Orb-Demo/app/src/main/java/com/example/orb/gl/CoreFluidShaders.kt"
+        "app/src/main/assets/orb_v3/volume/fluid_color_z00.webp..z31.webp",
+        "app/src/main/assets/orb_v3/maps/emerald_distribution.webp",
+        "app/src/main/java/com/example/orb/scene/AIOrbFluidMath.kt",
+        "app/src/main/java/com/example/orb/gl/CoreFluidShaders.kt"
       ],
       "confidence": "HIGH_ASSET_STRUCTURE",
       "motion_status": "NEEDS_TEMPORAL_REFERENCE",
@@ -109,7 +113,9 @@
       "runtime_inputs": [
         "volume_sample_position",
         "flow_direction"
-      ]
+      ],
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "CORE_FILAMENT",
@@ -133,7 +139,7 @@
       "loop_mode": null,
       "interpolation": null,
       "reference_evidence": [
-        "AI-Orb-Demo/app/src/main/assets/orb_v3/optics/caustics.webp channel B only; not path geometry"
+        "app/src/main/assets/orb_v3/optics/caustics.webp channel B only; not path geometry"
       ],
       "confidence": "HIGH_AUDIT",
       "motion_status": "ASSET_NOT_AVAILABLE",
@@ -144,7 +150,9 @@
       "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
       "runtime_inputs": [
         "filament_depth"
-      ]
+      ],
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "CORE_PARTICLES",
@@ -168,7 +176,7 @@
       "loop_mode": null,
       "interpolation": null,
       "reference_evidence": [
-        "AI-Orb-Demo/app/src/main/java/com/example/orb/scene/AIOrbParticles.kt is scene far-depth droplet/mote pass"
+        "app/src/main/java/com/example/orb/scene/AIOrbParticles.kt is scene far-depth droplet/mote pass"
       ],
       "confidence": "HIGH_AUDIT",
       "motion_status": "ASSET_NOT_AVAILABLE",
@@ -179,7 +187,9 @@
       "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
       "runtime_inputs": [
         "particle_depth"
-      ]
+      ],
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "CORE_DENSITY",
@@ -203,7 +213,7 @@
       "loop_mode": null,
       "interpolation": null,
       "reference_evidence": [
-        "AI-Orb-Demo/app/src/main/assets/orb_v3/volume/fluid_color_z00.webp..z31.webp alpha"
+        "app/src/main/assets/orb_v3/volume/fluid_color_z00.webp..z31.webp alpha"
       ],
       "confidence": "HIGH_ASSET_STRUCTURE",
       "motion_status": "NEEDS_TEMPORAL_REFERENCE",
@@ -215,7 +225,9 @@
       "runtime_inputs": [
         "sampled_density",
         "density_field"
-      ]
+      ],
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "CORE_COLOR",
@@ -239,7 +251,7 @@
       "loop_mode": null,
       "interpolation": null,
       "reference_evidence": [
-        "AI-Orb-Demo/app/src/main/assets/orb_v3/volume/fluid_color_z00.webp..z31.webp RGB"
+        "app/src/main/assets/orb_v3/volume/fluid_color_z00.webp..z31.webp RGB"
       ],
       "confidence": "HIGH_ASSET_STRUCTURE",
       "motion_status": "NEEDS_TEMPORAL_REFERENCE",
@@ -251,7 +263,9 @@
       "runtime_inputs": [
         "sampled_color",
         "material_sample"
-      ]
+      ],
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "CORE_CAUSTICS",
@@ -275,8 +289,8 @@
       "loop_mode": null,
       "interpolation": null,
       "reference_evidence": [
-        "AI-Orb-Demo/app/src/main/assets/orb_v3/optics/caustics.webp",
-        "AI-Orb-Demo/app/src/main/java/com/example/orb/gl/CoreFluidShaders.kt samplePathCaustic"
+        "app/src/main/assets/orb_v3/optics/caustics.webp",
+        "app/src/main/java/com/example/orb/gl/CoreFluidShaders.kt samplePathCaustic"
       ],
       "confidence": "HIGH_ASSET_STRUCTURE",
       "motion_status": "NEEDS_TEMPORAL_REFERENCE",
@@ -289,7 +303,9 @@
         "light_field",
         "density_and_normal",
         "caustic_attenuation"
-      ]
+      ],
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "CORE_GLASS",
@@ -313,9 +329,9 @@
       "loop_mode": null,
       "interpolation": null,
       "reference_evidence": [
-        "AI-Orb-Demo/app/src/main/assets/orb_v3/optics/glass_environment.webp",
-        "AI-Orb-Demo/app/src/main/java/com/example/orb/gl/CoreFluidShaders.kt",
-        "AI-Orb-Demo/app/src/main/java/com/example/orb/scene/OrbFluidVolumeRenderer.kt"
+        "app/src/main/assets/orb_v3/optics/glass_environment.webp",
+        "app/src/main/java/com/example/orb/gl/CoreFluidShaders.kt",
+        "app/src/main/java/com/example/orb/scene/OrbFluidVolumeRenderer.kt"
       ],
       "confidence": "HIGH_ASSET_STRUCTURE",
       "motion_status": "NEEDS_TEMPORAL_REFERENCE",
@@ -332,7 +348,9 @@
         "internal_caustic_radiance",
         "filament_depth",
         "particle_depth"
-      ]
+      ],
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_BACKGROUND",
@@ -363,7 +381,9 @@
       "asset_status": "AVAILABLE_V2_ASSET",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_WATERBED",
@@ -394,7 +414,9 @@
       "asset_status": "AVAILABLE_V2_ASSET",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_WATER_SURFACE",
@@ -429,7 +451,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_SPHERE",
@@ -461,7 +485,9 @@
       "asset_status": "AVAILABLE_MASK_AND_GEOMETRY_DESCRIPTION",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_GLASS_BACK",
@@ -493,7 +519,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_GLASS_FRONT",
@@ -526,7 +554,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_FISH_01",
@@ -559,7 +589,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_FISH_01_TAIL",
@@ -591,7 +623,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_FISH_01_FINS",
@@ -623,7 +657,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_FISH_02",
@@ -656,7 +692,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_FISH_02_TAIL",
@@ -688,7 +726,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_FISH_02_FINS",
@@ -720,7 +760,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_FISH_03",
@@ -753,7 +795,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_FISH_03_TAIL",
@@ -785,7 +829,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_FISH_03_FINS",
@@ -817,7 +863,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_FISH_04",
@@ -850,7 +898,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_FISH_04_TAIL",
@@ -882,7 +932,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_FISH_04_FINS",
@@ -914,7 +966,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_RESIDENT_G01",
@@ -947,7 +1001,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_RESIDENT_G02",
@@ -980,7 +1036,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_RESIDENT_A01",
@@ -1013,7 +1071,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_RESIDENT_A02",
@@ -1046,7 +1106,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_RESIDENT_C01",
@@ -1079,7 +1141,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_PLANT_LEFT",
@@ -1114,7 +1178,9 @@
       "asset_status": "AVAILABLE_SINGLE_CUTOUT",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_PLANT_LEFT_LEAVES",
@@ -1146,7 +1212,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_PLANT_RIGHT",
@@ -1181,7 +1249,9 @@
       "asset_status": "AVAILABLE_SINGLE_CUTOUT",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_PLANT_RIGHT_LEAVES",
@@ -1213,7 +1283,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE"
+      "pivot_status": "UNRESOLVED_ASSET_NOT_AVAILABLE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_ROCK_01",
@@ -1245,7 +1317,9 @@
       "asset_status": "AVAILABLE_CUTOUT_AND_MASK",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_ROCK_02",
@@ -1277,7 +1351,9 @@
       "asset_status": "AVAILABLE_CUTOUT_AND_MASK",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_ROCK_03",
@@ -1309,7 +1385,9 @@
       "asset_status": "AVAILABLE_CUTOUT_AND_MASK",
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
-      "extra": {}
+      "extra": {},
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_BUBBLE_B01",
@@ -1342,7 +1420,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_BUBBLE_B02",
@@ -1375,7 +1455,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_BUBBLE_B03",
@@ -1408,7 +1490,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_BUBBLE_B04",
@@ -1441,7 +1525,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_BUBBLE_B05",
@@ -1474,7 +1560,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_BUBBLE_B06",
@@ -1507,7 +1595,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_BUBBLE_B07",
@@ -1540,7 +1630,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_BUBBLE_B08",
@@ -1573,7 +1665,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     },
     {
       "element_id": "WW_BUBBLE_B09",
@@ -1606,7 +1700,9 @@
       "source_runtime_evidence": null,
       "water_world_motion_values_validated": false,
       "extra": {},
-      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE"
+      "pivot_status": "UNRESOLVED_MASTER_OR_TEMPORAL_REFERENCE",
+      "flow_velocity": null,
+      "deformation_rate": null
     }
   ]
 }

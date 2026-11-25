@@ -1,0 +1,46 @@
+{
+  "schema_version": "water-world-v2-1-resident-occlusion/1.0",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "residents": {
+    "G01": {
+      "directly_observed_samples": 167,
+      "unclassified_unmatched_samples": 53,
+      "confirmed_occluded_samples": 0,
+      "unmatched_state": "UNCLASSIFIED_NOT_ASSUMED_OCCLUDED",
+      "occlusion_mask": "01_ANALYSIS/ground_truth/objects/G01/occlusion_mask.png",
+      "confidence_mask": "01_ANALYSIS/ground_truth/objects/G01/confidence_mask.png"
+    },
+    "G02": {
+      "directly_observed_samples": 136,
+      "unclassified_unmatched_samples": 84,
+      "confirmed_occluded_samples": 0,
+      "unmatched_state": "UNCLASSIFIED_NOT_ASSUMED_OCCLUDED",
+      "occlusion_mask": "01_ANALYSIS/ground_truth/objects/G02/occlusion_mask.png",
+      "confidence_mask": "01_ANALYSIS/ground_truth/objects/G02/confidence_mask.png"
+    },
+    "A01": {
+      "directly_observed_samples": 204,
+      "unclassified_unmatched_samples": 16,
+      "confirmed_occluded_samples": 0,
+      "unmatched_state": "UNCLASSIFIED_NOT_ASSUMED_OCCLUDED",
+      "occlusion_mask": "01_ANALYSIS/ground_truth/objects/A01/occlusion_mask.png",
+      "confidence_mask": "01_ANALYSIS/ground_truth/objects/A01/confidence_mask.png"
+    },
+    "A02": {
+      "directly_observed_samples": 154,
+      "unclassified_unmatched_samples": 66,
+      "confirmed_occluded_samples": 0,
+      "unmatched_state": "UNCLASSIFIED_NOT_ASSUMED_OCCLUDED",
+      "occlusion_mask": "01_ANALYSIS/ground_truth/objects/A02/occlusion_mask.png",
+      "confidence_mask": "01_ANALYSIS/ground_truth/objects/A02/confidence_mask.png"
+    },
+    "C01": {
+      "directly_observed_samples": 66,
+      "unclassified_unmatched_samples": 154,
+      "confirmed_occluded_samples": 0,
+      "unmatched_state": "UNCLASSIFIED_NOT_ASSUMED_OCCLUDED",
+      "occlusion_mask": "01_ANALYSIS/ground_truth/objects/C01/occlusion_mask.png",
+      "confidence_mask": "01_ANALYSIS/ground_truth/objects/C01/confidence_mask.png"
+    }
+  }
+}

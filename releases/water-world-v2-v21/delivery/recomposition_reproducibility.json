@@ -1,0 +1,26 @@
+{
+  "schema_version": "water-world-v2-1-cpu-recomposition-reproducibility/1.0",
+  "status": "PASS",
+  "render_type": "CPU_STATIC_RECOMPOSITION_FROM_INDEPENDENT_V2_ASSETS",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "runs": {
+    "run_a": {
+      "03_STATIC_RECOMPOSITION/static_recomposition.png": "0bb2162c3f420ccdb2744cda184931059c4f4b452ab5e054dbdd0660edad3df3",
+      "03_STATIC_RECOMPOSITION/master_reference.png": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+      "03_STATIC_RECOMPOSITION/master_overlay.png": "5aba700c6304afd794e06663fedf8ea87eaa1e4eef5033569f06817871ec76e2",
+      "03_STATIC_RECOMPOSITION/difference_heatmap.png": "6cb7a87c5a13d55db3e81d1e11a075af47bc9d5ab26f831d320bbe77e66147dd",
+      "03_STATIC_RECOMPOSITION/region_comparison.png": "0e8fa9c692856455f21609aee3a2ca1a7691d3af51535dfdd959c09b89f8d122",
+      "03_STATIC_RECOMPOSITION/visual_metrics.json": "ccf5ae37f7612deb8db36a4d3df4c943fd97ce2b43dfcd18e16a639e115bb114"
+    },
+    "run_b": {
+      "03_STATIC_RECOMPOSITION/static_recomposition.png": "0bb2162c3f420ccdb2744cda184931059c4f4b452ab5e054dbdd0660edad3df3",
+      "03_STATIC_RECOMPOSITION/master_reference.png": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+      "03_STATIC_RECOMPOSITION/master_overlay.png": "5aba700c6304afd794e06663fedf8ea87eaa1e4eef5033569f06817871ec76e2",
+      "03_STATIC_RECOMPOSITION/difference_heatmap.png": "6cb7a87c5a13d55db3e81d1e11a075af47bc9d5ab26f831d320bbe77e66147dd",
+      "03_STATIC_RECOMPOSITION/region_comparison.png": "0e8fa9c692856455f21609aee3a2ca1a7691d3af51535dfdd959c09b89f8d122",
+      "03_STATIC_RECOMPOSITION/visual_metrics.json": "ccf5ae37f7612deb8db36a4d3df4c943fd97ce2b43dfcd18e16a639e115bb114"
+    }
+  },
+  "mismatched_artifacts": [],
+  "gpu_validation": "NOT_RUN"
+}
