@@ -1,5 +1,4 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
-import java.security.MessageDigest
 
 plugins {
   alias(libs.plugins.android.application)
@@ -86,14 +85,12 @@ val prepareWaterWorldAssets = tasks.register<Copy>("prepareWaterWorldAssets") {
   from(waterWorldScene) {
     include("02_SUPPLEMENTED_ASSETS/**", "03_SCENE_GRAPH/**")
   }
-  doFirst {
-    val sha = MessageDigest.getInstance("SHA-256").digest(waterWorldArchive.readBytes())
-      .joinToString("") { "%02x".format(it.toInt() and 255) }
-    check(sha == "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095") {
-      "Frozen V2 asset archive changed"
-    }
-  }
 }
+val verifyFrozenWaterWorldArchive = tasks.register<Exec>("verifyFrozenWaterWorldArchive") {
+  workingDir(rootProject.projectDir)
+  commandLine("python3", "tools/water-world-scene-assembly/verify_android_asset_plan.py")
+}
+prepareWaterWorldAssets.configure { dependsOn(verifyFrozenWaterWorldArchive) }
 tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }
   .configureEach { dependsOn(prepareWaterWorldAssets) }
 
