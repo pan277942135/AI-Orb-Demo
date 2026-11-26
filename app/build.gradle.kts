@@ -69,7 +69,7 @@ android {
     includeInApk = false
     includeInBundle = true
   }
-  sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/waterWorldAssets"))
+  sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/waterWorldAssets").get().asFile)
 }
 
 // Assemble debug assets from the byte-frozen V2 archive and the checked-in
