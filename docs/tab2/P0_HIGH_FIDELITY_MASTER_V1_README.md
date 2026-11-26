@@ -1,6 +1,6 @@
 # Tab2 P0｜唯一高保真视觉母版 V1 — 冻结说明
 
-> **视觉冻结已确定；PNG 二进制尚未进入 GitHub。** 本文与 `P0_HIGH_FIDELITY_MASTER_V1.lock.json` 已提交 Main，但不能以此代替实际 PNG 的上传/校验。
+> **GITHUB_BINARY_VERIFIED：原始 PNG 已进入 GitHub Main。** 文件大小及 Git Blob SHA-1 与本地冻结 PNG 完全匹配；本地原图 SHA-256 已复核。资源拆分可以启动，但每轮仍须下载文件并重新计算 SHA-256。
 
 ## 唯一图像
 
@@ -34,16 +34,16 @@
 - 将此图用于后续视觉差异对照时，必须保留精确源 SHA、渲染版本和原始对照输出，不能仅凭“看起来相似”宣称通过。
 - 本次只是冻结视觉输入；不意味着完成资源拆分、GPU 构建或真机验收。
 
-## GitHub 上传操作
+## GitHub 上传与锁定核验（已完成）
 
-将**此份未经改动的原始 PNG**上传到：
+已将**此份未经改动的原始 PNG**上传到：
 
 `docs/tab2/assets/TAB2_P0_HIGH_FIDELITY_MASTER_V1.png`
 
-上传后从 GitHub 下载回验：
+GitHub Main 文件元数据与本地原图的 Git Blob 校验：
 - 字节数：`2171118`
 - SHA-256：`a37819bba6b144ca7fec27ace55e5b319c41e67b89a11e70d51200bce8749d67`
 - Git Blob：`a8d055b0dff734c3f8f9905b7b21cd57981c82d6`
 
-只有三项一致，才允许将 Lock JSON 中的 source_status 更新为 `GITHUB_BINARY_VERIFIED`。
+GitHub 目录 API 报告的文件大小和 Git Blob SHA-1 与本地原始 PNG 逐字节算法校验值一致；本地 SHA-256 同步复核通过。Lock JSON 已更新为 `GITHUB_BINARY_VERIFIED`。**后续自动资源拆分仍必须实际下载 PNG 并重新计算 SHA-256，不允许只依据此文档跳过取证。**
 
