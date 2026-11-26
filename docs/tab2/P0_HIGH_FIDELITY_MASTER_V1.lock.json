@@ -4,7 +4,7 @@
   "title": "Tab2 P0｜照片外围水光唯一高保真视觉母版 V1",
   "visual_frozen": true,
   "implementation_accepted": false,
-  "source_status": "PENDING_GITHUB_PNG_UPLOAD",
+  "source_status": "GITHUB_BINARY_VERIFIED",
   "source": {
     "repo": "pan277942135/AI-Orb-Demo",
     "branch": "main",
@@ -16,7 +16,12 @@
     "channels": "RGB",
     "size_bytes": 2171118,
     "sha256": "a37819bba6b144ca7fec27ace55e5b319c41e67b89a11e70d51200bce8749d67",
-    "git_blob_sha1": "a8d055b0dff734c3f8f9905b7b21cd57981c82d6"
+    "git_blob_sha1": "a8d055b0dff734c3f8f9905b7b21cd57981c82d6",
+    "source_verified": true,
+    "verified_on_branch": "main",
+    "verified_size_bytes": 2171118,
+    "verified_git_blob_sha1": "a8d055b0dff734c3f8f9905b7b21cd57981c82d6",
+    "verification_method": "GitHub main contents directory reports size + git blob SHA identical to Git blob recomputed from frozen local image; local SHA-256 confirmed"
   },
   "authority": {
     "visual": "THIS FILE ONLY, once SHA-256 verified",
@@ -41,8 +46,10 @@
     "The image is an artistic visual target only; GPU implementation and recognition events require separate verification."
   ],
   "gate": {
-    "before_resource_extraction": "Download the exact PNG from source.path and verify size_bytes and sha256.",
+    "before_resource_extraction": "Download the exact PNG and recompute SHA-256 to ensure no later changes; required hash is source.sha256",
     "if_missing_or_mismatched": "BLOCKED_MASTER_SOURCE; do not crop, recreate, approximate, or use historical references.",
-    "prohibition": "Never claim the PNG was uploaded or verified until the exact bytes exist on GitHub Main."
+    "prohibition": "Never claim the PNG was uploaded or verified until the exact bytes exist on GitHub Main.",
+    "resource_extraction_unblocked": true,
+    "source_verification_status": "PASS"
   }
 }
