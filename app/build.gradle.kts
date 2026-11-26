@@ -1,4 +1,5 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+import java.security.MessageDigest
 
 plugins {
   alias(libs.plugins.android.application)
@@ -68,7 +69,33 @@ android {
     includeInApk = false
     includeInBundle = true
   }
+  sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/waterWorldAssets"))
 }
+
+// Assemble debug assets from the byte-frozen V2 archive and the checked-in
+// non-destructive Work 1.5 geometry. The master PNG is deliberately excluded.
+val waterWorldArchive = rootProject.file("releases/water-world-v2/WATER_WORLD_V2_ASSETS.zip")
+val waterWorldScene = rootProject.file("releases/water-world-v2-v21/work1_5_scene_assembly/WATER_WORLD_V2_1")
+val prepareWaterWorldAssets = tasks.register<Copy>("prepareWaterWorldAssets") {
+  into(layout.buildDirectory.dir("generated/waterWorldAssets/water_world_v2_1"))
+  from(zipTree(waterWorldArchive)) {
+    include("WATER_WORLD_V2/**")
+    eachFile { path = path.removePrefix("WATER_WORLD_V2/").let { "01_REUSED_ASSETS/$it" } }
+    includeEmptyDirs = false
+  }
+  from(waterWorldScene) {
+    include("02_SUPPLEMENTED_ASSETS/**", "03_SCENE_GRAPH/**")
+  }
+  doFirst {
+    val sha = MessageDigest.getInstance("SHA-256").digest(waterWorldArchive.readBytes())
+      .joinToString("") { "%02x".format(it.toInt() and 255) }
+    check(sha == "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095") {
+      "Frozen V2 asset archive changed"
+    }
+  }
+}
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }
+  .configureEach { dependsOn(prepareWaterWorldAssets) }
 
 // Configure the Secrets Gradle Plugin to use .env and .env.example files
 // to match the convention used in Web projects.

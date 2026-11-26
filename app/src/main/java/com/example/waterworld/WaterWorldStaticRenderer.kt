@@ -98,6 +98,25 @@ internal class WaterWorldStaticRenderer(private val root: File) {
             .put("drawCount",draws.size).put("timeSeconds",0).put("fboComplete",true)
     }
 
+    /** Present the exact offscreen scene to the Android window without cropping. */
+    fun present(width: Int, height: Int) {
+        require(width > 0 && height > 0)
+        val fbo = checkNotNull(target)
+        val side = minOf(width, height)
+        val left = (width - side) / 2
+        val bottom = (height - side) / 2
+        GLES30.glBindFramebuffer(GLES30.GL_DRAW_FRAMEBUFFER, 0)
+        GLES30.glViewport(0, 0, width, height)
+        GLES30.glDisable(GLES30.GL_SCISSOR_TEST)
+        GLES30.glClearColor(0f, 0f, 0f, 1f)
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT)
+        GLES30.glBindFramebuffer(GLES30.GL_READ_FRAMEBUFFER, fbo.framebuffer)
+        GLES30.glBlitFramebuffer(0, 0, fbo.size, fbo.size,
+            left, bottom, left + side, bottom + side, GLES30.GL_COLOR_BUFFER_BIT, GLES30.GL_LINEAR)
+        checkError("present")
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
+    }
+
     fun capture(file: File): String {
         val fbo=checkNotNull(target); fbo.bind()
         val bytes=ByteBuffer.allocateDirect(fbo.size*fbo.size*4)
