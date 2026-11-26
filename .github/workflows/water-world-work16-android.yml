@@ -24,9 +24,13 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
       - name: Install compile SDK
-        run: sdkmanager --install 'platforms;android-36.1' 'build-tools;36.0.0'
+        run: |
+          echo "ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}" >> "$GITHUB_ENV"
+          SDKMANAGER_PATH="${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/16.0/bin/sdkmanager"
+          test -x "$SDKMANAGER_PATH"
+          printf 'y\n%.0s' {1..50} | "$SDKMANAGER_PATH" --licenses >/dev/null
+          "$SDKMANAGER_PATH" --install 'platforms;android-36.1' 'build-tools;36.0.0'
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.3.1'
