@@ -29,7 +29,9 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     private val loader = WaterWorldAssetLoader(root)
     private val draws = mutableListOf<Draw>()
     private var program: WaterWorldProgram? = null
+    private var backgroundTarget: WaterWorldRenderTarget? = null
     private var target: WaterWorldRenderTarget? = null
+    private var finalTarget: WaterWorldRenderTarget? = null
     private var whiteTexture = 0
 
     fun initialize(bindings: List<Binding>) {
@@ -37,7 +39,9 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         require(bindings.isNotEmpty() && bindings.map { it.objectId }.distinct().size == bindings.size)
         try {
             program = WaterWorldProgram()
+            backgroundTarget = WaterWorldRenderTarget()
             target = WaterWorldRenderTarget()
+            finalTarget = WaterWorldRenderTarget()
             val ids = IntArray(1)
             GLES30.glGenTextures(1, ids, 0); whiteTexture = ids[0]
             GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, whiteTexture)
@@ -64,7 +68,10 @@ internal class WaterWorldStaticRenderer(private val root: File) {
 
     fun render(): JSONObject {
         val p = checkNotNull(program); val fbo = checkNotNull(target)
-        fbo.bind()
+        val background = checkNotNull(backgroundTarget)
+        val final = checkNotNull(finalTarget)
+        check(draws.firstOrNull()?.binding?.objectId == "background")
+        background.bind()
         GLES30.glDepthMask(true)
         GLES30.glClearColor(0f, 0f, 0f, 1f)
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT or GLES30.GL_DEPTH_BUFFER_BIT)
@@ -75,7 +82,8 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         GLES30.glUseProgram(p.id)
         GLES30.glUniform2f(p.uniform("uCanvas"),1254f,1254f)
         GLES30.glUniform1i(p.uniform("uTexture"),0)
-        for ((binding, mesh, texture) in draws) {
+        fun draw(item: Draw) {
+            val (binding, mesh, texture) = item
             GLES30.glDepthMask(binding.depthWrite)
             GLES30.glUniformMatrix4fv(p.uniform("uModel"),1,false,binding.model,0)
             GLES30.glUniform4fv(p.uniform("uTint"),1,binding.tint,0)
@@ -91,17 +99,37 @@ internal class WaterWorldStaticRenderer(private val root: File) {
             mesh.draw()
             checkError(binding.objectId)
         }
+        draw(draws.first())
+        fbo.bind()
+        GLES30.glDepthMask(true)
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT or GLES30.GL_DEPTH_BUFFER_BIT)
+        copyColor(background, fbo, "background_to_scene")
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, fbo.framebuffer)
+        for (item in draws.drop(1)) draw(item)
+        final.bind()
+        copyColor(fbo, final, "scene_to_final")
         GLES30.glDepthMask(true)
         return JSONObject().put("glVendor",GLES30.glGetString(GLES30.GL_VENDOR))
             .put("glRenderer",GLES30.glGetString(GLES30.GL_RENDERER))
             .put("glVersion",GLES30.glGetString(GLES30.GL_VERSION))
-            .put("drawCount",draws.size).put("timeSeconds",0).put("fboComplete",true)
+            .put("drawCount",draws.size).put("passCount",3)
+            .put("executedPasses",org.json.JSONArray(listOf("background", "scene", "final_copy")))
+            .put("timeSeconds",0).put("fboComplete",true)
+    }
+
+    private fun copyColor(source: WaterWorldRenderTarget, destination: WaterWorldRenderTarget, label: String) {
+        check(source.texture != destination.texture) { "FBO feedback: $label" }
+        GLES30.glBindFramebuffer(GLES30.GL_READ_FRAMEBUFFER, source.framebuffer)
+        GLES30.glBindFramebuffer(GLES30.GL_DRAW_FRAMEBUFFER, destination.framebuffer)
+        GLES30.glBlitFramebuffer(0, 0, source.size, source.size, 0, 0, destination.size, destination.size,
+            GLES30.GL_COLOR_BUFFER_BIT, GLES30.GL_NEAREST)
+        checkError(label)
     }
 
     /** Present the exact offscreen scene to the Android window without cropping. */
     fun present(width: Int, height: Int) {
         require(width > 0 && height > 0)
-        val fbo = checkNotNull(target)
+        val fbo = checkNotNull(finalTarget)
         val side = minOf(width, height)
         val left = (width - side) / 2
         val bottom = (height - side) / 2
@@ -118,7 +146,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     }
 
     fun capture(file: File): String {
-        val fbo=checkNotNull(target); fbo.bind()
+        val fbo=checkNotNull(finalTarget); fbo.bind()
         val bytes=ByteBuffer.allocateDirect(fbo.size*fbo.size*4)
         GLES30.glReadPixels(0,0,fbo.size,fbo.size,GLES30.GL_RGBA,GLES30.GL_UNSIGNED_BYTE,bytes)
         checkError("capture")
@@ -141,7 +169,11 @@ internal class WaterWorldStaticRenderer(private val root: File) {
             draw.mesh.release()
             if(draw.texture!=whiteTexture) GLES30.glDeleteTextures(1,intArrayOf(draw.texture),0)
         }
-        draws.clear(); target?.release(); target=null; program?.release(); program=null
+        draws.clear()
+        backgroundTarget?.release(); backgroundTarget=null
+        target?.release(); target=null
+        finalTarget?.release(); finalTarget=null
+        program?.release(); program=null
         if(whiteTexture!=0) GLES30.glDeleteTextures(1,intArrayOf(whiteTexture),0)
         whiteTexture=0
     }

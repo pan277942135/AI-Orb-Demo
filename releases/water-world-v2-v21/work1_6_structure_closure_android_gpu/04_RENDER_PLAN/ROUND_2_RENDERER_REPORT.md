@@ -1,0 +1,9 @@
+# Round 2 — three real targets, 11-stage contract incomplete
+
+Confirmed root cause: the Work 1.5 Android renderer rendered everything into one scene FBO and never presented that color target to the Android window. The background, ecology and final image did not have separate targets.
+
+The renderer now uses distinct `background`, `scene` and `final_copy` RGBA8/depth24 FBOs. The background is drawn once, copied into the scene target, the remaining original 31 bindings are drawn there, and the scene is copied to a final target. Source and destination texture IDs are checked to prevent feedback. Each target checks FBO completeness on creation; draw and blit GL errors are checked. The final target is used for both PNG capture and aspect-preserving Android window blit. A context recreation allocates new targets.
+
+The production GLSL and draw bindings were exercised in Mesa llvmpipe OpenGL ES 3.2 using a software GLES harness with the same three target sequence. All 32 draws and 3 FBO passes completed with GL error 0. The final PNG SHA256 is `798f825b237377d9a177a43a7d70ff5bc07d46cff1eb005b76b8125e3834ca40`, exactly matching the Work 1.5 baseline. Full RGB MAE remains `0.17534966611185868`; luminance SSIM remains `0.4498302897750806`. This structural change does not improve visual fidelity. It was retained only because it closes the specific single-FBO and missing-presentation design defect without regressing the image.
+
+The contract calls for 11 rendering stages and separate optical targets. Lighting, refraction, caustics, Bloom and bokeh are not implemented as separate passes. Resident front/back and transparency sorting remain unresolved. `pass_count=3` is the actual count; no 11-pass success is claimed. The harness is software GLES, and Android execution remains unverified.

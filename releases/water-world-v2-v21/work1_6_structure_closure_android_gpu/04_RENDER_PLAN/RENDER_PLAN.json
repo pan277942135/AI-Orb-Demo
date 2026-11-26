@@ -1,0 +1,13 @@
+{
+  "canvas": [1254, 1254],
+  "time_seconds": 0,
+  "actual_passes": [
+    {"id": "background", "output": "background_rgba8_depth24", "draws": 1, "status": "SOFTWARE_GLES_EXECUTED"},
+    {"id": "scene", "input": "background_rgba8", "output": "scene_rgba8_depth24", "draws": 31, "status": "SOFTWARE_GLES_EXECUTED"},
+    {"id": "final_copy", "input": "scene_rgba8", "output": "final_rgba8_depth24", "draws": 0, "status": "SOFTWARE_GLES_EXECUTED"}
+  ],
+  "unimplemented_contract_stages": ["resident_back_isolation", "sphere_back_isolation", "water_interior_isolation", "far_ecology_isolation", "lighting", "fish_isolation", "near_ecology_isolation", "sphere_front_isolation", "resident_front_isolation"],
+  "missing_optical_passes": ["glass_refraction", "water_normal_distortion", "caustics", "bloom", "bokeh"],
+  "hardware_gpu": "NOT_RUN",
+  "status": "PARTIAL_THREE_PASS_PIPELINE"
+}

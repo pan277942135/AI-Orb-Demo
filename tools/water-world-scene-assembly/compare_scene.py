@@ -1,11 +1,11 @@
 """Fixed-canvas diagnostic comparison. Image metrics do not invent a six-axis acceptance score."""
-import hashlib,json
+import hashlib,json,os
 from pathlib import Path
 import numpy as np
 from PIL import Image,ImageFilter
 from scipy.ndimage import uniform_filter
 ROOT=Path(__file__).resolve().parents[2]
-OUT=ROOT/'releases/water-world-v2-v21/work1_5_scene_assembly/WATER_WORLD_V2_1/05_VISUAL_VALIDATION'
+OUT=Path(os.environ.get('WATER_WORLD_VISUAL_OUTPUT_DIR',ROOT/'releases/water-world-v2-v21/work1_5_scene_assembly/WATER_WORLD_V2_1/05_VISUAL_VALIDATION'))
 MASTER=ROOT/'releases/water-world-v2-v21/奇幻水晶球中的水下生态世界 (1).png'
 def ssim(a,b):
  a=a.mean(axis=2)/255;b=b.mean(axis=2)/255
