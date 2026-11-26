@@ -1,0 +1,41 @@
+name: Water World Scene Assembly Diagnostic
+on:
+  push:
+    branches: [assets/water-world-v2-v21-calibration]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  software-gles-diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: sudo apt-get update && sudo apt-get install -y libegl1 libegl-mesa0 libgl1-mesa-dri
+      - run: python -m pip install Pillow==11.1.0 numpy==2.2.3 scipy==1.15.2
+      - run: python tools/water-world-scene-assembly/audit_sources.py
+      - run: python -m py_compile tools/water-world-scene-assembly/*.py
+      - name: Actual software GLES shader, FBO, scene draw and readback
+        env:
+          MESA_SHADER_CACHE_DISABLE: 'true'
+        run: python tools/water-world-scene-assembly/render_diagnostic.py
+      - run: python tools/water-world-scene-assembly/compare_scene.py
+      - run: python tools/water-world-scene-assembly/validate_assembly.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: water-world-software-gles-${{ github.sha }}
+          path: |
+            releases/water-world-v2-v21/work1_5_scene_assembly/WATER_WORLD_V2_1/05_VISUAL_VALIDATION
+            releases/water-world-v2-v21/work1_5_scene_assembly/WATER_WORLD_V2_1/07_MANIFEST/WORK2_STATIC_INPUT_READY.json
+      - name: Enforce Work 2 readiness
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('releases/water-world-v2-v21/work1_5_scene_assembly/WATER_WORLD_V2_1/07_MANIFEST/WORK2_STATIC_INPUT_READY.json')
+          assert json.loads(p.read_text())['work2_static_input_ready'], 'Prototype is incomplete; software diagnostic does not establish visual readiness'
+          PY

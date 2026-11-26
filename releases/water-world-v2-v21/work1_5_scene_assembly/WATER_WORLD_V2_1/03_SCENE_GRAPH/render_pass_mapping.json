@@ -1,0 +1,97 @@
+{
+  "passes": [
+    {
+      "layer_id": "background",
+      "order": 0,
+      "depth_test": true,
+      "depth_write": true,
+      "blend": "SRC_ALPHA,ONE_MINUS_SRC_ALPHA",
+      "status": "CANDIDATE"
+    },
+    {
+      "layer_id": "resident_back",
+      "order": 1,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "SRC_ALPHA,ONE_MINUS_SRC_ALPHA",
+      "status": "CANDIDATE"
+    },
+    {
+      "layer_id": "sphere_back_glass",
+      "order": 2,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "SRC_ALPHA,ONE_MINUS_SRC_ALPHA",
+      "status": "CANDIDATE"
+    },
+    {
+      "layer_id": "water",
+      "order": 3,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "SRC_ALPHA,ONE_MINUS_SRC_ALPHA",
+      "status": "CANDIDATE"
+    },
+    {
+      "layer_id": "plants",
+      "order": 4,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "SRC_ALPHA,ONE_MINUS_SRC_ALPHA",
+      "status": "CANDIDATE"
+    },
+    {
+      "layer_id": "rocks",
+      "order": 5,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "SRC_ALPHA,ONE_MINUS_SRC_ALPHA",
+      "status": "CANDIDATE"
+    },
+    {
+      "layer_id": "fish",
+      "order": 6,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "SRC_ALPHA,ONE_MINUS_SRC_ALPHA",
+      "status": "CANDIDATE"
+    },
+    {
+      "layer_id": "glass_front",
+      "order": 7,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "SRC_ALPHA,ONE_MINUS_SRC_ALPHA",
+      "status": "CANDIDATE"
+    },
+    {
+      "layer_id": "bubbles",
+      "order": 8,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "SRC_ALPHA,ONE_MINUS_SRC_ALPHA",
+      "status": "CANDIDATE"
+    },
+    {
+      "layer_id": "resident_front",
+      "order": 9,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "SRC_ALPHA,ONE_MINUS_SRC_ALPHA",
+      "status": "CANDIDATE"
+    }
+  ],
+  "authoritative_order": [
+    "background",
+    "resident_back",
+    "sphere_back_glass",
+    "water",
+    "plants",
+    "rocks",
+    "fish",
+    "glass_front",
+    "bubbles",
+    "resident_front"
+  ],
+  "front_back_ribbon_split": "PENDING_GPU_REVIEW"
+}

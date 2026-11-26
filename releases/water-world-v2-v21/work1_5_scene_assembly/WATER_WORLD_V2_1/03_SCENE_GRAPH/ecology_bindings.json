@@ -1,0 +1,86 @@
+{
+  "bindings": [
+    {
+      "object_id": "WW_FISH_01",
+      "mesh_path": "02_SUPPLEMENTED_ASSETS/geometry/WW_FISH_01_mesh.json",
+      "source_asset": "05_FISH/fish_01.png",
+      "source_sha256": "056b55e6f61fb353b8db2fa8631176a4caca330f2f1d5460eba9a7a72d8cc134",
+      "layer": "fish",
+      "material": "fish",
+      "depth_order": 50
+    },
+    {
+      "object_id": "WW_FISH_02",
+      "mesh_path": "02_SUPPLEMENTED_ASSETS/geometry/WW_FISH_02_mesh.json",
+      "source_asset": "05_FISH/fish_02.png",
+      "source_sha256": "565b78326a259484fb78a542cb7c2f0ce8cf831eb080c28b1bf93a469615bbd8",
+      "layer": "fish",
+      "material": "fish",
+      "depth_order": 50
+    },
+    {
+      "object_id": "WW_FISH_03",
+      "mesh_path": "02_SUPPLEMENTED_ASSETS/geometry/WW_FISH_03_mesh.json",
+      "source_asset": "05_FISH/fish_03.png",
+      "source_sha256": "c8def6b8d5e66463b903a2fa329f2e1f354067598931233b0e29c966d32ef6d1",
+      "layer": "fish",
+      "material": "fish",
+      "depth_order": 50
+    },
+    {
+      "object_id": "WW_FISH_04",
+      "mesh_path": "02_SUPPLEMENTED_ASSETS/geometry/WW_FISH_04_mesh.json",
+      "source_asset": "05_FISH/fish_04.png",
+      "source_sha256": "714a0afa95e6c3d802044bbb745334875bd79640960b35ee40bc4125a2d3b44d",
+      "layer": "fish",
+      "material": "fish",
+      "depth_order": 50
+    },
+    {
+      "object_id": "plant_left",
+      "mesh_path": "02_SUPPLEMENTED_ASSETS/geometry/plant_left_mesh.json",
+      "source_asset": "06_PLANTS/plant_left/plant_left.png",
+      "source_sha256": "bc958efc305204b0d35c2675645dd7ebac3d1da97ae93362c8532855e5076998",
+      "layer": "plants",
+      "material": "plant",
+      "depth_order": 30
+    },
+    {
+      "object_id": "plant_right",
+      "mesh_path": "02_SUPPLEMENTED_ASSETS/geometry/plant_right_mesh.json",
+      "source_asset": "06_PLANTS/plant_right/plant_right.png",
+      "source_sha256": "f0437ca0643b5c8d6e1b25a9117390a66764bf80e8beea206e082b0c5732a172",
+      "layer": "plants",
+      "material": "plant",
+      "depth_order": 30
+    },
+    {
+      "object_id": "rock_01",
+      "mesh_path": "02_SUPPLEMENTED_ASSETS/geometry/rock_01_mesh.json",
+      "source_asset": "07_ROCKS/individual/rock_01.png",
+      "source_sha256": "0128e55605b0063450d46abbbac06d2b16976faa17dacb1657b53c8b538e1986",
+      "layer": "rocks",
+      "material": "rock",
+      "depth_order": 40
+    },
+    {
+      "object_id": "rock_02",
+      "mesh_path": "02_SUPPLEMENTED_ASSETS/geometry/rock_02_mesh.json",
+      "source_asset": "07_ROCKS/individual/rock_02.png",
+      "source_sha256": "50238eb18b944dfdc2a1af7dbe577dde02f8a03f3220686d2cb5a43487a37315",
+      "layer": "rocks",
+      "material": "rock",
+      "depth_order": 40
+    },
+    {
+      "object_id": "rock_03",
+      "mesh_path": "02_SUPPLEMENTED_ASSETS/geometry/rock_03_mesh.json",
+      "source_asset": "07_ROCKS/individual/rock_03.png",
+      "source_sha256": "5d6a78e23b1ee4e96c0acb8894e2876205b601aceb4d1ef22e3fac8458e94a99",
+      "layer": "rocks",
+      "material": "rock",
+      "depth_order": 40
+    }
+  ],
+  "gpu_validation": "NOT_RUN"
+}

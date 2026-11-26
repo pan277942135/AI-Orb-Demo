@@ -1,0 +1,14 @@
+{
+  "schema_version": "water-world-master-source-manifest/1.0",
+  "source_name": "奇幻水晶球中的水下生态世界.png",
+  "source_identity": "USER_CONFIRMED_AS_THE_INLINE_IMAGE_ABOVE",
+  "visual_role": "SOLE_FROZEN_MASTER",
+  "raw_file_accessible_to_execution": false,
+  "sha256": null,
+  "pixel_width": null,
+  "pixel_height": null,
+  "icc_profile": null,
+  "alpha_mode": null,
+  "pixel_analysis_status": "BLOCKED_RAW_BYTES_UNAVAILABLE",
+  "note": "The user confirmed that the inline upload is the original master. This execution only receives the rendered inline image and no raw PNG bytes or downloadable file identifier. No hash or pixel metrics are invented."
+}

@@ -1,0 +1,397 @@
+{
+  "schema_version": "water-world-ecology-geometry/1.0",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "sphere_radius_px": 422.2986621604988,
+  "water_surface": {
+    "location": "upper interior water/glass boundary",
+    "boundary_px": "curved, low-confidence due refraction and layered caustics",
+    "confidence": "LOW"
+  },
+  "water_body": {
+    "region": "inside inner glass boundary excluding foreground fish/plants/rocks",
+    "color_samples": {
+      "upper_mid": [
+        253.0,
+        254.0,
+        248.0
+      ],
+      "center": [
+        0.0,
+        82.0,
+        91.0
+      ],
+      "lower_mid": [
+        19.0,
+        47.0,
+        33.0
+      ]
+    },
+    "confidence": "MEDIUM_LOW"
+  },
+  "plants": [
+    {
+      "id": "plant_left",
+      "source_bbox_px": [
+        235,
+        425,
+        426,
+        882
+      ],
+      "target_mask_bbox_px": [
+        235,
+        425,
+        426,
+        882
+      ],
+      "source_color_mask_area_px": 41553,
+      "source_asset_sha256": "bc958efc305204b0d35c2675645dd7ebac3d1da97ae93362c8532855e5076998",
+      "asset_transform": {
+        "source_asset": "06_PLANTS/plant_left/plant_left.png",
+        "source_alpha_bbox": [
+          10,
+          10,
+          899,
+          1210
+        ],
+        "target_bbox_px": [
+          235,
+          425,
+          426,
+          882
+        ],
+        "render_mask_threshold_alpha": 32
+      },
+      "confidence": "MEDIUM_LOW",
+      "note": "Master extent registered from visible leaf/root extremes; chroma mask excludes some blue-green translucent leaf edges."
+    },
+    {
+      "id": "plant_right",
+      "source_bbox_px": [
+        825,
+        520,
+        969,
+        850
+      ],
+      "target_mask_bbox_px": [
+        825,
+        520,
+        969,
+        850
+      ],
+      "source_color_mask_area_px": 22899,
+      "source_asset_sha256": "f0437ca0643b5c8d6e1b25a9117390a66764bf80e8beea206e082b0c5732a172",
+      "asset_transform": {
+        "source_asset": "06_PLANTS/plant_right/plant_right.png",
+        "source_alpha_bbox": [
+          12,
+          10,
+          572,
+          1316
+        ],
+        "target_bbox_px": [
+          825,
+          520,
+          969,
+          850
+        ],
+        "render_mask_threshold_alpha": 32
+      },
+      "confidence": "MEDIUM_LOW",
+      "note": "Master extent registered from visible leaf/root extremes; chroma mask excludes some blue-green translucent leaf edges."
+    }
+  ],
+  "rocks": [
+    {
+      "id": "rock_01",
+      "source_bbox_px": [
+        356,
+        713,
+        666,
+        884
+      ],
+      "source_mask_bbox_px": [
+        356,
+        713,
+        666,
+        884
+      ],
+      "source_mask_area_px": 31130,
+      "source_asset_sha256": "0128e55605b0063450d46abbbac06d2b16976faa17dacb1657b53c8b538e1986",
+      "asset_transform": {
+        "source_asset": "07_ROCKS/individual/rock_01.png",
+        "source_alpha_bbox": [
+          8,
+          8,
+          607,
+          497
+        ],
+        "target_bbox_px": [
+          356,
+          713,
+          666,
+          884
+        ],
+        "render_mask_threshold_alpha": 32
+      },
+      "confidence": "MEDIUM_LOW",
+      "note": "Local blue/green texture mask within the manually source-registered rock envelope; contact shadow and moss boundary are ambiguous."
+    },
+    {
+      "id": "rock_02",
+      "source_bbox_px": [
+        718,
+        712,
+        896,
+        865
+      ],
+      "source_mask_bbox_px": [
+        718,
+        712,
+        896,
+        865
+      ],
+      "source_mask_area_px": 11248,
+      "source_asset_sha256": "50238eb18b944dfdc2a1af7dbe577dde02f8a03f3220686d2cb5a43487a37315",
+      "asset_transform": {
+        "source_asset": "07_ROCKS/individual/rock_02.png",
+        "source_alpha_bbox": [
+          6,
+          8,
+          536,
+          258
+        ],
+        "target_bbox_px": [
+          718,
+          712,
+          896,
+          865
+        ],
+        "render_mask_threshold_alpha": 32
+      },
+      "confidence": "MEDIUM_LOW",
+      "note": "Local blue/green texture mask within the manually source-registered rock envelope; contact shadow and moss boundary are ambiguous."
+    },
+    {
+      "id": "rock_03",
+      "source_bbox_px": [
+        545,
+        785,
+        796,
+        920
+      ],
+      "source_mask_bbox_px": [
+        545,
+        785,
+        794,
+        920
+      ],
+      "source_mask_area_px": 9802,
+      "source_asset_sha256": "5d6a78e23b1ee4e96c0acb8894e2876205b601aceb4d1ef22e3fac8458e94a99",
+      "asset_transform": {
+        "source_asset": "07_ROCKS/individual/rock_03.png",
+        "source_alpha_bbox": [
+          8,
+          7,
+          265,
+          219
+        ],
+        "target_bbox_px": [
+          545,
+          785,
+          796,
+          920
+        ],
+        "render_mask_threshold_alpha": 32
+      },
+      "confidence": "MEDIUM_LOW",
+      "note": "Local blue/green texture mask within the manually source-registered rock envelope; contact shadow and moss boundary are ambiguous."
+    }
+  ],
+  "bubbles": {
+    "master_pixel_centers_px": [
+      [
+        733,
+        145
+      ],
+      [
+        1059,
+        174
+      ],
+      [
+        1088,
+        270
+      ],
+      [
+        104,
+        322
+      ],
+      [
+        83,
+        364
+      ],
+      [
+        157,
+        694
+      ],
+      [
+        97,
+        693
+      ],
+      [
+        998,
+        861
+      ],
+      [
+        837,
+        1025
+      ],
+      [
+        742,
+        1024
+      ],
+      [
+        326,
+        1060
+      ],
+      [
+        558,
+        1121
+      ],
+      [
+        810,
+        1195
+      ]
+    ],
+    "measurement": "manual center registration from clearly visible ring highlights",
+    "confidence": "MEDIUM"
+  },
+  "caustics": {
+    "visible_regions_px": [
+      [
+        230,
+        260,
+        780,
+        440
+      ],
+      [
+        360,
+        670,
+        900,
+        900
+      ]
+    ],
+    "resource_mapping": "04_WATER/caustics/caustics_height.png",
+    "note": "source image contains composed caustics; independent layer is not exactly separable",
+    "confidence": "LOW"
+  },
+  "lighting": {
+    "key_highlight_px": [
+      421,
+      251
+    ],
+    "cool_fill_px": [
+      900,
+      522
+    ],
+    "lower_rim_px": [
+      797,
+      960
+    ],
+    "method": "manual source pixel registration",
+    "confidence": "MEDIUM_LOW"
+  },
+  "source_mask_metrics": {
+    "plant_iou": {
+      "plant_left": 0.11967664258685931,
+      "plant_right": 0.18667480729603908
+    },
+    "rock_iou": {
+      "rock_01": 0.6290402672444926,
+      "rock_02": 0.46589641789713165,
+      "rock_03": 0.32685688908626626
+    }
+  },
+  "canonical_metrics_sha256": "331a513e7b31247d9487c21bbb1d0a3670347af216be1d27f14ae6cd41647faa",
+  "canonical_metrics": {
+    "plant_left": {
+      "kind": "plant",
+      "iou": 0.2284727171319679,
+      "threshold_iou": 0.85,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "source_visible_area_px": 55748,
+      "asset_visible_area_px": 23545,
+      "ground_truth_confidence": "LOW",
+      "comparison_crop_px": [
+        219,
+        409,
+        470,
+        924
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/plant_left.png"
+    },
+    "plant_right": {
+      "kind": "plant",
+      "iou": 0.2033919286952216,
+      "threshold_iou": 0.85,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "source_visible_area_px": 20964,
+      "asset_visible_area_px": 8199,
+      "ground_truth_confidence": "MEDIUM_LOW",
+      "comparison_crop_px": [
+        807,
+        502,
+        998,
+        865
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/plant_right.png"
+    },
+    "rock_01": {
+      "kind": "rock",
+      "iou": 0.3006602831177058,
+      "threshold_iou": 0.85,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "source_visible_area_px": 12340,
+      "asset_visible_area_px": 41043,
+      "ground_truth_confidence": "LOW",
+      "comparison_crop_px": [
+        338,
+        695,
+        684,
+        902
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/rock_01.png"
+    },
+    "rock_02": {
+      "kind": "rock",
+      "iou": 0.13450238282515153,
+      "threshold_iou": 0.85,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "source_visible_area_px": 2907,
+      "asset_visible_area_px": 21613,
+      "ground_truth_confidence": "MEDIUM_LOW",
+      "comparison_crop_px": [
+        700,
+        694,
+        914,
+        883
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/rock_02.png"
+    },
+    "rock_03": {
+      "kind": "rock",
+      "iou": 0.20804153165394934,
+      "threshold_iou": 0.85,
+      "status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "source_visible_area_px": 8621,
+      "asset_visible_area_px": 26051,
+      "ground_truth_confidence": "LOW",
+      "comparison_crop_px": [
+        482,
+        768,
+        814,
+        938
+      ],
+      "comparison_evidence": "03_STATIC_RECOMPOSITION/object_comparisons/rock_03.png"
+    }
+  }
+}

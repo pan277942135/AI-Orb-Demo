@@ -1,0 +1,67 @@
+{
+  "schema_version": "water-world-v2-1-generation-log/1.0",
+  "result": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+  "v2_source_archive": {
+    "bytes": 11678323,
+    "sha256": "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095",
+    "modified": false,
+    "members_copied_byte_exact": 65
+  },
+  "master_source": {
+    "user_confirmed_source": true,
+    "raw_png_bytes_accessible": true,
+    "sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+    "file_bytes": 2256234,
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "has_alpha": false,
+    "icc_profile": "NONE",
+    "branch": "assets/water-world-v2-v21-calibration",
+    "commit": "1662bbf9de671b0bb1fa5ce1891a1df3e49703b6"
+  },
+  "assets": {
+    "kept_original_entries": 65,
+    "recalibrated_placement_and_geometry_copies": 14,
+    "repaired": 0,
+    "regenerated": 0,
+    "v2_1_asset_zip_built": true
+  },
+  "core_reference": {
+    "repo_head": "7e556babd2bdbad75ce22c1c57d19b386fd2a3c6",
+    "assets_audited": 35,
+    "assets_modified": false
+  },
+  "outputs": [
+    "V2 full stream audit",
+    "AI Orb core asset audit",
+    "motion registry and dependency graph",
+    "GPU input contracts",
+    "preflight validation",
+    "verified master source manifest",
+    "master-derived geometry and masks",
+    "independent V2 asset CPU recomposition",
+    "overlay, difference heatmap and region comparison",
+    "visual metrics",
+    "complete V2.1 asset ZIP"
+  ],
+  "not_generated": [
+    "GPU capture",
+    "Android APK"
+  ],
+  "static_recomposition": {
+    "generated": true,
+    "renderer": "CPU_ONLY",
+    "used_master_as_layer": false,
+    "visual_gate_status": "FAIL"
+  },
+  "prior_validation": {
+    "validator_tests": "22/22 PASS; original 21 retained and one package-manifest regression added",
+    "motion_graph": "47 nodes / 28 dependencies revalidated PASS",
+    "cpu_recomposition": "6/6 output SHA-256 values match across clean runs",
+    "visual_acceptance": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+    "exact_head_ci": "PENDING_EXACT_HEAD_CI"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "glass": {
+    "base_color": [
+      1,
+      1,
+      1
+    ],
+    "alpha": 0.16,
+    "roughness": 0.08,
+    "metallic": 0,
+    "emission": 0,
+    "normal_strength": 1,
+    "fresnel": 0.7,
+    "refraction_strength": 0.008
+  },
+  "water": {
+    "base_color": [
+      1,
+      1,
+      1
+    ],
+    "alpha": 0.85,
+    "roughness": 0.16,
+    "metallic": 0,
+    "emission": 0,
+    "normal_strength": 1,
+    "fresnel": 0,
+    "refraction_strength": 0.004
+  },
+  "fish": {
+    "base_color": [
+      1,
+      1,
+      1
+    ],
+    "alpha": 1,
+    "roughness": 0.45,
+    "metallic": 0,
+    "emission": 0,
+    "normal_strength": 1,
+    "fresnel": 0,
+    "refraction_strength": 0
+  },
+  "resident": {
+    "base_color": [
+      1,
+      1,
+      1
+    ],
+    "alpha": 1,
+    "roughness": 0.12,
+    "metallic": 0,
+    "emission": 1.6,
+    "normal_strength": 1,
+    "fresnel": 0,
+    "refraction_strength": 0
+  },
+  "plant": {
+    "base_color": [
+      1,
+      1,
+      1
+    ],
+    "alpha": 1,
+    "roughness": 0.45,
+    "metallic": 0,
+    "emission": 0,
+    "normal_strength": 1,
+    "fresnel": 0,
+    "refraction_strength": 0
+  },
+  "rock": {
+    "base_color": [
+      1,
+      1,
+      1
+    ],
+    "alpha": 1,
+    "roughness": 0.45,
+    "metallic": 0,
+    "emission": 0,
+    "normal_strength": 1,
+    "fresnel": 0,
+    "refraction_strength": 0
+  },
+  "background": {
+    "base_color": [
+      1,
+      1,
+      1
+    ],
+    "alpha": 1,
+    "roughness": 0.45,
+    "metallic": 0,
+    "emission": 0,
+    "normal_strength": 1,
+    "fresnel": 0,
+    "refraction_strength": 0
+  },
+  "bubble": {
+    "base_color": [
+      1,
+      1,
+      1
+    ],
+    "alpha": 1,
+    "roughness": 0.45,
+    "metallic": 0,
+    "emission": 0,
+    "normal_strength": 1,
+    "fresnel": 0,
+    "refraction_strength": 0
+  }
+}

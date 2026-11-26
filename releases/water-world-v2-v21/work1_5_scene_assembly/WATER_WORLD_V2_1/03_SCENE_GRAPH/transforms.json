@@ -1,0 +1,242 @@
+{
+  "WW_FISH_01": {
+    "source_asset": "05_FISH/fish_01.png",
+    "source_alpha_bbox": [
+      18,
+      20,
+      1662,
+      605
+    ],
+    "center_px": [
+      775.4009187342031,
+      497.94248601586395
+    ],
+    "scale_px_per_source_pixel_xy": [
+      0.11783958115647696,
+      0.14276799740428528
+    ],
+    "rotation_degrees": -5.944183437812665,
+    "render_mask_threshold_alpha": 32,
+    "alpha_mode": "STRAIGHT_ALPHA"
+  },
+  "WW_FISH_02": {
+    "source_asset": "05_FISH/fish_02.png",
+    "source_alpha_bbox": [
+      19,
+      20,
+      1278,
+      437
+    ],
+    "center_px": [
+      568.865281239133,
+      550.8255230340772
+    ],
+    "scale_px_per_source_pixel_xy": [
+      0.12308216104914912,
+      0.15600419496360074
+    ],
+    "rotation_degrees": -4.139674741161528,
+    "render_mask_threshold_alpha": 32,
+    "alpha_mode": "STRAIGHT_ALPHA"
+  },
+  "WW_FISH_03": {
+    "source_asset": "05_FISH/fish_03.png",
+    "source_alpha_bbox": [
+      18,
+      19,
+      958,
+      362
+    ],
+    "center_px": [
+      679.8983790004559,
+      587.1881544436371
+    ],
+    "scale_px_per_source_pixel_xy": [
+      0.14870309825115316,
+      0.1737414251867658
+    ],
+    "rotation_degrees": -5.492249938260886,
+    "render_mask_threshold_alpha": 32,
+    "alpha_mode": "STRAIGHT_ALPHA"
+  },
+  "WW_FISH_04": {
+    "source_asset": "05_FISH/fish_04.png",
+    "source_alpha_bbox": [
+      18,
+      28,
+      893,
+      336
+    ],
+    "center_px": [
+      598.9882857598897,
+      657.2937247443667
+    ],
+    "scale_px_per_source_pixel_xy": [
+      0.14762647671314652,
+      0.17360157710270432
+    ],
+    "rotation_degrees": -4.779930355981316,
+    "render_mask_threshold_alpha": 32,
+    "alpha_mode": "STRAIGHT_ALPHA"
+  },
+  "G01": {
+    "kind": "IMMUTABLE_SVG_PIXEL_GEOMETRY",
+    "matrix": [
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "G02": {
+    "kind": "IMMUTABLE_SVG_PIXEL_GEOMETRY",
+    "matrix": [
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "A01": {
+    "kind": "IMMUTABLE_SVG_PIXEL_GEOMETRY",
+    "matrix": [
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "A02": {
+    "kind": "IMMUTABLE_SVG_PIXEL_GEOMETRY",
+    "matrix": [
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "C01": {
+    "kind": "IMMUTABLE_SVG_PIXEL_GEOMETRY",
+    "matrix": [
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "plant_left": {
+    "source_asset": "06_PLANTS/plant_left/plant_left.png",
+    "source_alpha_bbox": [
+      10,
+      10,
+      899,
+      1210
+    ],
+    "target_bbox_px": [
+      235,
+      425,
+      426,
+      882
+    ],
+    "render_mask_threshold_alpha": 32,
+    "candidate_only": true,
+    "rotation_degrees": null
+  },
+  "plant_right": {
+    "source_asset": "06_PLANTS/plant_right/plant_right.png",
+    "source_alpha_bbox": [
+      12,
+      10,
+      572,
+      1316
+    ],
+    "target_bbox_px": [
+      825,
+      520,
+      969,
+      850
+    ],
+    "render_mask_threshold_alpha": 32,
+    "candidate_only": true,
+    "rotation_degrees": null
+  },
+  "rock_01": {
+    "source_asset": "07_ROCKS/individual/rock_01.png",
+    "source_alpha_bbox": [
+      8,
+      8,
+      607,
+      497
+    ],
+    "target_bbox_px": [
+      356,
+      713,
+      666,
+      884
+    ],
+    "render_mask_threshold_alpha": 32,
+    "candidate_only": true,
+    "rotation_degrees": null
+  },
+  "rock_02": {
+    "source_asset": "07_ROCKS/individual/rock_02.png",
+    "source_alpha_bbox": [
+      6,
+      8,
+      536,
+      258
+    ],
+    "target_bbox_px": [
+      718,
+      712,
+      896,
+      865
+    ],
+    "render_mask_threshold_alpha": 32,
+    "candidate_only": true,
+    "rotation_degrees": null
+  },
+  "rock_03": {
+    "source_asset": "07_ROCKS/individual/rock_03.png",
+    "source_alpha_bbox": [
+      8,
+      7,
+      265,
+      219
+    ],
+    "target_bbox_px": [
+      545,
+      785,
+      796,
+      920
+    ],
+    "render_mask_threshold_alpha": 32,
+    "candidate_only": true,
+    "rotation_degrees": null
+  }
+}

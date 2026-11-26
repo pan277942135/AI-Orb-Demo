@@ -1,0 +1,122 @@
+{
+  "schema_version": "water-world-v2-1-optimization-rounds/1.0",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "rounds": [
+    {
+      "round": 1,
+      "base_head": "246607b5aa807198a7f08c73843c8aa12c89c342",
+      "focus": "fish rigid transform fit; source ground-truth segmentation and resident measurement diagnosis",
+      "metrics_before": {
+        "fish_iou": {
+          "WW_FISH_01": 0.4189,
+          "WW_FISH_02": 0.307,
+          "WW_FISH_03": 0.3443,
+          "WW_FISH_04": 0.4106
+        }
+      },
+      "metrics_after_canonical": {
+        "sphere_iou": 0.9947694058244142,
+        "sphere_center_error_over_diameter": 0.0010463994954047191,
+        "sphere_diameter_error": 0.0013342519304698583,
+        "fish_iou": {
+          "WW_FISH_01": 0.9091985320232036,
+          "WW_FISH_02": 0.9051181102362205,
+          "WW_FISH_03": 0.863859649122807,
+          "WW_FISH_04": 0.9056915039868023
+        },
+        "fish_center_error_over_canvas": {
+          "WW_FISH_01": 0.0009287859996366278,
+          "WW_FISH_02": 0.0016849964175349938,
+          "WW_FISH_03": 0.0007920494246717298,
+          "WW_FISH_04": 0.0009527293336069867
+        },
+        "resident_bidirectional_chamfer_over_radius": {
+          "G01": 0.018048433734203187,
+          "G02": 0.05499748668699491,
+          "A01": 0.0038609780021807037,
+          "A02": 0.014787653661809374,
+          "C01": 0.10278116483342134
+        },
+        "resident_width_error": {
+          "G01": 0.05263157894736842,
+          "G02": 0.7161290322580646,
+          "A01": 0.738562091503268,
+          "A02": 0.660377358490566,
+          "C01": 0.3333333333333333
+        },
+        "plant_iou": {
+          "plant_left": 0.2284727171319679,
+          "plant_right": 0.2033919286952216
+        },
+        "rock_iou": {
+          "rock_01": 0.3006602831177058,
+          "rock_02": 0.13450238282515153,
+          "rock_03": 0.20804153165394934
+        }
+      },
+      "artifacts_after": [
+        {
+          "artifact": "canonical_visual_metrics",
+          "path": "03_STATIC_RECOMPOSITION/visual_metrics.json",
+          "sha256": "3822663dce286c9e65e3880f7b18434650dab613187d4ce6d130fb338fe9d0c0"
+        },
+        {
+          "artifact": "overlay",
+          "path": "03_STATIC_RECOMPOSITION/master_overlay.png",
+          "sha256": "abfba4a5575435dbb90121df291d12e5bf8de82ca3252781082d38859e35b93c"
+        },
+        {
+          "artifact": "heatmap",
+          "path": "03_STATIC_RECOMPOSITION/difference_heatmap.png",
+          "sha256": "0212319fabbbee853bf31352b2e69e57fcce2a3db74b5f616f4a71a6db8d917b"
+        }
+      ],
+      "notes": "Fish seed GrabCut includes the full fins. Independent V2-source recomposition uses fitted transforms; source fish PNG bytes are unchanged. Plants/rocks/residents remain uncertain; no acceptance threshold changed."
+    },
+    {
+      "round": 2,
+      "base_head": "93376428c40327a4f5a2940c80590bf0264c9e11",
+      "focus": "F03 deterministic transform-only refinement; source PNG retained",
+      "optimizer_objective_before": 0.8669469777306467,
+      "optimizer_objective_after": 0.8684886708712918,
+      "optimizer_objective_change": 0.0015416931406451173,
+      "canonical_cpu_composition_before": 0.863859649122807,
+      "canonical_cpu_composition_after": 0.8638277959756668,
+      "canonical_cpu_composition_change": -3.185314714015952e-05,
+      "optimizer": {
+        "algorithm": "SciPy differential_evolution",
+        "seed": 2026,
+        "maxiter": 100,
+        "popsize": 7,
+        "converged": false,
+        "evaluations": 3541
+      },
+      "threshold": 0.9,
+      "outcome": "OPTIMIZER_SCORE_NOT_REPRODUCED_BY_CANONICAL_COMPOSITOR"
+    },
+    {
+      "round": 3,
+      "base_head": "55e74bb8bd8d7e7ac22776cbde5eb7f2df86ab80",
+      "focus": "Constrained deterministic continuation of F03 transform fit; source mask and source asset unchanged",
+      "optimizer_objective_before": 0.8684886708712918,
+      "optimizer_objective_after": 0.8684886708712918,
+      "optimizer_objective_change": 0.0,
+      "canonical_cpu_composition_before": 0.8638277959756668,
+      "canonical_cpu_composition_after": 0.8638277959756668,
+      "canonical_cpu_composition_change": 0.0,
+      "threshold": 0.9,
+      "ground_truth_confidence": "MEDIUM",
+      "optimizer": {
+        "algorithm": "SciPy differential_evolution",
+        "seed": 2026,
+        "maxiter": 180,
+        "popsize": 7,
+        "converged": true,
+        "evaluations": 3681
+      },
+      "transform_unchanged": true,
+      "source_asset_modified": false,
+      "outcome": "CONVERGED_TO_PREVIOUS_TRANSFORM_NO_CANONICAL_GAIN_GATE_STILL_BLOCKED"
+    }
+  ]
+}

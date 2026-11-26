@@ -1,0 +1,95 @@
+name: Water World Work 1.6 Android source and APK
+on:
+  push:
+    branches: [assets/water-world-v2-v21-calibration]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-and-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify frozen source and APK asset plan
+        run: |
+          python tools/water-world-scene-assembly/audit_work16_ground_truth.py
+          python tools/water-world-scene-assembly/verify_android_asset_plan.py
+          git diff --exit-code -- releases/water-world-v2-v21/work1_6_structure_closure_android_gpu
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install compile SDK
+        run: |
+          echo "ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}" >> "$GITHUB_ENV"
+          SDKMANAGER_PATH="$(command -v sdkmanager || true)"
+          if [ -z "$SDKMANAGER_PATH" ]; then
+            SDKMANAGER_PATH="$(find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools" -name sdkmanager -type f -print -quit 2>/dev/null || true)"
+          fi
+          if [ -z "$SDKMANAGER_PATH" ]; then
+            curl --fail --location --retry 2 --output /tmp/ww-android-cmdline.zip \
+              https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
+            mkdir -p "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest"
+            unzip -q /tmp/ww-android-cmdline.zip -d /tmp/ww-android-tools
+            mv /tmp/ww-android-tools/cmdline-tools/* "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest/"
+            SDKMANAGER_PATH="${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest/bin/sdkmanager"
+          fi
+          echo "sdkmanager=${SDKMANAGER_PATH:-MISSING}"
+          test -x "$SDKMANAGER_PATH"
+          printf 'y\n%.0s' {1..50} | "$SDKMANAGER_PATH" --licenses >/dev/null
+          "$SDKMANAGER_PATH" --install 'platforms;android-36.1' 'build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
+      - name: Create CI-only debug signing key
+        run: |
+          keytool -genkeypair -keystore debug.keystore -alias androiddebugkey \
+            -storepass android -keypass android -dname 'CN=Android Debug,O=Android,C=US' \
+            -keyalg RSA -keysize 2048 -validity 10000
+      - name: Compile and assemble exact HEAD
+        run: gradle :app:assembleDebug :app:assembleAndroidTest --no-daemon --console=plain
+      - name: Verify packaged assets and APK identity
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import hashlib, json
+          files=list(Path('app/build/outputs/apk/debug').glob('*.apk'))
+          assert len(files)==1, files
+          p=files[0]
+          with ZipFile(p) as z:
+              names=set(z.namelist())
+              prefix='assets/water_world_v2_1/'
+              assert prefix+'03_SCENE_GRAPH/draw_bindings.json' in names
+              assert prefix+'02_SUPPLEMENTED_ASSETS/geometry/sphere_mesh.json' in names
+              assert len([x for x in names if x.startswith(prefix+'01_REUSED_ASSETS/') and not x.endswith('/')])==65
+              assert 'assets/water_world_v2_1/奇幻水晶球中的水下生态世界 (1).png' not in names
+              with ZipFile('releases/water-world-v2/WATER_WORLD_V2_ASSETS.zip') as source:
+                  original=[n for n in source.namelist() if n.startswith('WATER_WORLD_V2/') and not n.endswith('/')]
+                  assert len(original)==65
+                  for name in original:
+                      packed=prefix+'01_REUSED_ASSETS/'+name.removeprefix('WATER_WORLD_V2/')
+                      assert packed in names, packed
+                      assert hashlib.sha256(z.read(packed)).digest()==hashlib.sha256(source.read(name)).digest(), packed
+          identity={'head':'${{ github.sha }}','apk_size':p.stat().st_size,
+                    'apk_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),
+                    'asset_member_count':65,'android_runtime':'NOT_RUN','hardware_gpu':'NOT_RUN'}
+          Path('app/build/outputs/apk/debug/WATER_WORLD_APK_IDENTITY.json').write_text(json.dumps(identity,indent=2)+'\n')
+          print(identity)
+          PY
+      - name: Run all JVM tests and Android lint
+        run: gradle :app:testDebugUnitTest :app:lintDebug --no-daemon --console=plain
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: water-world-work16-apk-${{ github.sha }}
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/debug/WATER_WORLD_APK_IDENTITY.json
+            app/build/test-results/testDebugUnitTest/
+            app/build/reports/tests/testDebugUnitTest/

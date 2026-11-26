@@ -1,0 +1,169 @@
+{
+  "schema_version": "water-world-occlusion-graph/2.0",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "layers": [
+    {
+      "id": "background",
+      "order": 0
+    },
+    {
+      "id": "back_residents",
+      "order": 10
+    },
+    {
+      "id": "water_body",
+      "order": 20
+    },
+    {
+      "id": "plants_back",
+      "order": 30
+    },
+    {
+      "id": "rocks",
+      "order": 40
+    },
+    {
+      "id": "fish",
+      "order": 50
+    },
+    {
+      "id": "front_residents",
+      "order": 60
+    },
+    {
+      "id": "glass_back_arc",
+      "order": 70
+    },
+    {
+      "id": "glass_front_arc",
+      "order": 80
+    }
+  ],
+  "relations": [
+    {
+      "behind": "fish",
+      "in_front_of": "water_body"
+    },
+    {
+      "behind": "fish",
+      "in_front_of": "plants_back"
+    },
+    {
+      "behind": "glass_back_arc",
+      "in_front_of": "sphere_interior"
+    },
+    {
+      "behind": "glass_front_arc",
+      "in_front_of": "fish"
+    },
+    {
+      "behind": "front_residents",
+      "in_front_of": "sphere_interior"
+    }
+  ],
+  "uncertainties": [
+    "The static source does not uniquely resolve Resident identity at same-color crossings.",
+    "Glass refraction merges some plant, fish and rim edges.",
+    "Fish-to-fish overlap is absent at silhouette threshold but light bloom overlaps visually."
+  ],
+  "resident_status": {
+    "G01": {
+      "directly_observed_samples": 167,
+      "unclassified_unmatched_samples": 53,
+      "confirmed_occluded_samples": 0,
+      "unmatched_state": "UNCLASSIFIED_NOT_ASSUMED_OCCLUDED",
+      "occlusion_mask": "01_ANALYSIS/ground_truth/objects/G01/occlusion_mask.png",
+      "confidence_mask": "01_ANALYSIS/ground_truth/objects/G01/confidence_mask.png"
+    },
+    "G02": {
+      "directly_observed_samples": 136,
+      "unclassified_unmatched_samples": 84,
+      "confirmed_occluded_samples": 0,
+      "unmatched_state": "UNCLASSIFIED_NOT_ASSUMED_OCCLUDED",
+      "occlusion_mask": "01_ANALYSIS/ground_truth/objects/G02/occlusion_mask.png",
+      "confidence_mask": "01_ANALYSIS/ground_truth/objects/G02/confidence_mask.png"
+    },
+    "A01": {
+      "directly_observed_samples": 204,
+      "unclassified_unmatched_samples": 16,
+      "confirmed_occluded_samples": 0,
+      "unmatched_state": "UNCLASSIFIED_NOT_ASSUMED_OCCLUDED",
+      "occlusion_mask": "01_ANALYSIS/ground_truth/objects/A01/occlusion_mask.png",
+      "confidence_mask": "01_ANALYSIS/ground_truth/objects/A01/confidence_mask.png"
+    },
+    "A02": {
+      "directly_observed_samples": 154,
+      "unclassified_unmatched_samples": 66,
+      "confirmed_occluded_samples": 0,
+      "unmatched_state": "UNCLASSIFIED_NOT_ASSUMED_OCCLUDED",
+      "occlusion_mask": "01_ANALYSIS/ground_truth/objects/A02/occlusion_mask.png",
+      "confidence_mask": "01_ANALYSIS/ground_truth/objects/A02/confidence_mask.png"
+    },
+    "C01": {
+      "directly_observed_samples": 66,
+      "unclassified_unmatched_samples": 154,
+      "confirmed_occluded_samples": 0,
+      "unmatched_state": "UNCLASSIFIED_NOT_ASSUMED_OCCLUDED",
+      "occlusion_mask": "01_ANALYSIS/ground_truth/objects/C01/occlusion_mask.png",
+      "confidence_mask": "01_ANALYSIS/ground_truth/objects/C01/confidence_mask.png"
+    }
+  },
+  "object_status": {
+    "WW_FISH_01": {
+      "metric_status": "PASS",
+      "confidence": "MEDIUM_HIGH"
+    },
+    "WW_FISH_02": {
+      "metric_status": "PASS",
+      "confidence": "MEDIUM_HIGH"
+    },
+    "WW_FISH_03": {
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "confidence": "MEDIUM"
+    },
+    "WW_FISH_04": {
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "confidence": "MEDIUM"
+    },
+    "G01": {
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "confidence": "MEDIUM"
+    },
+    "G02": {
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "confidence": "MEDIUM"
+    },
+    "A01": {
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "confidence": "MEDIUM"
+    },
+    "A02": {
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "confidence": "MEDIUM"
+    },
+    "C01": {
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "confidence": "LOW"
+    },
+    "plant_left": {
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "confidence": "LOW"
+    },
+    "plant_right": {
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "confidence": "MEDIUM_LOW"
+    },
+    "rock_01": {
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "confidence": "LOW"
+    },
+    "rock_02": {
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "confidence": "MEDIUM_LOW"
+    },
+    "rock_03": {
+      "metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "confidence": "LOW"
+    }
+  }
+}

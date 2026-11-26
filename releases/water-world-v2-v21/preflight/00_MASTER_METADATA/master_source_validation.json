@@ -1,0 +1,20 @@
+{
+  "schema_version": "water-world-master-source-validation/2.0",
+  "repository": "pan277942135/AI-Orb-Demo",
+  "branch": "assets/water-world-v2-v21-calibration",
+  "source_commit": "1662bbf9de671b0bb1fa5ce1891a1df3e49703b6",
+  "repository_path": "releases/water-world-v2-v21/奇幻水晶球中的水下生态世界 (1).png",
+  "sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "file_bytes": 2256234,
+  "width": 1254,
+  "height": 1254,
+  "format": "PNG",
+  "mode": "RGB",
+  "has_alpha": false,
+  "icc_profile": "NONE",
+  "png_magic": "PASS",
+  "png_decode": "PASS",
+  "pixel_analysis_status": "SOURCE_BYTES_VERIFIED_AND_ANALYZED",
+  "ground_truth_status": "PARTIAL_BOUNDARIES_UNCERTAIN"
+}

@@ -1,0 +1,10 @@
+{
+  "round": 1,
+  "change": "View-dependent glass alpha replaces uniform center overlay",
+  "render_class": "SOFTWARE_GLES_DIAGNOSTIC",
+  "rgb_mae_before": 0.1754076590170131,
+  "rgb_mae_after": 0.1765731672803038,
+  "visual_score": null,
+  "visual_acceptance": "NOT_EVALUATED",
+  "work2_static_input_ready": false
+}
