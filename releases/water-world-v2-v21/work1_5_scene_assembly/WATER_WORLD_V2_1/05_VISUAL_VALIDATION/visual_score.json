@@ -1,32 +1,32 @@
 {
   "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
-  "render_sha256": "ac8f85b78bce384600463f675f3576ad0a125d2cb4735bc6e95829ad3eb3e676",
+  "render_sha256": "798f825b237377d9a177a43a7d70ff5bc07d46cff1eb005b76b8125e3834ca40",
   "classification": "SOFTWARE_GLES_DIAGNOSTIC",
   "coordinate_space": "1254x1254 unchanged source canvas",
   "metrics": {
     "full": {
-      "rgb_mae": 0.17246852415205327,
-      "ssim_luminance": 0.45234199544940085
+      "rgb_mae": 0.17534966611185868,
+      "ssim_luminance": 0.4498302897750806
     },
     "sphere": {
-      "rgb_mae": 0.22225579787602867,
-      "ssim_luminance": 0.2631323707481618
+      "rgb_mae": 0.22860101244143655,
+      "ssim_luminance": 0.257748408986347
     },
     "fish": {
-      "rgb_mae": 0.12881524616860932,
-      "ssim_luminance": 0.5030685542575795
+      "rgb_mae": 0.12882389825051652,
+      "ssim_luminance": 0.5021617424089714
     },
     "left_plant": {
-      "rgb_mae": 0.21814050277085334,
-      "ssim_luminance": 0.18323030793532358
+      "rgb_mae": 0.22331134966006136,
+      "ssim_luminance": 0.1769088911242348
     },
     "right_plant": {
-      "rgb_mae": 0.1692186571598336,
-      "ssim_luminance": 0.2033957219587446
+      "rgb_mae": 0.17171821702867454,
+      "ssim_luminance": 0.20152810976326715
     },
     "rocks": {
-      "rgb_mae": 0.22406236616203937,
-      "ssim_luminance": 0.14511732631950777
+      "rgb_mae": 0.2336698019663706,
+      "ssim_luminance": 0.14181895343359854
     }
   },
   "lpips": "UNAVAILABLE_NOT_INSTALLED",

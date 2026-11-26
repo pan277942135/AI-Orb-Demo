@@ -1,0 +1,10 @@
+{
+  "round": 3,
+  "source_confirmed_cause": "Both glass passes drew both hemispheres with no depth writes, duplicating shell layers.",
+  "fix": "Select one hemisphere per back/front pass using transformed normal sign.",
+  "rgb_mae_before": 0.17246852415205327,
+  "rgb_mae_after": 0.17534966611185868,
+  "classification": "SOFTWARE_GLES_DIAGNOSTIC",
+  "visual_acceptance": "NOT_EVALUATED",
+  "optimization_limit_reached": true
+}

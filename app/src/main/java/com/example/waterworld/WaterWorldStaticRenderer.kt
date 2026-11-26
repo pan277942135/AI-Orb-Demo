@@ -23,6 +23,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         val lightColor: FloatArray,
         val depthWrite: Boolean = false,
         val fresnel: Float = 0f,
+        val shellSide: Float = 0f,
     )
     private data class Draw(val binding: Binding, val mesh: WaterWorldMesh, val texture: Int)
     private val loader = WaterWorldAssetLoader(root)
@@ -83,6 +84,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
             GLES30.glUniform1f(p.uniform("uAmbient"),binding.ambient)
             GLES30.glUniform1f(p.uniform("uEmission"),binding.emission)
             GLES30.glUniform1f(p.uniform("uFresnel"),binding.fresnel)
+            GLES30.glUniform1f(p.uniform("uShellSide"),binding.shellSide)
             GLES30.glUniform1f(p.uniform("uUseTexture"),if(binding.texturePath==null) 0f else 1f)
             GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
             GLES30.glBindTexture(GLES30.GL_TEXTURE_2D,texture)

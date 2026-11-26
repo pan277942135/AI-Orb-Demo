@@ -64,8 +64,10 @@ internal class WaterWorldProgram {
             uniform float uEmission;
             uniform float uUseTexture;
             uniform float uFresnel;
+            uniform float uShellSide;
             out vec4 color;
             void main() {
+                if(uShellSide!=0.0 && vNormal.z*uShellSide<0.0) discard;
                 vec4 base=mix(vec4(1.0),texture(uTexture,vUv),uUseTexture)*uTint;
                 if(base.a<0.001) discard;
                 // Ribbon UV.v spans the original stroke width; soften its boundary

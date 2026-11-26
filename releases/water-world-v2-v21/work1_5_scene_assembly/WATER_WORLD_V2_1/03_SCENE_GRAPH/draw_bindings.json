@@ -27,7 +27,8 @@
         1
       ],
       "depth_write": true,
-      "ambient": 1
+      "ambient": 1,
+      "shell_side": 0
     },
     {
       "draw_id": "G01_1",
@@ -55,6 +56,7 @@
       ],
       "depth_write": false,
       "ambient": 0.35,
+      "shell_side": 0,
       "tint": [
         0.6235294117647059,
         0.8862745098039215,
@@ -88,6 +90,7 @@
       ],
       "depth_write": false,
       "ambient": 0.35,
+      "shell_side": 0,
       "tint": [
         0.6235294117647059,
         0.8862745098039215,
@@ -121,6 +124,7 @@
       ],
       "depth_write": false,
       "ambient": 0.35,
+      "shell_side": 0,
       "tint": [
         1.0,
         0.7607843137254902,
@@ -154,6 +158,7 @@
       ],
       "depth_write": false,
       "ambient": 0.35,
+      "shell_side": 0,
       "tint": [
         1.0,
         0.7607843137254902,
@@ -187,6 +192,7 @@
       ],
       "depth_write": false,
       "ambient": 0.35,
+      "shell_side": 0,
       "tint": [
         0.21568627450980393,
         0.9058823529411765,
@@ -220,6 +226,7 @@
       ],
       "depth_write": false,
       "ambient": 0.35,
+      "shell_side": 0,
       "tint": [
         0.21568627450980393,
         0.9058823529411765,
@@ -253,6 +260,7 @@
       ],
       "depth_write": false,
       "ambient": 0.35,
+      "shell_side": 0,
       "tint": [
         0.08235294117647059,
         0.8470588235294118,
@@ -286,6 +294,7 @@
       ],
       "depth_write": false,
       "ambient": 0.35,
+      "shell_side": 0,
       "tint": [
         0.08235294117647059,
         0.8470588235294118,
@@ -319,6 +328,7 @@
       ],
       "depth_write": false,
       "ambient": 0.35,
+      "shell_side": 0,
       "tint": [
         0.9647058823529412,
         0.7333333333333333,
@@ -352,6 +362,7 @@
       ],
       "depth_write": false,
       "ambient": 0.35,
+      "shell_side": 0,
       "tint": [
         0.9647058823529412,
         0.7333333333333333,
@@ -384,7 +395,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 0.35
+      "ambient": 0.35,
+      "shell_side": 1
     },
     {
       "draw_id": "water",
@@ -411,7 +423,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 0.35
+      "ambient": 0.35,
+      "shell_side": 0
     },
     {
       "draw_id": "WW_FISH_01",
@@ -438,7 +451,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 0.35
+      "ambient": 0.35,
+      "shell_side": 0
     },
     {
       "draw_id": "WW_FISH_02",
@@ -465,7 +479,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 0.35
+      "ambient": 0.35,
+      "shell_side": 0
     },
     {
       "draw_id": "WW_FISH_03",
@@ -492,7 +507,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 0.35
+      "ambient": 0.35,
+      "shell_side": 0
     },
     {
       "draw_id": "WW_FISH_04",
@@ -519,7 +535,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 0.35
+      "ambient": 0.35,
+      "shell_side": 0
     },
     {
       "draw_id": "plant_left",
@@ -546,7 +563,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 0.35
+      "ambient": 0.35,
+      "shell_side": 0
     },
     {
       "draw_id": "plant_right",
@@ -573,7 +591,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 0.35
+      "ambient": 0.35,
+      "shell_side": 0
     },
     {
       "draw_id": "rock_01",
@@ -600,7 +619,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 0.35
+      "ambient": 0.35,
+      "shell_side": 0
     },
     {
       "draw_id": "rock_02",
@@ -627,7 +647,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 0.35
+      "ambient": 0.35,
+      "shell_side": 0
     },
     {
       "draw_id": "rock_03",
@@ -654,7 +675,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 0.35
+      "ambient": 0.35,
+      "shell_side": 0
     },
     {
       "draw_id": "sphere_front",
@@ -681,7 +703,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 0.35
+      "ambient": 0.35,
+      "shell_side": -1
     },
     {
       "draw_id": "B01",
@@ -708,7 +731,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 1
+      "ambient": 1,
+      "shell_side": 0
     },
     {
       "draw_id": "B02",
@@ -735,7 +759,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 1
+      "ambient": 1,
+      "shell_side": 0
     },
     {
       "draw_id": "B03",
@@ -762,7 +787,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 1
+      "ambient": 1,
+      "shell_side": 0
     },
     {
       "draw_id": "B04",
@@ -789,7 +815,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 1
+      "ambient": 1,
+      "shell_side": 0
     },
     {
       "draw_id": "B05",
@@ -816,7 +843,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 1
+      "ambient": 1,
+      "shell_side": 0
     },
     {
       "draw_id": "B06",
@@ -843,7 +871,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 1
+      "ambient": 1,
+      "shell_side": 0
     },
     {
       "draw_id": "B07",
@@ -870,7 +899,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 1
+      "ambient": 1,
+      "shell_side": 0
     },
     {
       "draw_id": "B08",
@@ -897,7 +927,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 1
+      "ambient": 1,
+      "shell_side": 0
     },
     {
       "draw_id": "B09",
@@ -924,7 +955,8 @@
         1
       ],
       "depth_write": false,
-      "ambient": 1
+      "ambient": 1,
+      "shell_side": 0
     }
   ],
   "status": "PARTIAL_PROTOTYPE",

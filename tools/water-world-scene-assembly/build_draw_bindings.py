@@ -11,6 +11,7 @@ def run():
    model=IDENTITY.copy();model[14]=depth
    raw=z.read('WATER_WORLD_V2/'+texture) if texture else None
    d=dict(draw_id=oid,mesh_path=mesh,material=material,texture_path='01_REUSED_ASSETS/'+texture if texture else None,texture_sha256=hashlib.sha256(raw).hexdigest() if raw else None,model=model,depth_write=oid=='background',ambient=ambient)
+   d['shell_side']=1 if oid=='sphere_back' else -1 if oid=='sphere_front' else 0
    if tint is not None:d['tint']=tint
    draws.append(d)
   # Full canvas environment quad: source artwork remains an independent background.
