@@ -2,7 +2,7 @@
 import ctypes as c,json,re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
-def run():
+def run(draw_callback=None):
  e=c.CDLL('libEGL.so.1');e.eglGetProcAddress.argtypes=[c.c_char_p];e.eglGetProcAddress.restype=c.c_void_p
  def fn(name,result,args):
   ptr=e.eglGetProcAddress(name.encode());assert ptr,name
@@ -32,6 +32,7 @@ def run():
  for shader in shaders:attach(program,shader)
  fn('glLinkProgram',None,[c.c_uint])(program);ok=c.c_int();fn('glGetProgramiv',None,[c.c_uint,c.c_uint,c.POINTER(c.c_int)])(program,0x8B82,c.byref(ok));assert ok.value
  result.update(shader_compile='PASS',program_link='PASS',gpu_scene_assembly='NOT_RUN',classification='SOFTWARE_GLES_DIAGNOSTIC' if any(s in result['renderer'].lower() for s in ['llvmpipe','swiftshader','softpipe']) else 'UNCLASSIFIED')
+ if draw_callback: result.update(draw_callback(fn,program))
  print(json.dumps(result,indent=2))
  return result
 if __name__=='__main__':run()

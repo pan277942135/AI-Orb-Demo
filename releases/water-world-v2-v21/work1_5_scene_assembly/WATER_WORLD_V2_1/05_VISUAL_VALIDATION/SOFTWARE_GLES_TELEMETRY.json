@@ -1,0 +1,14 @@
+{
+  "vendor": "Mesa",
+  "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "version": "OpenGL ES 3.2 Mesa 25.0.7-2+deb13u1",
+  "shader_compile": "PASS",
+  "program_link": "PASS",
+  "gpu_scene_assembly": "NOT_RUN",
+  "classification": "SOFTWARE_GLES_DIAGNOSTIC",
+  "draw_count": 32,
+  "fbo": "COMPLETE",
+  "gl_error": 0,
+  "png_sha256": "1ff1a19a8f68c289b3fbbc9e891b353e089cf69cc2d10c95e17f33061cc251ef",
+  "visual_acceptance": "NOT_EVALUATED"
+}
