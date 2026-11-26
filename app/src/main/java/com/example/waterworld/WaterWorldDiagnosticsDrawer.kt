@@ -1,0 +1,534 @@
+package com.example.waterworld
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.os.Build
+import android.util.TypedValue
+import android.view.Gravity
+import android.view.View
+import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
+import com.example.R
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.File
+import java.util.Locale
+
+/**
+ * Collapsible Developer Diagnostics bottom drawer for [WaterWorldPreviewActivity].
+ *
+ * Strictly COLLAPSED (`View.GONE`) by default so end users enter directly into the unobstructed
+ * Water World V2.1 showcase scene. Expanding or collapsing this drawer never mutates the active
+ * render mode or alters the displayed FINAL_SCENE output.
+ */
+internal class WaterWorldDiagnosticsDrawer(
+    private val context: Context,
+    private val onSelectDiagnosticMode: (WaterWorldRenderGraph.DiagnosticMode) -> Unit,
+    private val onRestoreFinalScene: () -> Unit,
+    private val onTriggerEvidenceExport: () -> Unit,
+) {
+    internal companion object {
+        const val TAG_DIAGNOSTICS_TOGGLE = "water_world_diagnostics_toggle"
+        const val TAG_DIAGNOSTICS_PANEL = "water_world_diagnostics_panel"
+        const val TAG_SECTION_RENDER_PASS = "water_world_diag_section_render_pass"
+        const val TAG_SECTION_OPTICAL = "water_world_diag_section_optical"
+        const val TAG_SECTION_GPU = "water_world_diag_section_gpu"
+        const val TAG_SECTION_EXPORT = "water_world_diag_section_export"
+        const val TAG_OPTICAL_GLASS = "water_world_diag_optical_glass"
+        const val TAG_OPTICAL_WATER = "water_world_diag_optical_water"
+        const val TAG_OPTICAL_CAUSTICS = "water_world_diag_optical_caustics"
+        const val TAG_OPTICAL_BLOOM = "water_world_diag_optical_bloom"
+        const val TAG_OPTICAL_BOKEH = "water_world_diag_optical_bokeh"
+        const val TAG_RESTORE_FINAL_SCENE = "water_world_diag_restore_final_scene"
+        const val TAG_EXPORT_BUTTON = "water_world_export_button"
+        const val TAG_EXPORT_SUMMARY = "water_world_diag_export_summary"
+        const val TAG_GPU_INFO = "water_world_diag_gpu_info"
+        const val TAG_PASS_LIST = "water_world_diag_pass_list"
+        const val TAG_PASS_PNG_PREVIEW = "water_world_diag_pass_png_preview"
+        const val TAG_PASS_PNG_LABEL = "water_world_diag_pass_png_label"
+    }
+
+    val rootContainer: LinearLayout
+    val toggleButton: Button
+    val panelContainer: LinearLayout
+    val exportButton: Button
+    val restoreFinalButton: Button
+
+    private val passListContainer: LinearLayout
+    private val passPreviewCard: LinearLayout
+    private val passPreviewLabel: TextView
+    private val passPreviewImage: ImageView
+    private val gpuInfoView: TextView
+    private val exportSummaryView: TextView
+    private val opticalButtons = linkedMapOf<WaterWorldRenderGraph.DiagnosticMode, Button>()
+    private var previewBitmap: Bitmap? = null
+    private var latestExportDir: File? = null
+    private var lastTelemetry: JSONObject? = null
+    private var currentMode: WaterWorldRenderGraph.DiagnosticMode = WaterWorldRenderGraph.DiagnosticMode.FINAL_SCENE
+
+    var isExpanded: Boolean = false
+        private set
+
+    init {
+        rootContainer = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(dp(12), dp(6), dp(12), dp(12))
+        }
+
+        toggleButton = Button(context).apply {
+            tag = TAG_DIAGNOSTICS_TOGGLE
+            text = context.getString(R.string.water_world_diagnostics_collapsed)
+            contentDescription = context.getString(R.string.water_world_diagnostics_collapsed)
+            isAllCaps = false
+            minHeight = dp(48)
+            minimumHeight = dp(48)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12.5f)
+            setTextColor(Color.parseColor("#E6D9F7FF"))
+            typeface = Typeface.DEFAULT_BOLD
+            background = pillBackground(Color.parseColor("#B8051C26"), Color.parseColor("#6638C5D8"), dp(22))
+            setPadding(dp(18), dp(8), dp(18), dp(8))
+            setOnClickListener { toggleExpanded() }
+        }
+
+        panelContainer = LinearLayout(context).apply {
+            tag = TAG_DIAGNOSTICS_PANEL
+            orientation = LinearLayout.VERTICAL
+            visibility = View.GONE // Strictly COLLAPSED by default
+            background = pillBackground(Color.parseColor("#EB04151E"), Color.parseColor("#8036B8C9"), dp(20))
+            setPadding(dp(14), dp(12), dp(14), dp(12))
+        }
+
+        val maxDrawerHeight = (context.resources.displayMetrics.heightPixels * 0.52f).toInt().coerceAtLeast(dp(260))
+        val scrollView = ScrollView(context).apply {
+            isVerticalScrollBarEnabled = true
+        }
+        val scrollContent = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+
+        // Top action bar inside expanded drawer: Restore FINAL_SCENE
+        restoreFinalButton = Button(context).apply {
+            tag = TAG_RESTORE_FINAL_SCENE
+            text = context.getString(R.string.water_world_restore_final_scene)
+            isAllCaps = false
+            minHeight = dp(48)
+            minimumHeight = dp(48)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12.5f)
+            setTextColor(Color.WHITE)
+            typeface = Typeface.DEFAULT_BOLD
+            background = pillBackground(Color.parseColor("#CC0E7E70"), Color.parseColor("#995CE6C8"), dp(16))
+            setPadding(dp(14), dp(8), dp(14), dp(8))
+            setOnClickListener { onRestoreFinalScene() }
+        }
+        scrollContent.addView(
+            restoreFinalButton,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply { bottomMargin = dp(12) }
+        )
+
+        // Section A: Render Pass Diagnostics (11 Passes)
+        val sectionA = createSectionCard(TAG_SECTION_RENDER_PASS, "A. Render Pass Diagnostics (11 Passes)")
+        passListContainer = LinearLayout(context).apply {
+            tag = TAG_PASS_LIST
+            orientation = LinearLayout.VERTICAL
+        }
+        sectionA.addView(passListContainer)
+
+        passPreviewCard = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = View.GONE
+            background = pillBackground(Color.parseColor("#CC021018"), Color.parseColor("#6648D2E8"), dp(12))
+            setPadding(dp(10), dp(10), dp(10), dp(10))
+        }
+        passPreviewLabel = TextView(context).apply {
+            tag = TAG_PASS_PNG_LABEL
+            setTextColor(Color.parseColor("#FFD9F8FF"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.5f)
+            typeface = Typeface.DEFAULT_BOLD
+        }
+        passPreviewImage = ImageView(context).apply {
+            tag = TAG_PASS_PNG_PREVIEW
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            contentDescription = "Intermediate Pass PNG Preview"
+        }
+        val closePreviewBtn = Button(context).apply {
+            text = "关闭中间 PNG 预览"
+            isAllCaps = false
+            minHeight = dp(48)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.5f)
+            setTextColor(Color.WHITE)
+            background = pillBackground(Color.parseColor("#990A3E4E"), Color.parseColor("#6638C5D8"), dp(12))
+            setOnClickListener { clearPassPngPreview() }
+        }
+        passPreviewCard.addView(passPreviewLabel)
+        passPreviewCard.addView(
+            passPreviewImage,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(180),
+            ).apply {
+                topMargin = dp(8)
+                bottomMargin = dp(8)
+            }
+        )
+        passPreviewCard.addView(closePreviewBtn)
+        sectionA.addView(
+            passPreviewCard,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(8) }
+        )
+        scrollContent.addView(sectionA)
+
+        // Section B: Optical Diagnostics (5 Independent Optical Nodes)
+        val sectionB = createSectionCard(TAG_SECTION_OPTICAL, "B. Optical Diagnostics (5 Optics)")
+        val opticalEntries = listOf(
+            Triple(TAG_OPTICAL_GLASS, "1. Glass Refraction", WaterWorldRenderGraph.DiagnosticMode.OPTICAL_GLASS_REFRACTION),
+            Triple(TAG_OPTICAL_WATER, "2. Water Normal Distortion", WaterWorldRenderGraph.DiagnosticMode.OPTICAL_WATER_DISTORTION),
+            Triple(TAG_OPTICAL_CAUSTICS, "3. Caustics", WaterWorldRenderGraph.DiagnosticMode.OPTICAL_CAUSTICS),
+            Triple(TAG_OPTICAL_BLOOM, "4. Bloom", WaterWorldRenderGraph.DiagnosticMode.OPTICAL_BLOOM),
+            Triple(TAG_OPTICAL_BOKEH, "5. Bokeh", WaterWorldRenderGraph.DiagnosticMode.OPTICAL_BOKEH),
+        )
+        for ((tagId, label, mode) in opticalEntries) {
+            val btn = Button(context).apply {
+                tag = tagId
+                text = label
+                isAllCaps = false
+                minHeight = dp(48)
+                minimumHeight = dp(48)
+                gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                setTextColor(Color.WHITE)
+                background = pillBackground(Color.parseColor("#BF0B4254"), Color.parseColor("#6638C5D8"), dp(12))
+                setPadding(dp(12), dp(6), dp(12), dp(6))
+                setOnClickListener { onSelectDiagnosticMode(mode) }
+            }
+            opticalButtons[mode] = btn
+            sectionB.addView(
+                btn,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                ).apply { topMargin = dp(6) }
+            )
+        }
+        scrollContent.addView(sectionB)
+
+        // Section C: GPU Diagnostics
+        val sectionC = createSectionCard(TAG_SECTION_GPU, "C. GPU Diagnostics")
+        gpuInfoView = TextView(context).apply {
+            tag = TAG_GPU_INFO
+            setTextColor(Color.parseColor("#E6DFF7FF"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.5f)
+            typeface = Typeface.MONOSPACE
+            setLineSpacing(dp(2).toFloat(), 1.0f)
+        }
+        sectionC.addView(gpuInfoView)
+        scrollContent.addView(sectionC)
+
+        // Section D: Evidence Export
+        val sectionD = createSectionCard(TAG_SECTION_EXPORT, "D. Evidence Export")
+        exportButton = Button(context).apply {
+            tag = TAG_EXPORT_BUTTON
+            text = context.getString(R.string.water_world_export_button)
+            isAllCaps = false
+            minHeight = dp(48)
+            minimumHeight = dp(48)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12.5f)
+            setTextColor(Color.WHITE)
+            typeface = Typeface.DEFAULT_BOLD
+            background = pillBackground(Color.parseColor("#CC0D7A6E"), Color.parseColor("#995CE6C8"), dp(14))
+            setPadding(dp(14), dp(8), dp(14), dp(8))
+            setOnClickListener { onTriggerEvidenceExport() }
+        }
+        exportSummaryView = TextView(context).apply {
+            tag = TAG_EXPORT_SUMMARY
+            setTextColor(Color.parseColor("#CCE3F8FF"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.5f)
+            setPadding(0, dp(8), 0, 0)
+            text = "包含：11 Pass + 5 Optics + final_fbo.png + android_screen_capture.png、ANDROID_GPU_TELEMETRY.json、SCREEN_VS_FBO_DIFF.json、EVIDENCE_SHA256_MANIFEST.json。导出后自动恢复 FINAL_SCENE。"
+        }
+        sectionD.addView(exportButton)
+        sectionD.addView(exportSummaryView)
+        scrollContent.addView(sectionD)
+
+        scrollView.addView(scrollContent)
+        panelContainer.addView(
+            scrollView,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                maxDrawerHeight,
+            )
+        )
+
+        rootContainer.addView(
+            toggleButton,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            )
+        )
+        rootContainer.addView(
+            panelContainer,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(8) }
+        )
+
+        // Populate canonical 11-pass rows & initial GPU placeholders
+        renderPassRows(null)
+        updateGpuDiagnostics(WaterWorldPreviewActivity.PageState.LOADING, null, null)
+    }
+
+    fun setExpanded(expanded: Boolean) {
+        isExpanded = expanded
+        panelContainer.visibility = if (expanded) View.VISIBLE else View.GONE
+        val labelRes = if (expanded) {
+            R.string.water_world_diagnostics_expanded
+        } else {
+            R.string.water_world_diagnostics_collapsed
+        }
+        toggleButton.text = context.getString(labelRes)
+        toggleButton.contentDescription = context.getString(labelRes)
+    }
+
+    fun toggleExpanded() {
+        setExpanded(!isExpanded)
+    }
+
+    fun updateActiveMode(mode: WaterWorldRenderGraph.DiagnosticMode) {
+        currentMode = mode
+        for ((entryMode, btn) in opticalButtons) {
+            val selected = entryMode == mode
+            btn.background = if (selected) {
+                pillBackground(Color.parseColor("#E6167E96"), Color.parseColor("#FF7AEBFF"), dp(12))
+            } else {
+                pillBackground(Color.parseColor("#BF0B4254"), Color.parseColor("#6638C5D8"), dp(12))
+            }
+        }
+        restoreFinalButton.alpha = if (mode == WaterWorldRenderGraph.DiagnosticMode.FINAL_SCENE) 0.72f else 1.0f
+    }
+
+    fun updateTelemetry(
+        pageState: WaterWorldPreviewActivity.PageState,
+        telemetry: JSONObject?,
+        errorDetail: String?,
+    ) {
+        if (telemetry != null) {
+            lastTelemetry = telemetry
+        }
+        renderPassRows(lastTelemetry)
+        updateGpuDiagnostics(pageState, lastTelemetry, errorDetail)
+    }
+
+    fun updateExportResult(
+        outputDir: File?,
+        statusMessage: String,
+        inFlight: Boolean,
+    ) {
+        if (outputDir != null) {
+            latestExportDir = outputDir
+        }
+        exportButton.isEnabled = !inFlight
+        exportSummaryView.text = statusMessage
+        renderPassRows(lastTelemetry)
+    }
+
+    fun release() {
+        clearPassPngPreview()
+    }
+
+    private fun renderPassRows(telemetry: JSONObject?) {
+        passListContainer.removeAllViews()
+        val recordById = HashMap<String, JSONObject>()
+        val passArr: JSONArray? = telemetry?.optJSONArray("passRecords")
+        if (passArr != null) {
+            for (i in 0 until passArr.length()) {
+                val obj = passArr.optJSONObject(i) ?: continue
+                recordById[obj.optString("passId")] = obj
+            }
+        }
+
+        for (stage in WaterWorldRenderGraph.canonical11StageGraph()) {
+            val wireId = stage.passId.wireId
+            val rec = recordById[wireId]
+            val executed = rec != null
+            val drawCount = rec?.optInt("drawCount", 0) ?: 0
+            val fboComplete = rec?.optBoolean("fboComplete", false) ?: false
+            val elapsedMs = rec?.optDouble("elapsedCpuMs", Double.NaN) ?: Double.NaN
+            val msStr = if (elapsedMs.isFinite()) String.format(Locale.US, "%.2fms", elapsedMs) else "NOT_MEASURED"
+            val exportedPng = latestExportDir?.let { File(it, "${wireId.lowercase(Locale.US)}.png") }
+            val hasExportedPng = exportedPng?.isFile == true
+            val livePassMode = liveDiagnosticModeForPass(stage.passId)
+
+            val row = LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(dp(8), dp(5), dp(8), dp(5))
+                background = pillBackground(Color.parseColor("#8006222E"), Color.parseColor("#3348C9DC"), dp(10))
+            }
+
+            val info = TextView(context).apply {
+                val statusTag = if (executed) "OK" else "PENDING"
+                val fboTag = if (executed) (if (fboComplete) "FBO:OK" else "FBO:FAIL") else "FBO:-"
+                text = "$wireId · $statusTag · Draw:$drawCount · $fboTag · $msStr"
+                setTextColor(if (executed) Color.parseColor("#E6E6FBFF") else Color.parseColor("#99B8D7E2"))
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 10.8f)
+                typeface = Typeface.MONOSPACE
+            }
+
+            row.addView(
+                info,
+                LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                    marginEnd = dp(6)
+                }
+            )
+
+            if (hasExportedPng || livePassMode != null) {
+                val previewBtn = Button(context).apply {
+                    text = if (hasExportedPng) "PNG预览" else "GPU预览"
+                    isAllCaps = false
+                    minHeight = dp(48)
+                    minimumHeight = dp(48)
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 10.5f)
+                    setTextColor(Color.WHITE)
+                    background = pillBackground(Color.parseColor("#BF0E5B6E"), Color.parseColor("#805CE6C8"), dp(10))
+                    setPadding(dp(10), dp(4), dp(10), dp(4))
+                    setOnClickListener {
+                        if (hasExportedPng && exportedPng != null) {
+                            showPassPngPreview(wireId, exportedPng)
+                        } else if (livePassMode != null) {
+                            onSelectDiagnosticMode(livePassMode)
+                        }
+                    }
+                }
+                row.addView(previewBtn)
+            }
+
+            passListContainer.addView(
+                row,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                ).apply { topMargin = dp(4) }
+            )
+        }
+    }
+
+    private fun liveDiagnosticModeForPass(passId: WaterWorldRenderGraph.PassId): WaterWorldRenderGraph.DiagnosticMode? =
+        when (passId) {
+            WaterWorldRenderGraph.PassId.RESIDENT_BACK -> WaterWorldRenderGraph.DiagnosticMode.PASS_RESIDENT_BACK
+            WaterWorldRenderGraph.PassId.FISH -> WaterWorldRenderGraph.DiagnosticMode.PASS_FISH
+            WaterWorldRenderGraph.PassId.RESIDENT_FRONT -> WaterWorldRenderGraph.DiagnosticMode.PASS_RESIDENT_FRONT
+            else -> null
+        }
+
+    private fun showPassPngPreview(wireId: String, file: File) {
+        clearPassPngPreview()
+        val decoded = BitmapFactory.decodeFile(file.path) ?: return
+        previewBitmap = decoded
+        passPreviewLabel.text = "中间 Pass PNG 预览: $wireId (${decoded.width}x${decoded.height})"
+        passPreviewImage.setImageBitmap(decoded)
+        passPreviewCard.visibility = View.VISIBLE
+    }
+
+    private fun clearPassPngPreview() {
+        passPreviewImage.setImageDrawable(null)
+        previewBitmap?.recycle()
+        previewBitmap = null
+        passPreviewCard.visibility = View.GONE
+    }
+
+    private fun updateGpuDiagnostics(
+        pageState: WaterWorldPreviewActivity.PageState,
+        telemetry: JSONObject?,
+        errorDetail: String?,
+    ) {
+        val vendor = telemetry?.optString("glVendor").orEmpty().ifBlank { "NOT_INITIALIZED" }
+        val renderer = telemetry?.optString("glRenderer").orEmpty().ifBlank { "NOT_INITIALIZED" }
+        val glesVer = telemetry?.optString("glVersion").orEmpty().ifBlank { "OpenGL ES 3.0 (pending)" }
+        val shaderStatus = when {
+            pageState == WaterWorldPreviewActivity.PageState.SHADER_FAILED -> "FAILED (${errorDetail ?: "compile/link error"})"
+            telemetry?.optBoolean("shaderCompileLinkOk", false) == true -> {
+                val cnt = telemetry.optInt("shaderProgramCount", 12)
+                "PASS (8 shader groups / $cnt GL programs)"
+            }
+            else -> "PENDING"
+        }
+        val drawCount = if (telemetry != null) telemetry.optInt("drawCount", 0).toString() else "0"
+        val passCount = if (telemetry != null) "${telemetry.optInt("passCount", 0)} / 11" else "0 / 11"
+        val opticalCount = if (telemetry != null) "${telemetry.optInt("opticalNodeCount", 0)} / 5" else "0 / 5"
+        val gpuFrameTime = telemetry?.optString("gpuFrameTimeMs").orEmpty().ifBlank { "NOT_MEASURED" }
+        val cpuFrameTime = telemetry?.optDouble("cpuFrameTimeMs", Double.NaN)
+            ?.takeIf { it.isFinite() }
+            ?.let { String.format(Locale.US, "%.2f ms", it) }
+            ?: "NOT_MEASURED"
+        val gpuClass = telemetry?.optString("rendererClass").orEmpty().ifBlank { "UNCLASSIFIED_PENDING_GL" }
+        val deviceInfo = "${Build.MANUFACTURER} ${Build.MODEL} (API ${Build.VERSION.SDK_INT})"
+
+        gpuInfoView.text = buildString {
+            appendLine("Page State       : ${pageState.name}")
+            appendLine("Active Mode      : ${currentMode.name}")
+            appendLine("GL Vendor        : $vendor")
+            appendLine("GL Renderer      : $renderer")
+            appendLine("GLES Version     : $glesVer")
+            appendLine("Shader Compile   : $shaderStatus")
+            appendLine("Actual Draw Count: $drawCount")
+            appendLine("Actual Pass Count: $passCount (Optics: $opticalCount)")
+            appendLine("GPU Frame Time   : $gpuFrameTime")
+            appendLine("CPU Frame Time   : $cpuFrameTime")
+            appendLine("GPU Class        : $gpuClass")
+            append("Device           : $deviceInfo")
+        }
+    }
+
+    private fun createSectionCard(tagId: String, title: String): LinearLayout {
+        val card = LinearLayout(context).apply {
+            tag = tagId
+            orientation = LinearLayout.VERTICAL
+            background = pillBackground(Color.parseColor("#B3061F2A"), Color.parseColor("#4D43CBE0"), dp(14))
+            setPadding(dp(12), dp(10), dp(12), dp(10))
+        }
+        val header = TextView(context).apply {
+            text = title
+            setTextColor(Color.parseColor("#FF7AEBFF"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12.5f)
+            typeface = Typeface.DEFAULT_BOLD
+            setPadding(0, 0, 0, dp(6))
+        }
+        card.addView(header)
+        card.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+        ).apply { bottomMargin = dp(10) }
+        return card
+    }
+
+    private fun dp(value: Int): Int =
+        TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            value.toFloat(),
+            context.resources.displayMetrics,
+        ).toInt()
+
+    private fun pillBackground(fillColor: Int, strokeColor: Int, radiusPx: Int): GradientDrawable =
+        GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = radiusPx.toFloat()
+            setColor(fillColor)
+            setStroke(dp(1).coerceAtLeast(1), strokeColor)
+        }
+}

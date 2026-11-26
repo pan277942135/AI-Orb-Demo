@@ -55,14 +55,20 @@ jobs:
             -keyalg RSA -keysize 2048 -validity 10000
       - name: Compile and assemble exact HEAD
         run: gradle :app:assembleDebug :app:assembleAndroidTest --no-daemon --console=plain
-      - name: Run Water World 12-area JVM/Robolectric tests and Android lint
-        run: gradle :app:testDebugUnitTest --tests "com.example.WaterWorld*" :app:lintDebug --no-daemon --console=plain
-      - name: Verify packaged APK internals, record APK SHA256 and bundle Work 1.6 Evidence ZIP
+      - name: Run Water World & 3rd Tab Robolectric tests and Android lint
+        run: gradle :app:testDebugUnitTest --tests "com.example.WaterWorld*" --tests "com.example.ExistingOrbTabRegressionTest" --tests "com.example.AIOrbIntegrationRobolectricTest" :app:lintDebug --no-daemon --console=plain
+      - name: Verify merged Debug manifest, packaged APK internals, record APK SHA256 and bundle Work 1.6 Evidence ZIP
         run: |
           python - <<'PY'
           from pathlib import Path
           from zipfile import ZipFile, ZIP_DEFLATED
           import hashlib, json, shutil
+
+          merged_manifest = Path('app/build/intermediates/merged_manifest/debug/processDebugMainManifest/AndroidManifest.xml')
+          assert merged_manifest.exists(), f'Missing merged debug manifest: {merged_manifest}'
+          manifest_xml = merged_manifest.read_text(encoding='utf-8')
+          assert 'com.example.waterworld.WaterWorldPreviewActivity' in manifest_xml, 'WaterWorldPreviewActivity not registered in merged Debug manifest'
+          assert 'com.example.MainActivity' in manifest_xml and 'android.intent.category.LAUNCHER' in manifest_xml, 'MainActivity LAUNCHER missing in merged Debug manifest'
 
           files = list(Path('app/build/outputs/apk/debug').glob('*.apk'))
           assert len(files) == 1, files

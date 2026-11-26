@@ -381,29 +381,47 @@ internal class WaterWorldStaticRenderer(private val root: File) {
 
         val totalCpuMs = (System.nanoTime() - cpuStartNs) / 1_000_000.0
         val executedPassesArr = JSONArray()
-        passRecords.forEach { executedPassesArr.put(it.passId.wireId) }
+        val passRecordsArr = JSONArray()
+        passRecords.forEach {
+            executedPassesArr.put(it.passId.wireId)
+            passRecordsArr.put(it.toJson())
+        }
+        val glVendor = GLES30.glGetString(GLES30.GL_VENDOR).orEmpty()
+        val glRenderer = GLES30.glGetString(GLES30.GL_RENDERER).orEmpty()
+        val deviceLower = glRenderer.lowercase()
+        val isSoftware = listOf("swiftshader", "llvmpipe", "softpipe", "software").any { deviceLower.contains(it) }
+        val rendererClass = when {
+            glRenderer.isBlank() -> "UNKNOWN_GLES_RENDERER"
+            isSoftware -> "ANDROID_EMULATOR_SOFTWARE_GLES"
+            else -> "ANDROID_HARDWARE_GPU"
+        }
 
         return JSONObject()
-            .put("glVendor", GLES30.glGetString(GLES30.GL_VENDOR))
-            .put("glRenderer", GLES30.glGetString(GLES30.GL_RENDERER))
-            .put("glVersion", GLES30.glGetString(GLES30.GL_VERSION))
-            .put("glslVersion", GLES30.glGetString(GLES30.GL_SHADING_LANGUAGE_VERSION))
+            .put("glVendor", glVendor)
+            .put("glRenderer", glRenderer)
+            .put("glVersion", GLES30.glGetString(GLES30.GL_VERSION).orEmpty())
+            .put("glslVersion", GLES30.glGetString(GLES30.GL_SHADING_LANGUAGE_VERSION).orEmpty())
             .put("androidApi", android.os.Build.VERSION.SDK_INT)
             .put("renderResolution", JSONArray(listOf(pool.fullSize, pool.fullSize)))
             .put("shaderPrograms", JSONArray(WaterWorldShaders.SHADER_PROGRAM_NAMES))
+            .put("shaderProgramCount", s.allPrograms().size)
+            .put("shaderCompileLinkOk", true)
             .put("uniqueTextureCount", cache.uniqueGpuTextureCount() + 1)
             .put("logicalTextureAliasCount", cache.logicalAliasCount())
             .put("cpuFrameTimeMs", totalCpuMs)
-            .put("gpuFrameTimeMs", "UNAVAILABLE_NOT_MEASURED")
+            .put("gpuFrameTimeMs", "NOT_MEASURED")
+            .put("rendererClass", rendererClass)
+            .put("hardwareGpuVerified", !isSoftware && glRenderer.isNotBlank())
             .put("drawCount", allDraws.size)
             .put("passCount", passRecords.size)
             .put("stageCount", 11)
             .put("opticalNodeCount", opticalNodesExecuted.size)
             .put("executedPasses", executedPassesArr)
+            .put("passRecords", passRecordsArr)
             .put("opticalNodesExecuted", JSONArray(opticalNodesExecuted.toList()))
             .put("diagnosticMode", mode.name)
             .put("timeSeconds", snapshot.timeSeconds)
-            .put("fboComplete", true)
+            .put("fboComplete", passRecords.all { it.fboComplete })
             .put("passPngSha256", passPngShas)
             .put("opticalPngSha256", opticalPngShas)
     }

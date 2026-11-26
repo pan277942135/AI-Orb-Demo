@@ -1,15 +1,41 @@
 {
   "baseline_main_head": "234b29de4ba2b118c3d5ff0885224332abd4695c",
+  "task_id": "AI_ORB_DEMO_WATER_WORLD_THIRD_TAB_INTEGRATION_V1",
   "apk_file": "AI-Orb-Demo-WaterWorld-V2.1-Work16-debug.apk",
-  "apk_size_bytes": 34080827,
-  "apk_sha256": "a7b722d6b26c5bb966c7b65d50857a3993f42e102e6513ec8fc8378c4f7a842c",
+  "apk_size_bytes": 34531354,
+  "apk_sha256": "f796c28441f577b40bd01a4faabe050c868160b18ae0d8a57167af167f2543cc",
   "frozen_v2_assets_packaged": 65,
   "master_png_in_apk": false,
+  "third_tab_navigation": {
+    "tabs_debug": [
+      "AI Orb",
+      "照片水光",
+      "水下世界"
+    ],
+    "tabs_release": [
+      "AI Orb",
+      "照片水光"
+    ],
+    "launcher_activity": "com.example.MainActivity",
+    "water_world_activity": "com.example.waterworld.WaterWorldPreviewActivity",
+    "merged_debug_manifest_verified": true,
+    "default_showcase_mode": "FINAL_SCENE",
+    "diagnostics_default_state": "COLLAPSED",
+    "page_states": [
+      "LOADING",
+      "READY",
+      "RENDER_FAILED",
+      "RESOURCE_FAILED",
+      "SHADER_FAILED",
+      "FBO_FAILED"
+    ]
+  },
   "compile_sdk": "36.1",
   "target_sdk": 36,
   "assemble_debug": "PASS",
   "assemble_android_test": "PASS",
-  "water_world_jvm_robolectric_tests": "12/12 PASS (API 36)",
+  "compile_release_kotlin": "PASS",
+  "water_world_jvm_robolectric_tests": "25/25 PASS (12 Work1.6 + 9 ThirdTab + 3 ExistingOrbTabRegression + 1 AIOrbIntegration, API 36)",
   "lint_debug": "PASS",
   "android_runtime_verified": false,
   "hardware_gpu_verified": false,
@@ -19,5 +45,7 @@
   "VISUAL_ACCEPTANCE_80": "PASS_SOFTWARE_REFERENCE",
   "ANDROID_RUNTIME_VERIFIED": "NOT_RUN",
   "HARDWARE_GPU_VERIFIED": "NOT_RUN",
-  "WORK2_STATIC_INPUT_READY": false
+  "WORK2_STATIC_INPUT_READY": false,
+  "surface_sync_group_fix": "Async background asset staging + immediate initial GL frame swap (<16ms) before heavy GL texture/shader init",
+  "apk_size_optimization": "Removed unused material-icons-extended (~15MB DEX bloat) with 5 inline vector icons in OrbMaterialIcons.kt"
 }

@@ -1,5 +1,6 @@
 package com.example
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -38,6 +39,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -56,6 +59,7 @@ import com.example.orb.ui.TaskRecognitionDemoScreen
 import com.example.orb.v3.OrbGpuReferenceCapture
 import com.example.ui.theme.AbyssEmerald
 import com.example.ui.theme.MyApplicationTheme
+import com.example.waterworld.WaterWorldPreviewActivity
 
 private data class SurfaceWindowMetrics(
   val leftPx: Float = 0f,
@@ -217,20 +221,32 @@ class MainActivity : ComponentActivity() {
             )
           }
 
-          // Floating Dual-Tab Segmented Switcher (`AI Orb` | `照片水光`)
+          // Floating Segmented Switcher (`AI Orb` | `照片水光` | Debug-only `水下世界`)
           DemoTabSwitcherBar(
             activeTab = uiState.activeTab,
             onSelectTab = viewModel::selectTab,
             isLightTheme = isTaskTab,
+            showWaterWorldTab = BuildConfig.DEBUG,
+            onOpenWaterWorld = { openWaterWorldPreview() },
             modifier = Modifier
               .align(Alignment.TopCenter)
               .statusBarsPadding()
               .displayCutoutPadding()
-              .padding(top = 6.dp),
+              .padding(top = 6.dp, start = 8.dp, end = 8.dp),
           )
         }
       }
     }
+  }
+
+  internal fun openWaterWorldPreview() {
+    if (!BuildConfig.DEBUG) return
+    startActivity(
+      Intent(
+        this@MainActivity,
+        WaterWorldPreviewActivity::class.java,
+      )
+    )
   }
 
   override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -251,11 +267,13 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun DemoTabSwitcherBar(
+internal fun DemoTabSwitcherBar(
   activeTab: DemoTab,
   onSelectTab: (DemoTab) -> Unit,
   isLightTheme: Boolean,
   modifier: Modifier = Modifier,
+  showWaterWorldTab: Boolean = BuildConfig.DEBUG,
+  onOpenWaterWorld: () -> Unit = {},
 ) {
   val containerColor = if (isLightTheme) {
     ComposeColor(0xD8F1FCFF)
@@ -278,6 +296,7 @@ private fun DemoTabSwitcherBar(
   } else {
     ComposeColor(0xCCBEEEF5)
   }
+  val segmentHorizontalPadding = if (showWaterWorldTab) 12.dp else 16.dp
 
   Surface(
     shape = RoundedCornerShape(26.dp),
@@ -297,6 +316,7 @@ private fun DemoTabSwitcherBar(
         activeBg = activePillColor,
         activeText = activeTextColor,
         inactiveText = inactiveTextColor,
+        horizontalPadding = segmentHorizontalPadding,
         tag = "tab_ai_orb",
         onClick = { onSelectTab(DemoTab.AI_ORB) },
       )
@@ -306,9 +326,22 @@ private fun DemoTabSwitcherBar(
         activeBg = activePillColor,
         activeText = activeTextColor,
         inactiveText = inactiveTextColor,
+        horizontalPadding = segmentHorizontalPadding,
         tag = "tab_task_perimeter",
         onClick = { onSelectTab(DemoTab.TASK_PERIMETER) },
       )
+      if (showWaterWorldTab) {
+        DemoTabSegment(
+          label = stringResource(R.string.tab_water_world),
+          selected = false,
+          activeBg = activePillColor,
+          activeText = activeTextColor,
+          inactiveText = inactiveTextColor,
+          horizontalPadding = segmentHorizontalPadding,
+          tag = "tab_water_world",
+          onClick = onOpenWaterWorld,
+        )
+      }
     }
   }
 }
@@ -320,6 +353,7 @@ private fun DemoTabSegment(
   activeBg: ComposeColor,
   activeText: ComposeColor,
   inactiveText: ComposeColor,
+  horizontalPadding: Dp,
   tag: String,
   onClick: () -> Unit,
 ) {
@@ -330,11 +364,14 @@ private fun DemoTabSegment(
       .clip(RoundedCornerShape(22.dp))
       .background(if (selected) activeBg else ComposeColor.Transparent)
       .clickable(role = Role.Tab, onClick = onClick)
-      .padding(horizontal = 16.dp, vertical = 10.dp)
+      .padding(horizontal = horizontalPadding, vertical = 10.dp)
       .testTag(tag),
   ) {
     Text(
       text = label,
+      maxLines = 1,
+      softWrap = false,
+      overflow = TextOverflow.Ellipsis,
       style = MaterialTheme.typography.labelLarge.copy(
         fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
       ),
