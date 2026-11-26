@@ -68,6 +68,14 @@ internal class WaterWorldProgram {
             void main() {
                 vec4 base=mix(vec4(1.0),texture(uTexture,vUv),uUseTexture)*uTint;
                 if(base.a<0.001) discard;
+                // Ribbon UV.v spans the original stroke width; soften its boundary
+                // and concentrate emission around its center instead of a flat opaque band.
+                float ribbonWeight=step(0.001,uEmission)*(1.0-uUseTexture);
+                float across=abs(vUv.y*2.0-1.0);
+                float ribbonAlpha=1.0-smoothstep(0.55,1.0,across);
+                float ribbonCrest=exp(-18.0*across*across);
+                base.a*=mix(1.0,ribbonAlpha,ribbonWeight);
+                base.rgb*=mix(1.0,0.55+0.45*ribbonCrest,ribbonWeight);
                 float diffuse=max(dot(normalize(vNormal),normalize(uLightDirection)),0.0);
                 float edge=pow(1.0-abs(normalize(vNormal).z),3.0);
                 base.a*=mix(1.0,0.025+0.975*edge,uFresnel);

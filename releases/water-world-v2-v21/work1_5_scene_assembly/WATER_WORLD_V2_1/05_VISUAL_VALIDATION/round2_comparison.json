@@ -1,0 +1,9 @@
+{
+  "round": 2,
+  "change": "Original-width ribbon edge alpha and central crest from source mesh UV",
+  "rgb_mae_before": 0.1765731672803038,
+  "rgb_mae_after": 0.17246852415205327,
+  "classification": "SOFTWARE_GLES_DIAGNOSTIC",
+  "visual_score": null,
+  "visual_acceptance": "NOT_EVALUATED"
+}
