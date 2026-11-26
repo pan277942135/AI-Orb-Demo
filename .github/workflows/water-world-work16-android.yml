@@ -27,7 +27,19 @@ jobs:
       - name: Install compile SDK
         run: |
           echo "ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}" >> "$GITHUB_ENV"
-          SDKMANAGER_PATH="${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/16.0/bin/sdkmanager"
+          SDKMANAGER_PATH="$(command -v sdkmanager || true)"
+          if [ -z "$SDKMANAGER_PATH" ]; then
+            SDKMANAGER_PATH="$(find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools" -name sdkmanager -type f -print -quit 2>/dev/null || true)"
+          fi
+          if [ -z "$SDKMANAGER_PATH" ]; then
+            curl --fail --location --retry 2 --output /tmp/ww-android-cmdline.zip \
+              https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
+            mkdir -p "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest"
+            unzip -q /tmp/ww-android-cmdline.zip -d /tmp/ww-android-tools
+            mv /tmp/ww-android-tools/cmdline-tools/* "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest/"
+            SDKMANAGER_PATH="${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest/bin/sdkmanager"
+          fi
+          echo "sdkmanager=${SDKMANAGER_PATH:-MISSING}"
           test -x "$SDKMANAGER_PATH"
           printf 'y\n%.0s' {1..50} | "$SDKMANAGER_PATH" --licenses >/dev/null
           "$SDKMANAGER_PATH" --install 'platforms;android-36.1' 'build-tools;36.0.0'
