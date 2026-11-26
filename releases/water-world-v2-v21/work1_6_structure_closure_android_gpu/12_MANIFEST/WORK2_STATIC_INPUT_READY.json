@@ -1,0 +1,20 @@
+{
+  "work1_6_structure_closure": false,
+  "ground_truth_ready": false,
+  "scene_graph_ready": false,
+  "resident_occlusion_ready": false,
+  "multipass_renderer_ready": false,
+  "optical_pipeline_ready": false,
+  "android_runtime_ready": false,
+  "hardware_gpu_verified": false,
+  "visual_acceptance_pass": false,
+  "work2_static_input_ready": false,
+  "evidence_status": "PARTIAL_SOURCE_RECONCILIATION_AND_ANDROID_PREVIEW_SOURCE_ONLY",
+  "unresolved": [
+    "12 object ground truth metrics remain uncertain",
+    "Resident front/back segments unconfirmed",
+    "11-pass optical renderer not implemented",
+    "Android APK and device runtime not verified",
+    "Six-dimension visual gate not evaluated"
+  ]
+}

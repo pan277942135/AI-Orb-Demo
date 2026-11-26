@@ -1,0 +1,69 @@
+{
+  "schema": "water-world-occlusion-canonical/1",
+  "front_object_back_object_edges": [],
+  "unresolved_historical_relations": [
+    {
+      "behind": "fish",
+      "in_front_of": "water_body"
+    },
+    {
+      "behind": "fish",
+      "in_front_of": "plants_back"
+    },
+    {
+      "behind": "glass_back_arc",
+      "in_front_of": "sphere_interior"
+    },
+    {
+      "behind": "glass_front_arc",
+      "in_front_of": "fish"
+    },
+    {
+      "behind": "front_residents",
+      "in_front_of": "sphere_interior"
+    }
+  ],
+  "resident_segments": {
+    "G01": {
+      "directly_observed_samples": 167,
+      "confirmed_occluded_samples": 0,
+      "unclassified_samples": 53,
+      "front_segments": [],
+      "back_segments": [],
+      "status": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION"
+    },
+    "G02": {
+      "directly_observed_samples": 136,
+      "confirmed_occluded_samples": 0,
+      "unclassified_samples": 84,
+      "front_segments": [],
+      "back_segments": [],
+      "status": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION"
+    },
+    "A01": {
+      "directly_observed_samples": 204,
+      "confirmed_occluded_samples": 0,
+      "unclassified_samples": 16,
+      "front_segments": [],
+      "back_segments": [],
+      "status": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION"
+    },
+    "A02": {
+      "directly_observed_samples": 154,
+      "confirmed_occluded_samples": 0,
+      "unclassified_samples": 66,
+      "front_segments": [],
+      "back_segments": [],
+      "status": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION"
+    },
+    "C01": {
+      "directly_observed_samples": 66,
+      "confirmed_occluded_samples": 0,
+      "unclassified_samples": 154,
+      "front_segments": [],
+      "back_segments": [],
+      "status": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION"
+    }
+  },
+  "status": "BLOCKED_DIRECTION_AND_GROUND_TRUTH"
+}
