@@ -1,13 +1,168 @@
 {
-  "canvas": [1254, 1254],
-  "time_seconds": 0,
-  "actual_passes": [
-    {"id": "background", "output": "background_rgba8_depth24", "draws": 1, "status": "SOFTWARE_GLES_EXECUTED"},
-    {"id": "scene", "input": "background_rgba8", "output": "scene_rgba8_depth24", "draws": 31, "status": "SOFTWARE_GLES_EXECUTED"},
-    {"id": "final_copy", "input": "scene_rgba8", "output": "final_rgba8_depth24", "draws": 0, "status": "SOFTWARE_GLES_EXECUTED"}
+  "schema": "water-world-render-plan/2.0",
+  "canvas": [
+    1254,
+    1254
   ],
-  "unimplemented_contract_stages": ["resident_back_isolation", "sphere_back_isolation", "water_interior_isolation", "far_ecology_isolation", "lighting", "fish_isolation", "near_ecology_isolation", "sphere_front_isolation", "resident_front_isolation"],
-  "missing_optical_passes": ["glass_refraction", "water_normal_distortion", "caustics", "bloom", "bokeh"],
+  "time_seconds": 0,
+  "composition_stages": [
+    {
+      "order": 1,
+      "pass_id": "01_BACKGROUND",
+      "shader": "OPAQUE",
+      "draws": 1,
+      "depth_test": true,
+      "depth_write": true,
+      "blend": "NONE"
+    },
+    {
+      "order": 2,
+      "pass_id": "02_RESIDENT_BACK",
+      "shader": "RESIDENT_RIBBON",
+      "draws": 8,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "ALPHA"
+    },
+    {
+      "order": 3,
+      "pass_id": "03_SPHERE_BACK",
+      "shader": "GLASS",
+      "draws": 1,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "ALPHA"
+    },
+    {
+      "order": 4,
+      "pass_id": "04_WATER_INTERIOR",
+      "shader": "WATER",
+      "draws": 1,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "ALPHA"
+    },
+    {
+      "order": 5,
+      "pass_id": "05_FAR_ECOLOGY",
+      "shader": "TRANSPARENT",
+      "draws": 5,
+      "depth_test": true,
+      "depth_write": true,
+      "blend": "ALPHA_CUTOUT"
+    },
+    {
+      "order": 6,
+      "pass_id": "06_LIGHTING",
+      "shader": "CAUSTICS",
+      "draws": 1,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "ADDITIVE"
+    },
+    {
+      "order": 7,
+      "pass_id": "07_FISH",
+      "shader": "TRANSPARENT",
+      "draws": 4,
+      "depth_test": true,
+      "depth_write": true,
+      "blend": "ALPHA_CUTOUT"
+    },
+    {
+      "order": 8,
+      "pass_id": "08_NEAR_ECOLOGY",
+      "shader": "TRANSPARENT+PARTICLE_BOKEH",
+      "draws": 20,
+      "depth_test": true,
+      "depth_write": "PER_MATERIAL",
+      "blend": "ALPHA_CUTOUT_AND_ALPHA"
+    },
+    {
+      "order": 9,
+      "pass_id": "09_SPHERE_FRONT",
+      "shader": "GLASS",
+      "draws": 1,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "ALPHA"
+    },
+    {
+      "order": 10,
+      "pass_id": "10_RESIDENT_FRONT",
+      "shader": "RESIDENT_RIBBON",
+      "draws": 5,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "ALPHA"
+    },
+    {
+      "order": 11,
+      "pass_id": "11_FINAL_COMPOSITE",
+      "shader": "BLOOM+PARTICLE_BOKEH",
+      "draws": 9,
+      "depth_test": true,
+      "depth_write": false,
+      "blend": "COMPOSITE"
+    }
+  ],
+  "optical_nodes": [
+    {
+      "id": "glass_refraction",
+      "attached_stages": [
+        "03_SPHERE_BACK",
+        "09_SPHERE_FRONT"
+      ],
+      "shader": "GLASS",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "water_normal_distortion",
+      "attached_stages": [
+        "04_WATER_INTERIOR"
+      ],
+      "shader": "WATER",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "caustics",
+      "attached_stages": [
+        "06_LIGHTING",
+        "08_NEAR_ECOLOGY"
+      ],
+      "shader": "CAUSTICS",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "bloom",
+      "attached_stages": [
+        "11_FINAL_COMPOSITE"
+      ],
+      "shader": "BLOOM",
+      "subpasses": [
+        "bright_pass",
+        "downsample_2x",
+        "downsample_4x",
+        "blur_h",
+        "blur_v",
+        "composite"
+      ],
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "bokeh",
+      "attached_stages": [
+        "01_BACKGROUND",
+        "08_NEAR_ECOLOGY",
+        "11_FINAL_COMPOSITE"
+      ],
+      "shader": "PARTICLE_BOKEH",
+      "status": "IMPLEMENTED"
+    }
+  ],
+  "total_draws": 56,
+  "stage_count": 11,
+  "optical_node_count": 5,
   "hardware_gpu": "NOT_RUN",
-  "status": "PARTIAL_THREE_PASS_PIPELINE"
+  "status": "ELEVEN_STAGE_PLUS_FIVE_OPTICS_IMPLEMENTED"
 }

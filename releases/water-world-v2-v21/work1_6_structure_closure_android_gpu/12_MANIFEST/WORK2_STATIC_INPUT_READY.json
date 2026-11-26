@@ -1,20 +1,58 @@
 {
-  "work1_6_structure_closure": false,
+  "schema": "water-world-work16-closure-manifest/2.0",
+  "baseline_main_head": "234b29de4ba2b118c3d5ff0885224332abd4695c",
+  "frozen_sources": {
+    "master_png_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+    "v2_zip_sha256": "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095",
+    "v21_zip_sha256": "28f8918c39f6e875602d3a7e90775e9d455aa6c4e42783247d1104c3b4509679",
+    "all_frozen_sources_verified_unchanged": true
+  },
+  "WORK1_6_CLOSED": "PARTIAL_SOFTWARE_AND_APK_VERIFIED",
+  "VISUAL_ACCEPTANCE_80": "PASS_SOFTWARE_REFERENCE",
+  "ANDROID_RUNTIME_VERIFIED": "NOT_RUN",
+  "HARDWARE_GPU_VERIFIED": "NOT_RUN",
+  "WORK2_STATIC_INPUT_READY": false,
+  "gates": {
+    "WORK1_6_CLOSED": "PARTIAL_SOFTWARE_AND_APK_VERIFIED",
+    "VISUAL_ACCEPTANCE_80": "PASS_SOFTWARE_REFERENCE",
+    "ANDROID_RUNTIME_VERIFIED": "NOT_RUN",
+    "HARDWARE_GPU_VERIFIED": "NOT_RUN",
+    "WORK2_STATIC_INPUT_READY": false
+  },
+  "work1_6_structure_closure": true,
+  "ground_truth_vs_hypothesis_separated": true,
   "ground_truth_ready": false,
-  "scene_graph_ready": false,
-  "resident_occlusion_ready": false,
-  "multipass_renderer_ready": false,
-  "optical_pipeline_ready": false,
+  "scene_graph_ready": true,
+  "resident_occlusion_hypothesis_split_ready": true,
+  "resident_occlusion_ground_truth_ready": false,
+  "multipass_11stage_renderer_ready": true,
+  "optical_5node_pipeline_ready": true,
+  "motion_contract_47_elements_28_edges_ready": true,
+  "android_api36_apk_build_and_tests_ready": true,
+  "robolectric_tests_are_not_real_android_device": true,
   "android_runtime_ready": false,
   "hardware_gpu_verified": false,
+  "visual_acceptance_software_reference_score": 83.23,
   "visual_acceptance_pass": false,
   "work2_static_input_ready": false,
-  "evidence_status": "PARTIAL_SOURCE_RECONCILIATION_AND_ANDROID_PREVIEW_SOURCE_ONLY",
-  "unresolved": [
-    "12 object ground truth metrics remain uncertain",
-    "Resident front/back segments unconfirmed",
-    "11-pass optical renderer not implemented",
-    "Android APK and device runtime not verified",
-    "Six-dimension visual gate not evaluated"
+  "apk_delivery": {
+    "apk_path": "releases/water-world-v2-v21/work1_6_structure_closure_android_gpu/AI-Orb-Demo-WaterWorld-V2.1-Work16-debug.apk",
+    "apk_sha256": "a7b722d6b26c5bb966c7b65d50857a3993f42e102e6513ec8fc8378c4f7a842c",
+    "apk_size_bytes": 34080827,
+    "frozen_v2_assets_packaged": 65,
+    "master_png_in_apk": false
+  },
+  "software_reference_render": {
+    "classification": "SOFTWARE_REFERENCE_PIPELINE_CPU_1TO1",
+    "final_png_sha256": "30a940a18c9647ea7797412868b253f5e65970a883c39be74a5ab619fa960227",
+    "overall_score": 83.23,
+    "stages_rendered": 11,
+    "optical_nodes_rendered": 5
+  },
+  "unresolved_environment_blockers": [
+    "No Android emulator or ADB available in headless AI Studio build container (real-device install/launch/PixelCopy capture is NOT_RUN).",
+    "No native libEGL.so.1/libGLESv2.so.2 or hardware GPU available in container (hardware GPU telemetry & real GPU visual parity remain NOT_RUN).",
+    "12 historical object Ground Truth masks and Resident front/back occlusion remain explicitly classified as UNKNOWN/BLOCKED in Ground Truth while Render Hypotheses drive the 11-stage renderer cleanly.",
+    "GitHub remote push/PR execution is managed externally via AI Studio platform sync (no local .git directory or GitHub write token in container)."
   ]
 }

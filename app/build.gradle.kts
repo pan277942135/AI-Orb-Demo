@@ -91,8 +91,10 @@ val verifyFrozenWaterWorldArchive = tasks.register<Exec>("verifyFrozenWaterWorld
   commandLine("python3", "tools/water-world-scene-assembly/verify_android_asset_plan.py")
 }
 prepareWaterWorldAssets.configure { dependsOn(verifyFrozenWaterWorldArchive) }
-tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }
-  .configureEach { dependsOn(prepareWaterWorldAssets) }
+tasks.matching {
+  (it.name.startsWith("merge") && it.name.endsWith("Assets")) ||
+    it.name.contains("lint", ignoreCase = true)
+}.configureEach { dependsOn(prepareWaterWorldAssets) }
 
 // Configure the Secrets Gradle Plugin to use .env and .env.example files
 // to match the convention used in Web projects.

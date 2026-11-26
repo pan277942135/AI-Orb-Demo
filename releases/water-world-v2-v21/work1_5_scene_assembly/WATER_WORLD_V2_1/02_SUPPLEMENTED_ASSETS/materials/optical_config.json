@@ -1,0 +1,430 @@
+{
+  "schema_version": "water-world-optics/1.0",
+  "canvas_size": 1254,
+  "sphere": {
+    "center_px": [
+      626.4757504075296,
+      596.3441299453135
+    ],
+    "outer_radius_px": 422.2986621604988,
+    "inner_radius_px": 395.75
+  },
+  "auxiliary_textures": {
+    "water_normal": {
+      "path": "01_REUSED_ASSETS/04_WATER/water_normal_tangent.png",
+      "sha256": "67633a7b11a71c51b8c9d63124ddb4db6ef97a004ceeaa7ff552c2fecdf1ad1f"
+    },
+    "water_depth": {
+      "path": "01_REUSED_ASSETS/04_WATER/water_relative_depth_16bit.png",
+      "sha256": "9cf40e6da05eab96078c012cfc8bf5b720da8b52318761a5cf4c9722fdf3400d"
+    },
+    "caustics_height": {
+      "path": "01_REUSED_ASSETS/04_WATER/caustics/caustics_height.png",
+      "sha256": "637c564a5688a8099d15eb1aa7ff0cdda9be3ef2c93ca6247bf26f93b706cb2b"
+    },
+    "glass_shell_mask": {
+      "path": "01_REUSED_ASSETS/03_SPHERE/glass_shell_mask.png",
+      "sha256": "10896a13bcdd13db37d07e262d8e9acebfd52b3260dcad083b4b1841dafa37a9"
+    },
+    "cavity_alpha": {
+      "path": "01_REUSED_ASSETS/03_SPHERE/cavity_alpha.png",
+      "sha256": "2b5d3684892bb944c48a940de6be537bada3918bd07d15f91f657989d6147041"
+    },
+    "sphere_outer_mask": {
+      "path": "01_REUSED_ASSETS/03_SPHERE/sphere_outer_mask.png",
+      "sha256": "5e3e5dbb4eb26e9f3dc66aed684bb89a0810c13ddb5dd3cdc7882f2e51293051"
+    }
+  },
+  "background_atmosphere": {
+    "top_glare_suppression": 0.9,
+    "vignette_strength": 0.68,
+    "deep_tint": [
+      0.015,
+      0.105,
+      0.118
+    ],
+    "top_center_halo_center": [
+      0.56,
+      0.035
+    ],
+    "top_center_halo_radius": 0.22,
+    "top_center_halo_color": [
+      0.14,
+      0.44,
+      0.48
+    ],
+    "top_center_halo_intensity": 0.36
+  },
+  "glass_refraction": {
+    "enabled": true,
+    "back_refraction_strength": 0.015,
+    "front_refraction_strength": 0.028,
+    "chromatic_dispersion": 0.0012,
+    "fresnel_power": 4.0,
+    "rim_color_cool": [
+      0.54,
+      0.92,
+      1.0
+    ],
+    "rim_color_warm": [
+      1.0,
+      0.82,
+      0.36
+    ],
+    "absorption_color": [
+      0.02,
+      0.22,
+      0.3
+    ],
+    "top_left_flare_norm": [
+      0.336,
+      0.205
+    ],
+    "top_left_flare_radius": 0.095,
+    "top_left_flare_color": [
+      1.0,
+      0.88,
+      0.46
+    ],
+    "top_left_flare_intensity": 1.32,
+    "bottom_right_flare_norm": [
+      0.625,
+      0.772
+    ],
+    "bottom_right_flare_radius": 0.088,
+    "bottom_right_flare_color": [
+      1.0,
+      0.86,
+      0.42
+    ],
+    "bottom_right_flare_intensity": 1.26,
+    "right_rim_arc_norm": [
+      0.768,
+      0.445
+    ],
+    "right_rim_arc_intensity": 0.76
+  },
+  "water_normal_distortion": {
+    "enabled": true,
+    "normal_distortion_strength": 0.011,
+    "meniscus_base_y_norm": 0.244,
+    "meniscus_wave_amp_norm": 0.016,
+    "meniscus_thickness_norm": 0.021,
+    "air_dome_top_color": [
+      0.1,
+      0.38,
+      0.52
+    ],
+    "air_dome_warm_color": [
+      1.0,
+      0.84,
+      0.42
+    ],
+    "water_shallow_color": [
+      0.05,
+      0.42,
+      0.52
+    ],
+    "water_mid_color": [
+      0.018,
+      0.29,
+      0.38
+    ],
+    "water_deep_color": [
+      0.01,
+      0.14,
+      0.18
+    ],
+    "waterbed_blend": 0.16
+  },
+  "caustics": {
+    "enabled": true,
+    "sun_origin_norm": [
+      0.338,
+      0.212
+    ],
+    "god_ray_intensity": 0.48,
+    "god_ray_color": [
+      1.0,
+      0.88,
+      0.46
+    ],
+    "god_ray_beams": [
+      {
+        "angle_deg": 42.5,
+        "width_deg": 2.4,
+        "strength": 0.7
+      },
+      {
+        "angle_deg": 51.0,
+        "width_deg": 2.8,
+        "strength": 0.96
+      },
+      {
+        "angle_deg": 60.0,
+        "width_deg": 3.0,
+        "strength": 1.0
+      },
+      {
+        "angle_deg": 69.5,
+        "width_deg": 2.7,
+        "strength": 0.9
+      },
+      {
+        "angle_deg": 79.0,
+        "width_deg": 2.3,
+        "strength": 0.72
+      },
+      {
+        "angle_deg": 88.5,
+        "width_deg": 2.0,
+        "strength": 0.52
+      }
+    ],
+    "surface_caustic_strength": 0.62,
+    "bed_caustic_strength": 0.54,
+    "bed_caustic_color": [
+      0.88,
+      0.95,
+      0.64
+    ]
+  },
+  "bloom": {
+    "enabled": true,
+    "threshold": 0.72,
+    "soft_knee": 0.24,
+    "downsample_scales": [
+      2,
+      4
+    ],
+    "blur_radius_px": 14,
+    "strength": 0.44,
+    "max_contribution": 0.56
+  },
+  "bokeh": {
+    "enabled": true,
+    "orbs": [
+      {
+        "x": 0.052,
+        "y": 0.598,
+        "r": 0.026,
+        "color": [
+          0.95,
+          0.78,
+          0.28
+        ],
+        "alpha": 0.46,
+        "softness": 0.55,
+        "layer": "BG"
+      },
+      {
+        "x": 0.115,
+        "y": 0.768,
+        "r": 0.032,
+        "color": [
+          0.58,
+          0.86,
+          0.28
+        ],
+        "alpha": 0.28,
+        "softness": 0.65,
+        "layer": "BG"
+      },
+      {
+        "x": 0.105,
+        "y": 0.092,
+        "r": 0.028,
+        "color": [
+          0.22,
+          0.58,
+          0.52
+        ],
+        "alpha": 0.24,
+        "softness": 0.7,
+        "layer": "BG"
+      },
+      {
+        "x": 0.735,
+        "y": 0.042,
+        "r": 0.024,
+        "color": [
+          0.58,
+          0.76,
+          0.34
+        ],
+        "alpha": 0.26,
+        "softness": 0.65,
+        "layer": "BG"
+      },
+      {
+        "x": 0.915,
+        "y": 0.165,
+        "r": 0.026,
+        "color": [
+          0.16,
+          0.6,
+          0.64
+        ],
+        "alpha": 0.28,
+        "softness": 0.65,
+        "layer": "BG"
+      },
+      {
+        "x": 0.972,
+        "y": 0.772,
+        "r": 0.028,
+        "color": [
+          0.92,
+          0.74,
+          0.26
+        ],
+        "alpha": 0.42,
+        "softness": 0.52,
+        "layer": "FG"
+      },
+      {
+        "x": 0.895,
+        "y": 0.865,
+        "r": 0.03,
+        "color": [
+          0.22,
+          0.68,
+          0.62
+        ],
+        "alpha": 0.24,
+        "softness": 0.68,
+        "layer": "BG"
+      },
+      {
+        "x": 0.92,
+        "y": 0.92,
+        "r": 0.022,
+        "color": [
+          0.44,
+          0.72,
+          0.34
+        ],
+        "alpha": 0.22,
+        "softness": 0.65,
+        "layer": "BG"
+      },
+      {
+        "x": 0.18,
+        "y": 0.925,
+        "r": 0.034,
+        "color": [
+          0.18,
+          0.56,
+          0.54
+        ],
+        "alpha": 0.22,
+        "softness": 0.72,
+        "layer": "BG"
+      },
+      {
+        "x": 0.855,
+        "y": 0.905,
+        "r": 0.018,
+        "color": [
+          0.2,
+          0.66,
+          0.72
+        ],
+        "alpha": 0.24,
+        "softness": 0.62,
+        "layer": "BG"
+      },
+      {
+        "x": 0.182,
+        "y": 0.242,
+        "r": 0.032,
+        "color": [
+          1.0,
+          0.92,
+          0.6
+        ],
+        "alpha": 0.72,
+        "softness": 0.85,
+        "layer": "FG"
+      },
+      {
+        "x": 0.382,
+        "y": 0.114,
+        "r": 0.022,
+        "color": [
+          1.0,
+          0.9,
+          0.58
+        ],
+        "alpha": 0.62,
+        "softness": 0.85,
+        "layer": "FG"
+      },
+      {
+        "x": 0.972,
+        "y": 0.415,
+        "r": 0.022,
+        "color": [
+          1.0,
+          0.86,
+          0.48
+        ],
+        "alpha": 0.68,
+        "softness": 0.82,
+        "layer": "FG"
+      },
+      {
+        "x": 0.926,
+        "y": 0.528,
+        "r": 0.028,
+        "color": [
+          1.0,
+          0.9,
+          0.56
+        ],
+        "alpha": 0.76,
+        "softness": 0.82,
+        "layer": "FG"
+      },
+      {
+        "x": 0.686,
+        "y": 0.892,
+        "r": 0.024,
+        "color": [
+          0.58,
+          0.98,
+          1.0
+        ],
+        "alpha": 0.72,
+        "softness": 0.84,
+        "layer": "FG"
+      },
+      {
+        "x": 0.414,
+        "y": 0.905,
+        "r": 0.02,
+        "color": [
+          0.96,
+          1.0,
+          0.64
+        ],
+        "alpha": 0.62,
+        "softness": 0.84,
+        "layer": "FG"
+      },
+      {
+        "x": 0.502,
+        "y": 0.892,
+        "r": 0.014,
+        "color": [
+          1.0,
+          0.88,
+          0.52
+        ],
+        "alpha": 0.64,
+        "softness": 0.82,
+        "layer": "FG"
+      }
+    ]
+  }
+}

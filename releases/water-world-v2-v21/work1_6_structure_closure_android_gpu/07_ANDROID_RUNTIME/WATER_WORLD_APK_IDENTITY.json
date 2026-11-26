@@ -1,0 +1,23 @@
+{
+  "baseline_main_head": "234b29de4ba2b118c3d5ff0885224332abd4695c",
+  "apk_file": "AI-Orb-Demo-WaterWorld-V2.1-Work16-debug.apk",
+  "apk_size_bytes": 34080827,
+  "apk_sha256": "a7b722d6b26c5bb966c7b65d50857a3993f42e102e6513ec8fc8378c4f7a842c",
+  "frozen_v2_assets_packaged": 65,
+  "master_png_in_apk": false,
+  "compile_sdk": "36.1",
+  "target_sdk": 36,
+  "assemble_debug": "PASS",
+  "assemble_android_test": "PASS",
+  "water_world_jvm_robolectric_tests": "12/12 PASS (API 36)",
+  "lint_debug": "PASS",
+  "android_runtime_verified": false,
+  "hardware_gpu_verified": false,
+  "environment_note": "Headless AI Studio build container has no Android emulator/ADB and no native libEGL/libGLESv2 driver; runtime launch and hardware GPU capture remain NOT_RUN pending real device/emulator execution.",
+  "robolectric_tests_are_not_real_android_device": true,
+  "WORK1_6_CLOSED": "PARTIAL_SOFTWARE_AND_APK_VERIFIED",
+  "VISUAL_ACCEPTANCE_80": "PASS_SOFTWARE_REFERENCE",
+  "ANDROID_RUNTIME_VERIFIED": "NOT_RUN",
+  "HARDWARE_GPU_VERIFIED": "NOT_RUN",
+  "WORK2_STATIC_INPUT_READY": false
+}

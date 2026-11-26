@@ -1,7 +1,9 @@
 name: Water World Work 1.6 Android source and APK
 on:
   push:
-    branches: [assets/water-world-v2-v21-calibration]
+    branches: [main, assets/water-world-v2-v21-calibration]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -53,43 +55,107 @@ jobs:
             -keyalg RSA -keysize 2048 -validity 10000
       - name: Compile and assemble exact HEAD
         run: gradle :app:assembleDebug :app:assembleAndroidTest --no-daemon --console=plain
-      - name: Verify packaged assets and APK identity
+      - name: Run Water World 12-area JVM/Robolectric tests and Android lint
+        run: gradle :app:testDebugUnitTest --tests "com.example.WaterWorld*" :app:lintDebug --no-daemon --console=plain
+      - name: Verify packaged APK internals, record APK SHA256 and bundle Work 1.6 Evidence ZIP
         run: |
           python - <<'PY'
           from pathlib import Path
-          from zipfile import ZipFile
-          import hashlib, json
-          files=list(Path('app/build/outputs/apk/debug').glob('*.apk'))
-          assert len(files)==1, files
-          p=files[0]
-          with ZipFile(p) as z:
-              names=set(z.namelist())
-              prefix='assets/water_world_v2_1/'
-              assert prefix+'03_SCENE_GRAPH/draw_bindings.json' in names
-              assert prefix+'02_SUPPLEMENTED_ASSETS/geometry/sphere_mesh.json' in names
-              assert len([x for x in names if x.startswith(prefix+'01_REUSED_ASSETS/') and not x.endswith('/')])==65
-              assert 'assets/water_world_v2_1/奇幻水晶球中的水下生态世界 (1).png' not in names
+          from zipfile import ZipFile, ZIP_DEFLATED
+          import hashlib, json, shutil
+
+          files = list(Path('app/build/outputs/apk/debug').glob('*.apk'))
+          assert len(files) == 1, files
+          p = files[0]
+          named_apk = Path('app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work16-debug.apk')
+          if p != named_apk:
+              shutil.copy2(p, named_apk)
+
+          with ZipFile(named_apk) as z:
+              names = set(z.namelist())
+              prefix = 'assets/water_world_v2_1/'
+              for req in [
+                  prefix + '03_SCENE_GRAPH/draw_bindings.json',
+                  prefix + '02_SUPPLEMENTED_ASSETS/materials/optical_config.json',
+                  prefix + '02_SUPPLEMENTED_ASSETS/materials/materials.json',
+                  prefix + '02_SUPPLEMENTED_ASSETS/lighting/lighting.json',
+                  prefix + '02_SUPPLEMENTED_ASSETS/geometry/sphere_mesh.json',
+                  prefix + '02_SUPPLEMENTED_ASSETS/geometry/WW_FISH_01_v16_mesh.json',
+                  prefix + '02_SUPPLEMENTED_ASSETS/geometry/WW_FISH_02_v16_mesh.json',
+                  prefix + '02_SUPPLEMENTED_ASSETS/geometry/WW_FISH_03_v16_mesh.json',
+                  prefix + '02_SUPPLEMENTED_ASSETS/geometry/WW_FISH_04_v16_mesh.json',
+              ]:
+                  assert req in names, f'Missing in APK: {req}'
+              assert len([x for x in names if x.startswith(prefix + '01_REUSED_ASSETS/') and not x.endswith('/')]) == 65
+              assert not any('奇幻水晶球中的水下生态世界' in n for n in names), 'Master PNG found in APK'
               with ZipFile('releases/water-world-v2/WATER_WORLD_V2_ASSETS.zip') as source:
-                  original=[n for n in source.namelist() if n.startswith('WATER_WORLD_V2/') and not n.endswith('/')]
-                  assert len(original)==65
+                  original = [n for n in source.namelist() if n.startswith('WATER_WORLD_V2/') and not n.endswith('/')]
+                  assert len(original) == 65
                   for name in original:
-                      packed=prefix+'01_REUSED_ASSETS/'+name.removeprefix('WATER_WORLD_V2/')
+                      packed = prefix + '01_REUSED_ASSETS/' + name.removeprefix('WATER_WORLD_V2/')
                       assert packed in names, packed
-                      assert hashlib.sha256(z.read(packed)).digest()==hashlib.sha256(source.read(name)).digest(), packed
-          identity={'head':'${{ github.sha }}','apk_size':p.stat().st_size,
-                    'apk_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),
-                    'asset_member_count':65,'android_runtime':'NOT_RUN','hardware_gpu':'NOT_RUN'}
-          Path('app/build/outputs/apk/debug/WATER_WORLD_APK_IDENTITY.json').write_text(json.dumps(identity,indent=2)+'\n')
-          print(identity)
+                      assert hashlib.sha256(z.read(packed)).digest() == hashlib.sha256(source.read(name)).digest(), packed
+
+          apk_sha = hashlib.sha256(named_apk.read_bytes()).hexdigest()
+          Path('app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work16-debug.apk.sha256').write_text(
+              f'{apk_sha}  {named_apk.name}\n'
+          )
+
+          # Package the checked-in Work 1.6 acceptance evidence directory (48 files, excluding binary zips/apks)
+          ev_root = Path('releases/water-world-v2-v21/work1_6_structure_closure_android_gpu')
+          ev_zip = Path('app/build/outputs/apk/debug/WATER_WORLD_V2_1_WORK16_ACCEPTANCE_EVIDENCE.zip')
+          exclude = {
+              'WATER_WORLD_V2_1_WORK16_ACCEPTANCE_EVIDENCE.zip',
+              'WATER_WORLD_V2_1_WORK16_ACCEPTANCE_EVIDENCE.zip.sha256',
+              'AI-Orb-Demo-WaterWorld-V2.1-Work16-debug.apk',
+          }
+          ev_count = 0
+          with ZipFile(ev_zip, 'w', compression=ZIP_DEFLATED, compresslevel=6) as ez:
+              for f in sorted(ev_root.rglob('*')):
+                  if f.is_dir() or f.name in exclude:
+                      continue
+                  rel = f.relative_to(ev_root).as_posix()
+                  ez.write(f, f'WATER_WORLD_V2_1_WORK16_ACCEPTANCE_EVIDENCE/{rel}')
+                  ev_count += 1
+          ev_sha = hashlib.sha256(ev_zip.read_bytes()).hexdigest()
+          Path('app/build/outputs/apk/debug/WATER_WORLD_V2_1_WORK16_ACCEPTANCE_EVIDENCE.zip.sha256').write_text(
+              f'{ev_sha}  {ev_zip.name}\n'
+          )
+
+          identity = {
+              'head': '${{ github.sha }}',
+              'apk_file': named_apk.name,
+              'apk_size': named_apk.stat().st_size,
+              'apk_sha256': apk_sha,
+              'asset_member_count': 65,
+              'master_png_in_apk': False,
+              'evidence_zip_file': ev_zip.name,
+              'evidence_zip_file_count': ev_count,
+              'evidence_zip_size': ev_zip.stat().st_size,
+              'evidence_zip_sha256': ev_sha,
+              'robolectric_tests_are_not_real_android_device': True,
+              'WORK1_6_CLOSED': 'PARTIAL_SOFTWARE_AND_APK_VERIFIED',
+              'VISUAL_ACCEPTANCE_80': 'PASS_SOFTWARE_REFERENCE',
+              'ANDROID_RUNTIME_VERIFIED': 'NOT_RUN',
+              'HARDWARE_GPU_VERIFIED': 'NOT_RUN',
+              'WORK2_STATIC_INPUT_READY': False,
+          }
+          Path('app/build/outputs/apk/debug/WATER_WORLD_APK_IDENTITY.json').write_text(json.dumps(identity, indent=2) + '\n')
+          print(json.dumps(identity, indent=2))
           PY
-      - name: Run all JVM tests and Android lint
-        run: gradle :app:testDebugUnitTest :app:lintDebug --no-daemon --console=plain
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: water-world-work16-apk-${{ github.sha }}
+          name: water-world-work16-exact-head-${{ github.sha }}
           path: |
-            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work16-debug.apk
+            app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work16-debug.apk.sha256
+            app/build/outputs/apk/debug/WATER_WORLD_V2_1_WORK16_ACCEPTANCE_EVIDENCE.zip
+            app/build/outputs/apk/debug/WATER_WORLD_V2_1_WORK16_ACCEPTANCE_EVIDENCE.zip.sha256
             app/build/outputs/apk/debug/WATER_WORLD_APK_IDENTITY.json
             app/build/test-results/testDebugUnitTest/
             app/build/reports/tests/testDebugUnitTest/
+            app/build/reports/lint-results-debug.html
+            releases/water-world-v2-v21/work1_6_structure_closure_android_gpu/FINAL_WORK1_6_REPORT.md
+            releases/water-world-v2-v21/work1_6_structure_closure_android_gpu/12_MANIFEST/WORK2_STATIC_INPUT_READY.json
+            releases/water-world-v2-v21/work1_6_structure_closure_android_gpu/08_VISUAL_VALIDATION/visual_score.json

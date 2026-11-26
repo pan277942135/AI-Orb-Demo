@@ -11,6 +11,7 @@ DELIVERY = BASE / "delivery"
 OUT = BASE / "work1_6_structure_closure_android_gpu"
 EXPECTED_MASTER = "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589"
 EXPECTED_V2 = "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095"
+EXPECTED_V21 = "28f8918c39f6e875602d3a7e90775e9d455aa6c4e42783247d1104c3b4509679"
 
 
 def read(name):
@@ -30,8 +31,10 @@ def sha(path):
 def run():
     master = BASE / "奇幻水晶球中的水下生态世界 (1).png"
     archive = ROOT / "releases/water-world-v2/WATER_WORLD_V2_ASSETS.zip"
+    v21_archive = DELIVERY / "WATER_WORLD_V2_1_ASSETS.zip"
     assert sha(master) == EXPECTED_MASTER
     assert sha(archive) == EXPECTED_V2
+    assert sha(v21_archive) == EXPECTED_V21
     scene = read(OLD / "scene_graph.json")
     root_causes = {o["object_id"]: o for o in read(DELIVERY / "root_cause_matrix.json")["objects"]}
     historical = read(DELIVERY / "master_occlusion_graph.json")
@@ -92,6 +95,11 @@ def run():
         "resident_segments": split,
         "status": "BLOCKED_DIRECTION_AND_GROUND_TRUTH",
     }
+    existing_occlusion_path = OUT / "03_SCENE_GRAPH/OCCLUSION_GRAPH_CANONICAL.json"
+    if existing_occlusion_path.is_file():
+        existing_occlusion = read(existing_occlusion_path)
+        if "render_hypothesis_occlusion" in existing_occlusion:
+            canonical["render_hypothesis_occlusion"] = existing_occlusion["render_hypothesis_occlusion"]
     graph = {
         "schema": "water-world-scene-canonical/1",
         "canvas": [1254, 1254], "time_seconds": 0,
@@ -104,7 +112,8 @@ def run():
         "status": "CANDIDATE_WITH_UNRESOLVED_OCCLUSION",
     }
     write("01_SOURCE_AUDIT/SOURCE_LOCK.json", {"master_sha256": EXPECTED_MASTER,
-          "v2_zip_sha256": EXPECTED_V2, "original_v2_members": 65, "status": "PASS"})
+          "v2_zip_sha256": EXPECTED_V2, "v21_zip_sha256": EXPECTED_V21,
+          "original_v2_members": 65, "status": "PASS"})
     write("02_GROUND_TRUTH/GROUND_TRUTH_MANIFEST.json", {"objects": records,
           "status": "2_PASS_12_BLOCKED_OR_UNCERTAIN"})
     write("03_SCENE_GRAPH/SCENE_GRAPH_CANONICAL.json", graph)

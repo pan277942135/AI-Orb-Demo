@@ -1,0 +1,203 @@
+{
+  "schema": "water-world-ground-truth-and-hypothesis/1.0",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "v2_zip_sha256": "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095",
+  "v21_zip_sha256": "28f8918c39f6e875602d3a7e90775e9d455aa6c4e42783247d1104c3b4509679",
+  "policy": "Render Hypotheses never overwrite Ground Truth UNKNOWN statuses.",
+  "sphere": {
+    "object_id": "WW_SPHERE",
+    "ground_truth_status": "PASS_OUTER_CIRCLE_HIGH_CONFIDENCE",
+    "center_px": [
+      626.4757504075296,
+      596.3441299453135
+    ],
+    "outer_radius_px": 422.2986621604988,
+    "inner_radius_px": 395.75,
+    "source_asset": "01_REUSED_ASSETS/03_SPHERE/sphere_outer_mask.png",
+    "source_sha256": "5e3e5dbb4eb26e9f3dc66aed684bb89a0810c13ddb5dd3cdc7882f2e51293051"
+  },
+  "objects": [
+    {
+      "object_id": "WW_FISH_01",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/05_FISH/fish_01.png",
+      "source_sha256": "056b55e6f61fb353b8db2fa8631176a4caca330f2f1d5460eba9a7a72d8cc134",
+      "ground_truth_metric_status": "PASS",
+      "ground_truth_confidence": "MEDIUM_HIGH",
+      "render_hypothesis": {
+        "status": "GROUND_TRUTH_VERIFIED",
+        "confidence": "MEDIUM_HIGH",
+        "assigned_pass": "07_FISH",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    },
+    {
+      "object_id": "WW_FISH_02",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/05_FISH/fish_02.png",
+      "source_sha256": "565b78326a259484fb78a542cb7c2f0ce8cf831eb080c28b1bf93a469615bbd8",
+      "ground_truth_metric_status": "PASS",
+      "ground_truth_confidence": "MEDIUM_HIGH",
+      "render_hypothesis": {
+        "status": "GROUND_TRUTH_VERIFIED",
+        "confidence": "MEDIUM_HIGH",
+        "assigned_pass": "07_FISH",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    },
+    {
+      "object_id": "WW_FISH_03",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/05_FISH/fish_03.png",
+      "source_sha256": "c8def6b8d5e66463b903a2fa329f2e1f354067598931233b0e29c966d32ef6d1",
+      "ground_truth_metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "MEDIUM",
+      "render_hypothesis": {
+        "status": "RENDER_HYPOTHESIS_RETAINING_UNKNOWN_GT",
+        "confidence": "MEDIUM",
+        "assigned_pass": "07_FISH",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    },
+    {
+      "object_id": "WW_FISH_04",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/05_FISH/fish_04.png",
+      "source_sha256": "714a0afa95e6c3d802044bbb745334875bd79640960b35ee40bc4125a2d3b44d",
+      "ground_truth_metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "MEDIUM",
+      "render_hypothesis": {
+        "status": "RENDER_HYPOTHESIS_RETAINING_UNKNOWN_GT",
+        "confidence": "MEDIUM",
+        "assigned_pass": "07_FISH",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    },
+    {
+      "object_id": "G01",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "ground_truth_metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "SOURCE_PATH_REUSED_LAYOUT_NOT_VERIFIED",
+      "render_hypothesis": {
+        "status": "RENDER_HYPOTHESIS_BACK_AND_FRONT_SPLIT",
+        "confidence": "MEDIUM_LOW",
+        "assigned_pass": "02_RESIDENT_BACK+10_RESIDENT_FRONT",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    },
+    {
+      "object_id": "G02",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "ground_truth_metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "SOURCE_PATH_REUSED_LAYOUT_NOT_VERIFIED",
+      "render_hypothesis": {
+        "status": "RENDER_HYPOTHESIS_BACK_AND_FRONT_SPLIT",
+        "confidence": "MEDIUM_LOW",
+        "assigned_pass": "02_RESIDENT_BACK+10_RESIDENT_FRONT",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    },
+    {
+      "object_id": "A01",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "ground_truth_metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "SOURCE_PATH_REUSED_LAYOUT_NOT_VERIFIED",
+      "render_hypothesis": {
+        "status": "RENDER_HYPOTHESIS_BACK_AND_FRONT_SPLIT",
+        "confidence": "MEDIUM_LOW",
+        "assigned_pass": "02_RESIDENT_BACK+10_RESIDENT_FRONT",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    },
+    {
+      "object_id": "A02",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "ground_truth_metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "SOURCE_PATH_REUSED_LAYOUT_NOT_VERIFIED",
+      "render_hypothesis": {
+        "status": "RENDER_HYPOTHESIS_BACK_AND_FRONT_SPLIT",
+        "confidence": "MEDIUM_LOW",
+        "assigned_pass": "02_RESIDENT_BACK+10_RESIDENT_FRONT",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    },
+    {
+      "object_id": "C01",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "ground_truth_metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "SOURCE_PATH_REUSED_LAYOUT_NOT_VERIFIED",
+      "render_hypothesis": {
+        "status": "RENDER_HYPOTHESIS_BACK_AND_FRONT_SPLIT",
+        "confidence": "MEDIUM_LOW",
+        "assigned_pass": "02_RESIDENT_BACK+10_RESIDENT_FRONT",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    },
+    {
+      "object_id": "plant_left",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/06_PLANTS/plant_left/plant_left.png",
+      "source_sha256": "bc958efc305204b0d35c2675645dd7ebac3d1da97ae93362c8532855e5076998",
+      "ground_truth_metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "LOW",
+      "render_hypothesis": {
+        "status": "RENDER_HYPOTHESIS_INNER_LEFT_CURVE",
+        "confidence": "MEDIUM_LOW",
+        "assigned_pass": "08_NEAR_ECOLOGY",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    },
+    {
+      "object_id": "plant_right",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/06_PLANTS/plant_right/plant_right.png",
+      "source_sha256": "f0437ca0643b5c8d6e1b25a9117390a66764bf80e8beea206e082b0c5732a172",
+      "ground_truth_metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "MEDIUM_LOW",
+      "render_hypothesis": {
+        "status": "RENDER_HYPOTHESIS_INNER_RIGHT_CURVE",
+        "confidence": "MEDIUM_LOW",
+        "assigned_pass": "08_NEAR_ECOLOGY",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    },
+    {
+      "object_id": "rock_01",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/07_ROCKS/individual/rock_01.png",
+      "source_sha256": "0128e55605b0063450d46abbbac06d2b16976faa17dacb1657b53c8b538e1986",
+      "ground_truth_metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "LOW",
+      "render_hypothesis": {
+        "status": "RENDER_HYPOTHESIS_LOWER_LEFT_BOULDER",
+        "confidence": "MEDIUM_LOW",
+        "assigned_pass": "08_NEAR_ECOLOGY",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    },
+    {
+      "object_id": "rock_02",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/07_ROCKS/individual/rock_02.png",
+      "source_sha256": "50238eb18b944dfdc2a1af7dbe577dde02f8a03f3220686d2cb5a43487a37315",
+      "ground_truth_metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "MEDIUM_LOW",
+      "render_hypothesis": {
+        "status": "RENDER_HYPOTHESIS_LOWER_RIGHT_STONE",
+        "confidence": "MEDIUM_LOW",
+        "assigned_pass": "08_NEAR_ECOLOGY",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    },
+    {
+      "object_id": "rock_03",
+      "source_asset": "02_CALIBRATED_ASSETS/V2_ORIGINAL/07_ROCKS/individual/rock_03.png",
+      "source_sha256": "5d6a78e23b1ee4e96c0acb8894e2876205b601aceb4d1ef22e3fac8458e94a99",
+      "ground_truth_metric_status": "BLOCKED_GROUND_TRUTH_UNCERTAIN",
+      "ground_truth_confidence": "LOW",
+      "render_hypothesis": {
+        "status": "RENDER_HYPOTHESIS_FRONT_MOSS_STONE",
+        "confidence": "MEDIUM_LOW",
+        "assigned_pass": "08_NEAR_ECOLOGY",
+        "source": "analytical_master_visual_layout_inference"
+      }
+    }
+  ]
+}

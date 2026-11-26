@@ -65,5 +65,103 @@
       "status": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION"
     }
   },
-  "status": "BLOCKED_DIRECTION_AND_GROUND_TRUTH"
+  "status": "BLOCKED_DIRECTION_AND_GROUND_TRUTH",
+  "render_hypothesis_occlusion": {
+    "note": "Explicit Render Hypothesis for 11-stage front/back sorting; NOT promoted to Ground Truth.",
+    "confidence": "MEDIUM_LOW",
+    "source": "analytical_master_crossing_inference",
+    "edges": [
+      {
+        "front": "10_RESIDENT_FRONT",
+        "back": "09_SPHERE_FRONT"
+      },
+      {
+        "front": "09_SPHERE_FRONT",
+        "back": "08_NEAR_ECOLOGY"
+      },
+      {
+        "front": "08_NEAR_ECOLOGY",
+        "back": "07_FISH"
+      },
+      {
+        "front": "07_FISH",
+        "back": "06_LIGHTING"
+      },
+      {
+        "front": "06_LIGHTING",
+        "back": "05_FAR_ECOLOGY"
+      },
+      {
+        "front": "05_FAR_ECOLOGY",
+        "back": "04_WATER_INTERIOR"
+      },
+      {
+        "front": "04_WATER_INTERIOR",
+        "back": "03_SPHERE_BACK"
+      },
+      {
+        "front": "03_SPHERE_BACK",
+        "back": "02_RESIDENT_BACK"
+      },
+      {
+        "front": "02_RESIDENT_BACK",
+        "back": "01_BACKGROUND"
+      }
+    ],
+    "resident_split_meshes": {
+      "G01": {
+        "back_segments": [
+          "G01_back_arch",
+          "G01_back_outer_veil"
+        ],
+        "front_segments": [
+          "G01_front_lower_sweep"
+        ],
+        "ground_truth_status": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION",
+        "hypothesis_status": "RENDER_HYPOTHESIS_SPLIT_MESH"
+      },
+      "G02": {
+        "back_segments": [
+          "G02_back_upper_arc",
+          "G02_back_upper_hairline",
+          "G02_back_right_rim"
+        ],
+        "front_segments": [
+          "G02_front_right_embrace"
+        ],
+        "ground_truth_status": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION",
+        "hypothesis_status": "RENDER_HYPOTHESIS_SPLIT_MESH"
+      },
+      "A01": {
+        "back_segments": [
+          "A01_back_upper_left"
+        ],
+        "front_segments": [
+          "A01_front_left_embrace"
+        ],
+        "ground_truth_status": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION",
+        "hypothesis_status": "RENDER_HYPOTHESIS_SPLIT_MESH"
+      },
+      "A02": {
+        "back_segments": [
+          "A02_back_lower_halo"
+        ],
+        "front_segments": [
+          "A02_front_lower_strand"
+        ],
+        "ground_truth_status": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION",
+        "hypothesis_status": "RENDER_HYPOTHESIS_SPLIT_MESH"
+      },
+      "C01": {
+        "back_segments": [
+          "C01_back_lower_thread"
+        ],
+        "front_segments": [
+          "C01_front_lower_right"
+        ],
+        "ground_truth_status": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION",
+        "hypothesis_status": "RENDER_HYPOTHESIS_SPLIT_MESH"
+      }
+    }
+  }
 }

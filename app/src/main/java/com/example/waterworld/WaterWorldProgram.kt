@@ -2,36 +2,72 @@ package com.example.waterworld
 
 import android.opengl.GLES30
 
-/** Shared image-space mesh program. Lighting inputs belong to the scene configuration. */
-internal class WaterWorldProgram {
+/** Reusable GLSL ES 3.0 program with strict compile/link validation and uniform caching. */
+internal open class WaterWorldProgram(
+    vertexSource: String = VERTEX,
+    fragmentSource: String = FRAGMENT
+) {
     val id: Int
+    private val uniformCache = HashMap<String, Int>()
+    private var released = false
+
     init {
-        val vertex = compile(GLES30.GL_VERTEX_SHADER, VERTEX)
-        val fragment = try { compile(GLES30.GL_FRAGMENT_SHADER, FRAGMENT) }
-            catch (failure: Throwable) { GLES30.glDeleteShader(vertex); throw failure }
+        val vertex = compile(GLES30.GL_VERTEX_SHADER, vertexSource)
+        val fragment = try {
+            compile(GLES30.GL_FRAGMENT_SHADER, fragmentSource)
+        } catch (failure: Throwable) {
+            GLES30.glDeleteShader(vertex)
+            throw failure
+        }
         id = GLES30.glCreateProgram()
         try {
-            GLES30.glAttachShader(id, vertex); GLES30.glAttachShader(id, fragment)
+            GLES30.glAttachShader(id, vertex)
+            GLES30.glAttachShader(id, fragment)
             GLES30.glLinkProgram(id)
             val status = IntArray(1)
             GLES30.glGetProgramiv(id, GLES30.GL_LINK_STATUS, status, 0)
-            check(status[0] == GLES30.GL_TRUE) { GLES30.glGetProgramInfoLog(id) }
-        } catch (failure: Throwable) { GLES30.glDeleteProgram(id); throw failure }
-        finally { GLES30.glDeleteShader(vertex); GLES30.glDeleteShader(fragment) }
+            check(status[0] == GLES30.GL_TRUE) { "Program link failed: ${GLES30.glGetProgramInfoLog(id)}" }
+        } catch (failure: Throwable) {
+            GLES30.glDeleteProgram(id)
+            throw failure
+        } finally {
+            GLES30.glDeleteShader(vertex)
+            GLES30.glDeleteShader(fragment)
+        }
     }
-    fun uniform(name: String): Int = GLES30.glGetUniformLocation(id, name).also {
-        check(it >= 0) { "Missing scene uniform $name" }
+
+    fun use() {
+        check(!released) { "Cannot use released GLSL program" }
+        GLES30.glUseProgram(id)
     }
-    fun release() = GLES30.glDeleteProgram(id)
+
+    fun uniform(name: String): Int = uniformCache.getOrPut(name) {
+        GLES30.glGetUniformLocation(id, name).also {
+            check(it >= 0) { "Missing scene uniform $name" }
+        }
+    }
+
+    fun optUniform(name: String): Int = uniformCache.getOrPut(name) {
+        GLES30.glGetUniformLocation(id, name)
+    }
+
+    fun release() {
+        if (released) return
+        released = true
+        uniformCache.clear()
+        GLES30.glDeleteProgram(id)
+    }
+
     private fun compile(type: Int, source: String): Int {
         val shader = GLES30.glCreateShader(type)
-        GLES30.glShaderSource(shader, source); GLES30.glCompileShader(shader)
+        GLES30.glShaderSource(shader, source)
+        GLES30.glCompileShader(shader)
         val status = IntArray(1)
         GLES30.glGetShaderiv(shader, GLES30.GL_COMPILE_STATUS, status, 0)
         if (status[0] != GLES30.GL_TRUE) {
             val log = GLES30.glGetShaderInfoLog(shader)
             GLES30.glDeleteShader(shader)
-            error(log)
+            error("Shader compile failed: $log")
         }
         return shader
     }

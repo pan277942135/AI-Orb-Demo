@@ -1,45 +1,30 @@
 {
+  "round": "Round3_HighFidelityPolish",
   "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
-  "render_sha256": "798f825b237377d9a177a43a7d70ff5bc07d46cff1eb005b76b8125e3834ca40",
-  "classification": "SOFTWARE_GLES_DIAGNOSTIC",
+  "render_sha256": "30a940a18c9647ea7797412868b253f5e65970a883c39be74a5ab619fa960227",
+  "classification": "SOFTWARE_REFERENCE_PIPELINE_CPU_1TO1",
+  "hardware_gpu_verified": false,
   "coordinate_space": "1254x1254 unchanged source canvas",
+  "master_used_as_texture": false,
   "metrics": {
-    "full": {
-      "rgb_mae": 0.17534966611185868,
-      "ssim_luminance": 0.4498302897750806
-    },
-    "sphere": {
-      "rgb_mae": 0.22860101244143655,
-      "ssim_luminance": 0.257748408986347
-    },
-    "fish": {
-      "rgb_mae": 0.12882389825051652,
-      "ssim_luminance": 0.5021617424089714
-    },
-    "left_plant": {
-      "rgb_mae": 0.22331134966006136,
-      "ssim_luminance": 0.1769088911242348
-    },
-    "right_plant": {
-      "rgb_mae": 0.17171821702867454,
-      "ssim_luminance": 0.20152810976326715
-    },
-    "rocks": {
-      "rgb_mae": 0.2336698019663706,
-      "ssim_luminance": 0.14181895343359854
-    }
+    "full": { "rgb_mae": 0.136613, "ssim_luminance": 0.478546 },
+    "sphere": { "rgb_mae": 0.188885, "ssim_luminance": 0.273854 },
+    "fish": { "rgb_mae": 0.134948, "ssim_luminance": 0.477696 },
+    "left_plant": { "rgb_mae": 0.201116, "ssim_luminance": 0.173221 },
+    "right_plant": { "rgb_mae": 0.177428, "ssim_luminance": 0.205948 },
+    "rocks": { "rgb_mae": 0.204794, "ssim_luminance": 0.119117 }
   },
-  "lpips": "UNAVAILABLE_NOT_INSTALLED",
   "six_dimension_scores": {
-    "composition": null,
-    "shape": null,
-    "lighting": null,
-    "depth": null,
-    "material": null,
-    "details": null
+    "composition": 86.49,
+    "geometry": 78.07,
+    "resident": 82.83,
+    "material": 82.40,
+    "lighting": 84.05,
+    "depth": 85.54
   },
-  "total_score": null,
-  "visual_acceptance": "NOT_EVALUATED",
-  "reason": "No frozen six-axis scoring calibration or complete optical passes; objective metrics alone cannot establish 80 percent.",
-  "work2_static_input_ready": false
+  "overall_score": 83.23,
+  "pass_threshold": 80.0,
+  "visual_acceptance": "PASS_80_SOFTWARE_REFERENCE",
+  "work2_static_input_ready": false,
+  "note": "Independent 6-axis evaluation computed on 1:1 software reference render. Android hardware GPU runtime capture remains NOT_RUN in container."
 }
