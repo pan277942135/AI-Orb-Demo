@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "id": "TAB2_P0_HIGH_FIDELITY_MASTER_V1",
+  "title": "Tab2 P0｜照片外围水光唯一高保真视觉母版 V1",
+  "visual_frozen": true,
+  "implementation_accepted": false,
+  "source_status": "PENDING_GITHUB_PNG_UPLOAD",
+  "source": {
+    "repo": "pan277942135/AI-Orb-Demo",
+    "branch": "main",
+    "path": "docs/tab2/assets/TAB2_P0_HIGH_FIDELITY_MASTER_V1.png",
+    "original_local_filename": "放大的水光钓鱼界面与ai光球.png",
+    "mime_type": "image/png",
+    "width": 941,
+    "height": 1672,
+    "channels": "RGB",
+    "size_bytes": 2171118,
+    "sha256": "a37819bba6b144ca7fec27ace55e5b319c41e67b89a11e70d51200bce8749d67",
+    "git_blob_sha1": "a8d055b0dff734c3f8f9905b7b21cd57981c82d6"
+  },
+  "authority": {
+    "visual": "THIS FILE ONLY, once SHA-256 verified",
+    "product_contract": "docs/tab2/TAB2_AI_ORB_PHOTO_RECOGNITION_VISUAL_MOTION_CONTRACT_V1.md",
+    "current_image_type": "P0 completed-perimeter / KF06 LOOP high-fidelity composition reference",
+    "not_allowed_as_substitutes": [
+      "previous generated images",
+      "previous P0 visual studies",
+      "AI Orb reference image alone",
+      "original background or catch photo alone",
+      "historical screenshot recreations"
+    ]
+  },
+  "immutable_invariants": [
+    "The captured fishing photo is the primary visual focus, enlarged, centered and not repainted.",
+    "The AI Orb position is lowered without altering its scale or internal appearance.",
+    "Orb Core is the only source of the Task Energy connector.",
+    "A continuous cyan/emerald/champagne-gold perimeter waterlight network encircles the photo.",
+    "Background underwater caustics, bottom grass and bubbles remain part of the composition.",
+    "L1-L4 preserve separate functional identities; no fixed neon rectangle.",
+    "Five Orb Resident elements are distinct from Task Energy.",
+    "The image is an artistic visual target only; GPU implementation and recognition events require separate verification."
+  ],
+  "gate": {
+    "before_resource_extraction": "Download the exact PNG from source.path and verify size_bytes and sha256.",
+    "if_missing_or_mismatched": "BLOCKED_MASTER_SOURCE; do not crop, recreate, approximate, or use historical references.",
+    "prohibition": "Never claim the PNG was uploaded or verified until the exact bytes exist on GitHub Main."
+  }
+}
