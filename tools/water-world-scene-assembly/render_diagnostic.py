@@ -24,6 +24,8 @@ def render(fn,program):
  def loc(name):
   v=call('glGetUniformLocation',I,[U,c.c_char_p],program,name.encode());assert v>=0,name;return v
  call('glUniform2f',None,[I,F,F],loc('uCanvas'),1254,1254);call('glUniform1i',None,[I,I],loc('uTexture'),0)
+ lighting=json.loads((OUT/'02_SUPPLEMENTED_ASSETS/lighting/lighting.json').read_text())
+ key_light=lighting['key']; light_color=[v*key_light['intensity'] for v in key_light['color']]
  materials=json.loads((OUT/'02_SUPPLEMENTED_ASSETS/materials/materials.json').read_text());draws=json.loads((OUT/'03_SCENE_GRAPH/draw_bindings.json').read_text())['draws']
  with zipfile.ZipFile(ROOT/'releases/water-world-v2/WATER_WORLD_V2_ASSETS.zip') as z:
   for d in draws:
@@ -41,7 +43,7 @@ def render(fn,program):
    for key,value in [(0x2801,0x2601),(0x2800,0x2601),(0x2802,0x812F),(0x2803,0x812F)]:call('glTexParameteri',None,[U,U,I],0x0DE1,key,value)
    mat=materials[d['material']];tint=d.get('tint',mat['base_color']+[mat['alpha']])
    call('glUniformMatrix4fv',None,[I,I,c.c_ubyte,c.POINTER(F)],loc('uModel'),1,0,(F*16)(*d['model']))
-   for name,values in [('uTint',tint),('uLightDirection',[-.5,-.7,.5]),('uLightColor',[1,.85,.55])]:
+   for name,values in [('uTint',tint),('uLightDirection',key_light['direction']),('uLightColor',light_color)]:
     call('glUniform'+str(len(values))+'fv',None,[I,I,c.POINTER(F)],loc(name),1,(F*len(values))(*values))
    for name,value in [('uFresnel',mat['fresnel']),('uAmbient',d['ambient']),('uEmission',mat['emission']),('uUseTexture',1 if d['texture_path'] else 0)]:call('glUniform1f',None,[I,F],loc(name),value)
    call('glDepthMask',None,[c.c_ubyte],int(d['depth_write']));call('glDrawElements',None,[U,I,U,P],4,len(indices),0x1405,None)
