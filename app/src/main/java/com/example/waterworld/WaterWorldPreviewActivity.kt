@@ -28,13 +28,13 @@ class WaterWorldPreviewActivity : Activity() {
         val frame = FrameLayout(this)
         frame.addView(surface, FrameLayout.LayoutParams(-1, -1))
         val capture = Button(this).apply {
-            text = "Export Water World frame"
+            text = "Export Water World passes"
             setOnClickListener {
                 surface.queueEvent {
                     val result = runCatching {
-                        val output = File(getExternalFilesDir(null), "water_world_v2_1_frame.png")
-                        val sha = preview.capture(output)
-                        "${output.absolutePath}\nSHA256 $sha"
+                        val output = File(getExternalFilesDir(null), "water_world_v2_1_${System.currentTimeMillis()}")
+                        preview.capturePasses(output)
+                        "Saved 3 GPU passes: ${output.absolutePath}"
                     }.getOrElse { "Capture failed: ${it.message}" }
                     runOnUiThread { Toast.makeText(this@WaterWorldPreviewActivity, result, Toast.LENGTH_LONG).show() }
                 }
@@ -102,9 +102,9 @@ class WaterWorldPreviewActivity : Activity() {
             renderer.present(width, height)
         }
 
-        fun capture(file: File): String {
+        fun capturePasses(directory: File) {
             check(initialized)
-            return checkNotNull(engine).capture(file)
+            checkNotNull(engine).capturePasses(directory)
         }
     }
 }

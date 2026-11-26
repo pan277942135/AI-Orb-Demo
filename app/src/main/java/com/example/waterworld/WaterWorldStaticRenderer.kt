@@ -28,6 +28,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     private data class Draw(val binding: Binding, val mesh: WaterWorldMesh, val texture: Int)
     private val loader = WaterWorldAssetLoader(root)
     private val draws = mutableListOf<Draw>()
+    private val uploadedTextures = mutableMapOf<String, Pair<String, Int>>()
     private var program: WaterWorldProgram? = null
     private var backgroundTarget: WaterWorldRenderTarget? = null
     private var target: WaterWorldRenderTarget? = null
@@ -55,18 +56,24 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                 require(binding.lightDirection.size == 3 && binding.lightColor.size == 3)
                 require((binding.model + binding.tint + binding.lightDirection + binding.lightColor).all { it.isFinite() })
                 require(binding.emission.isFinite() && binding.ambient.isFinite())
-                val texture = binding.texturePath?.let { loader.texture(it, requireNotNull(binding.textureSha256)) } ?: whiteTexture
-                try { draws += Draw(binding, WaterWorldMesh(loader.json(binding.meshPath)), texture) }
-                catch (failure: Throwable) {
-                    if (texture != whiteTexture) GLES30.glDeleteTextures(1, intArrayOf(texture), 0)
-                    throw failure
-                }
+                val texture = binding.texturePath?.let { path ->
+                    val expected = requireNotNull(binding.textureSha256)
+                    val existing = uploadedTextures[path]
+                    if (existing != null) {
+                        check(existing.first == expected) { "Conflicting SHA for $path" }
+                        existing.second
+                    } else {
+                        loader.texture(path, expected).also { uploadedTextures[path] = expected to it }
+                    }
+                } ?: whiteTexture
+                draws += Draw(binding, WaterWorldMesh(loader.json(binding.meshPath)), texture)
             }
             checkError("initialize")
         } catch (failure: Throwable) { release(); throw failure }
     }
 
     fun render(): JSONObject {
+        val cpuStartNs = System.nanoTime()
         val p = checkNotNull(program); val fbo = checkNotNull(target)
         val background = checkNotNull(backgroundTarget)
         val final = checkNotNull(finalTarget)
@@ -112,6 +119,12 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         return JSONObject().put("glVendor",GLES30.glGetString(GLES30.GL_VENDOR))
             .put("glRenderer",GLES30.glGetString(GLES30.GL_RENDERER))
             .put("glVersion",GLES30.glGetString(GLES30.GL_VERSION))
+            .put("glslVersion",GLES30.glGetString(GLES30.GL_SHADING_LANGUAGE_VERSION))
+            .put("androidApi",android.os.Build.VERSION.SDK_INT)
+            .put("renderResolution",org.json.JSONArray(listOf(1254,1254)))
+            .put("uniqueTextureCount",uploadedTextures.size + 1)
+            .put("cpuFrameTimeMs",(System.nanoTime() - cpuStartNs) / 1_000_000.0)
+            .put("gpuFrameTimeMs","UNAVAILABLE_NOT_MEASURED")
             .put("drawCount",draws.size).put("passCount",3)
             .put("executedPasses",org.json.JSONArray(listOf("background", "scene", "final_copy")))
             .put("timeSeconds",0).put("fboComplete",true)
@@ -145,8 +158,27 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
     }
 
-    fun capture(file: File): String {
-        val fbo=checkNotNull(finalTarget); fbo.bind()
+    fun capture(file: File): String = captureTarget(checkNotNull(finalTarget), file)
+
+    fun capturePasses(directory: File): JSONObject {
+        require(!directory.exists()) { "Capture evidence directory must be new" }
+        check(directory.mkdirs())
+        val telemetry = render()
+        val files = JSONObject()
+        for ((name, fbo) in listOf(
+            "background" to checkNotNull(backgroundTarget),
+            "scene" to checkNotNull(target),
+            "final" to checkNotNull(finalTarget))) {
+            files.put("${name}_pass.png", captureTarget(fbo, File(directory, "${name}_pass.png")))
+        }
+        telemetry.put("passPngSha256", files)
+        telemetry.put("hardwareGpuVerified", false)
+        File(directory, "ANDROID_GPU_TELEMETRY.json").writeText(telemetry.toString(2))
+        return telemetry
+    }
+
+    private fun captureTarget(fbo: WaterWorldRenderTarget, file: File): String {
+        fbo.bind()
         val bytes=ByteBuffer.allocateDirect(fbo.size*fbo.size*4)
         GLES30.glReadPixels(0,0,fbo.size,fbo.size,GLES30.GL_RGBA,GLES30.GL_UNSIGNED_BYTE,bytes)
         checkError("capture")
@@ -165,11 +197,10 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         return MessageDigest.getInstance("SHA-256").digest(file.readBytes()).joinToString(""){ "%02x".format(it.toInt() and 255) }
     }
     fun release() {
-        for(draw in draws) {
-            draw.mesh.release()
-            if(draw.texture!=whiteTexture) GLES30.glDeleteTextures(1,intArrayOf(draw.texture),0)
-        }
+        for(draw in draws) draw.mesh.release()
         draws.clear()
+        for ((_, entry) in uploadedTextures) GLES30.glDeleteTextures(1, intArrayOf(entry.second), 0)
+        uploadedTextures.clear()
         backgroundTarget?.release(); backgroundTarget=null
         target?.release(); target=null
         finalTarget?.release(); finalTarget=null

@@ -51,8 +51,8 @@ jobs:
           keytool -genkeypair -keystore debug.keystore -alias androiddebugkey \
             -storepass android -keypass android -dname 'CN=Android Debug,O=Android,C=US' \
             -keyalg RSA -keysize 2048 -validity 10000
-      - name: Compile, test and assemble exact HEAD
-        run: gradle :app:compileDebugKotlin :app:testDebugUnitTest :app:assembleDebug :app:assembleAndroidTest --no-daemon --console=plain
+      - name: Compile and assemble exact HEAD
+        run: gradle :app:assembleDebug :app:assembleAndroidTest --no-daemon --console=plain
       - name: Verify packaged assets and APK identity
         run: |
           python - <<'PY'
@@ -69,12 +69,21 @@ jobs:
               assert prefix+'02_SUPPLEMENTED_ASSETS/geometry/sphere_mesh.json' in names
               assert len([x for x in names if x.startswith(prefix+'01_REUSED_ASSETS/') and not x.endswith('/')])==65
               assert 'assets/water_world_v2_1/奇幻水晶球中的水下生态世界 (1).png' not in names
+              with ZipFile('releases/water-world-v2/WATER_WORLD_V2_ASSETS.zip') as source:
+                  original=[n for n in source.namelist() if n.startswith('WATER_WORLD_V2/') and not n.endswith('/')]
+                  assert len(original)==65
+                  for name in original:
+                      packed=prefix+'01_REUSED_ASSETS/'+name.removeprefix('WATER_WORLD_V2/')
+                      assert packed in names, packed
+                      assert hashlib.sha256(z.read(packed)).digest()==hashlib.sha256(source.read(name)).digest(), packed
           identity={'head':'${{ github.sha }}','apk_size':p.stat().st_size,
                     'apk_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),
                     'asset_member_count':65,'android_runtime':'NOT_RUN','hardware_gpu':'NOT_RUN'}
           Path('app/build/outputs/apk/debug/WATER_WORLD_APK_IDENTITY.json').write_text(json.dumps(identity,indent=2)+'\n')
           print(identity)
           PY
+      - name: Run all JVM tests and Android lint
+        run: gradle :app:testDebugUnitTest :app:lintDebug --no-daemon --console=plain
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -82,3 +91,5 @@ jobs:
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/debug/WATER_WORLD_APK_IDENTITY.json
+            app/build/test-results/testDebugUnitTest/
+            app/build/reports/tests/testDebugUnitTest/
