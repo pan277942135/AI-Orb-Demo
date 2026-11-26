@@ -1,0 +1,25 @@
+{
+  "source_assets": "PASS",
+  "asset_reuse_audit": "PASS",
+  "supplemented_assets": "PARTIAL",
+  "scene_graph": "CANDIDATE",
+  "camera_contract": "PASS",
+  "geometry": "PASS",
+  "material_bindings": "PARTIAL",
+  "render_pass": "PARTIAL",
+  "gpu_scene_assembly": "NOT_RUN_HARDWARE",
+  "software_gles_diagnostic": "PASS",
+  "visual_score": null,
+  "visual_acceptance": "NOT_EVALUATED",
+  "cpu_gpu_source_consistency": "PARTIAL_SHARED_CONFIG_GLSL_ONLY",
+  "future_motion_bindings": "PARTIAL",
+  "work2_static_input_ready": false,
+  "missing_passes": [
+    "bokeh",
+    "front_back_resident_split",
+    "glass_refraction",
+    "bloom",
+    "water_normal_distortion",
+    "caustics"
+  ]
+}
