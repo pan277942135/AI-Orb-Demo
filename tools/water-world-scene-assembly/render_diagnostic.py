@@ -43,7 +43,7 @@ def render(fn,program):
    call('glUniformMatrix4fv',None,[I,I,c.c_ubyte,c.POINTER(F)],loc('uModel'),1,0,(F*16)(*d['model']))
    for name,values in [('uTint',tint),('uLightDirection',[-.5,-.7,.5]),('uLightColor',[1,.85,.55])]:
     call('glUniform'+str(len(values))+'fv',None,[I,I,c.POINTER(F)],loc(name),1,(F*len(values))(*values))
-   for name,value in [('uAmbient',d['ambient']),('uEmission',mat['emission']),('uUseTexture',1 if d['texture_path'] else 0)]:call('glUniform1f',None,[I,F],loc(name),value)
+   for name,value in [('uFresnel',mat['fresnel']),('uAmbient',d['ambient']),('uEmission',mat['emission']),('uUseTexture',1 if d['texture_path'] else 0)]:call('glUniform1f',None,[I,F],loc(name),value)
    call('glDepthMask',None,[c.c_ubyte],int(d['depth_write']));call('glDrawElements',None,[U,I,U,P],4,len(indices),0x1405,None)
    assert call('glGetError',U,[])==0,d['draw_id']
  pixels=(c.c_ubyte*(1254*1254*4))();call('glReadPixels',None,[I,I,I,I,U,U,P],0,0,1254,1254,0x1908,0x1401,pixels);assert call('glGetError',U,[])==0

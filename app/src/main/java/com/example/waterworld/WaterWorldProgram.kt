@@ -63,11 +63,14 @@ internal class WaterWorldProgram {
             uniform float uAmbient;
             uniform float uEmission;
             uniform float uUseTexture;
+            uniform float uFresnel;
             out vec4 color;
             void main() {
                 vec4 base=mix(vec4(1.0),texture(uTexture,vUv),uUseTexture)*uTint;
                 if(base.a<0.001) discard;
                 float diffuse=max(dot(normalize(vNormal),normalize(uLightDirection)),0.0);
+                float edge=pow(1.0-abs(normalize(vNormal).z),3.0);
+                base.a*=mix(1.0,0.025+0.975*edge,uFresnel);
                 color=vec4(base.rgb*(vec3(uAmbient)+uLightColor*diffuse+vec3(uEmission)),base.a);
             }
         """.trimIndent()

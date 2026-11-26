@@ -36,7 +36,7 @@ internal object WaterWorldSceneBindings {
                 textureSha256=if(row.isNull("texture_sha256")) null else row.getString("texture_sha256"),
                 emission=material.getDouble("emission").toFloat(),
                 ambient=row.optDouble("ambient",.35).toFloat(),lightDirection=direction.copyOf(),lightColor=light.copyOf(),
-                depthWrite=row.getBoolean("depth_write"))
+                depthWrite=row.getBoolean("depth_write"),fresnel=material.getDouble("fresnel").toFloat())
         }
         require(result.isNotEmpty() && result.map { it.objectId }.distinct().size==result.size)
         return result
