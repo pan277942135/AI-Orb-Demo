@@ -1,0 +1,450 @@
+{
+  "schema": "water-world-assembly/1",
+  "camera": {
+    "canvas": [
+      1254,
+      1254
+    ],
+    "origin": "TOP_LEFT",
+    "projection": "IMAGE_SPACE_ORTHOGRAPHIC",
+    "time": 0
+  },
+  "layers": [
+    "background",
+    "resident_back",
+    "sphere_back_glass",
+    "water",
+    "plants",
+    "rocks",
+    "fish",
+    "glass_front",
+    "bubbles",
+    "resident_front"
+  ],
+  "objects": [
+    {
+      "object_id": "WW_FISH_01",
+      "layer": "fish",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/05_FISH/fish_01.png",
+      "source_sha256": "056b55e6f61fb353b8db2fa8631176a4caca330f2f1d5460eba9a7a72d8cc134",
+      "transform": {
+        "source_asset": "05_FISH/fish_01.png",
+        "source_alpha_bbox": [
+          18,
+          20,
+          1662,
+          605
+        ],
+        "center_px": [
+          775.4009187342031,
+          497.94248601586395
+        ],
+        "scale_px_per_source_pixel_xy": [
+          0.11783958115647696,
+          0.14276799740428528
+        ],
+        "rotation_degrees": -5.944183437812665,
+        "render_mask_threshold_alpha": 32,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 50,
+      "material": "fish",
+      "confidence": "MEDIUM_HIGH",
+      "motion_binding_id": "WW_FISH_01_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    },
+    {
+      "object_id": "WW_FISH_02",
+      "layer": "fish",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/05_FISH/fish_02.png",
+      "source_sha256": "565b78326a259484fb78a542cb7c2f0ce8cf831eb080c28b1bf93a469615bbd8",
+      "transform": {
+        "source_asset": "05_FISH/fish_02.png",
+        "source_alpha_bbox": [
+          19,
+          20,
+          1278,
+          437
+        ],
+        "center_px": [
+          568.865281239133,
+          550.8255230340772
+        ],
+        "scale_px_per_source_pixel_xy": [
+          0.12308216104914912,
+          0.15600419496360074
+        ],
+        "rotation_degrees": -4.139674741161528,
+        "render_mask_threshold_alpha": 32,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 50,
+      "material": "fish",
+      "confidence": "MEDIUM_HIGH",
+      "motion_binding_id": "WW_FISH_02_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    },
+    {
+      "object_id": "WW_FISH_03",
+      "layer": "fish",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/05_FISH/fish_03.png",
+      "source_sha256": "c8def6b8d5e66463b903a2fa329f2e1f354067598931233b0e29c966d32ef6d1",
+      "transform": {
+        "source_asset": "05_FISH/fish_03.png",
+        "source_alpha_bbox": [
+          18,
+          19,
+          958,
+          362
+        ],
+        "center_px": [
+          679.8983790004559,
+          587.1881544436371
+        ],
+        "scale_px_per_source_pixel_xy": [
+          0.14870309825115316,
+          0.1737414251867658
+        ],
+        "rotation_degrees": -5.492249938260886,
+        "render_mask_threshold_alpha": 32,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 50,
+      "material": "fish",
+      "confidence": "MEDIUM",
+      "motion_binding_id": "WW_FISH_03_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    },
+    {
+      "object_id": "WW_FISH_04",
+      "layer": "fish",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/05_FISH/fish_04.png",
+      "source_sha256": "714a0afa95e6c3d802044bbb745334875bd79640960b35ee40bc4125a2d3b44d",
+      "transform": {
+        "source_asset": "05_FISH/fish_04.png",
+        "source_alpha_bbox": [
+          18,
+          28,
+          893,
+          336
+        ],
+        "center_px": [
+          598.9882857598897,
+          657.2937247443667
+        ],
+        "scale_px_per_source_pixel_xy": [
+          0.14762647671314652,
+          0.17360157710270432
+        ],
+        "rotation_degrees": -4.779930355981316,
+        "render_mask_threshold_alpha": 32,
+        "alpha_mode": "STRAIGHT_ALPHA"
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 50,
+      "material": "fish",
+      "confidence": "MEDIUM",
+      "motion_binding_id": "WW_FISH_04_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    },
+    {
+      "object_id": "G01",
+      "layer": "resident_back",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "transform": {
+        "kind": "IMMUTABLE_SVG_PIXEL_GEOMETRY",
+        "matrix": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": "BACK_AND_RIGHT_FRONT",
+      "material": "resident",
+      "confidence": "SOURCE_PATH_REUSED_LAYOUT_NOT_VERIFIED",
+      "motion_binding_id": "G01_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    },
+    {
+      "object_id": "G02",
+      "layer": "resident_back",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "transform": {
+        "kind": "IMMUTABLE_SVG_PIXEL_GEOMETRY",
+        "matrix": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": "BACK",
+      "material": "resident",
+      "confidence": "SOURCE_PATH_REUSED_LAYOUT_NOT_VERIFIED",
+      "motion_binding_id": "G02_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    },
+    {
+      "object_id": "A01",
+      "layer": "resident_back",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "transform": {
+        "kind": "IMMUTABLE_SVG_PIXEL_GEOMETRY",
+        "matrix": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": "BACK_AND_LEFT_FRONT",
+      "material": "resident",
+      "confidence": "SOURCE_PATH_REUSED_LAYOUT_NOT_VERIFIED",
+      "motion_binding_id": "A01_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    },
+    {
+      "object_id": "A02",
+      "layer": "resident_back",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "transform": {
+        "kind": "IMMUTABLE_SVG_PIXEL_GEOMETRY",
+        "matrix": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": "FRONT_LOWER",
+      "material": "resident",
+      "confidence": "SOURCE_PATH_REUSED_LAYOUT_NOT_VERIFIED",
+      "motion_binding_id": "A02_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    },
+    {
+      "object_id": "C01",
+      "layer": "resident_back",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/02_RESIDENT/residents.svg",
+      "source_sha256": "ee8b1285b3dbcde4d4d06232779904c1e50d30ce92ee5d0ecfd7201983c5c73b",
+      "transform": {
+        "kind": "IMMUTABLE_SVG_PIXEL_GEOMETRY",
+        "matrix": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": "FRONT_LOWER_RIGHT",
+      "material": "resident",
+      "confidence": "SOURCE_PATH_REUSED_LAYOUT_NOT_VERIFIED",
+      "motion_binding_id": "C01_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    },
+    {
+      "object_id": "plant_left",
+      "layer": "plants",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/06_PLANTS/plant_left/plant_left.png",
+      "source_sha256": "bc958efc305204b0d35c2675645dd7ebac3d1da97ae93362c8532855e5076998",
+      "transform": {
+        "source_asset": "06_PLANTS/plant_left/plant_left.png",
+        "source_alpha_bbox": [
+          10,
+          10,
+          899,
+          1210
+        ],
+        "target_bbox_px": [
+          235,
+          425,
+          426,
+          882
+        ],
+        "render_mask_threshold_alpha": 32,
+        "candidate_only": true,
+        "rotation_degrees": null
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 30,
+      "material": "plant",
+      "confidence": "LOW",
+      "motion_binding_id": "plant_left_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    },
+    {
+      "object_id": "plant_right",
+      "layer": "plants",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/06_PLANTS/plant_right/plant_right.png",
+      "source_sha256": "f0437ca0643b5c8d6e1b25a9117390a66764bf80e8beea206e082b0c5732a172",
+      "transform": {
+        "source_asset": "06_PLANTS/plant_right/plant_right.png",
+        "source_alpha_bbox": [
+          12,
+          10,
+          572,
+          1316
+        ],
+        "target_bbox_px": [
+          825,
+          520,
+          969,
+          850
+        ],
+        "render_mask_threshold_alpha": 32,
+        "candidate_only": true,
+        "rotation_degrees": null
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 30,
+      "material": "plant",
+      "confidence": "MEDIUM_LOW",
+      "motion_binding_id": "plant_right_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    },
+    {
+      "object_id": "rock_01",
+      "layer": "rocks",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/07_ROCKS/individual/rock_01.png",
+      "source_sha256": "0128e55605b0063450d46abbbac06d2b16976faa17dacb1657b53c8b538e1986",
+      "transform": {
+        "source_asset": "07_ROCKS/individual/rock_01.png",
+        "source_alpha_bbox": [
+          8,
+          8,
+          607,
+          497
+        ],
+        "target_bbox_px": [
+          356,
+          713,
+          666,
+          884
+        ],
+        "render_mask_threshold_alpha": 32,
+        "candidate_only": true,
+        "rotation_degrees": null
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 40,
+      "material": "rock",
+      "confidence": "LOW",
+      "motion_binding_id": "rock_01_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    },
+    {
+      "object_id": "rock_02",
+      "layer": "rocks",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/07_ROCKS/individual/rock_02.png",
+      "source_sha256": "50238eb18b944dfdc2a1af7dbe577dde02f8a03f3220686d2cb5a43487a37315",
+      "transform": {
+        "source_asset": "07_ROCKS/individual/rock_02.png",
+        "source_alpha_bbox": [
+          6,
+          8,
+          536,
+          258
+        ],
+        "target_bbox_px": [
+          718,
+          712,
+          896,
+          865
+        ],
+        "render_mask_threshold_alpha": 32,
+        "candidate_only": true,
+        "rotation_degrees": null
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 40,
+      "material": "rock",
+      "confidence": "MEDIUM_LOW",
+      "motion_binding_id": "rock_02_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    },
+    {
+      "object_id": "rock_03",
+      "layer": "rocks",
+      "source_resource_path": "02_CALIBRATED_ASSETS/V2_ORIGINAL/07_ROCKS/individual/rock_03.png",
+      "source_sha256": "5d6a78e23b1ee4e96c0acb8894e2876205b601aceb4d1ef22e3fac8458e94a99",
+      "transform": {
+        "source_asset": "07_ROCKS/individual/rock_03.png",
+        "source_alpha_bbox": [
+          8,
+          7,
+          265,
+          219
+        ],
+        "target_bbox_px": [
+          545,
+          785,
+          796,
+          920
+        ],
+        "render_mask_threshold_alpha": 32,
+        "candidate_only": true,
+        "rotation_degrees": null
+      },
+      "anchor": "sprite bbox center; Resident path-local",
+      "depth_order": 40,
+      "material": "rock",
+      "confidence": "LOW",
+      "motion_binding_id": "rock_03_STATIC_T0",
+      "animation_enabled": false,
+      "depth_status": "CANDIDATE_REQUIRES_GPU_REVIEW"
+    }
+  ],
+  "sphere_mesh": "02_SUPPLEMENTED_ASSETS/geometry/sphere_mesh.json",
+  "status": "CANDIDATE_NOT_GPU_VERIFIED"
+}

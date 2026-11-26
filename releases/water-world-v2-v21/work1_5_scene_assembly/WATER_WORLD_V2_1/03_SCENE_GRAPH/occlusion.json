@@ -1,0 +1,8 @@
+{
+  "status": "CANDIDATE",
+  "source_contract": "Historical master_occlusion_graph.json",
+  "unresolved": [
+    "Resident front/back segment split",
+    "transparent ecology/glass overlap"
+  ]
+}
