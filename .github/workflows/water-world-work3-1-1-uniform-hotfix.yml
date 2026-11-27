@@ -1,0 +1,129 @@
+name: Water World V2.1 Work 3.1.1 Water Uniform Contract Hotfix CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'fix/work3-1-water-uniform-contract-hotfix'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  work3-1-1-uniform-hotfix-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout Exact HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify Frozen Assets, 32 Z-Slices & Zero uWaterFlowPhase Regression
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib
+          def sha(p):
+              return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
+          checks = {
+              "releases/water-world-v2-v21/奇幻水晶球中的水下生态世界 (1).png": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+              "releases/water-world-v2/WATER_WORLD_V2_ASSETS.zip": "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095",
+          }
+          for path, expected in checks.items():
+              assert sha(path) == expected, f"Frozen SHA mismatch: {path}"
+          assert "uWaterFlowPhase" not in pathlib.Path("app/src/main/java/com/example/waterworld/WaterWorldShaders.kt").read_text()
+          assert "uWaterFlowPhase" not in pathlib.Path("app/src/main/java/com/example/waterworld/WaterWorldStaticRenderer.kt").read_text()
+          manifest = json.loads(pathlib.Path("app/src/main/assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json").read_text())
+          assert len(manifest["volume"]["slices"]) == 32
+          print("WORK3_1_1_PREFLIGHT_PASS")
+          PY
+          python3 tools/water-world-scene-assembly/verify_android_asset_plan.py
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install Android SDK 36.1
+        run: |
+          echo "ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}" >> "$GITHUB_ENV"
+          SDKMANAGER_PATH="$(command -v sdkmanager || true)"
+          if [ -z "$SDKMANAGER_PATH" ]; then
+            SDKMANAGER_PATH="$(find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools" -name sdkmanager -type f -print -quit 2>/dev/null || true)"
+          fi
+          if [ -z "$SDKMANAGER_PATH" ]; then
+            curl --fail --location --retry 2 --output /tmp/ww-android-cmdline.zip \
+              https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
+            mkdir -p "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest"
+            unzip -q /tmp/ww-android-cmdline.zip -d /tmp/ww-android-tools
+            mv /tmp/ww-android-tools/cmdline-tools/* "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest/"
+            SDKMANAGER_PATH="${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest/bin/sdkmanager"
+          fi
+          test -x "$SDKMANAGER_PATH"
+          printf 'y\n%.0s' {1..50} | "$SDKMANAGER_PATH" --licenses >/dev/null
+          "$SDKMANAGER_PATH" --install 'platforms;android-36.1' 'build-tools;36.0.0'
+
+      - name: Setup Gradle 9.3.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
+
+      - name: Create CI-only debug signing key
+        run: |
+          keytool -genkeypair -keystore debug.keystore -alias androiddebugkey \
+            -storepass android -keypass android -dname 'CN=Android Debug,O=Android,C=US' \
+            -keyalg RSA -keysize 2048 -validity 10000
+
+      - name: Compile Debug, AndroidTest, and Release Kotlin
+        run: gradle :app:assembleDebug :app:assembleAndroidTest :app:compileReleaseKotlin --no-daemon --console=plain
+
+      - name: Run Work 3.1.1 Uniform Contract + Full 83-Test Regression & Lint
+        run: |
+          gradle :app:testDebugUnitTest \
+            --tests "com.example.WaterWorldShaderUniformContractTest" \
+            --tests "com.example.WaterWorld*" \
+            --tests "com.example.ExistingOrbTabRegressionTest" \
+            --tests "com.example.AIOrbIntegrationRobolectricTest" \
+            --tests "com.example.AIOrbV31StructuralParityTest" \
+            --tests "com.example.AIOrbV3G0G4ParityCloseoutTest" \
+            :app:lintDebug --no-daemon --console=plain
+
+      - name: Audit Packaged Work 3.1.1 Debug APK
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, shutil, zipfile
+          src_apk = pathlib.Path("app/build/outputs/apk/debug/app-debug.apk")
+          out_apk = pathlib.Path("app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work3.1.1-UniformFix-debug.apk")
+          shutil.copy2(src_apk, out_apk)
+          with zipfile.ZipFile(out_apk) as z:
+              names = set(z.namelist())
+              assert len([n for n in names if n.startswith("assets/orb_v3/volume/fluid_color_z") and n.endswith(".webp")]) == 32
+              assert "assets/orb_v3/manifest/ORB_V3_ASSET_MANIFEST.json" in names
+              assert "assets/water_world_v2_1/04_MOTION/work3_motion_profile.json" in names
+              assert not any("奇幻水晶球中的水下生态世界" in n for n in names)
+          apk_sha = hashlib.sha256(out_apk.read_bytes()).hexdigest()
+          pathlib.Path("app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work3.1.1-UniformFix-debug.apk.sha256").write_text(f"{apk_sha}  {out_apk.name}\n")
+          print(json.dumps({"head": "${{ github.sha }}", "apk": out_apk.name, "bytes": out_apk.stat().st_size, "sha256": apk_sha, "HUAWEI_HARDWARE_VERIFIED": "NOT_RUN"}, indent=2))
+          PY
+
+      - name: Upload Exact-HEAD Work 3.1.1 Debug APK
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: water-world-work3-1-1-uniform-hotfix-${{ github.sha }}
+          path: |
+            app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work3.1.1-UniformFix-debug.apk
+            app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work3.1.1-UniformFix-debug.apk.sha256
+            app/build/test-results/testDebugUnitTest/
+            app/build/reports/tests/testDebugUnitTest/
+            app/build/reports/lint-results-debug.html

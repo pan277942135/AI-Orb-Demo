@@ -807,7 +807,6 @@ internal class WaterWorldStaticRenderer(
         GLES30.glUniform1i(s.water.uniform("uDiagnosticOnly"), if (diagnosticOnly) 1 else 0)
         GLES30.glUniform2f(s.water.uniform("uWaterNormalOffset"), wo.waterNormalOffsetU, wo.waterNormalOffsetV)
         GLES30.glUniform2f(s.water.uniform("uMeniscusPhases"), wo.meniscusWavePhaseRad, wo.meniscusSecondaryPhaseRad)
-        GLES30.glUniform1f(s.water.uniform("uWaterFlowPhase"), wo.waterFlowPhaseRad)
         bindTex(0, snapshotTarget.texture); GLES30.glUniform1i(s.water.uniform("uSceneSnapshot"), 0)
         bindTex(1, waterbedTex); GLES30.glUniform1i(s.water.uniform("uWaterbedTex"), 1)
         bindTex(2, waterNormalTex); GLES30.glUniform1i(s.water.uniform("uWaterNormalTex"), 2)

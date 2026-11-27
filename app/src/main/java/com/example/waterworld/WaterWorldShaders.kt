@@ -318,7 +318,6 @@ internal class WaterWorldShaders {
             // never faked by 2D sin/cos swirl in WATER_FRAGMENT.
             uniform vec2 uWaterNormalOffset;
             uniform vec2 uMeniscusPhases;
-            uniform float uWaterFlowPhase;
             out vec4 fragColor;
             void main() {
                 vec2 px = vUv * uCanvas;
