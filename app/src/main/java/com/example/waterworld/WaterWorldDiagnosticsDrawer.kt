@@ -34,6 +34,7 @@ internal class WaterWorldDiagnosticsDrawer(
     private val onSelectDiagnosticMode: (WaterWorldRenderGraph.DiagnosticMode) -> Unit,
     private val onRestoreFinalScene: () -> Unit,
     private val onTriggerEvidenceExport: () -> Unit,
+    private val onSaveEvidenceZip: () -> Unit = {},
 ) {
     internal companion object {
         const val TAG_DIAGNOSTICS_TOGGLE = "water_world_diagnostics_toggle"
@@ -49,6 +50,7 @@ internal class WaterWorldDiagnosticsDrawer(
         const val TAG_OPTICAL_BOKEH = "water_world_diag_optical_bokeh"
         const val TAG_RESTORE_FINAL_SCENE = "water_world_diag_restore_final_scene"
         const val TAG_EXPORT_BUTTON = "water_world_export_button"
+        const val TAG_SAVE_ZIP_BUTTON = "water_world_save_zip_button"
         const val TAG_EXPORT_SUMMARY = "water_world_diag_export_summary"
         const val TAG_GPU_INFO = "water_world_diag_gpu_info"
         const val TAG_PASS_LIST = "water_world_diag_pass_list"
@@ -60,6 +62,7 @@ internal class WaterWorldDiagnosticsDrawer(
     val toggleButton: Button
     val panelContainer: LinearLayout
     val exportButton: Button
+    val saveZipButton: Button
     val restoreFinalButton: Button
 
     private val passListContainer: LinearLayout
@@ -253,14 +256,37 @@ internal class WaterWorldDiagnosticsDrawer(
             setPadding(dp(14), dp(8), dp(14), dp(8))
             setOnClickListener { onTriggerEvidenceExport() }
         }
+        saveZipButton = Button(context).apply {
+            tag = TAG_SAVE_ZIP_BUTTON
+            text = "保存 Evidence ZIP 到系统文件 (SAF)"
+            contentDescription = "保存 Evidence ZIP 到系统文件"
+            isAllCaps = false
+            isEnabled = false
+            alpha = 0.55f
+            minHeight = dp(48)
+            minimumHeight = dp(48)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            setTextColor(Color.WHITE)
+            typeface = Typeface.DEFAULT_BOLD
+            background = pillBackground(Color.parseColor("#CC0E5C82"), Color.parseColor("#8063DCEB"), dp(14))
+            setPadding(dp(14), dp(8), dp(14), dp(8))
+            setOnClickListener { onSaveEvidenceZip() }
+        }
         exportSummaryView = TextView(context).apply {
             tag = TAG_EXPORT_SUMMARY
             setTextColor(Color.parseColor("#CCE3F8FF"))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.5f)
             setPadding(0, dp(8), 0, 0)
-            text = "包含：11 Pass + 5 Optics + final_fbo.png + android_screen_capture.png、ANDROID_GPU_TELEMETRY.json、SCREEN_VS_FBO_DIFF.json、EVIDENCE_SHA256_MANIFEST.json。导出后自动恢复 FINAL_SCENE。"
+            text = "包含：11 Pass + 5 Optics + final_fbo.png + android_screen_capture.png、ANDROID_GPU_TELEMETRY.json、SCREEN_VS_FBO_DIFF.json、EVIDENCE_SHA256_MANIFEST.json 与零权限 SAF ZIP 导出。导出后自动恢复 FINAL_SCENE。"
         }
         sectionD.addView(exportButton)
+        sectionD.addView(
+            saveZipButton,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(8) }
+        )
         sectionD.addView(exportSummaryView)
         scrollContent.addView(sectionD)
 
@@ -338,11 +364,14 @@ internal class WaterWorldDiagnosticsDrawer(
         outputDir: File?,
         statusMessage: String,
         inFlight: Boolean,
+        zipReady: Boolean = false,
     ) {
         if (outputDir != null) {
             latestExportDir = outputDir
         }
         exportButton.isEnabled = !inFlight
+        saveZipButton.isEnabled = !inFlight && zipReady
+        saveZipButton.alpha = if (saveZipButton.isEnabled) 1.0f else 0.55f
         exportSummaryView.text = statusMessage
         renderPassRows(lastTelemetry)
     }
@@ -408,8 +437,8 @@ internal class WaterWorldDiagnosticsDrawer(
                     background = pillBackground(Color.parseColor("#BF0E5B6E"), Color.parseColor("#805CE6C8"), dp(10))
                     setPadding(dp(10), dp(4), dp(10), dp(4))
                     setOnClickListener {
-                        if (hasExportedPng && exportedPng != null) {
-                            showPassPngPreview(wireId, exportedPng)
+                        if (hasExportedPng) {
+                            showPassPngPreview(wireId, exportedPng!!)
                         } else if (livePassMode != null) {
                             onSelectDiagnosticMode(livePassMode)
                         }
@@ -477,6 +506,24 @@ internal class WaterWorldDiagnosticsDrawer(
             ?.let { String.format(Locale.US, "%.2f ms", it) }
             ?: "NOT_MEASURED"
         val gpuClass = telemetry?.optString("rendererClass").orEmpty().ifBlank { "UNCLASSIFIED_PENDING_GL" }
+        val totalVramMb = telemetry?.optDouble("estimatedTotalGpuMemoryMb", Double.NaN)
+            ?.takeIf { it.isFinite() }
+            ?.let { String.format(Locale.US, "%.1f MB (FBO %.1f + Tex %.1f)", it, telemetry.optDouble("estimatedFboMemoryMb", 0.0), telemetry.optDouble("estimatedTextureMemoryMb", 0.0)) }
+            ?: "NOT_MEASURED"
+        val stageMs = telemetry?.optDouble("resourceStagingMs", Double.NaN)
+            ?.takeIf { it.isFinite() }
+            ?.let { String.format(Locale.US, "%.1f ms", it) }
+            ?: "NOT_MEASURED"
+        val firstFrameMs = telemetry?.optDouble("firstFramePresentedMs", Double.NaN)
+            ?.takeIf { it.isFinite() }
+            ?.let { String.format(Locale.US, "%.1f ms", it) }
+            ?: "NOT_MEASURED"
+        val vpObj = telemetry?.optJSONObject("presentViewport")
+        val vpStr = if (vpObj != null) {
+            "L=${vpObj.optInt("left")} B=${vpObj.optInt("bottom")} S=${vpObj.optInt("side")} (${vpObj.optInt("surfaceWidth")}x${vpObj.optInt("surfaceHeight")})"
+        } else {
+            "PENDING"
+        }
         val deviceInfo = "${Build.MANUFACTURER} ${Build.MODEL} (API ${Build.VERSION.SDK_INT})"
 
         gpuInfoView.text = buildString {
@@ -490,6 +537,9 @@ internal class WaterWorldDiagnosticsDrawer(
             appendLine("Actual Pass Count: $passCount (Optics: $opticalCount)")
             appendLine("GPU Frame Time   : $gpuFrameTime")
             appendLine("CPU Frame Time   : $cpuFrameTime")
+            appendLine("Staging / 1stFrm : $stageMs / $firstFrameMs")
+            appendLine("Est. GPU VRAM    : $totalVramMb")
+            appendLine("Present Viewport : $vpStr")
             appendLine("GPU Class        : $gpuClass")
             append("Device           : $deviceInfo")
         }

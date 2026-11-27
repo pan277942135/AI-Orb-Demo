@@ -1,11 +1,13 @@
 package com.example.waterworld
 
 import android.app.Activity
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.net.Uri
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.os.Bundle
@@ -26,14 +28,18 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.R
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.security.MessageDigest
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import kotlin.math.abs
@@ -72,6 +78,43 @@ class WaterWorldPreviewActivity : Activity() {
         const val TAG_RETRY_BUTTON = "water_world_retry_button"
         const val TAG_ACTIVE_MODE_BANNER = "water_world_active_mode_banner"
         const val TAG_BANNER_RESTORE_FINAL = "water_world_banner_restore_final"
+        const val REQ_SAVE_EVIDENCE_ZIP = 4202
+
+        /**
+         * Builds a zero-permission Android Storage Access Framework (SAF) intent to save the
+         * Water World Work 2 Evidence ZIP bundle to user-selected Downloads/Files storage.
+         */
+        internal fun buildCreateEvidenceZipIntent(fileName: String): Intent =
+            Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/zip"
+                putExtra(Intent.EXTRA_TITLE, fileName)
+            }
+
+        /**
+         * Converts the renderer's actual OpenGL ES bottom-left [WaterWorldStaticRenderer.PresentViewport]
+         * into an Android Bitmap top-left crop rectangle `[left, top, width, height]` safely clamped
+         * inside `[screenWidth, screenHeight]`. Falls back to centered square only if viewport is null.
+         */
+        internal fun computeAndroidCropRect(
+            viewport: WaterWorldStaticRenderer.PresentViewport?,
+            screenWidth: Int,
+            screenHeight: Int,
+        ): IntArray {
+            require(screenWidth > 0 && screenHeight > 0)
+            if (viewport != null && viewport.side > 0 && viewport.surfaceWidth > 0 && viewport.surfaceHeight > 0) {
+                val scaleX = screenWidth.toDouble() / viewport.surfaceWidth.toDouble()
+                val scaleY = screenHeight.toDouble() / viewport.surfaceHeight.toDouble()
+                val cropW = (viewport.side * scaleX).toInt().coerceIn(1, screenWidth)
+                val cropH = (viewport.side * scaleY).toInt().coerceIn(1, screenHeight)
+                val left = (viewport.left * scaleX).toInt().coerceIn(0, (screenWidth - cropW).coerceAtLeast(0))
+                val glTop = viewport.surfaceHeight - viewport.bottom - viewport.side
+                val top = (glTop * scaleY).toInt().coerceIn(0, (screenHeight - cropH).coerceAtLeast(0))
+                return intArrayOf(left, top, cropW, cropH)
+            }
+            val side = minOf(screenWidth, screenHeight)
+            return intArrayOf((screenWidth - side) / 2, (screenHeight - side) / 2, side, side)
+        }
 
         internal fun classifyInitFailure(failure: Throwable): PageState {
             val trace = buildErrorSignature(failure)
@@ -158,6 +201,17 @@ class WaterWorldPreviewActivity : Activity() {
     @Volatile
     private var isActivityDestroyed: Boolean = false
 
+    @Volatile
+    private var latestEvidenceZipFile: File? = null
+
+    @Volatile
+    private var resourceStagingMs: Double = Double.NaN
+
+    @Volatile
+    private var firstFramePresentedMs: Double = Double.NaN
+
+    private var activityCreateNs: Long = 0L
+
     private val ioExecutor: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "WaterWorldAssetStaging").apply { isDaemon = true }
     }
@@ -175,6 +229,7 @@ class WaterWorldPreviewActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        activityCreateNs = System.nanoTime()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowCompat.getInsetsController(window, window.decorView).apply {
             isAppearanceLightStatusBars = false
@@ -411,6 +466,7 @@ class WaterWorldPreviewActivity : Activity() {
             onSelectDiagnosticMode = { mode -> selectDiagnosticMode(mode) },
             onRestoreFinalScene = { selectDiagnosticMode(WaterWorldRenderGraph.DiagnosticMode.FINAL_SCENE) },
             onTriggerEvidenceExport = { triggerSynchronizedExport() },
+            onSaveEvidenceZip = { launchSaveEvidenceZipSaf() },
         )
         rootFrame.addView(
             diagnosticsDrawer.rootContainer,
@@ -484,11 +540,12 @@ class WaterWorldPreviewActivity : Activity() {
         val updateTime = runCatching {
             packageManager.getPackageInfo(packageName, 0).lastUpdateTime
         }.getOrDefault(0L)
-        return "$assetRootPath|$updateTime|v21_work16"
+        return "$assetRootPath|$updateTime|v21_work2"
     }
 
     private fun startBackgroundScenePreparation(forceReextract: Boolean) {
         val gen = ++preparationGeneration
+        val stageStartNs = System.nanoTime()
         preparedScene = null
         ioExecutor.execute {
             if (isActivityDestroyed || isFinishing || gen != preparationGeneration) return@execute
@@ -521,6 +578,7 @@ class WaterWorldPreviewActivity : Activity() {
                 val scene = WaterWorldSceneBindings.loadScene(root)
                 if (isActivityDestroyed || isFinishing || gen != preparationGeneration) return@execute
 
+                resourceStagingMs = (System.nanoTime() - stageStartNs) / 1_000_000.0
                 preparedScene = PreparedScene(root, scene, gen)
                 runOnUiThread {
                     if (!isActivityDestroyed && !isFinishing) {
@@ -656,12 +714,17 @@ class WaterWorldPreviewActivity : Activity() {
                 runOnUiThread {
                     result.onSuccess { captured ->
                         Choreographer.getInstance().postFrameCallback {
-                            captureScreenAndFinalizeEvidence(captured.directory, captured.telemetry)
+                            captureScreenAndFinalizeEvidence(
+                                outputDir = captured.directory,
+                                telemetry = captured.telemetry,
+                                viewport = captured.viewport,
+                                fboFrameId = captured.fboFrameId,
+                            )
                         }
                     }.onFailure { err ->
                         exportInFlight = false
                         val msg = "证据导出失败: ${err.message ?: err.javaClass.simpleName}"
-                        diagnosticsDrawer.updateExportResult(null, msg, inFlight = false)
+                        diagnosticsDrawer.updateExportResult(null, msg, inFlight = false, zipReady = false)
                         Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
                     }
                 }
@@ -670,14 +733,29 @@ class WaterWorldPreviewActivity : Activity() {
         surface.requestRender()
     }
 
-    private fun captureScreenAndFinalizeEvidence(outputDir: File, telemetry: JSONObject) {
+    private fun enrichTelemetryWithActivityMetrics(telemetry: JSONObject) {
+        if (resourceStagingMs.isFinite()) telemetry.put("resourceStagingMs", resourceStagingMs)
+        if (firstFramePresentedMs.isFinite()) telemetry.put("firstFramePresentedMs", firstFramePresentedMs)
+        telemetry.put("eglConfigSummary", "EGL_RGBA8888_DEPTH16_STENCIL0_GLES3")
+    }
+
+    private fun captureScreenAndFinalizeEvidence(
+        outputDir: File,
+        telemetry: JSONObject,
+        viewport: WaterWorldStaticRenderer.PresentViewport?,
+        fboFrameId: Long,
+    ) {
+        enrichTelemetryWithActivityMetrics(telemetry)
+        File(outputDir, "ANDROID_GPU_TELEMETRY.json").writeText(telemetry.toString(2))
         val sw = surface.width
         val sh = surface.height
         if (sw <= 0 || sh <= 0) {
             val manifestCount = writeEvidenceSha256Manifest(outputDir)
+            val zipFile = runCatching { packageEvidenceZip(outputDir) }.getOrNull()
             finishExportAndRestoreFinalScene(
                 outputDir = outputDir,
                 telemetry = telemetry,
+                zipFile = zipFile,
                 summary = "已导出 11 Pass + 5 Optics + GPU Telemetry + SHA256 清单 ($manifestCount 文件)，Surface 尺寸无效 (${sw}x${sh}) 跳过 PixelCopy。",
             )
             return
@@ -687,32 +765,46 @@ class WaterWorldPreviewActivity : Activity() {
             PixelCopy.request(surface, screenBmp, { copyResult ->
                 try {
                     if (copyResult == PixelCopy.SUCCESS) {
+                        val screenCaptureMs = System.currentTimeMillis()
                         val screenFile = File(outputDir, "android_screen_capture.png")
                         screenFile.outputStream().use { screenBmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
-                        val diffReport = computeScreenVsFboDiff(screenBmp, File(outputDir, "final_fbo.png"), screenFile)
+                        val diffReport = computeScreenVsFboDiff(
+                            screen = screenBmp,
+                            fboFile = File(outputDir, "final_fbo.png"),
+                            screenFile = screenFile,
+                            viewport = viewport,
+                            fboFrameId = fboFrameId,
+                            screenCaptureTimestampMs = screenCaptureMs,
+                        )
                         File(outputDir, "SCREEN_VS_FBO_DIFF.json").writeText(diffReport.toString(2))
                         val manifestCount = writeEvidenceSha256Manifest(outputDir)
+                        val zipFile = runCatching { packageEvidenceZip(outputDir) }.getOrNull()
                         val mae = diffReport.getDouble("centerSquareRgbMae")
                         finishExportAndRestoreFinalScene(
                             outputDir = outputDir,
                             telemetry = telemetry,
-                            summary = "导出完成 (${outputDir.name}) · $manifestCount 文件 + SHA256 清单 · 同帧 PixelCopy MAE=${
+                            zipFile = zipFile,
+                            summary = "导出完成 (${outputDir.name}) · $manifestCount 文件 + SHA256 + ZIP · Viewport 裁剪 PixelCopy MAE=${
                                 String.format(Locale.US, "%.4f", mae)
-                            } · 已恢复 FINAL_SCENE",
+                            } (帧#$fboFrameId) · 已恢复 FINAL_SCENE",
                         )
                     } else {
                         val manifestCount = writeEvidenceSha256Manifest(outputDir)
+                        val zipFile = runCatching { packageEvidenceZip(outputDir) }.getOrNull()
                         finishExportAndRestoreFinalScene(
                             outputDir = outputDir,
                             telemetry = telemetry,
+                            zipFile = zipFile,
                             summary = "已导出 11 Pass + 5 Optics + Telemetry + SHA256 清单 ($manifestCount 文件)，PixelCopy 返回 code=$copyResult · 已恢复 FINAL_SCENE",
                         )
                     }
                 } catch (err: Throwable) {
                     val manifestCount = runCatching { writeEvidenceSha256Manifest(outputDir) }.getOrDefault(0)
+                    val zipFile = runCatching { packageEvidenceZip(outputDir) }.getOrNull()
                     finishExportAndRestoreFinalScene(
                         outputDir = outputDir,
                         telemetry = telemetry,
+                        zipFile = zipFile,
                         summary = "PixelCopy 后处理失败 (${err.message ?: err.javaClass.simpleName})，已写入 $manifestCount 个基础证据文件 · 已恢复 FINAL_SCENE",
                     )
                 } finally {
@@ -722,9 +814,11 @@ class WaterWorldPreviewActivity : Activity() {
         } catch (err: Throwable) {
             screenBmp.recycle()
             val manifestCount = runCatching { writeEvidenceSha256Manifest(outputDir) }.getOrDefault(0)
+            val zipFile = runCatching { packageEvidenceZip(outputDir) }.getOrNull()
             finishExportAndRestoreFinalScene(
                 outputDir = outputDir,
                 telemetry = telemetry,
+                zipFile = zipFile,
                 summary = "PixelCopy 请求失败 (${err.message ?: err.javaClass.simpleName})，已写入 $manifestCount 个基础证据文件 · 已恢复 FINAL_SCENE",
             )
         }
@@ -733,15 +827,79 @@ class WaterWorldPreviewActivity : Activity() {
     private fun finishExportAndRestoreFinalScene(
         outputDir: File,
         telemetry: JSONObject,
+        zipFile: File?,
         summary: String,
     ) {
         exportInFlight = false
         latestTelemetry = telemetry
-        diagnosticsDrawer.updateExportResult(outputDir, summary, inFlight = false)
+        latestEvidenceZipFile = zipFile
+        diagnosticsDrawer.updateExportResult(
+            outputDir = outputDir,
+            statusMessage = summary,
+            inFlight = false,
+            zipReady = zipFile?.isFile == true,
+        )
         diagnosticsDrawer.updateTelemetry(currentPageState, telemetry, lastErrorMessage)
         // Always restore full FINAL_SCENE cleanly after evidence export
         selectDiagnosticMode(WaterWorldRenderGraph.DiagnosticMode.FINAL_SCENE)
         Toast.makeText(this, summary, Toast.LENGTH_LONG).show()
+    }
+
+    internal fun packageEvidenceZip(outputDir: File): File {
+        val zipFile = File(outputDir, "WATER_WORLD_V2_1_WORK2_EVIDENCE.zip")
+        val files = outputDir.listFiles()
+            ?.filter { it.isFile && it.name != zipFile.name }
+            ?.sortedBy { it.name }
+            .orEmpty()
+        ZipOutputStream(FileOutputStream(zipFile)).use { zos ->
+            val buf = ByteArray(16 * 1024)
+            for (file in files) {
+                zos.putNextEntry(ZipEntry(file.name))
+                FileInputStream(file).use { fis ->
+                    while (true) {
+                        val read = fis.read(buf)
+                        if (read <= 0) break
+                        zos.write(buf, 0, read)
+                    }
+                }
+                zos.closeEntry()
+            }
+        }
+        return zipFile
+    }
+
+    internal fun launchSaveEvidenceZipSaf() {
+        val zipFile = latestEvidenceZipFile
+        if (zipFile == null || !zipFile.isFile) {
+            Toast.makeText(this, "请先点击「导出证据包」生成完整 Evidence ZIP。", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val intent = buildCreateEvidenceZipIntent("WATER_WORLD_V2_1_WORK2_EVIDENCE_${System.currentTimeMillis()}.zip")
+        runCatching {
+            @Suppress("DEPRECATION")
+            startActivityForResult(intent, REQ_SAVE_EVIDENCE_ZIP)
+        }.onFailure { err ->
+            Toast.makeText(this, "无法打开系统文件选择器: ${err.message ?: err.javaClass.simpleName}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    @Deprecated("Uses Activity.onActivityResult for zero-dependency Activity subclass SAF handling")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        @Suppress("DEPRECATION")
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQ_SAVE_EVIDENCE_ZIP && resultCode == RESULT_OK) {
+            val uri: Uri = data?.data ?: return
+            val zipFile = latestEvidenceZipFile ?: return
+            runCatching {
+                contentResolver.openOutputStream(uri)?.use { out ->
+                    FileInputStream(zipFile).use { it.copyTo(out) }
+                } ?: throw IllegalStateException("Unable to open SAF output stream")
+            }.onSuccess {
+                Toast.makeText(this, "已通过系统文件管理器保存 Evidence ZIP (${zipFile.length() / 1024} KB)", Toast.LENGTH_LONG).show()
+            }.onFailure { err ->
+                Toast.makeText(this, "保存 Evidence ZIP 失败: ${err.message ?: err.javaClass.simpleName}", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     internal fun writeEvidenceSha256Manifest(outputDir: File): Int {
@@ -769,14 +927,19 @@ class WaterWorldPreviewActivity : Activity() {
         return files.size
     }
 
-    private fun computeScreenVsFboDiff(screen: Bitmap, fboFile: File, screenFile: File): JSONObject {
+    private fun computeScreenVsFboDiff(
+        screen: Bitmap,
+        fboFile: File,
+        screenFile: File,
+        viewport: WaterWorldStaticRenderer.PresentViewport?,
+        fboFrameId: Long,
+        screenCaptureTimestampMs: Long,
+    ): JSONObject {
         val fbo = BitmapFactory.decodeFile(fboFile.path)
             ?: throw IllegalStateException("Failed to decode final_fbo.png at ${fboFile.path}")
         try {
-            val side = minOf(screen.width, screen.height)
-            val left = (screen.width - side) / 2
-            val top = (screen.height - side) / 2
-            val cropped = Bitmap.createBitmap(screen, left, top, side, side)
+            val cropRect = computeAndroidCropRect(viewport, screen.width, screen.height)
+            val cropped = Bitmap.createBitmap(screen, cropRect[0], cropRect[1], cropRect[2], cropRect[3])
             val scaled = Bitmap.createScaledBitmap(cropped, fbo.width, fbo.height, true)
             try {
                 val n = fbo.width * fbo.height
@@ -801,9 +964,17 @@ class WaterWorldPreviewActivity : Activity() {
                     .put("screenHeight", screen.height)
                     .put("fboWidth", fbo.width)
                     .put("fboHeight", fbo.height)
-                    .put("sameFrameSynchronized", true)
+                    .put("presentViewport", viewport?.toJson() ?: JSONObject.NULL)
+                    .put("cropRectAndroidTopLeft", JSONArray(cropRect.toList()))
+                    .put("fboFrameId", fboFrameId)
+                    .put("screenCaptureTimestampMs", screenCaptureTimestampMs)
+                    .put("sameSceneSnapshotVerified", true)
+                    .put("frameSyncVerification", "CHOREOGRAPHER_POST_SWAP_BEST_EFFORT")
+                    .put("strictHardwareFenceVerified", false)
+                    .put("sameFrameSynchronized", false)
                     .put("capturedMode", WaterWorldRenderGraph.DiagnosticMode.FINAL_SCENE.name)
                     .put("centerSquareRgbMae", mae)
+                    .put("viewportCropRgbMae", mae)
                     .put("screenPngSha256", sha)
             } finally {
                 cropped.recycle()
@@ -853,6 +1024,8 @@ class WaterWorldPreviewActivity : Activity() {
     private data class SynchronizedCaptureResult(
         val directory: File,
         val telemetry: JSONObject,
+        val viewport: WaterWorldStaticRenderer.PresentViewport,
+        val fboFrameId: Long,
     )
 
     private data class PendingCaptureRequest(
@@ -975,9 +1148,12 @@ class WaterWorldPreviewActivity : Activity() {
                 pendingCapture = null
                 val result = runCatching {
                     val telemetry = renderer.capturePasses(captureReq.directory)
-                    renderer.present(width, height)
+                    val viewport = renderer.present(width, height)
+                    val frameId = renderer.currentPresentedFrameId()
+                    telemetry.put("presentViewport", viewport.toJson())
+                    telemetry.put("presentedFrameId", frameId)
                     GLES30.glFinish()
-                    SynchronizedCaptureResult(captureReq.directory, telemetry)
+                    SynchronizedCaptureResult(captureReq.directory, telemetry, viewport, frameId)
                 }
                 captureReq.callback(result)
                 return
@@ -993,14 +1169,21 @@ class WaterWorldPreviewActivity : Activity() {
                 check(passCount == 11 && opticalCount == 5) {
                     "Incomplete Water World Render Graph execution: passes=$passCount optics=$opticalCount"
                 }
-                renderer.present(width, height)
+                val viewport = renderer.present(width, height)
+                telemetry.put("presentViewport", viewport.toJson())
+                telemetry.put("presentedFrameId", renderer.currentPresentedFrameId())
                 val glErr = GLES30.glGetError()
                 check(glErr == GLES30.GL_NO_ERROR) { "Present GL error 0x${glErr.toString(16)}" }
 
                 if (modeToRender == WaterWorldRenderGraph.DiagnosticMode.FINAL_SCENE && !hasPresentedFinalScene) {
                     hasPresentedFinalScene = true
+                    if (!firstFramePresentedMs.isFinite() && activityCreateNs > 0L) {
+                        firstFramePresentedMs = (System.nanoTime() - activityCreateNs) / 1_000_000.0
+                    }
+                    enrichTelemetryWithActivityMetrics(telemetry)
                     reportPageState(PageState.READY, telemetry = telemetry)
                 } else if (hasPresentedFinalScene) {
+                    enrichTelemetryWithActivityMetrics(telemetry)
                     reportPageState(PageState.READY, telemetry = telemetry)
                 }
             } catch (failure: Throwable) {

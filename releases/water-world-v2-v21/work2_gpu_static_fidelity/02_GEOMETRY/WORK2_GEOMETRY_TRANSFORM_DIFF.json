@@ -1,0 +1,161 @@
+{
+  "round": 1,
+  "policy": "RENDER_HYPOTHESIS_WORK2_REFINED (Ground Truth fish vertices untouched)",
+  "sphere_gt_preserved": {
+    "center_px": [
+      626.4757504075296,
+      596.3441299453135
+    ],
+    "outer_radius_px": 422.2986621604988,
+    "inner_radius_px": 395.75
+  },
+  "ecology_overrides": [
+    {
+      "draw_id": "far_plant_left_bg",
+      "pass_id": "05_FAR_ECOLOGY",
+      "rect_px": [
+        302,
+        504,
+        522,
+        884
+      ],
+      "rot_deg": -7.5,
+      "flip_x": false,
+      "hypothesis": "RENDER_HYPOTHESIS_WORK2_FAR_FLORA"
+    },
+    {
+      "draw_id": "far_plant_mid_bg",
+      "pass_id": "05_FAR_ECOLOGY",
+      "rect_px": [
+        480,
+        582,
+        646,
+        845
+      ],
+      "rot_deg": -9.5,
+      "flip_x": false,
+      "hypothesis": "RENDER_HYPOTHESIS_WORK2_FAR_FLORA"
+    },
+    {
+      "draw_id": "far_plant_right_bg",
+      "pass_id": "05_FAR_ECOLOGY",
+      "rect_px": [
+        704,
+        534,
+        894,
+        855
+      ],
+      "rot_deg": 7.5,
+      "flip_x": true,
+      "hypothesis": "RENDER_HYPOTHESIS_WORK2_FAR_FLORA"
+    },
+    {
+      "draw_id": "far_rock_left_bg",
+      "pass_id": "05_FAR_ECOLOGY",
+      "rect_px": [
+        356,
+        690,
+        564,
+        840
+      ],
+      "rot_deg": -6.0,
+      "flip_x": false,
+      "hypothesis": "RENDER_HYPOTHESIS_WORK2_FAR_STONE"
+    },
+    {
+      "draw_id": "far_rock_right_bg",
+      "pass_id": "05_FAR_ECOLOGY",
+      "rect_px": [
+        738,
+        650,
+        920,
+        820
+      ],
+      "rot_deg": 5.0,
+      "flip_x": true,
+      "hypothesis": "RENDER_HYPOTHESIS_WORK2_FAR_STONE"
+    },
+    {
+      "draw_id": "plant_mid_sprout",
+      "pass_id": "08_NEAR_ECOLOGY",
+      "rect_px": [
+        642,
+        648,
+        804,
+        868
+      ],
+      "rot_deg": -13.5,
+      "flip_x": true,
+      "hypothesis": "RENDER_HYPOTHESIS_WORK2_MID_GRASS"
+    },
+    {
+      "draw_id": "plant_left",
+      "pass_id": "08_NEAR_ECOLOGY",
+      "rect_px": [
+        216,
+        380,
+        470,
+        892
+      ],
+      "rot_deg": -5.5,
+      "flip_x": false,
+      "hypothesis": "RENDER_HYPOTHESIS_WORK2_LEFT_PLANT"
+    },
+    {
+      "draw_id": "plant_right",
+      "pass_id": "08_NEAR_ECOLOGY",
+      "rect_px": [
+        794,
+        496,
+        996,
+        868
+      ],
+      "rot_deg": 3.0,
+      "flip_x": false,
+      "hypothesis": "RENDER_HYPOTHESIS_WORK2_RIGHT_PLANT"
+    },
+    {
+      "draw_id": "rock_02",
+      "pass_id": "08_NEAR_ECOLOGY",
+      "rect_px": [
+        710,
+        718,
+        902,
+        886
+      ],
+      "rot_deg": 5.8,
+      "flip_x": false,
+      "hypothesis": "RENDER_HYPOTHESIS_WORK2_ROCK02"
+    },
+    {
+      "draw_id": "rock_01",
+      "pass_id": "08_NEAR_ECOLOGY",
+      "rect_px": [
+        384,
+        762,
+        696,
+        958
+      ],
+      "rot_deg": -3.0,
+      "flip_x": false,
+      "hypothesis": "RENDER_HYPOTHESIS_WORK2_ROCK01"
+    },
+    {
+      "draw_id": "rock_03",
+      "pass_id": "08_NEAR_ECOLOGY",
+      "rect_px": [
+        584,
+        814,
+        834,
+        965
+      ],
+      "rot_deg": 3.8,
+      "flip_x": false,
+      "hypothesis": "RENDER_HYPOTHESIS_WORK2_ROCK03_MOSS"
+    }
+  ],
+  "outer_droplet_radius_scale": {
+    "before": 0.92,
+    "after": 0.84
+  }
+}

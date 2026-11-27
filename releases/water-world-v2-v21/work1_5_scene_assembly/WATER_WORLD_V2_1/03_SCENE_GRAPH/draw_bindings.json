@@ -1,5 +1,6 @@
 {
-  "schema_version": "water-world-draw-bindings/2.0",
+  "schema_version": "water-world-draw-bindings/2.1-work2",
+  "work2_round": 5,
   "canvas_size": 1254,
   "time_seconds": 0,
   "pass_order": [
@@ -94,20 +95,20 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_UPPER_RIGHT_BACK_ARCH",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_G01_UPPER_RIGHT_BACK",
       "confidence": "MEDIUM_LOW",
       "tint": [
-        0.42,
-        0.84,
-        0.16,
-        0.94
+        0.48,
+        0.85,
+        0.15,
+        0.92
       ],
       "core_color": [
-        0.84,
+        0.88,
         1.0,
-        0.36
+        0.4
       ],
-      "emission_override": 1.24
+      "emission_override": 1.16
     },
     {
       "draw_id": "G01_back_outer_veil",
@@ -143,20 +144,20 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_RIGHT_SECONDARY_VEIL",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_G01_SECONDARY_VEIL",
       "confidence": "LOW",
       "tint": [
-        0.28,
-        0.74,
-        0.2,
-        0.72
+        0.34,
+        0.76,
+        0.18,
+        0.7
       ],
       "core_color": [
-        0.74,
+        0.78,
         0.98,
-        0.36
+        0.38
       ],
-      "emission_override": 1.02
+      "emission_override": 0.98
     },
     {
       "draw_id": "G02_back_upper_arc",
@@ -192,20 +193,20 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 1.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_UPPER_LEFT_GOLD_BACK_ARC",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_G02_UPPER_LEFT_BACK",
       "confidence": "MEDIUM_LOW",
       "tint": [
         1.0,
-        0.56,
+        0.58,
         0.06,
-        0.96
+        0.94
       ],
       "core_color": [
         1.0,
-        0.92,
-        0.48
+        0.93,
+        0.5
       ],
-      "emission_override": 1.48
+      "emission_override": 1.36
     },
     {
       "draw_id": "G02_back_upper_hairline",
@@ -241,20 +242,20 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 1.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_UPPER_LEFT_FINE_STRAND",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_G02_UPPER_HAIRLINE",
       "confidence": "LOW",
       "tint": [
         1.0,
         0.62,
         0.1,
-        0.88
+        0.84
       ],
       "core_color": [
         1.0,
         0.94,
         0.56
       ],
-      "emission_override": 1.38
+      "emission_override": 1.24
     },
     {
       "draw_id": "G02_back_right_rim",
@@ -290,7 +291,7 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 1.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_FAR_RIGHT_GOLD_LOOP",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_G02_RIGHT_RIM_BACK",
       "confidence": "LOW",
       "tint": [
         1.0,
@@ -300,10 +301,10 @@
       ],
       "core_color": [
         1.0,
-        0.92,
-        0.5
+        0.93,
+        0.52
       ],
-      "emission_override": 1.35
+      "emission_override": 1.38
     },
     {
       "draw_id": "A01_back_upper_left",
@@ -339,20 +340,20 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 2.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_UPPER_LEFT_CYAN_ENTRY",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_A01_UPPER_LEFT_BACK",
       "confidence": "MEDIUM_LOW",
       "tint": [
         0.06,
         0.78,
-        1.0,
-        0.92
+        0.94,
+        0.9
       ],
       "core_color": [
         0.74,
         0.98,
-        1.0
+        0.99
       ],
-      "emission_override": 1.36
+      "emission_override": 1.28
     },
     {
       "draw_id": "A02_back_lower_halo",
@@ -388,20 +389,20 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 2.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_BOTTOM_CYAN_OUTER_HALO",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_A02_BOTTOM_HALO_BACK",
       "confidence": "MEDIUM_LOW",
       "tint": [
         0.06,
         0.76,
-        0.98,
-        0.88
+        0.94,
+        0.86
       ],
       "core_color": [
         0.68,
         0.97,
-        1.0
+        0.99
       ],
-      "emission_override": 1.28
+      "emission_override": 1.24
     },
     {
       "draw_id": "C01_back_lower_thread",
@@ -437,20 +438,20 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 1.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_LOWER_LEFT_GOLD_THREAD",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_C01_LOWER_THREAD_BACK",
       "confidence": "LOW",
       "tint": [
         1.0,
         0.64,
         0.14,
-        0.84
+        0.86
       ],
       "core_color": [
         1.0,
-        0.92,
-        0.54
+        0.93,
+        0.56
       ],
-      "emission_override": 1.32
+      "emission_override": 1.38
     },
     {
       "draw_id": "sphere_back",
@@ -523,7 +524,7 @@
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_MENISCUS_AND_VOLUME",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_MENISCUS_AND_VOLUME",
       "confidence": "MEDIUM_LOW"
     },
     {
@@ -556,11 +557,11 @@
       "depth_test": true,
       "blend_mode": "ALPHA",
       "alpha_cutoff": 0.22,
-      "ambient": 0.58,
+      "ambient": 0.56,
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_FAR_FLORA",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_FAR_FLORA",
       "confidence": "LOW",
       "tint": [
         0.42,
@@ -599,17 +600,17 @@
       "depth_test": true,
       "blend_mode": "ALPHA",
       "alpha_cutoff": 0.22,
-      "ambient": 0.58,
+      "ambient": 0.56,
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_FAR_FLORA",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_FAR_FLORA",
       "confidence": "LOW",
       "tint": [
         0.36,
         0.68,
         0.54,
-        0.64
+        0.65
       ]
     },
     {
@@ -642,11 +643,11 @@
       "depth_test": true,
       "blend_mode": "ALPHA",
       "alpha_cutoff": 0.22,
-      "ambient": 0.58,
+      "ambient": 0.56,
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_FAR_FLORA",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_FAR_FLORA",
       "confidence": "LOW",
       "tint": [
         0.38,
@@ -685,11 +686,11 @@
       "depth_test": true,
       "blend_mode": "ALPHA",
       "alpha_cutoff": 0.22,
-      "ambient": 0.58,
+      "ambient": 0.56,
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_FAR_STONE",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_FAR_STONE",
       "confidence": "LOW",
       "tint": [
         0.48,
@@ -728,11 +729,11 @@
       "depth_test": true,
       "blend_mode": "ALPHA",
       "alpha_cutoff": 0.22,
-      "ambient": 0.58,
+      "ambient": 0.56,
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_FAR_STONE",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_FAR_STONE",
       "confidence": "LOW",
       "tint": [
         0.46,
@@ -775,7 +776,7 @@
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_VOLUMETRIC_CAUSTICS",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_VOLUMETRIC_CAUSTICS",
       "confidence": "MEDIUM_LOW"
     },
     {
@@ -808,16 +809,16 @@
       "depth_test": true,
       "blend_mode": "ALPHA",
       "alpha_cutoff": 0.14,
-      "ambient": 0.68,
+      "ambient": 0.66,
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
       "hypothesis_status": "GROUND_TRUTH_VERIFIED",
       "confidence": "MEDIUM_HIGH",
       "tint": [
-        1.05,
         1.02,
-        0.92,
+        1.03,
+        0.94,
         1.0
       ]
     },
@@ -851,16 +852,16 @@
       "depth_test": true,
       "blend_mode": "ALPHA",
       "alpha_cutoff": 0.14,
-      "ambient": 0.68,
+      "ambient": 0.66,
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
       "hypothesis_status": "GROUND_TRUTH_VERIFIED",
       "confidence": "MEDIUM_HIGH",
       "tint": [
-        1.05,
         1.02,
-        0.92,
+        1.03,
+        0.94,
         1.0
       ]
     },
@@ -894,16 +895,16 @@
       "depth_test": true,
       "blend_mode": "ALPHA",
       "alpha_cutoff": 0.14,
-      "ambient": 0.68,
+      "ambient": 0.66,
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_GROUND_TRUTH_MEDIUM",
+      "hypothesis_status": "RENDER_HYPOTHESIS_RETAINING_UNKNOWN_GT",
       "confidence": "MEDIUM",
       "tint": [
-        1.05,
         1.02,
-        0.92,
+        1.03,
+        0.94,
         1.0
       ]
     },
@@ -937,16 +938,16 @@
       "depth_test": true,
       "blend_mode": "ALPHA",
       "alpha_cutoff": 0.14,
-      "ambient": 0.68,
+      "ambient": 0.66,
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_GROUND_TRUTH_MEDIUM",
+      "hypothesis_status": "RENDER_HYPOTHESIS_RETAINING_UNKNOWN_GT",
       "confidence": "MEDIUM",
       "tint": [
-        1.05,
         1.02,
-        0.92,
+        1.03,
+        0.94,
         1.0
       ]
     },
@@ -984,13 +985,13 @@
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_MID_GRASS",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_MID_GRASS",
       "confidence": "LOW",
       "tint": [
-        0.76,
-        0.96,
+        0.78,
+        0.98,
         0.44,
-        0.95
+        0.96
       ]
     },
     {
@@ -1027,11 +1028,11 @@
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_LEFT_PLANT_REFINED",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_LEFT_PLANT",
       "confidence": "MEDIUM_LOW",
       "tint": [
-        0.64,
-        0.92,
+        0.68,
+        0.94,
         0.42,
         1.0
       ]
@@ -1070,12 +1071,12 @@
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_RIGHT_PLANT_REFINED",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_RIGHT_PLANT",
       "confidence": "MEDIUM_LOW",
       "tint": [
         0.88,
         1.02,
-        0.52,
+        0.5,
         1.0
       ]
     },
@@ -1113,11 +1114,11 @@
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_ROCK02_REFINED",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_ROCK02",
       "confidence": "MEDIUM_LOW",
       "tint": [
-        0.8,
-        0.88,
+        0.82,
+        0.9,
         0.82,
         1.0
       ]
@@ -1156,12 +1157,12 @@
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_ROCK01_REFINED",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_ROCK01",
       "confidence": "MEDIUM_LOW",
       "tint": [
-        0.76,
-        0.86,
-        0.92,
+        0.78,
+        0.9,
+        0.94,
         1.0
       ]
     },
@@ -1199,12 +1200,12 @@
       "shell_side": 0.0,
       "sphere_clip": true,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_ROCK03_MOSS",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_ROCK03_MOSS",
       "confidence": "MEDIUM_LOW",
       "tint": [
-        1.04,
-        1.12,
-        0.42,
+        0.86,
+        0.96,
+        0.38,
         1.0
       ]
     },
@@ -1248,7 +1249,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1291,7 +1292,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1334,7 +1335,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1377,7 +1378,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1420,7 +1421,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1463,7 +1464,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1506,7 +1507,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1549,7 +1550,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1592,7 +1593,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1635,7 +1636,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1678,7 +1679,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1721,7 +1722,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1764,7 +1765,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1807,7 +1808,7 @@
         0.85,
         0.98,
         1.0,
-        0.78
+        0.72
       ]
     },
     {
@@ -1881,20 +1882,20 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_LOWER_LEFT_FRONT_SWEEP",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_G01_LOWER_LEFT_FRONT",
       "confidence": "MEDIUM_LOW",
       "tint": [
-        0.5,
-        0.86,
-        0.18,
+        0.54,
+        0.87,
+        0.16,
         0.92
       ],
       "core_color": [
-        0.92,
+        0.94,
         1.0,
-        0.4
+        0.42
       ],
-      "emission_override": 1.22
+      "emission_override": 1.2
     },
     {
       "draw_id": "G02_front_right_embrace",
@@ -1930,20 +1931,20 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 1.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_RIGHT_LOWER_GOLD_FRONT",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_G02_RIGHT_LOWER_FRONT",
       "confidence": "MEDIUM_LOW",
       "tint": [
         1.0,
-        0.56,
+        0.58,
         0.06,
         0.96
       ],
       "core_color": [
         1.0,
-        0.93,
-        0.5
+        0.94,
+        0.54
       ],
-      "emission_override": 1.52
+      "emission_override": 1.54
     },
     {
       "draw_id": "A01_front_left_embrace",
@@ -1979,20 +1980,20 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 2.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_LEFT_LOWER_CYAN_FRONT",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_A01_LOWER_LEFT_FRONT",
       "confidence": "MEDIUM_LOW",
       "tint": [
         0.06,
         0.82,
-        1.0,
-        0.96
+        0.96,
+        0.94
       ],
       "core_color": [
         0.78,
         0.99,
         1.0
       ],
-      "emission_override": 1.48
+      "emission_override": 1.42
     },
     {
       "draw_id": "A02_front_lower_strand",
@@ -2028,20 +2029,20 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 2.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_LEFT_SECONDARY_CYAN_STRAND",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_A02_LOWER_STRAND_FRONT",
       "confidence": "LOW",
       "tint": [
         0.08,
         0.8,
-        1.0,
-        0.88
+        0.95,
+        0.86
       ],
       "core_color": [
         0.74,
         0.98,
-        1.0
+        0.99
       ],
-      "emission_override": 1.32
+      "emission_override": 1.28
     },
     {
       "draw_id": "C01_front_lower_right",
@@ -2077,20 +2078,20 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 1.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_LOWER_RIGHT_GOLD_FRONT",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_C01_LOWER_RIGHT_FRONT",
       "confidence": "MEDIUM_LOW",
       "tint": [
         1.0,
         0.62,
         0.12,
-        0.95
+        0.96
       ],
       "core_color": [
         1.0,
-        0.95,
-        0.58
+        0.96,
+        0.6
       ],
-      "emission_override": 1.54
+      "emission_override": 1.62
     },
     {
       "draw_id": "B01",
@@ -2126,13 +2127,13 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_OUTER_DROPLETS",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_OUTER_DROPLETS",
       "confidence": "LOW",
       "tint": [
-        0.9,
-        0.98,
+        0.88,
+        0.96,
         1.0,
-        0.88
+        0.82
       ]
     },
     {
@@ -2169,13 +2170,13 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_OUTER_DROPLETS",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_OUTER_DROPLETS",
       "confidence": "LOW",
       "tint": [
-        0.9,
-        0.98,
+        0.88,
+        0.96,
         1.0,
-        0.88
+        0.82
       ]
     },
     {
@@ -2212,13 +2213,13 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_OUTER_DROPLETS",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_OUTER_DROPLETS",
       "confidence": "LOW",
       "tint": [
-        0.9,
-        0.98,
+        0.88,
+        0.96,
         1.0,
-        0.88
+        0.82
       ]
     },
     {
@@ -2255,13 +2256,13 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_OUTER_DROPLETS",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_OUTER_DROPLETS",
       "confidence": "LOW",
       "tint": [
-        0.9,
-        0.98,
+        0.88,
+        0.96,
         1.0,
-        0.88
+        0.82
       ]
     },
     {
@@ -2298,13 +2299,13 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_OUTER_DROPLETS",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_OUTER_DROPLETS",
       "confidence": "LOW",
       "tint": [
-        0.9,
-        0.98,
+        0.88,
+        0.96,
         1.0,
-        0.88
+        0.82
       ]
     },
     {
@@ -2341,13 +2342,13 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_OUTER_DROPLETS",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_OUTER_DROPLETS",
       "confidence": "LOW",
       "tint": [
-        0.9,
-        0.98,
+        0.88,
+        0.96,
         1.0,
-        0.88
+        0.82
       ]
     },
     {
@@ -2384,13 +2385,13 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_OUTER_DROPLETS",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_OUTER_DROPLETS",
       "confidence": "LOW",
       "tint": [
-        0.9,
-        0.98,
+        0.88,
+        0.96,
         1.0,
-        0.88
+        0.82
       ]
     },
     {
@@ -2427,13 +2428,13 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_OUTER_DROPLETS",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_OUTER_DROPLETS",
       "confidence": "LOW",
       "tint": [
-        0.9,
-        0.98,
+        0.88,
+        0.96,
         1.0,
-        0.88
+        0.82
       ]
     },
     {
@@ -2470,17 +2471,17 @@
       "shell_side": 0.0,
       "sphere_clip": false,
       "ribbon_style": 0.0,
-      "hypothesis_status": "RENDER_HYPOTHESIS_OUTER_DROPLETS",
+      "hypothesis_status": "RENDER_HYPOTHESIS_WORK2_OUTER_DROPLETS",
       "confidence": "LOW",
       "tint": [
-        0.9,
-        0.98,
+        0.88,
+        0.96,
         1.0,
-        0.88
+        0.82
       ]
     }
   ],
-  "status": "WORK1_6_ELEVEN_STAGE_RENDER_GRAPH",
+  "status": "WORK2_ROUND_5_ELEVEN_STAGE_RENDER_GRAPH",
   "missing_passes": [],
   "gpu_validation": "PENDING_DEVICE_HARDWARE_GPU"
 }

@@ -1,0 +1,86 @@
+{
+  "round": 3,
+  "fish_ground_truth_policy": {
+    "WW_FISH_01": "GROUND_TRUTH_VERIFIED (vertices preserved 100%)",
+    "WW_FISH_02": "GROUND_TRUTH_VERIFIED (vertices preserved 100%)",
+    "WW_FISH_03": "RENDER_HYPOTHESIS_RETAINING_UNKNOWN_GT (partial uncertainty preserved)",
+    "WW_FISH_04": "RENDER_HYPOTHESIS_RETAINING_UNKNOWN_GT (partial uncertainty preserved)"
+  },
+  "fish_material_refinement": {
+    "tint": [
+      1.02,
+      1.03,
+      0.94,
+      1.0
+    ],
+    "ambient": 0.66
+  },
+  "ecology_tints": {
+    "far_plant_left_bg": [
+      0.42,
+      0.72,
+      0.56,
+      0.72
+    ],
+    "far_plant_mid_bg": [
+      0.36,
+      0.68,
+      0.54,
+      0.65
+    ],
+    "far_plant_right_bg": [
+      0.38,
+      0.7,
+      0.56,
+      0.68
+    ],
+    "far_rock_left_bg": [
+      0.48,
+      0.66,
+      0.72,
+      0.9
+    ],
+    "far_rock_right_bg": [
+      0.46,
+      0.66,
+      0.68,
+      0.88
+    ],
+    "plant_mid_sprout": [
+      0.78,
+      0.98,
+      0.44,
+      0.96
+    ],
+    "plant_left": [
+      0.68,
+      0.94,
+      0.42,
+      1.0
+    ],
+    "plant_right": [
+      0.88,
+      1.02,
+      0.5,
+      1.0
+    ],
+    "rock_02": [
+      0.82,
+      0.9,
+      0.82,
+      1.0
+    ],
+    "rock_01": [
+      0.78,
+      0.9,
+      0.94,
+      1.0
+    ],
+    "rock_03": [
+      0.86,
+      0.96,
+      0.38,
+      1.0
+    ]
+  }
+}

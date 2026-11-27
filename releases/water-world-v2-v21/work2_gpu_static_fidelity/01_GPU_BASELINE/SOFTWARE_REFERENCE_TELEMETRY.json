@@ -1,0 +1,32 @@
+{
+  "classification": "SOFTWARE_REFERENCE_PIPELINE_CPU_1TO1",
+  "hardware_gpu_verified": false,
+  "android_runtime_verified": false,
+  "canvas": [1254, 1254],
+  "stage_count": 11,
+  "optical_node_count": 5,
+  "total_draws": 56,
+  "unique_v2_textures_loaded": 16,
+  "total_render_ms": 13359.49,
+  "final_png_sha256": "30a940a18c9647ea7797412868b253f5e65970a883c39be74a5ab619fa960227",
+  "pass_png_sha256": {
+    "01_BACKGROUND": "3fb581c63ec8556cea544db375149f3b7cf1cea2f695e3b2cfdeb1672e2d1a00",
+    "02_RESIDENT_BACK": "19561266d3dd51769c7c4fd3c7a49caf5276e973cd7bd20b8fa4007043190058",
+    "03_SPHERE_BACK": "d80e0ef397f16708418f9fea69d45268e4c162e92f003ce20670458170424ae7",
+    "04_WATER_INTERIOR": "db31ffee74299edaf7e09458803ae38811047fae4f91190cda0080136e899546",
+    "05_FAR_ECOLOGY": "b66908f6d5973db25c76f948e8fbd36270dbf849f05586167d3b2d8ed0b9c9a5",
+    "06_LIGHTING": "f70ca754e4c468d8aabb89e3d93159eddd70efa4872bd4e82680c607a8eb855a",
+    "07_FISH": "a993d95febf76635a337e68c89d9a6c64e8c6f1f7d3d2f674b65b6ec7a46ec38",
+    "08_NEAR_ECOLOGY": "8fa45381b4f2a3b0920cd72813c36b457baa4cd573699bb407c1fe69ad13c3f8",
+    "09_SPHERE_FRONT": "8f96b91c8209f5b7c382626c297df0f37f0b86d2897c3ebde3e218dbf8e49e6f",
+    "10_RESIDENT_FRONT": "71730e6a5ef7c48a774e0ce3333474f92dc26e5a9d216f209587394cc4d93a20",
+    "11_FINAL_COMPOSITE": "30a940a18c9647ea7797412868b253f5e65970a883c39be74a5ab619fa960227"
+  },
+  "optical_png_sha256": {
+    "glass_refraction": "2b9ac477cb48eccb15b67fda123c6ea40543442ca9d72bcb20a9b1308aa605b8",
+    "water_normal_distortion": "f054638ffec101f7bfe156c20368f9e8ccfa2080b668cae88aa7f7198b0dfec6",
+    "caustics": "228c9552826960fa03edca940eadfa7aaaf148c382a234f6497cd26b04e636c4",
+    "bloom": "6458fd5885e4b2d4e6d26a990abef0cdd2594b51ff99e7855c6b3e721dbacf10",
+    "bokeh": "b6bbb0e90ae867807bed50a4aa6a44658baf5915469752484fb217fcb00a3ab0"
+  }
+}

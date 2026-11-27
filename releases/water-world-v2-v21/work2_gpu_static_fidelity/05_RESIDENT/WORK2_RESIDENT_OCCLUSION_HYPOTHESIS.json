@@ -1,0 +1,55 @@
+{
+  "round": 4,
+  "ground_truth_occlusion_status": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION",
+  "ground_truth_edges_preserved_empty": true,
+  "render_hypothesis_splits": {
+    "G01": {
+      "back_segments": [
+        "G01_back_arch",
+        "G01_back_outer_veil"
+      ],
+      "front_segments": [
+        "G01_front_lower_sweep"
+      ],
+      "status": "RENDER_HYPOTHESIS_WORK2_REFINED"
+    },
+    "G02": {
+      "back_segments": [
+        "G02_back_upper_arc",
+        "G02_back_upper_hairline",
+        "G02_back_right_rim"
+      ],
+      "front_segments": [
+        "G02_front_right_embrace"
+      ],
+      "status": "RENDER_HYPOTHESIS_WORK2_REFINED"
+    },
+    "A01": {
+      "back_segments": [
+        "A01_back_upper_left"
+      ],
+      "front_segments": [
+        "A01_front_left_embrace"
+      ],
+      "status": "RENDER_HYPOTHESIS_WORK2_REFINED"
+    },
+    "A02": {
+      "back_segments": [
+        "A02_back_lower_halo"
+      ],
+      "front_segments": [
+        "A02_front_lower_strand"
+      ],
+      "status": "RENDER_HYPOTHESIS_WORK2_REFINED"
+    },
+    "C01": {
+      "back_segments": [
+        "C01_back_lower_thread"
+      ],
+      "front_segments": [
+        "C01_front_lower_right"
+      ],
+      "status": "RENDER_HYPOTHESIS_WORK2_REFINED"
+    }
+  }
+}

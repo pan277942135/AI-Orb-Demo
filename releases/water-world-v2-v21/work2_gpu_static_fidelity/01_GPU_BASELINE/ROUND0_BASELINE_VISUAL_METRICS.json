@@ -1,0 +1,55 @@
+{
+  "round": "ROUND0_BASELINE",
+  "scoring_algorithm": "UNMODIFIED_WORK16_SIX_AXIS_EQUAL_WEIGHT",
+  "master_sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "render_sha256": "30a940a18c9647ea7797412868b253f5e65970a883c39be74a5ab619fa960227",
+  "classification": "SOFTWARE_REFERENCE_PIPELINE_CPU_1TO1",
+  "hardware_gpu_verified": false,
+  "master_used_as_texture": false,
+  "six_dimension_scores": {
+    "composition": 86.49,
+    "geometry": 78.07,
+    "resident": 82.83,
+    "material": 82.40,
+    "lighting": 84.05,
+    "depth": 85.54
+  },
+  "overall_score": 83.23,
+  "delta_vs_baseline": -0.00,
+  "pass_threshold": 80.0,
+  "visual_acceptance": "PASS_80_SOFTWARE_REFERENCE",
+  "core_regions": {
+    "full": { "rgb_mae": 0.136613, "ssim": 0.478546 },
+    "sphere": { "rgb_mae": 0.188885, "ssim": 0.273854 },
+    "fish_all": { "rgb_mae": 0.134948, "ssim": 0.477696 },
+    "left_plant": { "rgb_mae": 0.201116, "ssim": 0.173221 },
+    "right_plant": { "rgb_mae": 0.177428, "ssim": 0.205948 },
+    "rocks": { "rgb_mae": 0.204794, "ssim": 0.119117 },
+    "meniscus_upper_water": { "rgb_mae": 0.195778, "grid_corr": 0.842434 }
+  },
+  "four_fish": {
+    "WW_FISH_01": { "rgb_mae": 0.117549, "ssim": 0.565768, "gt_status": "GROUND_TRUTH_VERIFIED" },
+    "WW_FISH_02": { "rgb_mae": 0.141059, "ssim": 0.420734, "gt_status": "GROUND_TRUTH_VERIFIED" },
+    "WW_FISH_03": { "rgb_mae": 0.095384, "ssim": 0.561795, "gt_status": "RENDER_HYPOTHESIS_RETAINING_UNKNOWN_GT" },
+    "WW_FISH_04": { "rgb_mae": 0.097012, "ssim": 0.567214, "gt_status": "RENDER_HYPOTHESIS_RETAINING_UNKNOWN_GT" }
+  },
+  "five_residents": {
+    "outer_ring_similarity": 0.820664,
+    "crossing_ring_similarity": 0.823530,
+    "perimeter_hist_similarity": 0.847243,
+    "G01": { "rgb_mae": 0.161856, "grid_corr": 0.914877, "gt_occlusion": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION" },
+    "G02": { "rgb_mae": 0.171512, "grid_corr": 0.901614, "gt_occlusion": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION" },
+    "A01": { "rgb_mae": 0.180114, "grid_corr": 0.888607, "gt_occlusion": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION" },
+    "A02": { "rgb_mae": 0.156298, "grid_corr": 0.894189, "gt_occlusion": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION" },
+    "C01": { "rgb_mae": 0.183049, "grid_corr": 0.881800, "gt_occlusion": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION" }
+  },
+  "glass_and_overexposure": {
+    "glass_rim_angular_similarity": 0.821636,
+    "master_clipped_white_ratio": 0.022227,
+    "render_clipped_white_ratio": 0.002804,
+    "master_rim_overexposure_ratio": 0.098231,
+    "render_rim_overexposure_ratio": 0.023275,
+    "master_top_strip_mean_lum": 0.211647,
+    "render_top_strip_mean_lum": 0.206216
+  }
+}

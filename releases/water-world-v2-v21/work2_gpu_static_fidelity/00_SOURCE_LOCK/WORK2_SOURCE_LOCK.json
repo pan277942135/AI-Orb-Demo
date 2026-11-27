@@ -1,0 +1,51 @@
+{
+  "task_id": "WATER_WORLD_V21_WORK2_GPU_STATIC_FIDELITY_CONVERGENCE_V1",
+  "repository": "pan277942135/AI-Orb-Demo",
+  "branch": "main",
+  "audit_baseline_head": "ae7ad16448ca4cc15f02641f26294bf54ad52cd6",
+  "time_seconds": 0,
+  "scope": "T=0 static scene high-fidelity GPU reconstruction only (no dynamic animation)",
+  "frozen_sources": {
+    "master_png": {
+      "path": "releases/water-world-v2-v21/奇幻水晶球中的水下生态世界 (1).png",
+      "dimensions": [1254, 1254],
+      "bytes": 2256234,
+      "sha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+      "used_as_production_texture": false
+    },
+    "v2_assets_zip": {
+      "path": "releases/water-world-v2/WATER_WORLD_V2_ASSETS.zip",
+      "bytes": 11678323,
+      "member_count": 65,
+      "sha256": "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095"
+    },
+    "v2_1_assets_zip": {
+      "path": "releases/water-world-v2-v21/delivery/WATER_WORLD_V2_1_ASSETS.zip",
+      "sha256": "28f8918c39f6e875602d3a7e90775e9d455aa6c4e42783247d1104c3b4509679"
+    }
+  },
+  "ground_truth_vs_hypothesis_policy": {
+    "overwrite_unknown_ground_truth": false,
+    "canonical_resident_occlusion_gt": "UNKNOWN_FRONT_BACK_NO_CONFIRMED_OCCLUSION",
+    "ww_fish_03_04_partial_uncertainty_preserved": true,
+    "work2_refinements_recorded_as": "RENDER_HYPOTHESIS_WORK2_REFINED"
+  },
+  "reused_production_classes": [
+    "WaterWorldStaticRenderer.kt",
+    "WaterWorldRenderGraph.kt",
+    "WaterWorldRenderTargetPool.kt",
+    "WaterWorldTextureCache.kt",
+    "WaterWorldSceneBindings.kt",
+    "WaterWorldShaders.kt",
+    "WaterWorldMotionContract.kt",
+    "WaterWorldPreviewActivity.kt",
+    "WaterWorldDiagnosticsDrawer.kt"
+  ],
+  "environment_truth": {
+    "hardware_gpu_verified": false,
+    "android_runtime_verified": "NOT_RUN",
+    "jdk_version": "21",
+    "ci_jdk_upgraded_to_21": true
+  },
+  "status": "WORK2_ACTIVE_WITH_RENDER_HYPOTHESES"
+}

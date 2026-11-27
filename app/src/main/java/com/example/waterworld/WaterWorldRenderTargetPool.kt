@@ -119,6 +119,17 @@ internal class WaterWorldRenderTargetPool(
         check(err == GLES30.GL_NO_ERROR) { "WaterWorld color+depth blit '$label' GL error 0x${err.toString(16)}" }
     }
 
+    /** Estimates total allocated GPU memory in bytes for all active FBO attachments (RGBA8 + Depth24). */
+    fun estimatedGpuMemoryBytes(): Long {
+        var total = 0L
+        for (spec in specs.values) {
+            val px = spec.width.toLong() * spec.height.toLong()
+            total += px * 4L // GL_RGBA8 color attachment
+            if (spec.withDepth) total += px * 4L // GL_DEPTH_COMPONENT24 (32-bit aligned in GPU VRAM)
+        }
+        return total
+    }
+
     fun releaseAll() {
         for (target in targets.values) {
             target.release()
@@ -150,5 +161,15 @@ internal class WaterWorldRenderTargetPool(
             "bloomQuarterA" to (fullSize / 4 to fullSize / 4),
             "bloomQuarterB" to (fullSize / 4 to fullSize / 4)
         )
+
+        fun plannedFboMemoryBytes(fullSize: Int = 1254): Long {
+            var total = 0L
+            for ((key, dims) in plannedTargetDimensions(fullSize)) {
+                val px = dims.first.toLong() * dims.second.toLong()
+                total += px * 4L
+                if (key == "scene") total += px * 4L
+            }
+            return total
+        }
     }
 }

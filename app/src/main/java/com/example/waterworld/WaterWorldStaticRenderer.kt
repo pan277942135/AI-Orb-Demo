@@ -43,6 +43,25 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         val hypothesisStatus: String = "GROUND_TRUTH_VERIFIED"
     )
 
+    data class PresentViewport(
+        val left: Int,
+        val bottom: Int,
+        val side: Int,
+        val surfaceWidth: Int,
+        val surfaceHeight: Int
+    ) {
+        fun toJson(): JSONObject = JSONObject()
+            .put("left", left)
+            .put("bottom", bottom)
+            .put("side", side)
+            .put("surfaceWidth", surfaceWidth)
+            .put("surfaceHeight", surfaceHeight)
+            .put("coordinateOrigin", "OPENGL_BOTTOM_LEFT")
+            .put("scaleToCanvas", if (side > 0) side.toDouble() / 1254.0 else 0.0)
+            .put("letterboxHorizontalPx", (surfaceWidth - side).coerceAtLeast(0))
+            .put("letterboxVerticalPx", (surfaceHeight - side).coerceAtLeast(0))
+    }
+
     private data class DrawItem(
         val binding: Binding,
         val mesh: WaterWorldMesh,
@@ -63,6 +82,12 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     private var waterDepthTex = 0
     private var causticsHeightTex = 0
     private var glassShellMaskTex = 0
+    @Volatile private var lastPresentViewport: PresentViewport? = null
+    @Volatile private var presentedFrameId: Long = 0L
+    @Volatile private var glErrorCount: Int = 0
+
+    internal fun currentPresentViewport(): PresentViewport? = lastPresentViewport
+    internal fun currentPresentedFrameId(): Long = presentedFrameId
 
     fun initialize(bindings: List<Binding>) {
         val loaded = WaterWorldSceneBindings.loadScene(root)
@@ -77,6 +102,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         }
         renderGraph.validateGraph()
         try {
+            loader.resetUploadedStats()
             opticalConfig = scene.opticalConfig
             shaders = WaterWorldShaders()
             targetPool = WaterWorldRenderTargetPool(scene.canvasSize)
@@ -396,18 +422,34 @@ internal class WaterWorldStaticRenderer(private val root: File) {
             else -> "ANDROID_HARDWARE_GPU"
         }
 
+        val fboMemBytes = pool.estimatedGpuMemoryBytes()
+        val texMemBytes = loader.uploadedTextureBytes
+        val totalMemBytes = fboMemBytes + texMemBytes
+        val mbDiv = 1024.0 * 1024.0
+
         return JSONObject()
+            .put("sceneVersion", "water-world-v2.1-work2")
             .put("glVendor", glVendor)
             .put("glRenderer", glRenderer)
             .put("glVersion", GLES30.glGetString(GLES30.GL_VERSION).orEmpty())
             .put("glslVersion", GLES30.glGetString(GLES30.GL_SHADING_LANGUAGE_VERSION).orEmpty())
             .put("androidApi", android.os.Build.VERSION.SDK_INT)
+            .put("deviceModel", "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}".trim())
             .put("renderResolution", JSONArray(listOf(pool.fullSize, pool.fullSize)))
+            .put("fboFormat", "GL_RGBA8+GL_DEPTH_COMPONENT24")
             .put("shaderPrograms", JSONArray(WaterWorldShaders.SHADER_PROGRAM_NAMES))
             .put("shaderProgramCount", s.allPrograms().size)
             .put("shaderCompileLinkOk", true)
             .put("uniqueTextureCount", cache.uniqueGpuTextureCount() + 1)
             .put("logicalTextureAliasCount", cache.logicalAliasCount())
+            .put("textureUploadCount", cache.totalUploadCount)
+            .put("textureCacheHits", cache.totalCacheHitCount)
+            .put("estimatedFboMemoryMb", fboMemBytes / mbDiv)
+            .put("estimatedTextureMemoryMb", texMemBytes / mbDiv)
+            .put("estimatedTotalGpuMemoryMb", totalMemBytes / mbDiv)
+            .put("glErrorCount", glErrorCount)
+            .put("presentedFrameId", presentedFrameId)
+            .put("presentViewport", lastPresentViewport?.toJson() ?: JSONObject.NULL)
             .put("cpuFrameTimeMs", totalCpuMs)
             .put("gpuFrameTimeMs", "NOT_MEASURED")
             .put("rendererClass", rendererClass)
@@ -707,12 +749,14 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     }
 
     /** Present the exact offscreen 1254x1254 scene centered into the Android surface without cropping. */
-    fun present(width: Int, height: Int) {
+    fun present(width: Int, height: Int): PresentViewport {
         require(width > 0 && height > 0)
         val fbo = checkNotNull(targetPool).finalTarget
         val side = minOf(width, height)
         val left = (width - side) / 2
         val bottom = (height - side) / 2
+        val viewport = PresentViewport(left, bottom, side, width, height)
+        lastPresentViewport = viewport
         GLES30.glBindFramebuffer(GLES30.GL_DRAW_FRAMEBUFFER, 0)
         GLES30.glViewport(0, 0, width, height)
         GLES30.glDisable(GLES30.GL_SCISSOR_TEST)
@@ -726,6 +770,8 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         )
         checkError("present")
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
+        presentedFrameId += 1L
+        return viewport
     }
 
     fun capture(file: File): String = captureTarget(checkNotNull(targetPool).finalTarget, file)
@@ -807,6 +853,9 @@ internal class WaterWorldStaticRenderer(private val root: File) {
 
     private fun checkError(pass: String) {
         val error = GLES30.glGetError()
-        check(error == GLES30.GL_NO_ERROR) { "WaterWorld $pass GL error 0x${error.toString(16)}" }
+        if (error != GLES30.GL_NO_ERROR) {
+            glErrorCount += 1
+            throw IllegalStateException("WaterWorld $pass GL error 0x${error.toString(16)}")
+        }
     }
 }

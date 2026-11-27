@@ -1,5 +1,6 @@
 {
-  "schema_version": "water-world-optics/1.0",
+  "schema_version": "water-world-optics/1.1-work2",
+  "work2_round": 5,
   "canvas_size": 1254,
   "sphere": {
     "center_px": [
@@ -36,11 +37,11 @@
     }
   },
   "background_atmosphere": {
-    "top_glare_suppression": 0.9,
-    "vignette_strength": 0.68,
+    "top_glare_suppression": 0.92,
+    "vignette_strength": 0.66,
     "deep_tint": [
-      0.015,
-      0.105,
+      0.012,
+      0.102,
       0.118
     ],
     "top_center_halo_center": [
@@ -53,72 +54,72 @@
       0.44,
       0.48
     ],
-    "top_center_halo_intensity": 0.36
+    "top_center_halo_intensity": 0.34
   },
   "glass_refraction": {
     "enabled": true,
-    "back_refraction_strength": 0.015,
-    "front_refraction_strength": 0.028,
-    "chromatic_dispersion": 0.0012,
-    "fresnel_power": 4.0,
+    "back_refraction_strength": 0.016,
+    "front_refraction_strength": 0.03,
+    "chromatic_dispersion": 0.0014,
+    "fresnel_power": 3.8,
     "rim_color_cool": [
-      0.54,
-      0.92,
+      0.56,
+      0.96,
       1.0
     ],
     "rim_color_warm": [
       1.0,
-      0.82,
-      0.36
+      0.88,
+      0.48
     ],
     "absorption_color": [
-      0.02,
+      0.018,
       0.22,
-      0.3
+      0.28
     ],
     "top_left_flare_norm": [
-      0.336,
-      0.205
+      0.332,
+      0.204
     ],
-    "top_left_flare_radius": 0.095,
+    "top_left_flare_radius": 0.102,
     "top_left_flare_color": [
       1.0,
-      0.88,
-      0.46
+      0.92,
+      0.56
     ],
-    "top_left_flare_intensity": 1.32,
+    "top_left_flare_intensity": 1.68,
     "bottom_right_flare_norm": [
-      0.625,
+      0.63,
       0.772
     ],
-    "bottom_right_flare_radius": 0.088,
+    "bottom_right_flare_radius": 0.095,
     "bottom_right_flare_color": [
       1.0,
-      0.86,
-      0.42
+      0.9,
+      0.52
     ],
-    "bottom_right_flare_intensity": 1.26,
+    "bottom_right_flare_intensity": 1.56,
     "right_rim_arc_norm": [
-      0.768,
-      0.445
+      0.78,
+      0.535
     ],
-    "right_rim_arc_intensity": 0.76
+    "right_rim_arc_intensity": 1.02
   },
   "water_normal_distortion": {
     "enabled": true,
-    "normal_distortion_strength": 0.011,
-    "meniscus_base_y_norm": 0.244,
-    "meniscus_wave_amp_norm": 0.016,
-    "meniscus_thickness_norm": 0.021,
+    "normal_distortion_strength": 0.012,
+    "meniscus_base_y_norm": 0.242,
+    "meniscus_wave_amp_norm": 0.017,
+    "meniscus_thickness_norm": 0.02,
     "air_dome_top_color": [
       0.1,
-      0.38,
-      0.52
+      0.4,
+      0.54
     ],
     "air_dome_warm_color": [
       1.0,
-      0.84,
-      0.42
+      0.9,
+      0.52
     ],
     "water_shallow_color": [
       0.05,
@@ -140,66 +141,66 @@
   "caustics": {
     "enabled": true,
     "sun_origin_norm": [
-      0.338,
-      0.212
+      0.336,
+      0.21
     ],
-    "god_ray_intensity": 0.48,
+    "god_ray_intensity": 0.49,
     "god_ray_color": [
       1.0,
-      0.88,
-      0.46
+      0.9,
+      0.48
     ],
     "god_ray_beams": [
       {
-        "angle_deg": 42.5,
+        "angle_deg": 42.3,
         "width_deg": 2.4,
-        "strength": 0.7
-      },
-      {
-        "angle_deg": 51.0,
-        "width_deg": 2.8,
-        "strength": 0.96
-      },
-      {
-        "angle_deg": 60.0,
-        "width_deg": 3.0,
-        "strength": 1.0
-      },
-      {
-        "angle_deg": 69.5,
-        "width_deg": 2.7,
-        "strength": 0.9
-      },
-      {
-        "angle_deg": 79.0,
-        "width_deg": 2.3,
         "strength": 0.72
       },
       {
-        "angle_deg": 88.5,
+        "angle_deg": 50.9,
+        "width_deg": 2.8,
+        "strength": 0.98
+      },
+      {
+        "angle_deg": 59.9,
+        "width_deg": 3.0,
+        "strength": 1.02
+      },
+      {
+        "angle_deg": 69.3,
+        "width_deg": 2.7,
+        "strength": 0.92
+      },
+      {
+        "angle_deg": 78.9,
+        "width_deg": 2.3,
+        "strength": 0.74
+      },
+      {
+        "angle_deg": 88.3,
         "width_deg": 2.0,
         "strength": 0.52
       }
     ],
-    "surface_caustic_strength": 0.62,
-    "bed_caustic_strength": 0.54,
+    "surface_caustic_strength": 0.68,
+    "bed_caustic_strength": 0.6,
     "bed_caustic_color": [
-      0.88,
-      0.95,
-      0.64
+      0.92,
+      0.97,
+      0.66
     ]
   },
   "bloom": {
     "enabled": true,
-    "threshold": 0.72,
+    "threshold": 0.71,
     "soft_knee": 0.24,
     "downsample_scales": [
       2,
       4
     ],
     "blur_radius_px": 14,
-    "strength": 0.44,
-    "max_contribution": 0.56
+    "strength": 0.46,
+    "max_contribution": 0.58
   },
   "bokeh": {
     "enabled": true,
@@ -207,221 +208,221 @@
       {
         "x": 0.052,
         "y": 0.598,
-        "r": 0.026,
+        "r": 0.025,
         "color": [
           0.95,
           0.78,
           0.28
         ],
-        "alpha": 0.46,
+        "alpha": 0.44,
         "softness": 0.55,
         "layer": "BG"
       },
       {
         "x": 0.115,
         "y": 0.768,
-        "r": 0.032,
+        "r": 0.03,
         "color": [
           0.58,
           0.86,
           0.28
-        ],
-        "alpha": 0.28,
-        "softness": 0.65,
-        "layer": "BG"
-      },
-      {
-        "x": 0.105,
-        "y": 0.092,
-        "r": 0.028,
-        "color": [
-          0.22,
-          0.58,
-          0.52
-        ],
-        "alpha": 0.24,
-        "softness": 0.7,
-        "layer": "BG"
-      },
-      {
-        "x": 0.735,
-        "y": 0.042,
-        "r": 0.024,
-        "color": [
-          0.58,
-          0.76,
-          0.34
         ],
         "alpha": 0.26,
         "softness": 0.65,
         "layer": "BG"
       },
       {
+        "x": 0.105,
+        "y": 0.092,
+        "r": 0.026,
+        "color": [
+          0.22,
+          0.58,
+          0.52
+        ],
+        "alpha": 0.22,
+        "softness": 0.7,
+        "layer": "BG"
+      },
+      {
+        "x": 0.735,
+        "y": 0.042,
+        "r": 0.022,
+        "color": [
+          0.58,
+          0.76,
+          0.34
+        ],
+        "alpha": 0.24,
+        "softness": 0.65,
+        "layer": "BG"
+      },
+      {
         "x": 0.915,
         "y": 0.165,
-        "r": 0.026,
+        "r": 0.024,
         "color": [
           0.16,
           0.6,
           0.64
         ],
-        "alpha": 0.28,
+        "alpha": 0.26,
         "softness": 0.65,
         "layer": "BG"
       },
       {
         "x": 0.972,
         "y": 0.772,
-        "r": 0.028,
+        "r": 0.026,
         "color": [
           0.92,
           0.74,
           0.26
         ],
-        "alpha": 0.42,
+        "alpha": 0.38,
         "softness": 0.52,
         "layer": "FG"
       },
       {
         "x": 0.895,
         "y": 0.865,
-        "r": 0.03,
+        "r": 0.028,
         "color": [
           0.22,
           0.68,
           0.62
         ],
-        "alpha": 0.24,
+        "alpha": 0.22,
         "softness": 0.68,
         "layer": "BG"
       },
       {
         "x": 0.92,
         "y": 0.92,
-        "r": 0.022,
+        "r": 0.02,
         "color": [
           0.44,
           0.72,
           0.34
         ],
-        "alpha": 0.22,
+        "alpha": 0.2,
         "softness": 0.65,
         "layer": "BG"
       },
       {
         "x": 0.18,
         "y": 0.925,
-        "r": 0.034,
+        "r": 0.032,
         "color": [
           0.18,
           0.56,
           0.54
         ],
-        "alpha": 0.22,
+        "alpha": 0.2,
         "softness": 0.72,
         "layer": "BG"
       },
       {
         "x": 0.855,
         "y": 0.905,
-        "r": 0.018,
+        "r": 0.017,
         "color": [
           0.2,
           0.66,
           0.72
         ],
-        "alpha": 0.24,
+        "alpha": 0.22,
         "softness": 0.62,
         "layer": "BG"
       },
       {
-        "x": 0.182,
-        "y": 0.242,
-        "r": 0.032,
+        "x": 0.192,
+        "y": 0.236,
+        "r": 0.03,
         "color": [
           1.0,
-          0.92,
+          0.93,
+          0.62
+        ],
+        "alpha": 0.76,
+        "softness": 0.85,
+        "layer": "FG"
+      },
+      {
+        "x": 0.376,
+        "y": 0.118,
+        "r": 0.02,
+        "color": [
+          1.0,
+          0.91,
           0.6
         ],
-        "alpha": 0.72,
+        "alpha": 0.64,
         "softness": 0.85,
         "layer": "FG"
       },
       {
-        "x": 0.382,
-        "y": 0.114,
+        "x": 0.946,
+        "y": 0.422,
         "r": 0.022,
         "color": [
           1.0,
-          0.9,
-          0.58
+          0.88,
+          0.5
         ],
-        "alpha": 0.62,
-        "softness": 0.85,
-        "layer": "FG"
-      },
-      {
-        "x": 0.972,
-        "y": 0.415,
-        "r": 0.022,
-        "color": [
-          1.0,
-          0.86,
-          0.48
-        ],
-        "alpha": 0.68,
+        "alpha": 0.7,
         "softness": 0.82,
         "layer": "FG"
       },
       {
-        "x": 0.926,
-        "y": 0.528,
+        "x": 0.912,
+        "y": 0.532,
         "r": 0.028,
         "color": [
           1.0,
-          0.9,
-          0.56
+          0.92,
+          0.58
         ],
-        "alpha": 0.76,
+        "alpha": 0.8,
         "softness": 0.82,
         "layer": "FG"
       },
       {
-        "x": 0.686,
-        "y": 0.892,
+        "x": 0.682,
+        "y": 0.884,
         "r": 0.024,
         "color": [
-          0.58,
+          0.62,
           0.98,
           1.0
         ],
-        "alpha": 0.72,
+        "alpha": 0.76,
         "softness": 0.84,
         "layer": "FG"
       },
       {
-        "x": 0.414,
-        "y": 0.905,
+        "x": 0.422,
+        "y": 0.898,
         "r": 0.02,
         "color": [
           0.96,
           1.0,
           0.64
         ],
-        "alpha": 0.62,
+        "alpha": 0.64,
         "softness": 0.84,
         "layer": "FG"
       },
       {
         "x": 0.502,
-        "y": 0.892,
+        "y": 0.886,
         "r": 0.014,
         "color": [
           1.0,
-          0.88,
-          0.52
+          0.9,
+          0.54
         ],
-        "alpha": 0.64,
+        "alpha": 0.66,
         "softness": 0.82,
         "layer": "FG"
       }

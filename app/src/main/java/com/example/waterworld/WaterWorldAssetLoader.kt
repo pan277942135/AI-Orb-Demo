@@ -15,6 +15,13 @@ internal class WaterWorldAssetLoader(private val root: File) {
         return file
     }
     fun json(relative: String): JSONObject = JSONObject(path(relative).readText())
+    var uploadedTextureBytes: Long = 0L
+        private set
+
+    fun resetUploadedStats() {
+        uploadedTextureBytes = 0L
+    }
+
     fun texture(relative: String, expectedSha: String): Int {
         require(!relative.contains("master", ignoreCase = true))
         val bytes = path(relative).readBytes()
@@ -23,6 +30,7 @@ internal class WaterWorldAssetLoader(private val root: File) {
         require(actual == expectedSha) { "Scene texture identity mismatch: $relative" }
         val options = BitmapFactory.Options().apply { inScaled = false; inPremultiplied = false }
         val bitmap = requireNotNull(BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options))
+        val texBytes = bitmap.width.toLong() * bitmap.height.toLong() * 4L
         val ids = IntArray(1)
         GLES30.glGenTextures(1, ids, 0)
         try {
@@ -33,6 +41,7 @@ internal class WaterWorldAssetLoader(private val root: File) {
             GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE)
             GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0)
             check(GLES30.glGetError() == GLES30.GL_NO_ERROR) { "Scene texture upload failed: $relative" }
+            uploadedTextureBytes += texBytes
             return ids[0]
         } catch (failure: Throwable) {
             GLES30.glDeleteTextures(1, ids, 0)

@@ -169,6 +169,8 @@ class AIOrbScene(
   private var eglVersion: String = "Unknown"
   private var isSoftwareRenderer: Boolean = false
   private var hasRenderedFirstFrame: Boolean = false
+  private var orbRenderersInitialized: Boolean = false
+  private var pendingPostProcessResize: Boolean = false
 
   init {
     // Kick off non-blocking background WebP decode before EGL/SurfaceView creation completes,
@@ -315,16 +317,12 @@ class AIOrbScene(
     GLES30.glClearColor(0.002f, 0.016f, 0.022f, 1.0f)
     GLES30.glEnable(GLES30.GL_DEPTH_TEST)
 
-    background.init()
-    core.init(cfg.quality.icosphereSubdivisions, assetManager)
-    orbitRibbons.init(cfg.quality.ribbonSegments)
-    energyHighlights.init()
-    particles.init()
-    postProcessing.init()
-
-    // Defer Tab 2 shader compilation until first Tab 2 frame so Tab 1 startup swaps cleanly
-    // well within Android's 1000ms SurfaceSyncGroup handshake budget.
+    // Defer ALL heavy GLSL shader compilation, icosphere/ribbon mesh allocation, and FBO setup
+    // until Frame 2 so Frame 1 swaps cleanly in <5ms and MainActivity's SurfaceSyncGroup never
+    // hits Android's 1000ms transaction timeout (especially on SwiftShader / software GLES).
+    orbRenderersInitialized = false
     taskRenderersInitialized = false
+    pendingPostProcessResize = true
 
     glVendor = GLES30.glGetString(GLES30.GL_VENDOR) ?: "Unknown"
     glRenderer = GLES30.glGetString(GLES30.GL_RENDERER) ?: "Unknown"
@@ -361,8 +359,37 @@ class AIOrbScene(
     surfaceWidth = width.coerceAtLeast(1)
     surfaceHeight = height.coerceAtLeast(1)
     val cfg = configRef.get()
-    postProcessing.resize(surfaceWidth, surfaceHeight, cfg.quality)
+    if (orbRenderersInitialized) {
+      postProcessing.resize(surfaceWidth, surfaceHeight, cfg.quality)
+      pendingPostProcessResize = false
+    } else {
+      pendingPostProcessResize = true
+    }
     updateProjectionMatrix()
+  }
+
+  private fun ensureOrbRenderersInitialized(cfg: AIOrbConfig) {
+    if (orbRenderersInitialized) {
+      if (pendingPostProcessResize) {
+        postProcessing.resize(surfaceWidth, surfaceHeight, cfg.quality)
+        pendingPostProcessResize = false
+      }
+      return
+    }
+    background.init()
+    core.init(cfg.quality.icosphereSubdivisions, assetManager)
+    orbitRibbons.init(cfg.quality.ribbonSegments)
+    energyHighlights.init()
+    particles.init()
+    postProcessing.init()
+    postProcessing.resize(surfaceWidth, surfaceHeight, cfg.quality)
+    orbRenderersInitialized = true
+    pendingPostProcessResize = false
+
+    val volTel = core.volumeTelemetry
+    if (volTel.isLoaded && webpLoadCounter.get() == 0) {
+      webpLoadCounter.incrementAndGet()
+    }
   }
 
   private fun updateProjectionMatrix() {
@@ -414,45 +441,31 @@ class AIOrbScene(
     lastFrameNanos = frameStartNanos
 
     val cfg = configRef.get()
+    val isTaskDemo = cfg.sceneMode == OrbSceneMode.TASK_PERIMETER_DEMO
+
+    // Fast first-frame handshake: immediately clear the default framebuffer and return in <2ms
+    // BEFORE compiling GLSL shaders, allocating FBOs, or uploading 3D WebP textures so Android's
+    // SurfaceSyncGroup(SurfaceView / VRI[MainActivity]) receives transaction ready immediately
+    // and never hits the 1000ms timeout.
+    if (!hasRenderedFirstFrame) {
+      hasRenderedFirstFrame = true
+      GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
+      GLES30.glViewport(0, 0, surfaceWidth, surfaceHeight)
+      if (isTaskDemo) {
+        GLES30.glClearColor(0.804f, 0.933f, 0.969f, 1.0f)
+      } else {
+        GLES30.glClearColor(0.004f, 0.055f, 0.075f, 1.0f)
+      }
+      GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT)
+      return
+    }
+
+    ensureOrbRenderersInitialized(cfg)
+
     val volumeJustUpdated = core.uploadReadyAssetsIfNeeded(assetManager)
     if (volumeJustUpdated) {
       webpLoadCounter.incrementAndGet()
     }
-
-    val isTaskDemo = cfg.sceneMode == OrbSceneMode.TASK_PERIMETER_DEMO
-
-    // Fast first-frame handshake: complete initial eglSwapBuffers() in <15ms so Android's
-    // SurfaceSyncGroup(SurfaceView / VRI[MainActivity]) NEVER hits its 1000ms timeout while
-    // 35 Lossless RGBA WebP assets finish decoding in the background or SwiftShader warms up.
-    if (!hasRenderedFirstFrame && (!core.isVolumeReady || isSoftwareRenderer)) {
-      hasRenderedFirstFrame = true
-      postProcessing.resize(surfaceWidth, surfaceHeight, cfg.quality)
-      postProcessing.beginScenePass()
-      if (isTaskDemo) {
-        ensureTaskRenderersInitialized()
-        val layout = resolveTaskLayout()
-        photoTextureRenderer.drawBackground(
-          time = 0f,
-          renderWidth = postProcessing.renderWidth,
-          renderHeight = postProcessing.renderHeight,
-          layout = layout,
-          hdrScale = postProcessing.hdrScale,
-        )
-      } else {
-        background.draw(
-          time = 0f,
-          width = postProcessing.renderWidth,
-          height = postProcessing.renderHeight,
-          parallaxX = 0f,
-          parallaxY = 0f,
-          hdrScale = postProcessing.hdrScale,
-          config = cfg,
-        )
-      }
-      postProcessing.executePostProcessToScreen(cfg)
-      return
-    }
-    hasRenderedFirstFrame = true
 
     // Tab 2 preserves live continuous V3 Orb spin even if Tab 1 had pause/debug modes enabled,
     // without mutating Tab 1's AIOrbConfig. During Gate 4 GPU capture on Tab 1, freeze ONE single
@@ -949,7 +962,10 @@ class AIOrbScene(
     photoTextureRenderer.release()
     taskEnergyRenderer.release()
     perimeterRenderer.release()
+    orbRenderersInitialized = false
     taskRenderersInitialized = false
+    pendingPostProcessResize = false
+    hasRenderedFirstFrame = false
     postProcessing.release()
   }
 

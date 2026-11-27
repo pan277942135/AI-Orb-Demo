@@ -1,0 +1,56 @@
+{
+  "round": 2,
+  "shader_files_synced_1to1": [
+    "app/src/main/java/com/example/waterworld/WaterWorldShaders.kt",
+    "tools/water-world-scene-assembly/WaterWorldSoftwareRenderer.java"
+  ],
+  "glass_refraction_config": {
+    "enabled": true,
+    "back_refraction_strength": 0.016,
+    "front_refraction_strength": 0.03,
+    "chromatic_dispersion": 0.0014,
+    "fresnel_power": 3.8,
+    "rim_color_cool": [
+      0.56,
+      0.96,
+      1.0
+    ],
+    "rim_color_warm": [
+      1.0,
+      0.88,
+      0.48
+    ],
+    "absorption_color": [
+      0.018,
+      0.22,
+      0.28
+    ],
+    "top_left_flare_norm": [
+      0.332,
+      0.204
+    ],
+    "top_left_flare_radius": 0.102,
+    "top_left_flare_color": [
+      1.0,
+      0.92,
+      0.56
+    ],
+    "top_left_flare_intensity": 1.68,
+    "bottom_right_flare_norm": [
+      0.63,
+      0.772
+    ],
+    "bottom_right_flare_radius": 0.095,
+    "bottom_right_flare_color": [
+      1.0,
+      0.9,
+      0.52
+    ],
+    "bottom_right_flare_intensity": 1.56,
+    "right_rim_arc_norm": [
+      0.78,
+      0.535
+    ],
+    "right_rim_arc_intensity": 1.02
+  }
+}

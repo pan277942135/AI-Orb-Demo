@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
       - name: Install compile SDK
         run: |
           echo "ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}" >> "$GITHUB_ENV"
@@ -54,10 +54,10 @@ jobs:
             -storepass android -keypass android -dname 'CN=Android Debug,O=Android,C=US' \
             -keyalg RSA -keysize 2048 -validity 10000
       - name: Compile and assemble exact HEAD
-        run: gradle :app:assembleDebug :app:assembleAndroidTest --no-daemon --console=plain
-      - name: Run Water World & 3rd Tab Robolectric tests and Android lint
+        run: gradle :app:assembleDebug :app:assembleAndroidTest :app:compileReleaseKotlin --no-daemon --console=plain
+      - name: Run Water World (Work 1.6 + Work 2 + 3rd Tab) & Orb Robolectric tests and Android lint
         run: gradle :app:testDebugUnitTest --tests "com.example.WaterWorld*" --tests "com.example.ExistingOrbTabRegressionTest" --tests "com.example.AIOrbIntegrationRobolectricTest" :app:lintDebug --no-daemon --console=plain
-      - name: Verify merged Debug manifest, packaged APK internals, record APK SHA256 and bundle Work 1.6 Evidence ZIP
+      - name: Verify merged Debug manifest, packaged APK internals, record Exact-HEAD SHA256 and bundle Evidence ZIPs
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -71,13 +71,16 @@ jobs:
           assert 'com.example.MainActivity' in manifest_xml and 'android.intent.category.LAUNCHER' in manifest_xml, 'MainActivity LAUNCHER missing in merged Debug manifest'
 
           files = list(Path('app/build/outputs/apk/debug').glob('*.apk'))
-          assert len(files) == 1, files
-          p = files[0]
-          named_apk = Path('app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work16-debug.apk')
-          if p != named_apk:
-              shutil.copy2(p, named_apk)
+          assert len(files) >= 1, files
+          p = sorted(files)[0]
+          work2_apk = Path('app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work2-debug.apk')
+          work16_apk = Path('app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work16-debug.apk')
+          if p != work2_apk:
+              shutil.copy2(p, work2_apk)
+          if p != work16_apk:
+              shutil.copy2(p, work16_apk)
 
-          with ZipFile(named_apk) as z:
+          with ZipFile(work2_apk) as z:
               names = set(z.namelist())
               prefix = 'assets/water_world_v2_1/'
               for req in [
@@ -102,12 +105,34 @@ jobs:
                       assert packed in names, packed
                       assert hashlib.sha256(z.read(packed)).digest() == hashlib.sha256(source.read(name)).digest(), packed
 
-          apk_sha = hashlib.sha256(named_apk.read_bytes()).hexdigest()
+          apk_sha = hashlib.sha256(work2_apk.read_bytes()).hexdigest()
+          Path('app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work2-debug.apk.sha256').write_text(
+              f'{apk_sha}  {work2_apk.name}\n'
+          )
           Path('app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work16-debug.apk.sha256').write_text(
-              f'{apk_sha}  {named_apk.name}\n'
+              f'{apk_sha}  {work16_apk.name}\n'
           )
 
-          # Package the checked-in Work 1.6 acceptance evidence directory (48 files, excluding binary zips/apks)
+          # Package Work 2 evidence directory (excluding APKs/ZIPs)
+          w2_root = Path('releases/water-world-v2-v21/work2_gpu_static_fidelity')
+          w2_zip = Path('app/build/outputs/apk/debug/WATER_WORLD_V2_1_WORK2_EVIDENCE.zip')
+          w2_count = 0
+          if w2_root.is_dir():
+              with ZipFile(w2_zip, 'w', compression=ZIP_DEFLATED, compresslevel=6) as ez:
+                  for f in sorted(w2_root.rglob('*')):
+                      if f.is_dir() or f.suffix in ('.apk', '.zip'):
+                          continue
+                      rel = f.relative_to(w2_root).as_posix()
+                      ez.write(f, f'WATER_WORLD_V2_1_WORK2_EVIDENCE/{rel}')
+                      w2_count += 1
+              w2_sha = hashlib.sha256(w2_zip.read_bytes()).hexdigest()
+              Path('app/build/outputs/apk/debug/WATER_WORLD_V2_1_WORK2_EVIDENCE.zip.sha256').write_text(
+                  f'{w2_sha}  {w2_zip.name}\n'
+              )
+          else:
+              w2_sha = ''
+
+          # Package Work 1.6 acceptance evidence directory (preserving backward compatibility)
           ev_root = Path('releases/water-world-v2-v21/work1_6_structure_closure_android_gpu')
           ev_zip = Path('app/build/outputs/apk/debug/WATER_WORLD_V2_1_WORK16_ACCEPTANCE_EVIDENCE.zip')
           exclude = {
@@ -130,21 +155,23 @@ jobs:
 
           identity = {
               'head': '${{ github.sha }}',
-              'apk_file': named_apk.name,
-              'apk_size': named_apk.stat().st_size,
+              'java_version': 21,
+              'apk_file': work2_apk.name,
+              'apk_size': work2_apk.stat().st_size,
               'apk_sha256': apk_sha,
               'asset_member_count': 65,
               'master_png_in_apk': False,
-              'evidence_zip_file': ev_zip.name,
-              'evidence_zip_file_count': ev_count,
-              'evidence_zip_size': ev_zip.stat().st_size,
-              'evidence_zip_sha256': ev_sha,
+              'work2_evidence_zip_file': w2_zip.name,
+              'work2_evidence_zip_file_count': w2_count,
+              'work2_evidence_zip_sha256': w2_sha,
+              'work16_evidence_zip_file': ev_zip.name,
+              'work16_evidence_zip_file_count': ev_count,
+              'work16_evidence_zip_sha256': ev_sha,
               'robolectric_tests_are_not_real_android_device': True,
-              'WORK1_6_CLOSED': 'PARTIAL_SOFTWARE_AND_APK_VERIFIED',
+              'WORK2_STATUS': 'WORK2_SOFTWARE_CLOSURE_DEVICE_QA_PENDING',
               'VISUAL_ACCEPTANCE_80': 'PASS_SOFTWARE_REFERENCE',
               'ANDROID_RUNTIME_VERIFIED': 'NOT_RUN',
               'HARDWARE_GPU_VERIFIED': 'NOT_RUN',
-              'WORK2_STATIC_INPUT_READY': False,
           }
           Path('app/build/outputs/apk/debug/WATER_WORLD_APK_IDENTITY.json').write_text(json.dumps(identity, indent=2) + '\n')
           print(json.dumps(identity, indent=2))
@@ -152,16 +179,21 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: water-world-work16-exact-head-${{ github.sha }}
+          name: water-world-work2-exact-head-${{ github.sha }}
           path: |
+            app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work2-debug.apk
+            app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work2-debug.apk.sha256
             app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work16-debug.apk
             app/build/outputs/apk/debug/AI-Orb-Demo-WaterWorld-V2.1-Work16-debug.apk.sha256
+            app/build/outputs/apk/debug/WATER_WORLD_V2_1_WORK2_EVIDENCE.zip
+            app/build/outputs/apk/debug/WATER_WORLD_V2_1_WORK2_EVIDENCE.zip.sha256
             app/build/outputs/apk/debug/WATER_WORLD_V2_1_WORK16_ACCEPTANCE_EVIDENCE.zip
             app/build/outputs/apk/debug/WATER_WORLD_V2_1_WORK16_ACCEPTANCE_EVIDENCE.zip.sha256
             app/build/outputs/apk/debug/WATER_WORLD_APK_IDENTITY.json
             app/build/test-results/testDebugUnitTest/
             app/build/reports/tests/testDebugUnitTest/
             app/build/reports/lint-results-debug.html
+            releases/water-world-v2-v21/work2_gpu_static_fidelity/11_DELIVERY/WORK2_FINAL_REPORT.md
+            releases/water-world-v2-v21/work2_gpu_static_fidelity/08_VISUAL_ACCEPTANCE/ROUND5_VISUAL_METRICS.json
             releases/water-world-v2-v21/work1_6_structure_closure_android_gpu/FINAL_WORK1_6_REPORT.md
-            releases/water-world-v2-v21/work1_6_structure_closure_android_gpu/12_MANIFEST/WORK2_STATIC_INPUT_READY.json
             releases/water-world-v2-v21/work1_6_structure_closure_android_gpu/08_VISUAL_VALIDATION/visual_score.json

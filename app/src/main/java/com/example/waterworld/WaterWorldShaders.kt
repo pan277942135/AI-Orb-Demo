@@ -135,25 +135,26 @@ internal class WaterWorldShaders {
                 float v = vUv.y;
                 float across = abs(v * 2.0 - 1.0);
                 float endFade = smoothstep(0.0, 0.11, u) * smoothstep(0.0, 0.13, 1.0 - u);
-                float twist = 0.80 + 0.20 * sin(u * 10.5 + uRibbonStyle * 2.1);
-                float streak = 0.72 + 0.28 * cos((v * 2.0 - 1.0) * 9.0 + u * 6.0);
+                float twist = 0.82 + 0.18 * sin(u * 10.5 + uRibbonStyle * 2.1);
+                float wave = 0.5 + 0.5 * cos((v * 2.0 - 1.0) * 10.5 + u * 6.8);
+                float streak = 0.56 + 0.44 * pow(wave, 1.4);
                 float body;
                 float rim;
                 float core;
                 if (uRibbonStyle < 0.5) {
-                    body = (1.0 - smoothstep(0.18, 1.0, across)) * 0.66 * streak;
-                    rim = exp(-24.0 * pow(across - 0.62, 2.0)) * 0.52;
-                    core = exp(-18.0 * across * across) * 0.58;
+                    body = (1.0 - smoothstep(0.16, 1.0, across)) * 0.52 * streak;
+                    rim = exp(-28.0 * pow(across - 0.64, 2.0)) * 0.62;
+                    core = exp(-24.0 * across * across) * 0.60;
                 } else if (uRibbonStyle < 1.5) {
-                    body = exp(-2.6 * across * across) * 0.66 * streak;
-                    rim = exp(-20.0 * pow(across - 0.48, 2.0)) * 0.34;
-                    core = exp(-32.0 * across * across) * 0.88;
+                    body = exp(-2.9 * across * across) * 0.54 * streak;
+                    rim = exp(-26.0 * pow(across - 0.52, 2.0)) * 0.40;
+                    core = exp(-34.0 * across * across) * 1.06;
                 } else {
-                    body = (1.0 - smoothstep(0.14, 1.0, across)) * 0.64 * streak;
-                    rim = exp(-22.0 * pow(across - 0.54, 2.0)) * 0.44;
-                    core = exp(-24.0 * across * across) * 0.85;
+                    body = (1.0 - smoothstep(0.15, 1.0, across)) * 0.50 * streak;
+                    rim = exp(-26.0 * pow(across - 0.58, 2.0)) * 0.50;
+                    core = exp(-30.0 * across * across) * 0.94;
                 }
-                float alpha = clamp((body + rim * 0.55 + core * 0.65) * uTint.a * endFade * twist, 0.0, 1.0);
+                float alpha = clamp((body + rim * 0.60 + core * 0.68) * uTint.a * endFade * twist, 0.0, 1.0);
                 if (alpha < 0.002) discard;
                 vec3 rgb = (uTint.rgb * (body + rim) + uCoreColor * core) * uEmission;
                 fragColor = vec4(rgb * alpha, alpha);
@@ -193,33 +194,36 @@ internal class WaterWorldShaders {
                 vec3 col = tex.rgb * uTint.rgb;
                 float su = vScreenUv.x;
                 float sv = vScreenUv.y;
-                float topLight = clamp(1.10 - sv * 0.55 + (0.5 - su) * 0.25, 0.48, 1.20);
+                float topLight = clamp(1.12 - sv * 0.52 + (0.5 - su) * 0.20, 0.52, 1.20);
 
                 if (uMaterialMode == 0) {
+                    // 4 Fish: sunlit golden-cream dorsal back + crisp aquatic turquoise belly bounce
                     float dorsal = 1.0 - smoothstep(0.15, 0.72, vUv.y);
-                    col = col * vec3(uAmbient + 0.44 * topLight, uAmbient + 0.42 * topLight, uAmbient + 0.38 * topLight);
-                    col += vec3(dorsal * 0.14 * uKeyColor.r, dorsal * 0.11 * uKeyColor.g, (1.0 - dorsal) * 0.05);
+                    col = col * vec3(uAmbient + 0.44 * topLight, uAmbient + 0.43 * topLight, uAmbient + 0.39 * topLight);
+                    col += vec3(dorsal * 0.15 * uKeyColor.r, dorsal * 0.12 * uKeyColor.g, (1.0 - dorsal) * 0.055);
                 } else if (uMaterialMode == 1) {
-                    float tipSun = (1.0 - smoothstep(0.05, 0.68, vUv.y)) * (0.60 + 0.40 * (1.0 - su));
-                    col = col * vec3(uAmbient + 0.34 * topLight + tipSun * 0.42,
-                                     uAmbient + 0.40 * topLight + tipSun * 0.32,
-                                     uAmbient + 0.22 * topLight);
-                    if (uFarHaze > 0.01) col = mix(col, vec3(0.015, 0.22, 0.26), uFarHaze);
+                    // Plants: natural rich emerald stems with warm sunlit golden-chartreuse upper tips
+                    float tipSun = (1.0 - smoothstep(0.05, 0.68, vUv.y)) * (0.62 + 0.38 * (1.0 - su));
+                    col = col * vec3(uAmbient + 0.36 * topLight + tipSun * 0.44,
+                                     uAmbient + 0.43 * topLight + tipSun * 0.34,
+                                     uAmbient + 0.24 * topLight + tipSun * 0.04);
+                    if (uFarHaze > 0.01) col = mix(col, vec3(0.022, 0.26, 0.28), uFarHaze);
                 } else {
+                    // Rocks: crisp organic water-warped golden-white caustics + sunlit olive-moss crown
                     vec3 wn = texture(uWaterNormalTex, fract(vScreenUv * 2.2)).rgb;
                     vec2 cauUv = fract(vec2(su * 1.75 + (wn.r - 0.5) * 0.24 + 0.15,
                                             sv * 2.05 + (wn.g - 0.5) * 0.24 + 0.09));
                     float cSample = texture(uCausticsTex, cauUv).r;
                     float topSurface = 1.0 - smoothstep(0.04, 0.66, vUv.y);
-                    float ridge = pow(clamp(cSample, 0.0, 1.0), 4.4);
-                    float cGain = (uMaterialMode == 2) ? 1.20 : 0.90;
+                    float ridge = pow(clamp(cSample, 0.0, 1.0), 4.0);
+                    float cGain = (uMaterialMode == 2) ? 1.48 : 0.92;
                     float cGlow = ridge * topSurface * cGain;
-                    float mossBoost = (uMaterialMode == 3) ? topSurface * 0.34 : 0.0;
-                    col = col * vec3(uAmbient + 0.36 * topLight, uAmbient + 0.38 * topLight, uAmbient + 0.40 * topLight);
-                    col += vec3(cGlow * 1.00 + mossBoost * 0.88,
-                                cGlow * 0.94 + mossBoost * 0.98,
-                                cGlow * 0.66 + mossBoost * 0.14);
-                    if (uFarHaze > 0.01) col = mix(col, vec3(0.015, 0.22, 0.27), uFarHaze);
+                    float mossBoost = (uMaterialMode == 3) ? pow(topSurface, 1.4) * 0.36 : 0.0;
+                    col = col * vec3(uAmbient + 0.40 * topLight, uAmbient + 0.44 * topLight, uAmbient + 0.42 * topLight);
+                    col += vec3(cGlow * 1.02 + mossBoost * 0.88,
+                                cGlow * 0.96 + mossBoost * 1.00,
+                                cGlow * 0.68 + mossBoost * 0.16);
+                    if (uFarHaze > 0.01) col = mix(col, vec3(0.022, 0.26, 0.29), uFarHaze);
                 }
                 fragColor = vec4(col, alpha);
             }
@@ -284,13 +288,13 @@ internal class WaterWorldShaders {
                 vec3 col;
                 if (signedY < 0.0) {
                     float airFrac = clamp(-signedY / 0.10, 0.0, 1.0);
-                    float sunSide = 1.0 - smoothstep(0.28, 0.52, vUv.x);
-                    float skyRef = exp(-pow((vUv.x - 0.50) / 0.16, 2.0)) * (1.0 - airFrac * 0.55);
-                    col = mix(uAirDomeTop, uAirDomeWarm, vec3(sunSide * 0.85, sunSide * 0.72, sunSide * 0.42))
-                        + vec3(0.16, 0.38, 0.46) * skyRef;
-                    float topDark = smoothstep(0.68, 0.98, r) * (1.0 - sunSide * 0.5);
-                    col *= (1.0 - topDark * vec3(0.62, 0.52, 0.40));
-                    col = mix(preS, col, vec3(0.78, 0.80, 0.82));
+                    float sunSide = 1.0 - smoothstep(0.25, 0.58, vUv.x);
+                    float skyRef = exp(-pow((vUv.x - 0.51) / 0.17, 2.0)) * (1.0 - airFrac * 0.52);
+                    col = mix(uAirDomeTop, uAirDomeWarm, vec3(sunSide * 0.86, sunSide * 0.74, sunSide * 0.44))
+                        + vec3(0.18, 0.40, 0.48) * skyRef;
+                    float topDark = smoothstep(0.68, 0.98, r) * (1.0 - sunSide * 0.52);
+                    col *= (1.0 - topDark * vec3(0.54, 0.44, 0.32));
+                    col = mix(preS, col, vec3(0.79, 0.81, 0.82));
                 } else {
                     float depthT = clamp(signedY / 0.58, 0.0, 1.0);
                     float rightDeep = smoothstep(0.45, 0.82, vUv.x);
@@ -298,7 +302,7 @@ internal class WaterWorldShaders {
                     c0 = mix(c0, uWaterDeep, smoothstep(0.42, 1.0, depthT));
                     c0 *= (1.0 - rightDeep * vec3(0.35, 0.24, 0.10));
                     float wbFactor = uWaterbedBlend * smoothstep(0.30, 0.90, depthT);
-                    col = mix(c0, wbed * vec3(0.45, 0.60, 0.64), wbFactor);
+                    col = mix(c0, wbed * vec3(0.46, 0.62, 0.64), wbFactor);
                     float wallShade = 1.0 - smoothstep(0.62, 0.99, r) * 0.44;
                     col *= wallShade;
                     float basinD = length(vec2((vUv.x - 0.54) / 0.22, (vUv.y - 0.62) / 0.16));
@@ -307,12 +311,12 @@ internal class WaterWorldShaders {
                     col = mix(preS, col, 0.91);
                 }
 
-                float underRipple = (signedY > 0.0 && signedY < 0.088)
+                float underRipple = (signedY > 0.0 && signedY < 0.090)
                     ? exp(-pow((signedY - 0.025) / 0.032, 2.0)) * (0.38 + 0.62 * cau) : 0.0;
-                float sunWarmth = 1.0 - smoothstep(0.28, 0.56, vUv.x);
-                vec3 menCol = mix(vec3(0.22, 0.88, 0.96), vec3(1.00, 0.92, 0.50), sunWarmth);
-                col = mix(col, menCol * vec3(0.88 + 0.30 * cau, 0.90 + 0.25 * cau, 0.92 + 0.20 * cau), menLine * 0.86)
-                    + mix(vec3(0.08, 0.48, 0.58), vec3(0.62, 0.54, 0.20), sunWarmth) * underRipple * 0.48;
+                float sunWarmth = 1.0 - smoothstep(0.25, 0.60, vUv.x);
+                vec3 menCol = mix(vec3(0.20, 0.88, 0.96), vec3(1.00, 0.93, 0.52), sunWarmth);
+                col = mix(col, menCol * vec3(0.90 + 0.28 * cau, 0.91 + 0.24 * cau, 0.92 + 0.20 * cau), menLine * 0.88)
+                    + mix(vec3(0.08, 0.50, 0.60), vec3(0.68, 0.58, 0.22), sunWarmth) * underRipple * 0.52;
                 fragColor = vec4(col, edgeSoft);
             }
         """.trimIndent()
@@ -392,28 +396,36 @@ internal class WaterWorldShaders {
                     vec3 col = vec3(sR, sG, sB);
 
                     float fresnel = pow(1.0 - nz, uFresnelPower);
-                    float outerBevel = exp(-pow((r - 0.990) / 0.009, 2.0));
-                    float innerDarkBand = exp(-pow((r - 0.962) / 0.014, 2.0));
-                    float innerBrightRing = exp(-pow((r - 0.938) / 0.011, 2.0));
+                    float outerBevel = exp(-pow((r - 0.990) / 0.011, 2.0));
+                    float innerDarkBand = exp(-pow((r - 0.958) / 0.013, 2.0));
+                    float innerBrightRing = exp(-pow((r - 0.936) / 0.014, 2.0));
                     float shellM = texture(uGlassShellMask, vUv).r;
 
-                    col *= (1.0 - innerDarkBand * vec3(0.44, 0.34, 0.26));
-                    float warmWeight = clamp(
-                        exp(-pow(d.x + 0.58, 2.0) * 2.2 - pow(d.y + 0.62, 2.0) * 2.2) +
-                        exp(-pow(d.x - 0.48, 2.0) * 2.0 - pow(d.y - 0.62, 2.0) * 2.0) * 0.85,
-                        0.0, 1.0);
-                    vec3 rimTint = mix(uRimCool, uRimWarm, warmWeight);
-                    float rimSpec = outerBevel * 0.92 + innerBrightRing * 0.48 + fresnel * 0.24 + shellM * 0.10;
-                    float rightCrescent = exp(-pow((vUv.x - uRightRimArc.x) / 0.06, 2.0)
-                                              -pow((vUv.y - uRightRimArc.y) / 0.16, 2.0)) * wallFactor * uRightRimIntensity;
-                    float topArch = smoothstep(0.32, 0.88, -d.y) * (outerBevel * 0.75 + innerBrightRing * 0.50);
-                    float blSpec = smoothstep(0.20, 0.85, d.y) * smoothstep(0.05, 0.75, -d.x)
-                                   * (outerBevel * 0.55 + innerBrightRing * 0.45);
+                    // Crisp physical crystal-wall TIR groove without blackening the rim
+                    col *= (1.0 - innerDarkBand * vec3(0.28, 0.20, 0.14));
 
-                    col += rimTint * rimSpec * vec3(0.84, 0.88, 0.92)
-                        + vec3(0.86, 0.96, 1.00) * rightCrescent
-                        + vec3(0.90, 0.95, 1.00) * topArch * vec3(0.42, 0.44, 0.46)
-                        + vec3(0.38, 0.92, 1.00) * blSpec;
+                    // Physically grounded directional sunlight entry (upper-left) & lens focus (lower-right)
+                    float ulSunGlass = exp(-pow(d.x + 0.72, 2.0) * 1.45 - pow(d.y + 0.42, 2.0) * 1.45);
+                    float lrSunGlass = exp(-pow(d.x - 0.56, 2.0) * 1.55 - pow(d.y - 0.54, 2.0) * 1.55);
+                    float warmWeight = clamp(ulSunGlass + lrSunGlass * 0.95, 0.0, 1.0);
+                    vec3 rimTint = mix(uRimCool, uRimWarm, warmWeight);
+
+                    float rimSpec = outerBevel * 1.05 + innerBrightRing * 0.62 + fresnel * 0.30 + shellM * 0.10;
+                    // Smooth luminous crystal crescent wrapping right to lower-right wall
+                    float rightCrescent = exp(-pow((vUv.x - uRightRimArc.x) / 0.068, 2.0)
+                                              -pow((vUv.y - uRightRimArc.y) / 0.22, 2.0)) * wallFactor * uRightRimIntensity;
+                    float topArch = smoothstep(0.25, 0.88, -d.y) * (outerBevel * 0.80 + innerBrightRing * 0.58);
+                    // Cool aqua-cyan refraction on lower-left crystal rim (135..180 deg)
+                    float blAqua = smoothstep(0.05, 0.80, d.y) * smoothstep(0.15, 0.85, -d.x)
+                                   * (outerBevel * 0.55 + innerBrightRing * 0.52 + fresnel * 0.28);
+                    // Warm sunlit crystal wall glow along upper-left & lower-right arcs
+                    float sunWallGlow = (ulSunGlass * 0.58 + lrSunGlass * 0.52) * smoothstep(0.76, 0.99, r);
+
+                    col += rimTint * rimSpec * vec3(0.88, 0.92, 0.95)
+                        + vec3(0.88, 0.97, 1.00) * rightCrescent
+                        + vec3(0.76, 0.96, 1.00) * topArch * vec3(0.45, 0.52, 0.55)
+                        + vec3(0.18, 0.86, 1.00) * blAqua
+                        + vec3(1.00, 0.82, 0.42) * sunWallGlow;
 
                     if (uDiagnosticOnly == 1) {
                         fragColor = vec4(clamp(outerBevel * 0.85 + abs(d.x * off) * 32.0, 0.0, 1.0),
@@ -429,9 +441,9 @@ internal class WaterWorldShaders {
                 }
 
                 float dTL = length(vUv - uTopLeftFlare) / max(uTopLeftRadius, 0.001);
-                float flareTL = (exp(-dTL * dTL * 4.5) * 0.52 + exp(-dTL * dTL * 28.0) * 1.15) * uTopLeftIntensity;
+                float flareTL = (exp(-dTL * dTL * 3.4) * 0.62 + exp(-dTL * dTL * 26.0) * 1.38) * uTopLeftIntensity;
                 float dBR = length(vUv - uBottomRightFlare) / max(uBottomRightRadius, 0.001);
-                float flareBR = (exp(-dBR * dBR * 4.2) * 0.50 + exp(-dBR * dBR * 26.0) * 1.10) * uBottomRightIntensity;
+                float flareBR = (exp(-dBR * dBR * 3.4) * 0.60 + exp(-dBR * dBR * 24.0) * 1.32) * uBottomRightIntensity;
                 outCol += uTopLeftColor * flareTL + uBottomRightColor * flareBR;
                 fragColor = vec4(outCol, 1.0);
             }

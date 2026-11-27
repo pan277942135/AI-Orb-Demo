@@ -462,27 +462,28 @@ public class WaterWorldSoftwareRenderer {
                         rasterizeMesh(mesh, model[14], scene, true, false, "SCREEN", 0f, (px, py, pz, nx, ny, nz, u, v, out) -> {
                             float across = Math.abs(v * 2f - 1f);
                             float endFade = smoothstep(0.0f, 0.11f, u) * smoothstep(0.0f, 0.13f, 1f - u);
-                            float twist = 0.80f + 0.20f * (float) Math.sin(u * 10.5f + style * 2.1f);
-                            // Multi-strand silk filament modulation across ribbon width
-                            float streak = 0.72f + 0.28f * (float) Math.cos((v * 2f - 1f) * 9.0f + u * 6.0f);
+                            float twist = 0.82f + 0.18f * (float) Math.sin(u * 10.5f + style * 2.1f);
+                            // Multi-strand gossamer silk filament modulation across ribbon width
+                            float wave = 0.5f + 0.5f * (float) Math.cos((v * 2f - 1f) * 10.5f + u * 6.8f);
+                            float streak = 0.56f + 0.44f * (float) Math.pow(wave, 1.4);
                             float body, core, rim;
                             if (style < 0.5f) {
-                                // Silky translucent emerald-lime ribbon with organic veins & soft glowing edge
-                                body = (1f - smoothstep(0.18f, 1.0f, across)) * 0.66f * streak;
-                                rim = (float) Math.exp(-24f * (across - 0.62f) * (across - 0.62f)) * 0.52f;
-                                core = (float) Math.exp(-18f * across * across) * 0.58f;
+                                // Gossamer translucent emerald-chartreuse silk with sharp edge fold & slender core
+                                body = (1f - smoothstep(0.16f, 1.0f, across)) * 0.52f * streak;
+                                rim = (float) Math.exp(-28f * (across - 0.64f) * (across - 0.64f)) * 0.62f;
+                                core = (float) Math.exp(-24f * across * across) * 0.60f;
                             } else if (style < 1.5f) {
-                                // Fiery amber-gold silk-filament: rich orange-gold veil + crisp golden core
-                                body = (float) Math.exp(-2.6f * across * across) * 0.66f * streak;
-                                rim = (float) Math.exp(-20f * (across - 0.48f) * (across - 0.48f)) * 0.34f;
-                                core = (float) Math.exp(-32f * across * across) * 0.88f;
+                                // Fiery amber-gold silk-filament: translucent golden veil + razor-hot light thread
+                                body = (float) Math.exp(-2.9f * across * across) * 0.54f * streak;
+                                rim = (float) Math.exp(-26f * (across - 0.52f) * (across - 0.52f)) * 0.40f;
+                                core = (float) Math.exp(-34f * across * across) * 1.06f;
                             } else {
-                                // Vivid electric cyan-blue liquid ribbon: deep cyan translucency + crisp aqua crest
-                                body = (1f - smoothstep(0.14f, 1.0f, across)) * 0.64f * streak;
-                                rim = (float) Math.exp(-22f * (across - 0.54f) * (across - 0.54f)) * 0.44f;
-                                core = (float) Math.exp(-24f * across * across) * 0.85f;
+                                // Electric aqua-cyan filament: glassy cyan mist + crisp glowing aqua edge & core
+                                body = (1f - smoothstep(0.15f, 1.0f, across)) * 0.50f * streak;
+                                rim = (float) Math.exp(-26f * (across - 0.58f) * (across - 0.58f)) * 0.50f;
+                                core = (float) Math.exp(-30f * across * across) * 0.94f;
                             }
-                            float alpha = clamp((body + rim * 0.55f + core * 0.65f) * tint[3] * endFade * twist, 0f, 1f);
+                            float alpha = clamp((body + rim * 0.60f + core * 0.68f) * tint[3] * endFade * twist, 0f, 1f);
                             float rr = (tint[0] * (body + rim) + coreCol[0] * core) * emission;
                             float gg = (tint[1] * (body + rim) + coreCol[1] * core) * emission;
                             float bb = (tint[2] * (body + rim) + coreCol[2] * core) * emission;
@@ -574,25 +575,24 @@ public class WaterWorldSoftwareRenderer {
 
                             float rr, gg, bb;
                             if (signedY < 0f) {
-                                // Clear glossy air pocket above meniscus: warm sunlit left, deep reflective ocean sky right
+                                // Clear glossy air pocket above meniscus: warm sunlit left-to-center, luminous crystal sky right
                                 float airFrac = clamp(-signedY / 0.10f, 0f, 1f);
-                                float sunSide = 1f - smoothstep(0.28f, 0.52f, u);
-                                float skyReflect = (float) Math.exp(-Math.pow((u - 0.50f) / 0.16f, 2.0)) * (1f - airFrac * 0.55f);
-                                rr = mix(airTop[0], airWarm[0], sunSide * 0.85f) + 0.16f * skyReflect;
-                                gg = mix(airTop[1], airWarm[1], sunSide * 0.72f) + 0.38f * skyReflect;
-                                bb = mix(airTop[2], airWarm[2], sunSide * 0.42f) + 0.46f * skyReflect;
-                                // Dark glossy dome ceiling near upper rim
-                                float topDark = smoothstep(0.68f, 0.98f, r) * (1f - sunSide * 0.5f);
-                                rr *= (1f - topDark * 0.62f);
-                                gg *= (1f - topDark * 0.52f);
-                                bb *= (1f - topDark * 0.40f);
-                                rr = mix(preS[0], rr, 0.78f);
-                                gg = mix(preS[1], gg, 0.80f);
+                                float sunSide = 1f - smoothstep(0.25f, 0.58f, u);
+                                float skyReflect = (float) Math.exp(-Math.pow((u - 0.51f) / 0.17f, 2.0)) * (1f - airFrac * 0.52f);
+                                rr = mix(airTop[0], airWarm[0], sunSide * 0.86f) + 0.18f * skyReflect;
+                                gg = mix(airTop[1], airWarm[1], sunSide * 0.74f) + 0.40f * skyReflect;
+                                bb = mix(airTop[2], airWarm[2], sunSide * 0.44f) + 0.48f * skyReflect;
+                                // Glossy dome ceiling shading near upper rim
+                                float topDark = smoothstep(0.68f, 0.98f, r) * (1f - sunSide * 0.52f);
+                                rr *= (1f - topDark * 0.54f);
+                                gg *= (1f - topDark * 0.44f);
+                                bb *= (1f - topDark * 0.32f);
+                                rr = mix(preS[0], rr, 0.79f);
+                                gg = mix(preS[1], gg, 0.81f);
                                 bb = mix(preS[2], bb, 0.82f);
                             } else {
-                                // Rich deep aquatic ocean-teal volume below meniscus
+                                // Rich crystal ocean-teal aquatic volume below meniscus
                                 float depthT = clamp(signedY / 0.58f, 0f, 1f);
-                                // Slightly warmer emerald-teal on left backlit side, deeper ocean navy-teal on right
                                 float rightDeep = smoothstep(0.45f, 0.82f, u);
                                 float r0 = mix(wShal[0], wMid[0], smoothstep(0f, 0.40f, depthT));
                                 float g0 = mix(wShal[1], wMid[1], smoothstep(0f, 0.40f, depthT));
@@ -603,15 +603,15 @@ public class WaterWorldSoftwareRenderer {
                                 r0 *= (1f - rightDeep * 0.35f);
                                 g0 *= (1f - rightDeep * 0.24f);
                                 b0 *= (1f - rightDeep * 0.10f);
-                                // Blend frozen V2 waterbed.png only gently in mid-lower depth
+                                // Blend frozen V2 waterbed.png gently in mid-lower depth
                                 float wbFactor = bedBlend * smoothstep(0.30f, 0.90f, depthT);
-                                rr = mix(r0, wbed[0] * 0.45f, wbFactor);
-                                gg = mix(g0, wbed[1] * 0.60f, wbFactor);
+                                rr = mix(r0, wbed[0] * 0.46f, wbFactor);
+                                gg = mix(g0, wbed[1] * 0.62f, wbFactor);
                                 bb = mix(b0, wbed[2] * 0.64f, wbFactor);
                                 // Natural deep-water spherical vignette near inner glass wall
                                 float wallShade = 1f - smoothstep(0.62f, 0.99f, r) * 0.44f;
                                 rr *= wallShade; gg *= wallShade; bb *= wallShade;
-                                // Luminous sunlit underwater turquoise scatter in lower-mid basin (Master heart glow)
+                                // Luminous sunlit underwater turquoise scatter in lower basin
                                 float basinD = (float) Math.hypot((u - 0.54f) / 0.22f, (v - 0.62f) / 0.16f);
                                 float basinGlow = (float) Math.exp(-basinD * basinD * 1.4f) * 0.26f;
                                 rr += 0.04f * basinGlow;
@@ -622,18 +622,18 @@ public class WaterWorldSoftwareRenderer {
                                 bb = mix(preS[2], bb, 0.91f);
                             }
 
-                            // Crisp wavy sunlit meniscus line + shallow turquoise underside wave ripples
+                            // Crisp wavy sunlit golden-turquoise meniscus line + shimmering underside wave ripples
                             float menLine = (float) Math.exp(-(signedY * signedY) / (menThick * menThick * 0.35f));
-                            float underRipple = (signedY > 0f && signedY < 0.088f)
+                            float underRipple = (signedY > 0f && signedY < 0.090f)
                                     ? (float) Math.exp(-Math.pow((signedY - 0.025f) / 0.032f, 2.0)) * (0.38f + 0.62f * cau[0])
                                     : 0f;
-                            float sunWarmth = 1f - smoothstep(0.28f, 0.56f, u);
-                            float menR = mix(0.22f, 1.00f, sunWarmth);
-                            float menG = mix(0.88f, 0.92f, sunWarmth);
-                            float menB = mix(0.96f, 0.50f, sunWarmth);
-                            rr = mix(rr, menR * (0.88f + 0.30f * cau[0]), menLine * 0.86f) + mix(0.08f, 0.62f, sunWarmth) * underRipple * 0.48f;
-                            gg = mix(gg, menG * (0.90f + 0.25f * cau[0]), menLine * 0.86f) + mix(0.48f, 0.54f, sunWarmth) * underRipple * 0.48f;
-                            bb = mix(bb, menB * (0.92f + 0.20f * cau[0]), menLine * 0.86f) + mix(0.58f, 0.20f, sunWarmth) * underRipple * 0.48f;
+                            float sunWarmth = 1f - smoothstep(0.25f, 0.60f, u);
+                            float menR = mix(0.20f, 1.00f, sunWarmth);
+                            float menG = mix(0.88f, 0.93f, sunWarmth);
+                            float menB = mix(0.96f, 0.52f, sunWarmth);
+                            rr = mix(rr, menR * (0.90f + 0.28f * cau[0]), menLine * 0.88f) + mix(0.08f, 0.68f, sunWarmth) * underRipple * 0.52f;
+                            gg = mix(gg, menG * (0.91f + 0.24f * cau[0]), menLine * 0.88f) + mix(0.50f, 0.58f, sunWarmth) * underRipple * 0.52f;
+                            bb = mix(bb, menB * (0.92f + 0.20f * cau[0]), menLine * 0.88f) + mix(0.60f, 0.22f, sunWarmth) * underRipple * 0.52f;
 
                             int idx = py * W + px;
                             scene.r[idx] = mix(scene.r[idx], rr, edgeSoft);
@@ -752,43 +752,42 @@ public class WaterWorldSoftwareRenderer {
                             float rr = tmp[0] * tint[0];
                             float gg = tmp[1] * tint[1];
                             float bb = tmp[2] * tint[2];
-                            float topLight = clamp(1.10f - sv * 0.55f + (0.5f - su) * 0.25f, 0.48f, 1.20f);
+                            float topLight = clamp(1.12f - sv * 0.52f + (0.5f - su) * 0.20f, 0.52f, 1.20f);
                             if ("fish".equals(matName)) {
-                                // Crisp golden-dorsal aquatic contrast on 4 Ground-Truth fish
+                                // 4 Fish: sunlit golden-cream dorsal back + crisp aquatic turquoise belly bounce
                                 float dorsal = 1f - smoothstep(0.15f, 0.72f, v);
-                                rr = rr * (ambient + 0.44f * topLight) + dorsal * 0.14f * keyColor[0];
-                                gg = gg * (ambient + 0.42f * topLight) + dorsal * 0.11f * keyColor[1];
-                                bb = bb * (ambient + 0.38f * topLight) + (1f - dorsal) * 0.05f;
+                                rr = rr * (ambient + 0.44f * topLight) + dorsal * 0.15f * keyColor[0];
+                                gg = gg * (ambient + 0.43f * topLight) + dorsal * 0.12f * keyColor[1];
+                                bb = bb * (ambient + 0.39f * topLight) + (1f - dorsal) * 0.055f;
                             } else if ("plant".equals(matName)) {
-                                // Deep rich emerald stems with warm golden-chartreuse sunlit upper leaf blades
-                                float tipSun = (1f - smoothstep(0.05f, 0.68f, v)) * (0.60f + 0.40f * (1f - su));
-                                rr = rr * (ambient + 0.34f * topLight + tipSun * 0.42f);
-                                gg = gg * (ambient + 0.40f * topLight + tipSun * 0.32f);
-                                bb = bb * (ambient + 0.22f * topLight);
+                                // Plants: natural rich emerald stems with warm sunlit golden-chartreuse upper tips
+                                float tipSun = (1f - smoothstep(0.05f, 0.68f, v)) * (0.62f + 0.38f * (1f - su));
+                                rr = rr * (ambient + 0.36f * topLight + tipSun * 0.44f);
+                                gg = gg * (ambient + 0.43f * topLight + tipSun * 0.34f);
+                                bb = bb * (ambient + 0.24f * topLight + tipSun * 0.04f);
                                 if ("05_FAR_ECOLOGY".equals(passId)) {
-                                    rr = mix(rr, 0.015f, 0.44f);
-                                    gg = mix(gg, 0.22f, 0.44f);
-                                    bb = mix(bb, 0.26f, 0.44f);
+                                    rr = mix(rr, 0.022f, 0.44f);
+                                    gg = mix(gg, 0.26f, 0.44f);
+                                    bb = mix(bb, 0.28f, 0.44f);
                                 }
                             } else if ("rock".equals(matName)) {
-                                // Organic thin golden water-ripple caustics warped by water normal map
+                                // Rocks: crisp organic water-warped golden-white caustics + sunlit olive-moss crown
                                 float[] wnR = new float[4];
                                 waterNormalTex.sample(su * 2.2f, sv * 2.2f, true, wnR);
                                 float cu = su * 1.75f + (wnR[0] - 0.5f) * 0.24f + 0.15f;
                                 float cv = sv * 2.05f + (wnR[1] - 0.5f) * 0.24f + 0.09f;
                                 causticsTex.sample(cu, cv, true, cauS);
                                 float topSurface = 1f - smoothstep(0.04f, 0.66f, v);
-                                // Sharp caustic ridge exponent eliminates thick blocky grid appearance
-                                float ridge = (float) Math.pow(clamp(cauS[0], 0f, 1f), 4.4f);
-                                float cGlow = ridge * topSurface * ("rock_01".equals(drawId) ? 1.45f : 0.90f);
-                                float mossBoost = "rock_03".equals(drawId) ? topSurface * 0.34f : 0f;
-                                rr = rr * (ambient + 0.36f * topLight) + cGlow * 1.00f + mossBoost * 0.88f;
-                                gg = gg * (ambient + 0.38f * topLight) + cGlow * 0.94f + mossBoost * 0.98f;
-                                bb = bb * (ambient + 0.40f * topLight) + cGlow * 0.66f + mossBoost * 0.14f;
+                                float ridge = (float) Math.pow(clamp(cauS[0], 0f, 1f), 4.0f);
+                                float cGlow = ridge * topSurface * ("rock_03".equals(drawId) ? 0.92f : 1.48f);
+                                float mossBoost = "rock_03".equals(drawId) ? (float) Math.pow(topSurface, 1.4f) * 0.36f : 0f;
+                                rr = rr * (ambient + 0.40f * topLight) + cGlow * 1.02f + mossBoost * 0.88f;
+                                gg = gg * (ambient + 0.44f * topLight) + cGlow * 0.96f + mossBoost * 1.00f;
+                                bb = bb * (ambient + 0.42f * topLight) + cGlow * 0.68f + mossBoost * 0.16f;
                                 if ("05_FAR_ECOLOGY".equals(passId)) {
-                                    rr = mix(rr, 0.015f, 0.46f);
-                                    gg = mix(gg, 0.22f, 0.46f);
-                                    bb = mix(bb, 0.27f, 0.46f);
+                                    rr = mix(rr, 0.022f, 0.46f);
+                                    gg = mix(gg, 0.26f, 0.46f);
+                                    bb = mix(bb, 0.29f, 0.46f);
                                 }
                             }
                             out[0] = rr; out[1] = gg; out[2] = bb;
@@ -837,35 +836,35 @@ public class WaterWorldSoftwareRenderer {
 
                                 float rr = sR[0], gg = sG[1], bb = sB[2];
 
-                                // Razor-sharp multi-ring crystal glass bevel (high contrast, zero milky fog!)
+                                // Physical multi-ring crystal glass wall (crisp bevel + directional sunlight transmission)
                                 float fresnel = (float) Math.pow(1f - nz, fPow);
-                                float outerBevel = (float) Math.exp(-Math.pow((r - 0.990f) / 0.009f, 2.0));
-                                float innerDarkBand = (float) Math.exp(-Math.pow((r - 0.962f) / 0.014f, 2.0));
-                                float innerBrightRing = (float) Math.exp(-Math.pow((r - 0.938f) / 0.011f, 2.0));
+                                float outerBevel = (float) Math.exp(-Math.pow((r - 0.990f) / 0.011f, 2.0));
+                                float innerDarkBand = (float) Math.exp(-Math.pow((r - 0.958f) / 0.013f, 2.0));
+                                float innerBrightRing = (float) Math.exp(-Math.pow((r - 0.936f) / 0.014f, 2.0));
                                 glassShellTex.sample(u, v, false, shellM);
 
-                                // Deep TIR dark glass thickness groove
-                                rr *= (1f - innerDarkBand * 0.44f);
-                                gg *= (1f - innerDarkBand * 0.34f);
-                                bb *= (1f - innerDarkBand * 0.26f);
+                                // Crisp physical crystal-wall TIR groove without blackening the rim
+                                rr *= (1f - innerDarkBand * 0.28f);
+                                gg *= (1f - innerDarkBand * 0.20f);
+                                bb *= (1f - innerDarkBand * 0.14f);
 
-                                // Directional rim tint: warm gold near upper-left & lower-right, crisp cyan elsewhere
-                                float warmWeight = clamp(
-                                        (float) Math.exp(-Math.pow(dx + 0.58f, 2.0) * 2.2 - Math.pow(dy + 0.62f, 2.0) * 2.2)
-                                        + (float) Math.exp(-Math.pow(dx - 0.48f, 2.0) * 2.0 - Math.pow(dy - 0.62f, 2.0) * 2.0) * 0.85f,
-                                        0f, 1f);
+                                // Physically grounded directional sunlight entry (upper-left) & lens focus (lower-right)
+                                float ulSunGlass = (float) Math.exp(-Math.pow(dx + 0.72f, 2.0) * 1.45 - Math.pow(dy + 0.42f, 2.0) * 1.45);
+                                float lrSunGlass = (float) Math.exp(-Math.pow(dx - 0.56f, 2.0) * 1.55 - Math.pow(dy - 0.54f, 2.0) * 1.55);
+                                float warmWeight = clamp(ulSunGlass + lrSunGlass * 0.95f, 0f, 1f);
                                 float rimR = mix(coolRim[0], warmRim[0], warmWeight);
                                 float rimG = mix(coolRim[1], warmRim[1], warmWeight);
                                 float rimB = mix(coolRim[2], warmRim[2], warmWeight);
 
-                                float rimSpec = outerBevel * 0.92f + innerBrightRing * 0.48f + fresnel * 0.24f + shellM[0] * 0.10f;
-                                float rightCrescent = (float) Math.exp(-Math.pow((u - rArcPos[0]) / 0.06f, 2.0) - Math.pow((v - rArcPos[1]) / 0.16f, 2.0)) * wallFactor * rArcInt;
-                                float topArch = smoothstep(0.32f, 0.88f, -dy) * (outerBevel * 0.75f + innerBrightRing * 0.50f);
-                                float bottomLeftSpec = smoothstep(0.20f, 0.85f, dy) * smoothstep(0.05f, 0.75f, -dx) * (outerBevel * 0.55f + innerBrightRing * 0.45f);
+                                float rimSpec = outerBevel * 1.05f + innerBrightRing * 0.62f + fresnel * 0.30f + shellM[0] * 0.10f;
+                                float rightCrescent = (float) Math.exp(-Math.pow((u - rArcPos[0]) / 0.068f, 2.0) - Math.pow((v - rArcPos[1]) / 0.22f, 2.0)) * wallFactor * rArcInt;
+                                float topArch = smoothstep(0.25f, 0.88f, -dy) * (outerBevel * 0.80f + innerBrightRing * 0.58f);
+                                float blAqua = smoothstep(0.05f, 0.80f, dy) * smoothstep(0.15f, 0.85f, -dx) * (outerBevel * 0.55f + innerBrightRing * 0.52f + fresnel * 0.28f);
+                                float sunWallGlow = (ulSunGlass * 0.58f + lrSunGlass * 0.52f) * smoothstep(0.76f, 0.99f, r);
 
-                                rr += rimR * rimSpec * 0.84f + 0.86f * rightCrescent + 0.90f * topArch * 0.42f + 0.38f * bottomLeftSpec;
-                                gg += rimG * rimSpec * 0.88f + 0.96f * rightCrescent + 0.95f * topArch * 0.44f + 0.92f * bottomLeftSpec;
-                                bb += rimB * rimSpec * 0.92f + 1.00f * rightCrescent + 1.00f * topArch * 0.46f + 1.00f * bottomLeftSpec;
+                                rr += rimR * rimSpec * 0.88f + 0.88f * rightCrescent + 0.76f * topArch * 0.45f + 0.18f * blAqua + 1.00f * sunWallGlow;
+                                gg += rimG * rimSpec * 0.92f + 0.97f * rightCrescent + 0.96f * topArch * 0.52f + 0.86f * blAqua + 0.82f * sunWallGlow;
+                                bb += rimB * rimSpec * 0.95f + 1.00f * rightCrescent + 1.00f * topArch * 0.55f + 1.00f * blAqua + 0.42f * sunWallGlow;
 
                                 float aaEdge = 1f - smoothstep(0.993f, 1.005f, (float) Math.sqrt(r2));
                                 scene.r[idx] = mix(scene.r[idx], rr, aaEdge);
@@ -879,9 +878,9 @@ public class WaterWorldSoftwareRenderer {
 
                             // Crisp warm golden solar glass flare (top-left) & lower-right specular flare with pinpoint core
                             float dTL = (float) Math.hypot(u - tlPos[0], v - tlPos[1]) / tlRad;
-                            float flareTL = ((float) Math.exp(-dTL * dTL * 4.5f) * 0.52f + (float) Math.exp(-dTL * dTL * 28.0f) * 1.15f) * tlInt;
+                            float flareTL = ((float) Math.exp(-dTL * dTL * 3.4f) * 0.62f + (float) Math.exp(-dTL * dTL * 26.0f) * 1.38f) * tlInt;
                             float dBR = (float) Math.hypot(u - brPos[0], v - brPos[1]) / brRad;
-                            float flareBR = ((float) Math.exp(-dBR * dBR * 4.2f) * 0.50f + (float) Math.exp(-dBR * dBR * 26.0f) * 1.10f) * brInt;
+                            float flareBR = ((float) Math.exp(-dBR * dBR * 3.4f) * 0.60f + (float) Math.exp(-dBR * dBR * 24.0f) * 1.32f) * brInt;
                             scene.r[idx] += tlCol[0] * flareTL + brCol[0] * flareBR;
                             scene.g[idx] += tlCol[1] * flareTL + brCol[1] * flareBR;
                             scene.b[idx] += tlCol[2] * flareTL + brCol[2] * flareBR;

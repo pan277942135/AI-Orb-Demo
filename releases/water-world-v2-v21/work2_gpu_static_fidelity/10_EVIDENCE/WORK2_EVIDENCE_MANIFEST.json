@@ -1,0 +1,841 @@
+{
+  "schema_version": "water-world-work2-evidence-manifest/1.0",
+  "task_id": "WATER_WORLD_V21_WORK2_GPU_STATIC_FIDELITY_CONVERGENCE_V1",
+  "gate_status": "WORK2_SOFTWARE_CLOSURE_DEVICE_QA_PENDING",
+  "hardware_gpu_verified": false,
+  "file_count": 208,
+  "files": {
+    "00_SOURCE_LOCK/WORK2_SOURCE_LOCK.json": {
+      "bytes": 1947,
+      "sha256": "38a44b0724149f98e4bc593d2e9b727bb9d74800fcdf5d8d76a4aa83b8bc4394"
+    },
+    "01_GPU_BASELINE/01_background.png": {
+      "bytes": 984802,
+      "sha256": "3fb581c63ec8556cea544db375149f3b7cf1cea2f695e3b2cfdeb1672e2d1a00"
+    },
+    "01_GPU_BASELINE/02_resident_back.png": {
+      "bytes": 1361344,
+      "sha256": "19561266d3dd51769c7c4fd3c7a49caf5276e973cd7bd20b8fa4007043190058"
+    },
+    "01_GPU_BASELINE/03_sphere_back.png": {
+      "bytes": 1202096,
+      "sha256": "d80e0ef397f16708418f9fea69d45268e4c162e92f003ce20670458170424ae7"
+    },
+    "01_GPU_BASELINE/04_water_interior.png": {
+      "bytes": 1294996,
+      "sha256": "db31ffee74299edaf7e09458803ae38811047fae4f91190cda0080136e899546"
+    },
+    "01_GPU_BASELINE/05_far_ecology.png": {
+      "bytes": 1435500,
+      "sha256": "b66908f6d5973db25c76f948e8fbd36270dbf849f05586167d3b2d8ed0b9c9a5"
+    },
+    "01_GPU_BASELINE/06_lighting.png": {
+      "bytes": 1681315,
+      "sha256": "f70ca754e4c468d8aabb89e3d93159eddd70efa4872bd4e82680c607a8eb855a"
+    },
+    "01_GPU_BASELINE/07_fish.png": {
+      "bytes": 1733071,
+      "sha256": "a993d95febf76635a337e68c89d9a6c64e8c6f1f7d3d2f674b65b6ec7a46ec38"
+    },
+    "01_GPU_BASELINE/08_near_ecology.png": {
+      "bytes": 1897726,
+      "sha256": "8fa45381b4f2a3b0920cd72813c36b457baa4cd573699bb407c1fe69ad13c3f8"
+    },
+    "01_GPU_BASELINE/09_sphere_front.png": {
+      "bytes": 2102880,
+      "sha256": "8f96b91c8209f5b7c382626c297df0f37f0b86d2897c3ebde3e218dbf8e49e6f"
+    },
+    "01_GPU_BASELINE/10_resident_front.png": {
+      "bytes": 2253846,
+      "sha256": "71730e6a5ef7c48a774e0ce3333474f92dc26e5a9d216f209587394cc4d93a20"
+    },
+    "01_GPU_BASELINE/11_final_composite.png": {
+      "bytes": 2342194,
+      "sha256": "30a940a18c9647ea7797412868b253f5e65970a883c39be74a5ab619fa960227"
+    },
+    "01_GPU_BASELINE/GPU_FINAL.png": {
+      "bytes": 2342194,
+      "sha256": "30a940a18c9647ea7797412868b253f5e65970a883c39be74a5ab619fa960227"
+    },
+    "01_GPU_BASELINE/ROUND0_BASELINE_DIFFERENCE_HEATMAP.png": {
+      "bytes": 1942717,
+      "sha256": "29fb146555c7fe1c86b570e71e667d198b6e5f2377e1ccaf65ca7cdeaa603b77"
+    },
+    "01_GPU_BASELINE/ROUND0_BASELINE_FOUR_FISH_COMPARISON.png": {
+      "bytes": 374582,
+      "sha256": "d2e3a86c0ffe1cfc40972b22893b49e1c1701c5d5d8fe472a873cdef9485d0da"
+    },
+    "01_GPU_BASELINE/ROUND0_BASELINE_GLASS_WATER_COMPARISON.png": {
+      "bytes": 3679355,
+      "sha256": "d2d563e9f18c1e52e9e58440b37329af552412346862061fbadf401aa0f801f5"
+    },
+    "01_GPU_BASELINE/ROUND0_BASELINE_GPU_FINAL.png": {
+      "bytes": 2342194,
+      "sha256": "30a940a18c9647ea7797412868b253f5e65970a883c39be74a5ab619fa960227"
+    },
+    "01_GPU_BASELINE/ROUND0_BASELINE_MASTER_OVERLAY.png": {
+      "bytes": 3116486,
+      "sha256": "368d9e0633cb786fd0b6c52623873b192d1a2c3442c9600820b12f0c29dc147a"
+    },
+    "01_GPU_BASELINE/ROUND0_BASELINE_PLANTS_ROCKS_COMPARISON.png": {
+      "bytes": 2278039,
+      "sha256": "d83c10c89d241e38bec3c13c6af850cac2af407079b06921f7721dc06bcfcc74"
+    },
+    "01_GPU_BASELINE/ROUND0_BASELINE_RESIDENT_A01.png": {
+      "bytes": 3505847,
+      "sha256": "34cacfb9b26353e54a865dd31a2df87b6d99cf0ce503a82c0e681339b338bc57"
+    },
+    "01_GPU_BASELINE/ROUND0_BASELINE_RESIDENT_A02.png": {
+      "bytes": 1192400,
+      "sha256": "5941eaaf61fa785721f4dcc191562296d0eb32eca67448cd344aec4043101ffb"
+    },
+    "01_GPU_BASELINE/ROUND0_BASELINE_RESIDENT_C01.png": {
+      "bytes": 1410505,
+      "sha256": "803f9f8b903f15bb8f6c2ebd085c010bc78714eee4a5bcbf864ef84d11f90515"
+    },
+    "01_GPU_BASELINE/ROUND0_BASELINE_RESIDENT_G01.png": {
+      "bytes": 5118251,
+      "sha256": "d7a6856e72b7882024e8df8c073c6e0368b328f1b62b00fe4e6ececcecff68c1"
+    },
+    "01_GPU_BASELINE/ROUND0_BASELINE_RESIDENT_G02.png": {
+      "bytes": 4885309,
+      "sha256": "f42031f220f847f0d3c2814745d6a69f5223e26fc73929ba7ab2500182da36d6"
+    },
+    "01_GPU_BASELINE/ROUND0_BASELINE_SIDE_BY_SIDE.png": {
+      "bytes": 5983856,
+      "sha256": "388a853a3a9ab2a9defe33c2701e93e8a06e151f176bc66a00e796d45cef71c2"
+    },
+    "01_GPU_BASELINE/ROUND0_BASELINE_VISUAL_METRICS.json": {
+      "bytes": 2706,
+      "sha256": "68bf8305467b124f9be9c9ee29c4fd3e06b2578fc10e34f679d3cfcc8342d754"
+    },
+    "01_GPU_BASELINE/SOFTWARE_REFERENCE_TELEMETRY.json": {
+      "bytes": 1872,
+      "sha256": "f7ecea318225eb9eef33eae1bf83660c479fe79cff4c5682755d14d2874c73ab"
+    },
+    "01_GPU_BASELINE/opt_bloom.png": {
+      "bytes": 452409,
+      "sha256": "6458fd5885e4b2d4e6d26a990abef0cdd2594b51ff99e7855c6b3e721dbacf10"
+    },
+    "01_GPU_BASELINE/opt_bokeh.png": {
+      "bytes": 90713,
+      "sha256": "b6bbb0e90ae867807bed50a4aa6a44658baf5915469752484fb217fcb00a3ab0"
+    },
+    "01_GPU_BASELINE/opt_caustics.png": {
+      "bytes": 366885,
+      "sha256": "228c9552826960fa03edca940eadfa7aaaf148c382a234f6497cd26b04e636c4"
+    },
+    "01_GPU_BASELINE/opt_glass_refraction.png": {
+      "bytes": 462865,
+      "sha256": "2b9ac477cb48eccb15b67fda123c6ea40543442ca9d72bcb20a9b1308aa605b8"
+    },
+    "01_GPU_BASELINE/opt_water_normal_distortion.png": {
+      "bytes": 883147,
+      "sha256": "f054638ffec101f7bfe156c20368f9e8ccfa2080b668cae88aa7f7198b0dfec6"
+    },
+    "01_GPU_BASELINE/software_gles_assembled_scene.png": {
+      "bytes": 2342194,
+      "sha256": "30a940a18c9647ea7797412868b253f5e65970a883c39be74a5ab619fa960227"
+    },
+    "02_GEOMETRY/ROUND1_FOUR_FISH_COMPARISON.png": {
+      "bytes": 375020,
+      "sha256": "aaa4130d27671566fc2de0f812faf851ff446680d0a1e48e70c72735d69c3a34"
+    },
+    "02_GEOMETRY/ROUND1_GEOMETRY_OVERLAY.png": {
+      "bytes": 3111685,
+      "sha256": "536a3e82407b82fec5f28d28cd2db4b9cf733cc8c1da77d1fa0d9a0383236cca"
+    },
+    "02_GEOMETRY/ROUND1_GLASS_WATER_COMPARISON.png": {
+      "bytes": 3681540,
+      "sha256": "b86740a220e458d17276dcb17bf49d097cac4951eea456a1d65626dc9073f130"
+    },
+    "02_GEOMETRY/ROUND1_PLANTS_ROCKS_COMPARISON.png": {
+      "bytes": 2280099,
+      "sha256": "346fccfe2c6c55a345407fdb19c4f97449fb7fbb31cb766055c5c900691c7833"
+    },
+    "02_GEOMETRY/ROUND1_RESIDENT_A01.png": {
+      "bytes": 3507134,
+      "sha256": "b2ef9d91ea23b74bd93eadee8e77af3e76e674868c567881778d1d788689b957"
+    },
+    "02_GEOMETRY/ROUND1_RESIDENT_A02.png": {
+      "bytes": 1192217,
+      "sha256": "840e68d7a2eaefb1396b9bffeb0ae656ee4f797cd7bb47cde88c2ca871f2f203"
+    },
+    "02_GEOMETRY/ROUND1_RESIDENT_C01.png": {
+      "bytes": 1411105,
+      "sha256": "a09325deae7bc6911b0186b5f60743057b022e5555d208454f2f3ec7481f927d"
+    },
+    "02_GEOMETRY/ROUND1_RESIDENT_G01.png": {
+      "bytes": 5118358,
+      "sha256": "12f4f81122ebf3df561753a7ab107a657dd2eec1593aaf55adc143e571a5e1c1"
+    },
+    "02_GEOMETRY/ROUND1_RESIDENT_G02.png": {
+      "bytes": 4885458,
+      "sha256": "5cb816f0f3715974d963a7fa40162fff4116be0708a4c4690763f61bfefa0f40"
+    },
+    "02_GEOMETRY/WORK2_GEOMETRY_TRANSFORM_DIFF.json": {
+      "bytes": 3278,
+      "sha256": "f7ec721726fdae7cb666ed56f56a8307d9aa3470df55b411a30c7fe304aed7ff"
+    },
+    "03_GLASS_WATER/ROUND2_FOUR_FISH_COMPARISON.png": {
+      "bytes": 374916,
+      "sha256": "5a8d68987198f2f9c44690a0a5a6c8326dd3b802d0b64aad4f724855a3acc022"
+    },
+    "03_GLASS_WATER/ROUND2_GLASS_WATER_COMPARISON.png": {
+      "bytes": 3716045,
+      "sha256": "6aff65caccd179405af2918a1dda9103371dd68f245dff5fa570db23c066ee5a"
+    },
+    "03_GLASS_WATER/ROUND2_PLANTS_ROCKS_COMPARISON.png": {
+      "bytes": 2306112,
+      "sha256": "afb4b5fd18e20fc6e42e1434117fa2218ea28704c871ec5876d73d3b3cc6449c"
+    },
+    "03_GLASS_WATER/ROUND2_RESIDENT_A01.png": {
+      "bytes": 3527544,
+      "sha256": "f91f85690ef2e7591c20f3c29183bd13d663efdfa84800c67fa717ededc30793"
+    },
+    "03_GLASS_WATER/ROUND2_RESIDENT_A02.png": {
+      "bytes": 1199241,
+      "sha256": "3705969faf02b901d154ca420920e1e8b6accca6e1e1d145d9fbf7f6b6761288"
+    },
+    "03_GLASS_WATER/ROUND2_RESIDENT_C01.png": {
+      "bytes": 1422166,
+      "sha256": "4b5ba9ee3ca054f7515f09623dc241ba6f4889f39c1e53881b6bffcc650026b6"
+    },
+    "03_GLASS_WATER/ROUND2_RESIDENT_G01.png": {
+      "bytes": 5159868,
+      "sha256": "483de6194e1ace0346eabdfca9b6f730abdd9000c3bfddc1e4712712f02c1aab"
+    },
+    "03_GLASS_WATER/ROUND2_RESIDENT_G02.png": {
+      "bytes": 4924065,
+      "sha256": "e43f80869647a5a55e4006e10518808d7c9aec008a156eb6bb294be8e4c4dd29"
+    },
+    "03_GLASS_WATER/WORK2_GLASS_SHADER_DIFF.json": {
+      "bytes": 1111,
+      "sha256": "73ddb4aa5ae712718262b270d30b3334a24b4441c32f4a8cc77a5a44b202862c"
+    },
+    "04_ECOLOGY/ROUND3_FOUR_FISH_COMPARISON.png": {
+      "bytes": 375119,
+      "sha256": "e52691fbc3fab5b1ad03a3c585a881b6611a5a337fb7219217b6ab06769389f8"
+    },
+    "04_ECOLOGY/ROUND3_GLASS_WATER_COMPARISON.png": {
+      "bytes": 3720552,
+      "sha256": "48355efc42de1c689083514e60fd704a397e6e835ce8e9201f760343f4754199"
+    },
+    "04_ECOLOGY/ROUND3_PLANTS_ROCKS_COMPARISON.png": {
+      "bytes": 2310211,
+      "sha256": "b91973da64b38829a1e6fa535bc0c4ce651f4feae6e1de6108df9cce07aa1dea"
+    },
+    "04_ECOLOGY/ROUND3_RESIDENT_A01.png": {
+      "bytes": 3532406,
+      "sha256": "b708b38ab7daf45605695e6b8becf39d9563f74eada2ec3a4ab2e35563377f20"
+    },
+    "04_ECOLOGY/ROUND3_RESIDENT_A02.png": {
+      "bytes": 1199723,
+      "sha256": "4b7875206d6160a4d12cebf50a6dab3b2c67a398e6ad5d4ffdaac2db6e7223d5"
+    },
+    "04_ECOLOGY/ROUND3_RESIDENT_C01.png": {
+      "bytes": 1423990,
+      "sha256": "b35997687e88c92b12cfaa7b36d838e7958e230d1065c5e38adb3c9a07d4ca32"
+    },
+    "04_ECOLOGY/ROUND3_RESIDENT_G01.png": {
+      "bytes": 5164835,
+      "sha256": "ffbb22dc9f72f5a1680d7ca51ba76237aad22ee0b9074b9b67fc07798b9b1b7d"
+    },
+    "04_ECOLOGY/ROUND3_RESIDENT_G02.png": {
+      "bytes": 4929331,
+      "sha256": "c2efde1e7717b38b4a2a2b5e3233193555550fca926babe4f06570a7e6553744"
+    },
+    "04_ECOLOGY/WORK2_ECOLOGY_OVERRIDE_MANIFEST.json": {
+      "bytes": 1360,
+      "sha256": "1e3651a8e00f3b2a3c997c65687a256222ffad9a9d849d3fa22880c83954edcc"
+    },
+    "05_RESIDENT/ROUND4_FOUR_FISH_COMPARISON.png": {
+      "bytes": 375119,
+      "sha256": "e52691fbc3fab5b1ad03a3c585a881b6611a5a337fb7219217b6ab06769389f8"
+    },
+    "05_RESIDENT/ROUND4_GLASS_WATER_COMPARISON.png": {
+      "bytes": 3721506,
+      "sha256": "603a81d4958e687751b58945a953239b731628fbac8af15e835a8ec96341b240"
+    },
+    "05_RESIDENT/ROUND4_PLANTS_ROCKS_COMPARISON.png": {
+      "bytes": 2310824,
+      "sha256": "4708018cd621b6dd9e5bdd7284d3c550ffbb2b176e75bcde7eefe95757d19fcc"
+    },
+    "05_RESIDENT/ROUND4_RESIDENT_A01.png": {
+      "bytes": 3527352,
+      "sha256": "b9ddf2533f384e5453788a8d4e239552c6f6a0c0fa206d45589126f48daf22cf"
+    },
+    "05_RESIDENT/ROUND4_RESIDENT_A02.png": {
+      "bytes": 1197546,
+      "sha256": "7ad94962583f9479dc510c248129ff59d8dfb767ba4b359382123d73cc3ebdc6"
+    },
+    "05_RESIDENT/ROUND4_RESIDENT_C01.png": {
+      "bytes": 1423449,
+      "sha256": "cd340bacac0bf4bcc8998c33884686bc79c25d486e8a650f3647679c4a043e60"
+    },
+    "05_RESIDENT/ROUND4_RESIDENT_G01.png": {
+      "bytes": 5151624,
+      "sha256": "cd7b1e2dc8011ca84549b9a12e2ca2136ea9b86035422aea68571ac03d5cc740"
+    },
+    "05_RESIDENT/ROUND4_RESIDENT_G02.png": {
+      "bytes": 4917618,
+      "sha256": "905543e73894d392f24849f523266268f92c3092c1aff76280c2b493b3ade224"
+    },
+    "05_RESIDENT/WORK2_RESIDENT_OCCLUSION_HYPOTHESIS.json": {
+      "bytes": 1279,
+      "sha256": "0fe4329ea84b795e6d068f7427bcdffc7edb6f7d3776ab32e47d51ab1ac8dc2f"
+    },
+    "06_OPTICS/ROUND5_FOUR_FISH_COMPARISON.png": {
+      "bytes": 375355,
+      "sha256": "5d1c39f4d8dfa5afe6379fb32aa5970544b4def4d1cf70af700116a7215e9110"
+    },
+    "06_OPTICS/ROUND5_GLASS_WATER_COMPARISON.png": {
+      "bytes": 3724871,
+      "sha256": "c33b958215281658c76fff134b75c5702117cc715c581aa44f4304a528f3a998"
+    },
+    "06_OPTICS/ROUND5_PLANTS_ROCKS_COMPARISON.png": {
+      "bytes": 2313363,
+      "sha256": "23eb759c7c7fc0e25cbc2487594c730295e413142d2eac72b6c419b9c5fdde69"
+    },
+    "06_OPTICS/ROUND5_RESIDENT_A01.png": {
+      "bytes": 3535219,
+      "sha256": "9634011437fc854538543ab1a7b59cace3a3d0db404d59bbb409cc1075578f6a"
+    },
+    "06_OPTICS/ROUND5_RESIDENT_A02.png": {
+      "bytes": 1202574,
+      "sha256": "abb1f8d1553b00667f8006be0e6620f4449379e174fae420fdae51bb2e6842a7"
+    },
+    "06_OPTICS/ROUND5_RESIDENT_C01.png": {
+      "bytes": 1426074,
+      "sha256": "d0891f676af40f3e189bb900367a7d775a43ef2e904233ee64df4437909a2658"
+    },
+    "06_OPTICS/ROUND5_RESIDENT_G01.png": {
+      "bytes": 5163331,
+      "sha256": "28e6f28fdb4b0ba00c8b2a586841222b41e34fed3a1022944cbd329a9c6dfb21"
+    },
+    "06_OPTICS/ROUND5_RESIDENT_G02.png": {
+      "bytes": 4926387,
+      "sha256": "3c79b9f40bb54ef1fe9d31618b1e94ad7d1ca676b1108d6871eb0db82f40cb2c"
+    },
+    "06_OPTICS/WORK2_OPTICAL_CONVERGENCE_CONFIG.json": {
+      "bytes": 3047,
+      "sha256": "384a4d44355af341b652e4cbbe93cf7f739a8137c68e010a923c6ea8232debc4"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/01_background.png": {
+      "bytes": 981828,
+      "sha256": "f6bcf3e33a58dcf9b62dd8ddc2ab61f866288c22579b616eeb36cf7aeb848f4f"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/02_resident_back.png": {
+      "bytes": 1358496,
+      "sha256": "0dc515c2d66dd73586b70ea4fc3cb725a059b7538eec2d182721f785ac2a6bd7"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/03_sphere_back.png": {
+      "bytes": 1199336,
+      "sha256": "349085334cb152f21214008b6357da398407274de9a74594eebbfda20a3b07dc"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/04_water_interior.png": {
+      "bytes": 1292214,
+      "sha256": "b6bda52ddbb7348ccee0362a12a4191d70e68db4f812f180f392d50646883f72"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/05_far_ecology.png": {
+      "bytes": 1431896,
+      "sha256": "b4299c1a1ea9c0ad039194e8ef764d68f3700ff8a1c745ec064caf0a40eb4c36"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/06_lighting.png": {
+      "bytes": 1677853,
+      "sha256": "ec2e3cca401323d902c149de787493c0f17a22c4c64e6af05f468131f705b7f5"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/07_fish.png": {
+      "bytes": 1729506,
+      "sha256": "b817680ef564de99cca7a3d1161a59c4c70eda22f104711c16e8b879eb2db052"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/08_near_ecology.png": {
+      "bytes": 1897153,
+      "sha256": "991e151129372ab2b71b3bfd6adf2eb01ed80bf38bc3c0d814a8d14a07588d52"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/09_sphere_front.png": {
+      "bytes": 2101863,
+      "sha256": "26e6b904fde20cd3364ff17569d81ae8b81412fc4da205ba4b13837b3506673b"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/10_resident_front.png": {
+      "bytes": 2252822,
+      "sha256": "514d932ffb9ae9e379e3259ebd048147a7d88be326c0b9737cb79d53043fcf22"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/11_final_composite.png": {
+      "bytes": 2340926,
+      "sha256": "045e86f4626bbd3fa98b633a890cdb97f8f5fff901b36511e8baf66d06cf4621"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/GPU_FINAL.png": {
+      "bytes": 2340926,
+      "sha256": "045e86f4626bbd3fa98b633a890cdb97f8f5fff901b36511e8baf66d06cf4621"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/ROUND1_DIFFERENCE_HEATMAP.png": {
+      "bytes": 1941215,
+      "sha256": "2a1350a7910cc190bc35ef560767635dfa9320a858469e131c528a60bbfcad2a"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/ROUND1_GPU_FINAL.png": {
+      "bytes": 2340926,
+      "sha256": "045e86f4626bbd3fa98b633a890cdb97f8f5fff901b36511e8baf66d06cf4621"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/ROUND1_MASTER_OVERLAY.png": {
+      "bytes": 3114120,
+      "sha256": "d7246ac53590c9fe934ab58b036c2eac7615fb220a15357329c25d7e96ccb0b2"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/ROUND1_SIDE_BY_SIDE.png": {
+      "bytes": 5981584,
+      "sha256": "d5718ee3f2d45bc7324295453a9fb767495d321c95763dda143ac4b5ae7fbd9b"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/ROUND1_VISUAL_METRICS.json": {
+      "bytes": 2697,
+      "sha256": "79233a35560c6deddc51d0f26c3b688b1eaa6137349dd718aaa564e6bada6415"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/SOFTWARE_REFERENCE_TELEMETRY.json": {
+      "bytes": 1872,
+      "sha256": "7992417076291a5fc4acaa62a3063a073055bd5ecc876ca7b90c75446a4ed530"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/opt_bloom.png": {
+      "bytes": 453710,
+      "sha256": "a55ac2f84638fc529235bee6db6e186bf4c7414173d86743fbc8ccb9d5f57803"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/opt_bokeh.png": {
+      "bytes": 83340,
+      "sha256": "afd632543e23c13f384d0b19ffd6fc21c08ba7643a43c8c5a5f4acca96d47a7b"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/opt_caustics.png": {
+      "bytes": 366885,
+      "sha256": "228c9552826960fa03edca940eadfa7aaaf148c382a234f6497cd26b04e636c4"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/opt_glass_refraction.png": {
+      "bytes": 462865,
+      "sha256": "2b9ac477cb48eccb15b67fda123c6ea40543442ca9d72bcb20a9b1308aa605b8"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/opt_water_normal_distortion.png": {
+      "bytes": 883147,
+      "sha256": "f054638ffec101f7bfe156c20368f9e8ccfa2080b668cae88aa7f7198b0dfec6"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_01/software_gles_assembled_scene.png": {
+      "bytes": 2340926,
+      "sha256": "045e86f4626bbd3fa98b633a890cdb97f8f5fff901b36511e8baf66d06cf4621"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/01_background.png": {
+      "bytes": 981828,
+      "sha256": "f6bcf3e33a58dcf9b62dd8ddc2ab61f866288c22579b616eeb36cf7aeb848f4f"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/02_resident_back.png": {
+      "bytes": 1358496,
+      "sha256": "0dc515c2d66dd73586b70ea4fc3cb725a059b7538eec2d182721f785ac2a6bd7"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/03_sphere_back.png": {
+      "bytes": 1205018,
+      "sha256": "7f72b18a6655aefd2a6be7b0810585fd71cf7612dfe53b0b0ce6d3d11744e855"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/04_water_interior.png": {
+      "bytes": 1292318,
+      "sha256": "8be0da3fbb37bc7d3506c9f227bd4474cb53ac554b7a758aa4417a48b3356758"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/05_far_ecology.png": {
+      "bytes": 1432228,
+      "sha256": "34ffa07f81ca58edad8e1e169c1fdc5c8bc0842ad85dc2035fbe78614fc8cfd0"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/06_lighting.png": {
+      "bytes": 1677676,
+      "sha256": "3c5909f0b36213755d6af5b96afe0d8fd879965949b25ec811e9f5f5df6c75cb"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/07_fish.png": {
+      "bytes": 1729257,
+      "sha256": "88676d839a0b92466fa0277f66019133e2a74d061eadda080a46213a3940f77d"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/08_near_ecology.png": {
+      "bytes": 1897045,
+      "sha256": "04edfd6d1abe3131a9385df19413331158d211cd58e61b98f7c5dc4536f31561"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/09_sphere_front.png": {
+      "bytes": 2079155,
+      "sha256": "98d446a3140a8c1f36e6adb8a8a84a631846a6fd33a0752f92e72bcb2af7dbd5"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/10_resident_front.png": {
+      "bytes": 2215463,
+      "sha256": "9bc180d22635ba09aa01eb6d0a11afadfd42dead97ef05abad1e56da3f0ec35a"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/11_final_composite.png": {
+      "bytes": 2381529,
+      "sha256": "b3aaf2a9e3103496fdf7b24a14ee95cbc8e44a048fd2707896e2d73e8bf4dcb6"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/GPU_FINAL.png": {
+      "bytes": 2381529,
+      "sha256": "b3aaf2a9e3103496fdf7b24a14ee95cbc8e44a048fd2707896e2d73e8bf4dcb6"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/ROUND2_DIFFERENCE_HEATMAP.png": {
+      "bytes": 1942541,
+      "sha256": "abe22a8b002130f465a0fdeb506babc994bd60e7964be1f46f49bb471cc8c72b"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/ROUND2_GPU_FINAL.png": {
+      "bytes": 2381529,
+      "sha256": "b3aaf2a9e3103496fdf7b24a14ee95cbc8e44a048fd2707896e2d73e8bf4dcb6"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/ROUND2_MASTER_OVERLAY.png": {
+      "bytes": 3134534,
+      "sha256": "d0b59e7b39b33c0f3cdca225a3dd99a0a7af591d92395863c96635873bd0472c"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/ROUND2_SIDE_BY_SIDE.png": {
+      "bytes": 6025992,
+      "sha256": "3d7e63e315dd22e0a09b8620820748805676f206f2cfcb42602d5f7fc9ae838d"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/ROUND2_VISUAL_METRICS.json": {
+      "bytes": 2697,
+      "sha256": "ac157ff1eabc7e1894d943deabadcad6d3889612f2d54135dd7712b662c666dd"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/SOFTWARE_REFERENCE_TELEMETRY.json": {
+      "bytes": 1872,
+      "sha256": "20360e1b511baeb44d72fa36cd9b4333f1328c9735e6591f22dead5dd11e2f77"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/opt_bloom.png": {
+      "bytes": 609139,
+      "sha256": "09d733d47a9d27b309d19ef7ee471c57fdda85b00e75f1f68ea40a7055e973f7"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/opt_bokeh.png": {
+      "bytes": 83340,
+      "sha256": "afd632543e23c13f384d0b19ffd6fc21c08ba7643a43c8c5a5f4acca96d47a7b"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/opt_caustics.png": {
+      "bytes": 366885,
+      "sha256": "228c9552826960fa03edca940eadfa7aaaf148c382a234f6497cd26b04e636c4"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/opt_glass_refraction.png": {
+      "bytes": 461757,
+      "sha256": "dcab73d93bbf18e47882456e13e97a4c7324ca08a074bddb4638c2281bf08438"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/opt_water_normal_distortion.png": {
+      "bytes": 883147,
+      "sha256": "f054638ffec101f7bfe156c20368f9e8ccfa2080b668cae88aa7f7198b0dfec6"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_02/software_gles_assembled_scene.png": {
+      "bytes": 2381529,
+      "sha256": "b3aaf2a9e3103496fdf7b24a14ee95cbc8e44a048fd2707896e2d73e8bf4dcb6"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/01_background.png": {
+      "bytes": 981828,
+      "sha256": "f6bcf3e33a58dcf9b62dd8ddc2ab61f866288c22579b616eeb36cf7aeb848f4f"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/02_resident_back.png": {
+      "bytes": 1358496,
+      "sha256": "0dc515c2d66dd73586b70ea4fc3cb725a059b7538eec2d182721f785ac2a6bd7"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/03_sphere_back.png": {
+      "bytes": 1205018,
+      "sha256": "7f72b18a6655aefd2a6be7b0810585fd71cf7612dfe53b0b0ce6d3d11744e855"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/04_water_interior.png": {
+      "bytes": 1292318,
+      "sha256": "8be0da3fbb37bc7d3506c9f227bd4474cb53ac554b7a758aa4417a48b3356758"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/05_far_ecology.png": {
+      "bytes": 1437761,
+      "sha256": "8179184ee900097ecd47fceda169de189b2af3af3331acb9fdad7fc8d7c898d9"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/06_lighting.png": {
+      "bytes": 1683039,
+      "sha256": "a8ada762a0b010bb50f1ced5d4d416a24a54ca782cd47296e75b6e3b1dd747bb"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/07_fish.png": {
+      "bytes": 1734382,
+      "sha256": "cee9d941c018a5f6ad2dec4e8e8da1c826e6321d4df1b848325b20c46aa5b28e"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/08_near_ecology.png": {
+      "bytes": 1899410,
+      "sha256": "d9fe421966bc9393b1ed407786d279f7b06daedb2217f51f12d56516cfe5f547"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/09_sphere_front.png": {
+      "bytes": 2082420,
+      "sha256": "cb2cb413c09d0bde6a7165ae45b45c30b24cbaa566099dbf8f2613167d855134"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/10_resident_front.png": {
+      "bytes": 2218237,
+      "sha256": "1f334fe6511d9f4ebb58bea444baacb7f475663f41b4def81ea9345142f766e0"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/11_final_composite.png": {
+      "bytes": 2387565,
+      "sha256": "fb1363c81264b1486c6d4abf31aef41ba1f631ec3e2a8a6c6cc0f567be47c500"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/GPU_FINAL.png": {
+      "bytes": 2387565,
+      "sha256": "fb1363c81264b1486c6d4abf31aef41ba1f631ec3e2a8a6c6cc0f567be47c500"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/ROUND3_DIFFERENCE_HEATMAP.png": {
+      "bytes": 1944975,
+      "sha256": "98fdcc65917480a469c8d910101c4c61c210e2d2581c2ba445ba4b1594b435f1"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/ROUND3_GPU_FINAL.png": {
+      "bytes": 2387565,
+      "sha256": "fb1363c81264b1486c6d4abf31aef41ba1f631ec3e2a8a6c6cc0f567be47c500"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/ROUND3_MASTER_OVERLAY.png": {
+      "bytes": 3136962,
+      "sha256": "f0ff17935a402ec1df1006fba390e11166c5d0ceb4072cdae8fa2e05e6ee0691"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/ROUND3_SIDE_BY_SIDE.png": {
+      "bytes": 6031327,
+      "sha256": "09753e687db7648b2814f4901eed04794cf4680801c0c622b1f021f242dfadfa"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/ROUND3_VISUAL_METRICS.json": {
+      "bytes": 2697,
+      "sha256": "f97c621bc08be0302718f481f5a5d67ce9027792b42d65f25ed1b0b30e201e5e"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/SOFTWARE_REFERENCE_TELEMETRY.json": {
+      "bytes": 1872,
+      "sha256": "aefc2e1123cae44ab584db0d8602f904e366ae43583bab883c1bfa5bcd43e031"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/opt_bloom.png": {
+      "bytes": 624009,
+      "sha256": "0872e0ef3bfef2bca7b915b52c3a8be032ccd186873ca1b51136e016d31d2889"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/opt_bokeh.png": {
+      "bytes": 83340,
+      "sha256": "afd632543e23c13f384d0b19ffd6fc21c08ba7643a43c8c5a5f4acca96d47a7b"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/opt_caustics.png": {
+      "bytes": 366885,
+      "sha256": "228c9552826960fa03edca940eadfa7aaaf148c382a234f6497cd26b04e636c4"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/opt_glass_refraction.png": {
+      "bytes": 461757,
+      "sha256": "dcab73d93bbf18e47882456e13e97a4c7324ca08a074bddb4638c2281bf08438"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/opt_water_normal_distortion.png": {
+      "bytes": 883147,
+      "sha256": "f054638ffec101f7bfe156c20368f9e8ccfa2080b668cae88aa7f7198b0dfec6"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_03/software_gles_assembled_scene.png": {
+      "bytes": 2387565,
+      "sha256": "fb1363c81264b1486c6d4abf31aef41ba1f631ec3e2a8a6c6cc0f567be47c500"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/01_background.png": {
+      "bytes": 981828,
+      "sha256": "f6bcf3e33a58dcf9b62dd8ddc2ab61f866288c22579b616eeb36cf7aeb848f4f"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/02_resident_back.png": {
+      "bytes": 1332170,
+      "sha256": "2a619f3ab7aef8f240ceb86b76541f10b8bcc3c860e187b93870d0f223b1792e"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/03_sphere_back.png": {
+      "bytes": 1179311,
+      "sha256": "fdd7030c341adcc68be65179e194e378cdecc9e616aa0dd5c92717c45fa64971"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/04_water_interior.png": {
+      "bytes": 1267518,
+      "sha256": "b331e43eb120a0f01a72504ca63acf28318e70c12bcb1805e5f33510f571e345"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/05_far_ecology.png": {
+      "bytes": 1413306,
+      "sha256": "61ab648dcb85d1c8a2f0201ad6efe628c79c3776308f1b115a4540e58b0b8469"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/06_lighting.png": {
+      "bytes": 1659402,
+      "sha256": "d495710cc1bfe4daa39172b7895f2dd87e07b6140c8a93449f7d55a7229db831"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/07_fish.png": {
+      "bytes": 1711444,
+      "sha256": "2f3f0f1c1330f99c36c2b46a78d46b2f9cc9b2876a182e738764da0e12c7fc4b"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/08_near_ecology.png": {
+      "bytes": 1876089,
+      "sha256": "ffa39a4092b49a0f5e451d99d0f24c38ea3470f1b95eb76d961dcc503ed29942"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/09_sphere_front.png": {
+      "bytes": 2060794,
+      "sha256": "2cd617f829153e5b6896bcd48b84ae7154c016771ee72c6fbf43165f9b90765e"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/10_resident_front.png": {
+      "bytes": 2194879,
+      "sha256": "3c5d103d39a1115e3c75055b97d1391e384d4710cdf6b9d79391838081c5b760"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/11_final_composite.png": {
+      "bytes": 2369012,
+      "sha256": "12ed7b071a70b24ffddd641f908c1911186943dfd69c62acc23764a6794e6e8d"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/GPU_FINAL.png": {
+      "bytes": 2369012,
+      "sha256": "12ed7b071a70b24ffddd641f908c1911186943dfd69c62acc23764a6794e6e8d"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/ROUND4_DIFFERENCE_HEATMAP.png": {
+      "bytes": 1945440,
+      "sha256": "a40eab1150797043e18fd6d37f6fd64d4b87c8b754d65394a6efb08b73573327"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/ROUND4_GPU_FINAL.png": {
+      "bytes": 2369012,
+      "sha256": "12ed7b071a70b24ffddd641f908c1911186943dfd69c62acc23764a6794e6e8d"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/ROUND4_MASTER_OVERLAY.png": {
+      "bytes": 3126697,
+      "sha256": "aa2d44af6173a123b75d7cbde8828f670cadba75ad9263363830fbaa98ac15e8"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/ROUND4_SIDE_BY_SIDE.png": {
+      "bytes": 6009829,
+      "sha256": "06c23ebc150b0d244585d98e9b65338cae8c83fb77e04665978d6007ba9bd26a"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/ROUND4_VISUAL_METRICS.json": {
+      "bytes": 2697,
+      "sha256": "a8d2d11b07f1902642d869a2b26c38130a763c46c419619aba1e517bf723ab41"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/SOFTWARE_REFERENCE_TELEMETRY.json": {
+      "bytes": 1872,
+      "sha256": "9b5af6fecb75f7beadf09fc339209e3806a68d2cb70cf0cd4cf03d2a96f90bf5"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/opt_bloom.png": {
+      "bytes": 603478,
+      "sha256": "c2b489737b54e53812295664332388df7b6aa10a85e6ef94e58ac764155e5c52"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/opt_bokeh.png": {
+      "bytes": 83340,
+      "sha256": "afd632543e23c13f384d0b19ffd6fc21c08ba7643a43c8c5a5f4acca96d47a7b"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/opt_caustics.png": {
+      "bytes": 366885,
+      "sha256": "228c9552826960fa03edca940eadfa7aaaf148c382a234f6497cd26b04e636c4"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/opt_glass_refraction.png": {
+      "bytes": 461757,
+      "sha256": "dcab73d93bbf18e47882456e13e97a4c7324ca08a074bddb4638c2281bf08438"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/opt_water_normal_distortion.png": {
+      "bytes": 883147,
+      "sha256": "f054638ffec101f7bfe156c20368f9e8ccfa2080b668cae88aa7f7198b0dfec6"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_04/software_gles_assembled_scene.png": {
+      "bytes": 2369012,
+      "sha256": "12ed7b071a70b24ffddd641f908c1911186943dfd69c62acc23764a6794e6e8d"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/01_background.png": {
+      "bytes": 939643,
+      "sha256": "9b0a652cdf29f505e37d8befadc5b227009bcae8a9cf29e3d99a3b4b58332ba8"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/02_resident_back.png": {
+      "bytes": 1285991,
+      "sha256": "a9877f526c9486f7eba120f6751a8d9199762df523dd05e59660e731c7a69d89"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/03_sphere_back.png": {
+      "bytes": 1212888,
+      "sha256": "7965f7383e75f8dd0ceb5e0ae4005e1436090e5627fda13161824505c26eff7a"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/04_water_interior.png": {
+      "bytes": 1275271,
+      "sha256": "8bf0b2f15af54c151afe82883e15f51dc1fdd062883298405b9ed728a18b4b9e"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/05_far_ecology.png": {
+      "bytes": 1420418,
+      "sha256": "825d404a52312333f3733bee097809f90febbbeef9716dc44960305a1b7a091d"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/06_lighting.png": {
+      "bytes": 1673707,
+      "sha256": "424d84c139447895b63c3eaf8d6a306de3c70d28b0349a2bdf3ff3da36f83fbc"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/07_fish.png": {
+      "bytes": 1725907,
+      "sha256": "814c5cee8e1fc38dde420e842adc099d10a2685cfdc45d8998501f3be38f656f"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/08_near_ecology.png": {
+      "bytes": 1886874,
+      "sha256": "8aab3b30819dcdc54170cd3e37e9caa5d599c5eaca227a063614204231cdb73e"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/09_sphere_front.png": {
+      "bytes": 2071880,
+      "sha256": "5f23d578da406f07b46963a813117a8478d8f716201c6456cb7497e66e3c16d0"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/10_resident_front.png": {
+      "bytes": 2204566,
+      "sha256": "cacb661a0929875d9bd0fcc836483ace29a01daa9bc620edb87520960c528ccd"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/11_final_composite.png": {
+      "bytes": 2382477,
+      "sha256": "1b180ef149491754ac4f0741f0e5716316971d57dfad1352a2f4a363bdec47a4"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/GPU_FINAL.png": {
+      "bytes": 2382477,
+      "sha256": "1b180ef149491754ac4f0741f0e5716316971d57dfad1352a2f4a363bdec47a4"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/ROUND5_DIFFERENCE_HEATMAP.png": {
+      "bytes": 1945651,
+      "sha256": "563a51e226a1777f798d9bc817f33340059254d82f38b509f39355ca998daa1b"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/ROUND5_GPU_FINAL.png": {
+      "bytes": 2382477,
+      "sha256": "1b180ef149491754ac4f0741f0e5716316971d57dfad1352a2f4a363bdec47a4"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/ROUND5_MASTER_OVERLAY.png": {
+      "bytes": 3144809,
+      "sha256": "918f2cb4ad47c3e2259032920229032935f75d3ed992323c3cd8f63776d363ac"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/ROUND5_SIDE_BY_SIDE.png": {
+      "bytes": 6023677,
+      "sha256": "391bb9c157c60d58687563f7fa6b10de917e5c0f351c91188f804f9765c47277"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/ROUND5_VISUAL_METRICS.json": {
+      "bytes": 2697,
+      "sha256": "7edbcd36cb8020ff137a65a3a37debb9b9ee5adca3beb597384f5bfb099bf986"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/SOFTWARE_REFERENCE_TELEMETRY.json": {
+      "bytes": 1872,
+      "sha256": "ba8d0a692f0d50a0e1f5931553093624ab21d6ed460ec0ed4ade9eb5f96e710d"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/opt_bloom.png": {
+      "bytes": 637187,
+      "sha256": "f802f1bfe0c9ae624feba73a5a7abcab17dc688bb945a16984f6fe5e7e59e371"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/opt_bokeh.png": {
+      "bytes": 83143,
+      "sha256": "8bd2348251fdb02069da04e538e31bde3dcceca8ef8647e0454fcba1ac535307"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/opt_caustics.png": {
+      "bytes": 376991,
+      "sha256": "45c13a1c2fee84cd971ba09dc075d74c1f33837f6cf095c17c11a232510c2435"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/opt_glass_refraction.png": {
+      "bytes": 461757,
+      "sha256": "dcab73d93bbf18e47882456e13e97a4c7324ca08a074bddb4638c2281bf08438"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/opt_water_normal_distortion.png": {
+      "bytes": 882131,
+      "sha256": "7c580683656e305e30f308520e7cc1781d4e8a47824bcd347a0371761db97e95"
+    },
+    "07_OPTIMIZATION_ROUNDS/ROUND_05/software_gles_assembled_scene.png": {
+      "bytes": 2382477,
+      "sha256": "1b180ef149491754ac4f0741f0e5716316971d57dfad1352a2f4a363bdec47a4"
+    },
+    "08_VISUAL_ACCEPTANCE/GPU_FINAL.png": {
+      "bytes": 2382477,
+      "sha256": "1b180ef149491754ac4f0741f0e5716316971d57dfad1352a2f4a363bdec47a4"
+    },
+    "08_VISUAL_ACCEPTANCE/ROUND5_DIFFERENCE_HEATMAP.png": {
+      "bytes": 1945651,
+      "sha256": "563a51e226a1777f798d9bc817f33340059254d82f38b509f39355ca998daa1b"
+    },
+    "08_VISUAL_ACCEPTANCE/ROUND5_SIDE_BY_SIDE.png": {
+      "bytes": 6023677,
+      "sha256": "391bb9c157c60d58687563f7fa6b10de917e5c0f351c91188f804f9765c47277"
+    },
+    "08_VISUAL_ACCEPTANCE/ROUND5_VISUAL_METRICS.json": {
+      "bytes": 2697,
+      "sha256": "7edbcd36cb8020ff137a65a3a37debb9b9ee5adca3beb597384f5bfb099bf986"
+    },
+    "08_VISUAL_ACCEPTANCE/WORK2_FIVE_ROUND_PROGRESSION.json": {
+      "bytes": 6396,
+      "sha256": "31d0078d2fabbc1de167a80010ac04b28778af994aed6c2c0eebd9a016daa844"
+    },
+    "09_ANDROID_RUNTIME/WATER_WORLD_WORK2_APK_IDENTITY.json": {
+      "bytes": 1695,
+      "sha256": "02a077d6242f690398d5bd6db14ede28273af488ab936d91a22e6c13eb01a9ef"
+    },
+    "11_DELIVERY/AI-Orb-Demo-WaterWorld-V2.1-Work2-debug.apk": {
+      "bytes": 26856737,
+      "sha256": "62470f1bc54b276c45dbffd357e2e5bfd096b889d19d4f71dfe459bbc93a4ca8"
+    },
+    "11_DELIVERY/AI-Orb-Demo-WaterWorld-V2.1-Work2-debug.apk.sha256": {
+      "bytes": 110,
+      "sha256": "a050ff2ccbe05e7e204552fbd24d070a7ed089db8e12cc31ad3c25cf1b4d244f"
+    },
+    "11_DELIVERY/WORK2_FINAL_REPORT.md": {
+      "bytes": 7290,
+      "sha256": "fee4fe9ac0109e3d49a0171ef78ab80c223871fa35132e9c59bb4015031ca0f2"
+    }
+  }
+}
