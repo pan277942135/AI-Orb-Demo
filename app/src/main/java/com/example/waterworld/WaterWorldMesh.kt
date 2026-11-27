@@ -5,35 +5,53 @@ import org.json.JSONObject
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-/** Indexed position/normal/UV geometry shared by sphere and immutable SVG ribbons. */
-internal class WaterWorldMesh(json: JSONObject) {
-    private val vertices = json.getJSONArray("vertices")
-    private val indices = json.getJSONArray("indices")
+/**
+ * Indexed position/normal/UV geometry shared by sphere, fish grids, ribbons, plants, rocks & bubbles.
+ *
+ * Work 3 enhancement: supports deterministic load-time grid subdivision (`subdividePlantGrid = true`)
+ * for 4-vertex plant quads so GPU vertex-shader root-pinned sway bends organically without modifying
+ * frozen assets or altering T=0 static rasterization.
+ */
+internal class WaterWorldMesh(
+    json: JSONObject,
+    subdividePlantGrid: Boolean = false,
+) {
     private val handles = IntArray(3)
-    private val count = indices.length()
+    private val count: Int
+    val vertexCount: Int
+    val centerX: Float
+    val centerY: Float
+    val widthPx: Float
+    val heightPx: Float
 
     init {
-        require(count > 0 && count % 3 == 0)
-        val vertexData = ByteBuffer.allocateDirect(vertices.length() * 8 * 4)
+        val rawVertices = json.getJSONArray("vertices")
+        val rawIndices = json.getJSONArray("indices")
+        require(rawIndices.length() > 0 && rawIndices.length() % 3 == 0)
+
+        val built = if (subdividePlantGrid && rawVertices.length() == 4 && rawIndices.length() == 6) {
+            buildSubdividedQuadGrid(rawVertices, cols = 6, rows = 12)
+        } else {
+            buildDirectBuffers(rawVertices, rawIndices)
+        }
+
+        vertexCount = built.vertexCount
+        count = built.indexCount
+        centerX = built.centerX
+        centerY = built.centerY
+        widthPx = built.widthPx
+        heightPx = built.heightPx
+
+        val vertexData = ByteBuffer.allocateDirect(built.vertexFloats.size * 4)
             .order(ByteOrder.nativeOrder()).asFloatBuffer()
-        for (i in 0 until vertices.length()) {
-            val row = vertices.getJSONArray(i)
-            require(row.length() == 8)
-            for (j in 0 until 8) {
-                val value = row.getDouble(j).toFloat()
-                require(value.isFinite())
-                vertexData.put(value)
-            }
-        }
+        vertexData.put(built.vertexFloats)
         vertexData.position(0)
-        val indexData = ByteBuffer.allocateDirect(count * 4)
+
+        val indexData = ByteBuffer.allocateDirect(built.indices.size * 4)
             .order(ByteOrder.nativeOrder()).asIntBuffer()
-        for (i in 0 until count) {
-            val index = indices.getInt(i)
-            require(index in 0 until vertices.length())
-            indexData.put(index)
-        }
+        indexData.put(built.indices)
         indexData.position(0)
+
         GLES30.glGenVertexArrays(1, handles, 0)
         GLES30.glGenBuffers(2, handles, 1)
         GLES30.glBindVertexArray(handles[0])
@@ -60,5 +78,138 @@ internal class WaterWorldMesh(json: JSONObject) {
         GLES30.glDeleteBuffers(2, handles, 1)
         GLES30.glDeleteVertexArrays(1, handles, 0)
         handles.fill(0)
+    }
+
+    internal data class BuiltMeshData(
+        val vertexFloats: FloatArray,
+        val indices: IntArray,
+        val vertexCount: Int,
+        val indexCount: Int,
+        val centerX: Float,
+        val centerY: Float,
+        val widthPx: Float,
+        val heightPx: Float,
+    )
+
+    companion object {
+        internal fun buildDirectBuffers(
+            rawVertices: org.json.JSONArray,
+            rawIndices: org.json.JSONArray,
+        ): BuiltMeshData {
+            val vCount = rawVertices.length()
+            val iCount = rawIndices.length()
+            val floats = FloatArray(vCount * 8)
+            var minX = Float.POSITIVE_INFINITY
+            var maxX = Float.NEGATIVE_INFINITY
+            var minY = Float.POSITIVE_INFINITY
+            var maxY = Float.NEGATIVE_INFINITY
+            for (i in 0 until vCount) {
+                val row = rawVertices.getJSONArray(i)
+                require(row.length() == 8)
+                for (j in 0 until 8) {
+                    val value = row.getDouble(j).toFloat()
+                    require(value.isFinite())
+                    floats[i * 8 + j] = value
+                }
+                val x = floats[i * 8]
+                val y = floats[i * 8 + 1]
+                if (x < minX) minX = x
+                if (x > maxX) maxX = x
+                if (y < minY) minY = y
+                if (y > maxY) maxY = y
+            }
+            val idxs = IntArray(iCount)
+            for (i in 0 until iCount) {
+                val idx = rawIndices.getInt(i)
+                require(idx in 0 until vCount)
+                idxs[i] = idx
+            }
+            return BuiltMeshData(
+                vertexFloats = floats,
+                indices = idxs,
+                vertexCount = vCount,
+                indexCount = iCount,
+                centerX = (minX + maxX) * 0.5f,
+                centerY = (minY + maxY) * 0.5f,
+                widthPx = (maxX - minX).coerceAtLeast(0f),
+                heightPx = (maxY - minY).coerceAtLeast(0f),
+            )
+        }
+
+        /**
+         * Deterministically subdivides a 4-vertex quad mesh into a `(cols+1) x (rows+1)` bilinear grid,
+         * preserving exact boundary coordinates and UVs so T=0 rasterization is pixel-identical while
+         * enabling smooth GPU vertex-shader plant sway at T>0.
+         */
+        internal fun buildSubdividedQuadGrid(
+            rawVertices: org.json.JSONArray,
+            cols: Int,
+            rows: Int,
+        ): BuiltMeshData {
+            require(rawVertices.length() == 4)
+            val corners = Array(4) { i ->
+                val row = rawVertices.getJSONArray(i)
+                require(row.length() == 8)
+                FloatArray(8) { j -> row.getDouble(j).toFloat().also { require(it.isFinite()) } }
+            }
+            // Identify corners by UV (u, v) so bilinear interpolation always maps cleanly
+            val c00 = corners.minBy { it[6] + it[7] }
+            val c10 = corners.maxBy { it[6] - it[7] }
+            val c01 = corners.maxBy { it[7] - it[6] }
+            val c11 = corners.maxBy { it[6] + it[7] }
+
+            val vxCount = (cols + 1) * (rows + 1)
+            val floats = FloatArray(vxCount * 8)
+            var minX = Float.POSITIVE_INFINITY
+            var maxX = Float.NEGATIVE_INFINITY
+            var minY = Float.POSITIVE_INFINITY
+            var maxY = Float.NEGATIVE_INFINITY
+            var p = 0
+            for (r in 0..rows) {
+                val tv = r.toFloat() / rows.toFloat()
+                for (c in 0..cols) {
+                    val tu = c.toFloat() / cols.toFloat()
+                    for (j in 0 until 8) {
+                        val top = c00[j] + (c10[j] - c00[j]) * tu
+                        val bot = c01[j] + (c11[j] - c01[j]) * tu
+                        floats[p + j] = top + (bot - top) * tv
+                    }
+                    val x = floats[p]
+                    val y = floats[p + 1]
+                    if (x < minX) minX = x
+                    if (x > maxX) maxX = x
+                    if (y < minY) minY = y
+                    if (y > maxY) maxY = y
+                    p += 8
+                }
+            }
+            val idxs = IntArray(cols * rows * 6)
+            var k = 0
+            val stride = cols + 1
+            for (r in 0 until rows) {
+                for (c in 0 until cols) {
+                    val i00 = r * stride + c
+                    val i10 = i00 + 1
+                    val i01 = i00 + stride
+                    val i11 = i01 + 1
+                    idxs[k++] = i00
+                    idxs[k++] = i10
+                    idxs[k++] = i11
+                    idxs[k++] = i00
+                    idxs[k++] = i11
+                    idxs[k++] = i01
+                }
+            }
+            return BuiltMeshData(
+                vertexFloats = floats,
+                indices = idxs,
+                vertexCount = vxCount,
+                indexCount = idxs.size,
+                centerX = (minX + maxX) * 0.5f,
+                centerY = (minY + maxY) * 0.5f,
+                widthPx = (maxX - minX).coerceAtLeast(0f),
+                heightPx = (maxY - minY).coerceAtLeast(0f),
+            )
+        }
     }
 }

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "WATER_WORLD_V21_WORK3_DYNAMIC_MANIFEST_V1",
+  "classification": "SOFTWARE_DYNAMIC_REFERENCE_CPU_1TO1",
+  "WORK3_HARDWARE_DYNAMIC_VERIFIED": "NOT_RUN",
+  "fileCount": 9,
+  "files": {
+    "WORK3_DYNAMIC_CONTACT_SHEET.png": {
+      "bytes": 3809767,
+      "sha256": "2a36341af0994d1af3fc55eae01bc16fda2c8f7c8ab26f5d722d4e8324fd98f4"
+    },
+    "dynamic_render_telemetry.json": {
+      "bytes": 1970,
+      "sha256": "35751f5a41203c502cad9b326621db5f16ee2103c02bbb92724541b9294ca0e0"
+    },
+    "frame_t000.png": {
+      "bytes": 2383893,
+      "sha256": "495caa93bca92b8ada95efb5d5f643c544a346ff3d71921b46df56a3d99e450a"
+    },
+    "frame_t001.png": {
+      "bytes": 2390172,
+      "sha256": "5aaff329d6967c62e16022205f7e9b41403e9378eb9ee56d8a46dc9cc1c69d6f"
+    },
+    "frame_t002.png": {
+      "bytes": 2385460,
+      "sha256": "5ed92ac048e9489498ae59f3a1cedf655e824491e0a97a4e310fb54c01387fb4"
+    },
+    "frame_t004.png": {
+      "bytes": 2364293,
+      "sha256": "1a929739eb5119023ac28aebef43bf27616c16ea0ff759e897c8d70ade83ac29"
+    },
+    "frame_t008.png": {
+      "bytes": 2376239,
+      "sha256": "9d0da774b825d2ce3f2bdb885a6d769b96967208f64218dee939ddfdc303ecae"
+    },
+    "frame_t012.png": {
+      "bytes": 2363972,
+      "sha256": "3937f79776ce6ae0e6be3ccd52aeac2a9b9d476d8c1d5490dae7583ae6fbdc4e"
+    },
+    "stability_10s_30s_60s.json": {
+      "bytes": 577,
+      "sha256": "15740c6996ffca8aebedbd049c44d33ef745b162ecca4b3aed25bff74de96b7e"
+    }
+  }
+}

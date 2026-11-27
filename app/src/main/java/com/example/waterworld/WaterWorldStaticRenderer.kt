@@ -8,12 +8,19 @@ import org.json.JSONObject
 import java.io.File
 import java.nio.ByteBuffer
 import java.security.MessageDigest
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
- * Production Android OpenGL ES 3.0 static renderer for Water World V2.1 Work 1.6.
- * Executes all 11 canonical composition stages and 5 independent optical nodes
- * via [WaterWorldRenderGraph], [WaterWorldRenderTargetPool], [WaterWorldTextureCache],
- * and [WaterWorldShaders]. All GL calls run exclusively on the active EGL thread.
+ * Production Android OpenGL ES 3.0 renderer for Water World V2.1 (Work 1.6 / Work 2 / Work 3 Dynamic Runtime).
+ *
+ * Executes all 11 canonical composition stages and 5 independent optical nodes via
+ * [WaterWorldRenderGraph], [WaterWorldRenderTargetPool], [WaterWorldTextureCache], and [WaterWorldShaders].
+ *
+ * Work 3 single-snapshot guarantee:
+ * - [renderDynamic] consumes ONE immutable [WaterWorldDynamicFrameSnapshot] across all 11 passes & 5 optics.
+ * - Zero per-frame texture re-uploads, zero per-frame mesh rebuilds, zero FBO feedback loops.
+ * - [render] preserves 100% backward compatibility with Work 1.6 / Work 2 callers and exact T=0 static parity.
  */
 internal class WaterWorldStaticRenderer(private val root: File) {
 
@@ -65,17 +72,23 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     private data class DrawItem(
         val binding: Binding,
         val mesh: WaterWorldMesh,
-        val texture: Int
+        val texture: Int,
+        val residentGroupKey: String?,
+        val plantElementId: String?,
+        val rockElementId: String?,
     )
 
     private val loader = WaterWorldAssetLoader(root)
     private val renderGraph = WaterWorldRenderGraph()
     private val drawsByPass = LinkedHashMap<WaterWorldRenderGraph.PassId, MutableList<DrawItem>>()
     private val allDraws = mutableListOf<DrawItem>()
+    private val scratchModel = FloatArray(16)
+    private val scratchBeamBuf = FloatArray(18)
     private var textureCache: WaterWorldTextureCache? = null
     private var shaders: WaterWorldShaders? = null
     private var targetPool: WaterWorldRenderTargetPool? = null
     private var opticalConfig: WaterWorldSceneBindings.OpticalConfig? = null
+    private var motionProfile: WaterWorldMotionProfile = WaterWorldMotionProfile.defaultProfile()
     private var whiteTexture = 0
     private var fullscreenVao = 0
     private var waterNormalTex = 0
@@ -88,6 +101,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
 
     internal fun currentPresentViewport(): PresentViewport? = lastPresentViewport
     internal fun currentPresentedFrameId(): Long = presentedFrameId
+    internal fun currentGlErrorCount(): Int = glErrorCount
 
     fun initialize(bindings: List<Binding>) {
         val loaded = WaterWorldSceneBindings.loadScene(root)
@@ -103,6 +117,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         renderGraph.validateGraph()
         try {
             loader.resetUploadedStats()
+            motionProfile = WaterWorldMotionProfile.loadFromAssetRoot(root)
             opticalConfig = scene.opticalConfig
             shaders = WaterWorldShaders()
             targetPool = WaterWorldRenderTargetPool(scene.canvasSize)
@@ -145,7 +160,12 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                 val texture = binding.texturePath?.let { path ->
                     cache.acquire(path, requireNotNull(binding.textureSha256))
                 } ?: whiteTexture
-                val item = DrawItem(binding, WaterWorldMesh(loader.json(binding.meshPath)), texture)
+                val isPlantMesh = binding.materialName == "plant"
+                val mesh = WaterWorldMesh(loader.json(binding.meshPath), subdividePlantGrid = isPlantMesh)
+                val residentKey = resolveResidentGroupKey(binding.objectId)
+                val plantId = resolvePlantElementId(binding.objectId, isPlantMesh)
+                val rockId = resolveRockElementId(binding.objectId, binding.materialName == "rock")
+                val item = DrawItem(binding, mesh, texture, residentKey, plantId, rockId)
                 allDraws += item
                 drawsByPass.getValue(binding.passId) += item
             }
@@ -156,9 +176,35 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         }
     }
 
+    /**
+     * Backward-compatible Work 1.6 / Work 2 render entry point.
+     * Delegates to [renderDynamic] using exact T=0 static snapshot when `staticReferenceMode` is true
+     * or `timeSeconds == 0.0`.
+     */
     fun render(
         mode: WaterWorldRenderGraph.DiagnosticMode = WaterWorldRenderGraph.DiagnosticMode.FINAL_SCENE,
         snapshot: WaterWorldMotionContract.SharedFrameSnapshot = WaterWorldMotionContract.SharedFrameSnapshot.staticZero(),
+        capturePassDir: File? = null
+    ): JSONObject {
+        require(snapshot.timeSeconds >= 0.0 && snapshot.timeSeconds.isFinite())
+        val dynamicSnapshot = WaterWorldMotionEvaluator.evaluate(
+            profile = motionProfile,
+            timeSeconds = snapshot.timeSeconds,
+            frameId = snapshot.frameIndex,
+            randomSeed = motionProfile.deterministicSeed,
+            staticReferenceMode = snapshot.staticReferenceMode || snapshot.timeSeconds <= 0.0,
+        )
+        return renderDynamic(dynamicSnapshot, mode, capturePassDir)
+    }
+
+    /**
+     * Work 3 authoritative dynamic render pass: consumes ONE immutable [WaterWorldDynamicFrameSnapshot]
+     * across all 11 composition stages and all 5 independent optical nodes with zero per-frame
+     * texture uploads or mesh rebuilds.
+     */
+    fun renderDynamic(
+        snapshot: WaterWorldDynamicFrameSnapshot,
+        mode: WaterWorldRenderGraph.DiagnosticMode = WaterWorldRenderGraph.DiagnosticMode.FINAL_SCENE,
         capturePassDir: File? = null
     ): JSONObject {
         val cpuStartNs = System.nanoTime()
@@ -166,7 +212,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         val pool = checkNotNull(targetPool) { "Target pool not initialized" }
         val opt = checkNotNull(opticalConfig) { "Optical config not initialized" }
         val cache = checkNotNull(textureCache) { "Texture cache not initialized" }
-        require(snapshot.timeSeconds >= 0f && snapshot.timeSeconds.isFinite())
+        require(snapshot.globalTimeSeconds >= 0.0 && snapshot.globalTimeSeconds.isFinite())
 
         val passRecords = mutableListOf<WaterWorldRenderGraph.PassExecutionRecord>()
         val passPngShas = JSONObject()
@@ -196,6 +242,8 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                     GLES30.glDisable(GLES30.GL_BLEND)
                     s.opaque.use()
                     GLES30.glUniform2f(s.opaque.uniform("uCanvas"), canvasW, canvasH)
+                    GLES30.glUniform1i(s.opaque.uniform("uDeformMode"), 0)
+                    GLES30.glUniform4f(s.opaque.uniform("uDeformParams"), 0f, 0f, 0f, 0f)
                     GLES30.glUniform2f(s.opaque.uniform("uSphereCenter"), opt.sphereCenterPx[0], opt.sphereCenterPx[1])
                     GLES30.glUniform1f(s.opaque.uniform("uTopGlareSuppression"), opt.topGlareSuppression)
                     GLES30.glUniform1f(s.opaque.uniform("uVignetteStrength"), opt.vignetteStrength)
@@ -211,8 +259,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                         item.mesh.draw()
                         drawCount++
                     }
-                    // Background Bokeh orbs (Optical Node 5 - BG layer)
-                    drawCount += renderBokehLayer(s, opt, "BG", pool.scene)
+                    drawCount += renderBokehLayer(s, opt, snapshot, "BG", pool.scene)
                     opticalNodesExecuted += WaterWorldRenderGraph.OpticalNodeId.BOKEH.wireId
                 }
 
@@ -227,6 +274,24 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                     s.residentRibbon.use()
                     GLES30.glUniform2f(s.residentRibbon.uniform("uCanvas"), canvasW, canvasH)
                     for (item in stageDraws) {
+                        val rState = item.residentGroupKey?.let { snapshot.residentStates[it] }
+                        val deformMode = if (!snapshot.staticReferenceMode && rState != null) 3 else 0
+                        GLES30.glUniform1i(s.residentRibbon.uniform("uDeformMode"), deformMode)
+                        if (deformMode == 3 && rState != null) {
+                            GLES30.glUniform4f(
+                                s.residentRibbon.uniform("uDeformParams"),
+                                rState.widthPulseScale,
+                                rState.lateralWavePx,
+                                rState.wavePhaseRad,
+                                rState.flowOffsetU,
+                            )
+                            GLES30.glUniform1f(s.residentRibbon.uniform("uFlowOffsetU"), rState.flowOffsetU)
+                            GLES30.glUniform1f(s.residentRibbon.uniform("uBrightnessScale"), rState.brightnessScale)
+                        } else {
+                            GLES30.glUniform4f(s.residentRibbon.uniform("uDeformParams"), 1f, 0f, 0f, 0f)
+                            GLES30.glUniform1f(s.residentRibbon.uniform("uFlowOffsetU"), 0f)
+                            GLES30.glUniform1f(s.residentRibbon.uniform("uBrightnessScale"), 1f)
+                        }
                         GLES30.glUniformMatrix4fv(s.residentRibbon.uniform("uModel"), 1, false, item.binding.model, 0)
                         GLES30.glUniform4fv(s.residentRibbon.uniform("uTint"), 1, item.binding.tint, 0)
                         GLES30.glUniform3fv(s.residentRibbon.uniform("uCoreColor"), 1, item.binding.coreColor, 0)
@@ -238,9 +303,8 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                 }
 
                 WaterWorldRenderGraph.PassId.SPHERE_BACK -> {
-                    // Snapshot scene -> snapshot FBO before reading (zero FBO feedback loop!)
                     pool.copyColor(pool.scene, pool.snapshot, "pass03_pre_glass_back")
-                    renderGlassPass(s, opt, pool.snapshot, pool.scene, passSide = 0, diagnosticOnly = false)
+                    renderGlassPass(s, opt, snapshot, pool.snapshot, pool.scene, passSide = 0, diagnosticOnly = false)
                     drawCount = 1
                     opticalNodesExecuted += WaterWorldRenderGraph.OpticalNodeId.GLASS_REFRACTION.wireId
                 }
@@ -248,11 +312,11 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                 WaterWorldRenderGraph.PassId.WATER_INTERIOR -> {
                     pool.copyColor(pool.scene, pool.snapshot, "pass04_pre_water")
                     val waterbedTex = stageDraws.firstOrNull()?.texture ?: whiteTexture
-                    renderWaterPass(s, opt, pool.snapshot, waterbedTex, pool.scene, diagnosticOnly = false)
+                    renderWaterPass(s, opt, snapshot, pool.snapshot, waterbedTex, pool.scene, diagnosticOnly = false)
                     drawCount = 1
                     opticalNodesExecuted += WaterWorldRenderGraph.OpticalNodeId.WATER_NORMAL_DISTORTION.wireId
                     if (capturePassDir != null || mode == WaterWorldRenderGraph.DiagnosticMode.OPTICAL_WATER_DISTORTION) {
-                        renderWaterPass(s, opt, pool.snapshot, waterbedTex, pool.diagnostic, diagnosticOnly = true)
+                        renderWaterPass(s, opt, snapshot, pool.snapshot, waterbedTex, pool.diagnostic, diagnosticOnly = true)
                         if (capturePassDir != null) {
                             opticalPngShas.put(
                                 "water_normal_distortion",
@@ -277,10 +341,10 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                         val b = item.binding
                         GLES30.glDepthMask(b.depthWrite)
                         if (b.shaderProgram == WaterWorldRenderGraph.ShaderProgramId.PARTICLE_BOKEH) {
-                            drawParticleQuad(s, opt, item, canvasW, canvasH, isOuterDroplet = false)
+                            drawParticleQuad(s, opt, snapshot, item, canvasW, canvasH, isOuterDroplet = false)
                         } else {
                             drawTransparentEntity(
-                                s, opt, item, canvasW, canvasH,
+                                s, opt, snapshot, item, canvasW, canvasH,
                                 farHaze = if (stage.passId == WaterWorldRenderGraph.PassId.FAR_ECOLOGY) 0.45f else 0f
                             )
                         }
@@ -289,14 +353,14 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                 }
 
                 WaterWorldRenderGraph.PassId.LIGHTING -> {
-                    renderCausticsPass(s, opt, pool.scene, diagnosticOnly = false)
+                    renderCausticsPass(s, opt, snapshot, pool.scene, diagnosticOnly = false)
                     drawCount = 1
                     opticalNodesExecuted += WaterWorldRenderGraph.OpticalNodeId.CAUSTICS.wireId
                     if (capturePassDir != null || mode == WaterWorldRenderGraph.DiagnosticMode.OPTICAL_CAUSTICS) {
                         pool.diagnostic.bind()
                         GLES30.glClearColor(0f, 0f, 0f, 1f)
                         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT)
-                        renderCausticsPass(s, opt, pool.diagnostic, diagnosticOnly = true)
+                        renderCausticsPass(s, opt, snapshot, pool.diagnostic, diagnosticOnly = true)
                         if (capturePassDir != null) {
                             opticalPngShas.put(
                                 "caustics",
@@ -308,11 +372,11 @@ internal class WaterWorldStaticRenderer(private val root: File) {
 
                 WaterWorldRenderGraph.PassId.SPHERE_FRONT -> {
                     pool.copyColor(pool.scene, pool.snapshot, "pass09_pre_glass_front")
-                    renderGlassPass(s, opt, pool.snapshot, pool.scene, passSide = 1, diagnosticOnly = false)
+                    renderGlassPass(s, opt, snapshot, pool.snapshot, pool.scene, passSide = 1, diagnosticOnly = false)
                     drawCount = 1
                     opticalNodesExecuted += WaterWorldRenderGraph.OpticalNodeId.GLASS_REFRACTION.wireId
                     if (capturePassDir != null || mode == WaterWorldRenderGraph.DiagnosticMode.OPTICAL_GLASS_REFRACTION) {
-                        renderGlassPass(s, opt, pool.snapshot, pool.diagnostic, passSide = 1, diagnosticOnly = true)
+                        renderGlassPass(s, opt, snapshot, pool.snapshot, pool.diagnostic, passSide = 1, diagnosticOnly = true)
                         if (capturePassDir != null) {
                             opticalPngShas.put(
                                 "glass_refraction",
@@ -323,11 +387,10 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                 }
 
                 WaterWorldRenderGraph.PassId.FINAL_COMPOSITE -> {
-                    // Optical Node 4: 5-step Bloom (Bright -> 2x BlurH/V -> 4x BlurH/V -> Composite)
-                    runBloomChain(s, opt, pool, diagnosticOnly = false)
+                    runBloomChain(s, opt, snapshot, pool, diagnosticOnly = false)
                     opticalNodesExecuted += WaterWorldRenderGraph.OpticalNodeId.BLOOM.wireId
                     if (capturePassDir != null || mode == WaterWorldRenderGraph.DiagnosticMode.OPTICAL_BLOOM) {
-                        runBloomChain(s, opt, pool, diagnosticOnly = true)
+                        runBloomChain(s, opt, snapshot, pool, diagnosticOnly = true)
                         if (capturePassDir != null) {
                             opticalPngShas.put(
                                 "bloom",
@@ -335,8 +398,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                             )
                         }
                     }
-                    // Optical Node 5: Foreground Bokeh sparkles + Outer glossy droplets onto finalTarget
-                    drawCount += renderBokehLayer(s, opt, "FG", pool.finalTarget)
+                    drawCount += renderBokehLayer(s, opt, snapshot, "FG", pool.finalTarget)
                     pool.finalTarget.bind()
                     GLES30.glDisable(GLES30.GL_DEPTH_TEST)
                     GLES30.glDepthMask(false)
@@ -346,15 +408,15 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                         GLES30.GL_ONE, GLES30.GL_ONE_MINUS_SRC_ALPHA
                     )
                     for (item in stageDraws) {
-                        drawParticleQuad(s, opt, item, canvasW, canvasH, isOuterDroplet = true)
+                        drawParticleQuad(s, opt, snapshot, item, canvasW, canvasH, isOuterDroplet = true)
                         drawCount++
                     }
                     if (capturePassDir != null || mode == WaterWorldRenderGraph.DiagnosticMode.OPTICAL_BOKEH) {
                         pool.diagnostic.bind()
                         GLES30.glClearColor(0f, 0f, 0f, 1f)
                         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT)
-                        renderBokehLayer(s, opt, "BG", pool.diagnostic)
-                        renderBokehLayer(s, opt, "FG", pool.diagnostic)
+                        renderBokehLayer(s, opt, snapshot, "BG", pool.diagnostic)
+                        renderBokehLayer(s, opt, snapshot, "FG", pool.diagnostic)
                         if (capturePassDir != null) {
                             opticalPngShas.put(
                                 "bokeh",
@@ -376,7 +438,6 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                 opticalNodesApplied = stage.opticalNodes.map { it.wireId }
             )
 
-            // Snapshot intermediate pass PNG if requested or matching pass diagnostic mode
             val currentTarget = if (stage.passId == WaterWorldRenderGraph.PassId.FINAL_COMPOSITE) {
                 pool.finalTarget
             } else {
@@ -397,7 +458,6 @@ internal class WaterWorldStaticRenderer(private val root: File) {
             }
         }
 
-        // If a non-final diagnostic mode is active, copy diagnostic buffer into finalTarget for presentation
         if (mode != WaterWorldRenderGraph.DiagnosticMode.FINAL_SCENE) {
             pool.copyColor(pool.diagnostic, pool.finalTarget, "present_diagnostic_${mode.name}")
         }
@@ -428,7 +488,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         val mbDiv = 1024.0 * 1024.0
 
         return JSONObject()
-            .put("sceneVersion", "water-world-v2.1-work2")
+            .put("sceneVersion", "water-world-v2.1-work3-dynamic")
             .put("glVendor", glVendor)
             .put("glRenderer", glRenderer)
             .put("glVersion", GLES30.glGetString(GLES30.GL_VERSION).orEmpty())
@@ -462,7 +522,14 @@ internal class WaterWorldStaticRenderer(private val root: File) {
             .put("passRecords", passRecordsArr)
             .put("opticalNodesExecuted", JSONArray(opticalNodesExecuted.toList()))
             .put("diagnosticMode", mode.name)
-            .put("timeSeconds", snapshot.timeSeconds)
+            .put("frameId", snapshot.frameId)
+            .put("timeSeconds", snapshot.globalTimeSeconds)
+            .put("staticReferenceMode", snapshot.staticReferenceMode)
+            .put("motionElementCount", snapshot.elementStates.size)
+            .put("motionDependencyCount", snapshot.dependencyStates.size)
+            .put("coreVolumeSliceCount", snapshot.coreState.sliceCount)
+            .put("coreVolumeSliceSemantics", snapshot.coreState.sliceSemantics)
+            .put("coreFilamentStatus", snapshot.coreState.filamentStatus)
             .put("fboComplete", passRecords.all { it.fboComplete })
             .put("passPngSha256", passPngShas)
             .put("opticalPngSha256", opticalPngShas)
@@ -471,6 +538,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     private fun drawTransparentEntity(
         s: WaterWorldShaders,
         opt: WaterWorldSceneBindings.OpticalConfig,
+        snapshot: WaterWorldDynamicFrameSnapshot,
         item: DrawItem,
         canvasW: Float,
         canvasH: Float,
@@ -479,7 +547,47 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         val b = item.binding
         s.transparent.use()
         GLES30.glUniform2f(s.transparent.uniform("uCanvas"), canvasW, canvasH)
-        GLES30.glUniformMatrix4fv(s.transparent.uniform("uModel"), 1, false, b.model, 0)
+
+        var modelToUse = b.model
+        var deformMode = 0
+        var p0 = 0f
+        var p1 = 0f
+        var p2 = 0f
+        var p3 = 0f
+        var effectiveFarHaze = farHaze
+
+        if (!snapshot.staticReferenceMode) {
+            if (b.materialName == "fish") {
+                val fishState = snapshot.fishStates[b.objectId]
+                if (fishState != null) {
+                    writeFishModelMatrix(b.model, fishState, scratchModel)
+                    modelToUse = scratchModel
+                    deformMode = 1
+                    p0 = fishState.tailAmpPx
+                    p1 = fishState.tailPhaseRad
+                    p2 = fishState.finAmpPx
+                    p3 = fishState.finPhaseRad
+                    // Subtle depth tint when fish glides through rear arc (z < 0)
+                    if (fishState.offsetZ < 0f) {
+                        effectiveFarHaze = (effectiveFarHaze + (-fishState.offsetZ) * 0.16f).coerceAtMost(0.32f)
+                    }
+                }
+            } else if (b.materialName == "plant") {
+                val plantState = item.plantElementId?.let { snapshot.plantStates[it] }
+                if (plantState != null) {
+                    deformMode = 2
+                    val farScale = if (farHaze > 0.01f) 0.72f else 1.0f
+                    p0 = plantState.swayAmpPx * farScale
+                    p1 = plantState.swayPhaseRad
+                    p2 = plantState.leafFlutterAmpPx * farScale
+                    p3 = plantState.leafFlutterPhaseRad
+                }
+            }
+        }
+
+        GLES30.glUniform1i(s.transparent.uniform("uDeformMode"), deformMode)
+        GLES30.glUniform4f(s.transparent.uniform("uDeformParams"), p0, p1, p2, p3)
+        GLES30.glUniformMatrix4fv(s.transparent.uniform("uModel"), 1, false, modelToUse, 0)
         GLES30.glUniform4fv(s.transparent.uniform("uTint"), 1, b.tint, 0)
         GLES30.glUniform3fv(s.transparent.uniform("uKeyColor"), 1, b.lightColor, 0)
         GLES30.glUniform1f(s.transparent.uniform("uAmbient"), b.ambient)
@@ -494,7 +602,12 @@ internal class WaterWorldStaticRenderer(private val root: File) {
             else -> 2
         }
         GLES30.glUniform1i(s.transparent.uniform("uMaterialMode"), matMode)
-        GLES30.glUniform1f(s.transparent.uniform("uFarHaze"), farHaze)
+        GLES30.glUniform1f(s.transparent.uniform("uFarHaze"), effectiveFarHaze)
+        val wo = snapshot.waterOptics
+        val rockGain = if (snapshot.staticReferenceMode) 1f else (item.rockElementId?.let { snapshot.rockStates[it]?.causticsGain } ?: 1f)
+        GLES30.glUniform2f(s.transparent.uniform("uWaterNormalOffset"), wo.waterNormalOffsetU, wo.waterNormalOffsetV)
+        GLES30.glUniform1f(s.transparent.uniform("uCausticsPhase"), wo.causticsPhaseRad)
+        GLES30.glUniform1f(s.transparent.uniform("uCausticsGain"), rockGain)
         bindTex(0, item.texture)
         GLES30.glUniform1i(s.transparent.uniform("uTexture"), 0)
         bindTex(1, causticsHeightTex)
@@ -507,20 +620,39 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     private fun drawParticleQuad(
         s: WaterWorldShaders,
         opt: WaterWorldSceneBindings.OpticalConfig,
+        snapshot: WaterWorldDynamicFrameSnapshot,
         item: DrawItem,
         canvasW: Float,
         canvasH: Float,
         isOuterDroplet: Boolean
     ) {
         val b = item.binding
+        val bState = if (isOuterDroplet) {
+            snapshot.outerBubbleStates[b.objectId]
+        } else {
+            snapshot.innerBubbleStates[b.objectId]
+        }
+        val alphaScale = if (!snapshot.staticReferenceMode && bState != null) bState.alphaMul else 1f
+        if (alphaScale < 0.002f) return
+
+        val modelToUse = if (!snapshot.staticReferenceMode && bState != null) {
+            writeBubbleModelMatrix(b.model, item.mesh.centerX, item.mesh.centerY, bState, scratchModel)
+            scratchModel
+        } else {
+            b.model
+        }
+
         s.particleBokeh.use()
         GLES30.glUniform2f(s.particleBokeh.uniform("uCanvas"), canvasW, canvasH)
-        GLES30.glUniformMatrix4fv(s.particleBokeh.uniform("uModel"), 1, false, b.model, 0)
+        GLES30.glUniform1i(s.particleBokeh.uniform("uDeformMode"), 0)
+        GLES30.glUniform4f(s.particleBokeh.uniform("uDeformParams"), 0f, 0f, 0f, 0f)
+        GLES30.glUniformMatrix4fv(s.particleBokeh.uniform("uModel"), 1, false, modelToUse, 0)
         GLES30.glUniform4fv(s.particleBokeh.uniform("uTint"), 1, b.tint, 0)
         GLES30.glUniform1f(s.particleBokeh.uniform("uSphereClip"), if (b.sphereClip) 1f else 0f)
         GLES30.glUniform2f(s.particleBokeh.uniform("uSphereCenter"), opt.sphereCenterPx[0], opt.sphereCenterPx[1])
         GLES30.glUniform1f(s.particleBokeh.uniform("uSphereInnerRadius"), opt.sphereInnerRadiusPx)
         GLES30.glUniform1i(s.particleBokeh.uniform("uIsOuterDroplet"), if (isOuterDroplet) 1 else 0)
+        GLES30.glUniform1f(s.particleBokeh.uniform("uAlphaScale"), alphaScale)
         bindTex(0, item.texture)
         GLES30.glUniform1i(s.particleBokeh.uniform("uTexture"), 0)
         item.mesh.draw()
@@ -529,12 +661,13 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     private fun renderWaterPass(
         s: WaterWorldShaders,
         opt: WaterWorldSceneBindings.OpticalConfig,
-        snapshot: WaterWorldRenderTarget,
+        snapshot: WaterWorldDynamicFrameSnapshot,
+        snapshotTarget: WaterWorldRenderTarget,
         waterbedTex: Int,
         dst: WaterWorldRenderTarget,
         diagnosticOnly: Boolean
     ) {
-        check(snapshot.texture != dst.texture) { "FBO feedback in Water pass" }
+        check(snapshotTarget.texture != dst.texture) { "FBO feedback in Water pass" }
         dst.bind()
         GLES30.glDisable(GLES30.GL_DEPTH_TEST)
         GLES30.glDepthMask(false)
@@ -546,6 +679,8 @@ internal class WaterWorldStaticRenderer(private val root: File) {
             GLES30.glEnable(GLES30.GL_BLEND)
             GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA)
         }
+        val wo = snapshot.waterOptics
+        val core = snapshot.coreState
         s.water.use()
         GLES30.glUniform2f(s.water.uniform("uCanvas"), dst.size.toFloat(), dst.height.toFloat())
         GLES30.glUniform2f(s.water.uniform("uSphereCenter"), opt.sphereCenterPx[0], opt.sphereCenterPx[1])
@@ -561,7 +696,17 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         GLES30.glUniform3fv(s.water.uniform("uWaterDeep"), 1, opt.waterDeepColor, 0)
         GLES30.glUniform1f(s.water.uniform("uWaterbedBlend"), opt.waterbedBlend)
         GLES30.glUniform1i(s.water.uniform("uDiagnosticOnly"), if (diagnosticOnly) 1 else 0)
-        bindTex(0, snapshot.texture); GLES30.glUniform1i(s.water.uniform("uSceneSnapshot"), 0)
+        GLES30.glUniform2f(s.water.uniform("uWaterNormalOffset"), wo.waterNormalOffsetU, wo.waterNormalOffsetV)
+        GLES30.glUniform2f(s.water.uniform("uMeniscusPhases"), wo.meniscusWavePhaseRad, wo.meniscusSecondaryPhaseRad)
+        GLES30.glUniform1f(s.water.uniform("uWaterFlowPhase"), wo.waterFlowPhaseRad)
+        GLES30.glUniform4f(
+            s.water.uniform("uCoreFluidParams"),
+            core.fluidPhaseRad,
+            core.densityScale - 1f,
+            core.colorShift,
+            core.filamentPhaseRad,
+        )
+        bindTex(0, snapshotTarget.texture); GLES30.glUniform1i(s.water.uniform("uSceneSnapshot"), 0)
         bindTex(1, waterbedTex); GLES30.glUniform1i(s.water.uniform("uWaterbedTex"), 1)
         bindTex(2, waterNormalTex); GLES30.glUniform1i(s.water.uniform("uWaterNormalTex"), 2)
         bindTex(3, waterDepthTex); GLES30.glUniform1i(s.water.uniform("uWaterDepthTex"), 3)
@@ -572,16 +717,18 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     private fun renderGlassPass(
         s: WaterWorldShaders,
         opt: WaterWorldSceneBindings.OpticalConfig,
-        snapshot: WaterWorldRenderTarget,
+        snapshot: WaterWorldDynamicFrameSnapshot,
+        snapshotTarget: WaterWorldRenderTarget,
         dst: WaterWorldRenderTarget,
         passSide: Int,
         diagnosticOnly: Boolean
     ) {
-        check(snapshot.texture != dst.texture) { "FBO feedback in Glass pass $passSide" }
+        check(snapshotTarget.texture != dst.texture) { "FBO feedback in Glass pass $passSide" }
         dst.bind()
         GLES30.glDisable(GLES30.GL_DEPTH_TEST)
         GLES30.glDepthMask(false)
         GLES30.glDisable(GLES30.GL_BLEND)
+        val wo = snapshot.waterOptics
         s.glass.use()
         GLES30.glUniform2f(s.glass.uniform("uCanvas"), dst.size.toFloat(), dst.height.toFloat())
         GLES30.glUniform2f(s.glass.uniform("uSphereCenter"), opt.sphereCenterPx[0], opt.sphereCenterPx[1])
@@ -607,7 +754,10 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         GLES30.glUniform2fv(s.glass.uniform("uRightRimArc"), 1, opt.rightRimArcNorm, 0)
         GLES30.glUniform1f(s.glass.uniform("uRightRimIntensity"), opt.rightRimArcIntensity)
         GLES30.glUniform1i(s.glass.uniform("uDiagnosticOnly"), if (diagnosticOnly) 1 else 0)
-        bindTex(0, snapshot.texture); GLES30.glUniform1i(s.glass.uniform("uSceneSnapshot"), 0)
+        GLES30.glUniform1f(s.glass.uniform("uGlassRefractionScale"), wo.glassRefractionScale)
+        GLES30.glUniform1f(s.glass.uniform("uGlassFresnelScale"), wo.glassFresnelScale)
+        GLES30.glUniform1f(s.glass.uniform("uGlassOpticalPhase"), wo.glassOpticalPhaseRad)
+        bindTex(0, snapshotTarget.texture); GLES30.glUniform1i(s.glass.uniform("uSceneSnapshot"), 0)
         bindTex(1, glassShellMaskTex); GLES30.glUniform1i(s.glass.uniform("uGlassShellMask"), 1)
         drawFullscreenTriangle()
     }
@@ -615,6 +765,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     private fun renderCausticsPass(
         s: WaterWorldShaders,
         opt: WaterWorldSceneBindings.OpticalConfig,
+        snapshot: WaterWorldDynamicFrameSnapshot,
         dst: WaterWorldRenderTarget,
         diagnosticOnly: Boolean
     ) {
@@ -627,6 +778,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
             GLES30.glEnable(GLES30.GL_BLEND)
             GLES30.glBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE)
         }
+        val wo = snapshot.waterOptics
         s.caustics.use()
         GLES30.glUniform2f(s.caustics.uniform("uCanvas"), dst.size.toFloat(), dst.height.toFloat())
         GLES30.glUniform2f(s.caustics.uniform("uSphereCenter"), opt.sphereCenterPx[0], opt.sphereCenterPx[1])
@@ -634,17 +786,19 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         GLES30.glUniform2fv(s.caustics.uniform("uSunOrigin"), 1, opt.sunOriginNorm, 0)
         GLES30.glUniform1f(s.caustics.uniform("uGodRayIntensity"), opt.godRayIntensity)
         GLES30.glUniform3fv(s.caustics.uniform("uGodRayColor"), 1, opt.godRayColor, 0)
-        val beamBuf = FloatArray(18)
         for (i in 0 until minOf(6, opt.godRayBeams.size)) {
-            beamBuf[i * 3] = opt.godRayBeams[i].angleDeg
-            beamBuf[i * 3 + 1] = opt.godRayBeams[i].widthDeg
-            beamBuf[i * 3 + 2] = opt.godRayBeams[i].strength
+            scratchBeamBuf[i * 3] = opt.godRayBeams[i].angleDeg
+            scratchBeamBuf[i * 3 + 1] = opt.godRayBeams[i].widthDeg
+            scratchBeamBuf[i * 3 + 2] = opt.godRayBeams[i].strength
         }
-        GLES30.glUniform3fv(s.caustics.uniform("uBeams"), 6, beamBuf, 0)
+        GLES30.glUniform3fv(s.caustics.uniform("uBeams"), 6, scratchBeamBuf, 0)
         GLES30.glUniform1f(s.caustics.uniform("uSurfaceCausticStrength"), opt.surfaceCausticStrength)
         GLES30.glUniform1f(s.caustics.uniform("uBedCausticStrength"), opt.bedCausticStrength)
         GLES30.glUniform3fv(s.caustics.uniform("uBedCausticColor"), 1, opt.bedCausticColor, 0)
         GLES30.glUniform1i(s.caustics.uniform("uDiagnosticOnly"), if (diagnosticOnly) 1 else 0)
+        GLES30.glUniform2f(s.caustics.uniform("uWaterNormalOffset"), wo.waterNormalOffsetU, wo.waterNormalOffsetV)
+        GLES30.glUniform1f(s.caustics.uniform("uCausticsPhase"), wo.causticsPhaseRad)
+        GLES30.glUniform1f(s.caustics.uniform("uLightingShimmer"), wo.lightingShimmerScale)
         bindTex(0, waterNormalTex); GLES30.glUniform1i(s.caustics.uniform("uWaterNormalTex"), 0)
         bindTex(1, causticsHeightTex); GLES30.glUniform1i(s.caustics.uniform("uCausticsTex"), 1)
         drawFullscreenTriangle()
@@ -653,6 +807,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     private fun runBloomChain(
         s: WaterWorldShaders,
         opt: WaterWorldSceneBindings.OpticalConfig,
+        snapshot: WaterWorldDynamicFrameSnapshot,
         pool: WaterWorldRenderTargetPool,
         diagnosticOnly: Boolean
     ) {
@@ -660,7 +815,6 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         GLES30.glDepthMask(false)
         GLES30.glDisable(GLES30.GL_BLEND)
 
-        // 1. Bright pass -> bloomHalfA
         pool.bloomHalfA.bind()
         s.bloomBright.use()
         bindTex(0, pool.scene.texture)
@@ -669,16 +823,13 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         GLES30.glUniform1f(s.bloomBright.uniform("uSoftKnee"), opt.bloomSoftKnee)
         drawFullscreenTriangle()
 
-        // 2. Half-res BlurH -> bloomHalfB, BlurV -> bloomHalfA
         blurPass(s, pool.bloomHalfA, pool.bloomHalfB, horizontal = true)
         blurPass(s, pool.bloomHalfB, pool.bloomHalfA, horizontal = false)
 
-        // 3. Downsample 2x -> 4x (bloomHalfA -> bloomQuarterA) + BlurH -> bloomQuarterB + BlurV -> bloomQuarterA
         pool.copyColor(pool.bloomHalfA, pool.bloomQuarterA, "bloom_downsample_4x", GLES30.GL_LINEAR)
         blurPass(s, pool.bloomQuarterA, pool.bloomQuarterB, horizontal = true)
         blurPass(s, pool.bloomQuarterB, pool.bloomQuarterA, horizontal = false)
 
-        // 4. Composite Scene + Half Bloom + Quarter Bloom -> finalTarget (or diagnostic)
         val outTarget = if (diagnosticOnly) pool.diagnostic else pool.finalTarget
         check(outTarget.texture != pool.scene.texture) { "FBO feedback in Bloom composite" }
         outTarget.bind()
@@ -686,7 +837,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         bindTex(0, pool.scene.texture); GLES30.glUniform1i(s.bloomComposite.uniform("uSceneTex"), 0)
         bindTex(1, pool.bloomHalfA.texture); GLES30.glUniform1i(s.bloomComposite.uniform("uBloomHalfTex"), 1)
         bindTex(2, pool.bloomQuarterA.texture); GLES30.glUniform1i(s.bloomComposite.uniform("uBloomQuarterTex"), 2)
-        GLES30.glUniform1f(s.bloomComposite.uniform("uBloomStrength"), opt.bloomStrength)
+        GLES30.glUniform1f(s.bloomComposite.uniform("uBloomStrength"), opt.bloomStrength * snapshot.waterOptics.bloomResponseScale)
         GLES30.glUniform1f(s.bloomComposite.uniform("uMaxContribution"), opt.bloomMaxContribution)
         GLES30.glUniform1i(s.bloomComposite.uniform("uDiagnosticOnly"), if (diagnosticOnly) 1 else 0)
         drawFullscreenTriangle()
@@ -714,6 +865,7 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     private fun renderBokehLayer(
         s: WaterWorldShaders,
         opt: WaterWorldSceneBindings.OpticalConfig,
+        snapshot: WaterWorldDynamicFrameSnapshot,
         layer: String,
         dst: WaterWorldRenderTarget
     ): Int {
@@ -723,13 +875,18 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         GLES30.glEnable(GLES30.GL_BLEND)
         GLES30.glBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE)
         s.bokehOrb.use()
+        val wo = snapshot.waterOptics
         var count = 0
-        for (orb in opt.bokehOrbs) {
+        for ((idx, orb) in opt.bokehOrbs.withIndex()) {
             if (orb.layer != layer) continue
-            GLES30.glUniform2f(s.bokehOrb.uniform("uCenter"), orb.x, orb.y)
+            val sign = if (idx % 2 == 0) 1f else -1f
+            val cx = orb.x + wo.bokehDriftOffsetU * sign
+            val cy = orb.y + wo.bokehDriftOffsetV * (if (idx % 3 == 0) -1f else 1f)
+            val shimmer = if (snapshot.staticReferenceMode) 1f else (1f + 0.05f * sin(wo.bokehPhaseRad + idx * 1.1f))
+            GLES30.glUniform2f(s.bokehOrb.uniform("uCenter"), cx, cy)
             GLES30.glUniform1f(s.bokehOrb.uniform("uRadius"), orb.radius)
             GLES30.glUniform3fv(s.bokehOrb.uniform("uColor"), 1, orb.color, 0)
-            GLES30.glUniform1f(s.bokehOrb.uniform("uAlpha"), orb.alpha)
+            GLES30.glUniform1f(s.bokehOrb.uniform("uAlpha"), orb.alpha * shimmer)
             GLES30.glUniform1f(s.bokehOrb.uniform("uSoftness"), orb.softness)
             drawFullscreenTriangle()
             count++
@@ -774,12 +931,32 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         return viewport
     }
 
+    /**
+     * Inserts an OpenGL ES 3.0 GPU command fence and waits for completion. Returns `true` only when
+     * the GL driver actually signaled the fence without timeout or error.
+     */
+    fun waitForGpuFenceSync(timeoutNs: Long = 100_000_000L): Boolean {
+        val sync = GLES30.glFenceSync(GLES30.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
+        if (sync == 0L) return false
+        return try {
+            val status = GLES30.glClientWaitSync(sync, GLES30.GL_SYNC_FLUSH_COMMANDS_BIT, timeoutNs)
+            status == GLES30.GL_ALREADY_SIGNALED || status == GLES30.GL_CONDITION_SATISFIED
+        } finally {
+            GLES30.glDeleteSync(sync)
+        }
+    }
+
     fun capture(file: File): String = captureTarget(checkNotNull(targetPool).finalTarget, file)
 
-    fun capturePasses(directory: File): JSONObject {
+    fun capturePasses(
+        directory: File,
+        snapshot: WaterWorldDynamicFrameSnapshot? = null,
+    ): JSONObject {
         require(!directory.exists()) { "Capture evidence directory must be new" }
         check(directory.mkdirs())
-        val telemetry = render(
+        val effectiveSnapshot = snapshot ?: WaterWorldDynamicFrameSnapshot.staticZero(motionProfile)
+        val telemetry = renderDynamic(
+            snapshot = effectiveSnapshot,
             mode = WaterWorldRenderGraph.DiagnosticMode.FINAL_SCENE,
             capturePassDir = directory
         )
@@ -856,6 +1033,76 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         if (error != GLES30.GL_NO_ERROR) {
             glErrorCount += 1
             throw IllegalStateException("WaterWorld $pass GL error 0x${error.toString(16)}")
+        }
+    }
+
+    internal companion object {
+        internal fun resolveResidentGroupKey(objectId: String): String? = when {
+            objectId.startsWith("G01") -> "G01"
+            objectId.startsWith("G02") -> "G02"
+            objectId.startsWith("A01") -> "A01"
+            objectId.startsWith("A02") -> "A02"
+            objectId.startsWith("C01") -> "C01"
+            else -> null
+        }
+
+        internal fun resolvePlantElementId(objectId: String, isPlant: Boolean): String? {
+            if (!isPlant) return null
+            return if (objectId.contains("left")) "WW_PLANT_LEFT" else "WW_PLANT_RIGHT"
+        }
+
+        internal fun resolveRockElementId(objectId: String, isRock: Boolean): String? {
+            if (!isRock) return null
+            return when {
+                objectId.contains("03") -> "WW_ROCK_03"
+                objectId.contains("02") || objectId.contains("right") -> "WW_ROCK_02"
+                else -> "WW_ROCK_01"
+            }
+        }
+
+        /**
+         * Builds column-major 4x4 transform: `T(pivot + offset) * Rz(pitch) * S(facingScaleX * depthScale, depthScale, 1) * T(-pivot)`
+         * keeping `baseModel` Z translation intact (`baseModel[14]`).
+         */
+        internal fun writeFishModelMatrix(
+            baseModel: FloatArray,
+            fish: WaterWorldDynamicFrameSnapshot.FishMotionState,
+            out: FloatArray,
+        ) {
+            val sx = fish.facingScaleX * fish.depthScale
+            val sy = fish.depthScale
+            val c = cos(fish.pitchRad)
+            val s = sin(fish.pitchRad)
+            val a = c * sx
+            val b = -s * sy
+            val d = s * sx
+            val e = c * sy
+            val tx = fish.pivotX + fish.offsetX - (a * fish.pivotX + b * fish.pivotY)
+            val ty = fish.pivotY + fish.offsetY - (d * fish.pivotX + e * fish.pivotY)
+            out[0] = a; out[1] = d; out[2] = 0f; out[3] = 0f
+            out[4] = b; out[5] = e; out[6] = 0f; out[7] = 0f
+            out[8] = 0f; out[9] = 0f; out[10] = 1f; out[11] = 0f
+            out[12] = tx; out[13] = ty; out[14] = baseModel[14] + fish.offsetZ * 6f; out[15] = 1f
+        }
+
+        /**
+         * Builds column-major 4x4 bubble transform around mesh center:
+         * `T(center + offset) * S(scaleMul, scaleMul, 1) * T(-center)` preserving `baseModel[14]`.
+         */
+        internal fun writeBubbleModelMatrix(
+            baseModel: FloatArray,
+            centerX: Float,
+            centerY: Float,
+            bubble: WaterWorldDynamicFrameSnapshot.BubbleMotionState,
+            out: FloatArray,
+        ) {
+            val sc = bubble.scaleMul
+            val tx = centerX + bubble.offsetX - sc * centerX
+            val ty = centerY + bubble.offsetY - sc * centerY
+            out[0] = sc; out[1] = 0f; out[2] = 0f; out[3] = 0f
+            out[4] = 0f; out[5] = sc; out[6] = 0f; out[7] = 0f
+            out[8] = 0f; out[9] = 0f; out[10] = 1f; out[11] = 0f
+            out[12] = tx; out[13] = ty; out[14] = baseModel[14]; out[15] = 1f
         }
     }
 }

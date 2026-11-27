@@ -35,10 +35,22 @@ internal class WaterWorldDiagnosticsDrawer(
     private val onRestoreFinalScene: () -> Unit,
     private val onTriggerEvidenceExport: () -> Unit,
     private val onSaveEvidenceZip: () -> Unit = {},
+    private val onTogglePlayPause: () -> Unit = {},
+    private val onResetTimeline: () -> Unit = {},
+    private val onToggleStaticReference: () -> Unit = {},
+    private val onCycleSpeedScale: () -> Unit = {},
+    private val onTriggerDynamicEvidenceExport: () -> Unit = {},
 ) {
     internal companion object {
         const val TAG_DIAGNOSTICS_TOGGLE = "water_world_diagnostics_toggle"
         const val TAG_DIAGNOSTICS_PANEL = "water_world_diagnostics_panel"
+        const val TAG_SECTION_MOTION = "water_world_diag_section_motion"
+        const val TAG_MOTION_STATUS = "water_world_diag_motion_status"
+        const val TAG_PLAY_PAUSE_BUTTON = "water_world_diag_play_pause"
+        const val TAG_RESET_BUTTON = "water_world_diag_reset"
+        const val TAG_STATIC_REF_BUTTON = "water_world_diag_static_ref"
+        const val TAG_SPEED_TOGGLE_BUTTON = "water_world_diag_speed_toggle"
+        const val TAG_EXPORT_DYNAMIC_BUTTON = "water_world_export_dynamic_button"
         const val TAG_SECTION_RENDER_PASS = "water_world_diag_section_render_pass"
         const val TAG_SECTION_OPTICAL = "water_world_diag_section_optical"
         const val TAG_SECTION_GPU = "water_world_diag_section_gpu"
@@ -62,9 +74,15 @@ internal class WaterWorldDiagnosticsDrawer(
     val toggleButton: Button
     val panelContainer: LinearLayout
     val exportButton: Button
+    val exportDynamicButton: Button
     val saveZipButton: Button
     val restoreFinalButton: Button
+    val playPauseButton: Button
+    val resetButton: Button
+    val staticRefButton: Button
+    val speedToggleButton: Button
 
+    private val motionStatusView: TextView
     private val passListContainer: LinearLayout
     private val passPreviewCard: LinearLayout
     private val passPreviewLabel: TextView
@@ -139,6 +157,85 @@ internal class WaterWorldDiagnosticsDrawer(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
             ).apply { bottomMargin = dp(12) }
         )
+
+        // Section M: Work 3 Dynamic Playback Runtime Controls
+        val sectionM = createSectionCard(TAG_SECTION_MOTION, "M. Dynamic Runtime Playback (Work 3)")
+        motionStatusView = TextView(context).apply {
+            tag = TAG_MOTION_STATUS
+            text = "PLAYING · T=0.00s · 1.00x"
+            setTextColor(Color.parseColor("#E6DFF7FF"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.5f)
+            typeface = Typeface.MONOSPACE
+            setPadding(0, 0, 0, dp(8))
+        }
+        val row1 = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        playPauseButton = Button(context).apply {
+            tag = TAG_PLAY_PAUSE_BUTTON
+            text = "暂停"
+            contentDescription = "暂停或继续动态播放"
+            isAllCaps = false
+            minHeight = dp(48)
+            minimumHeight = dp(48)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            setTextColor(Color.WHITE)
+            typeface = Typeface.DEFAULT_BOLD
+            background = pillBackground(Color.parseColor("#CC0E7E90"), Color.parseColor("#8063DCEB"), dp(12))
+            setPadding(dp(12), dp(6), dp(12), dp(6))
+            setOnClickListener { onTogglePlayPause() }
+        }
+        resetButton = Button(context).apply {
+            tag = TAG_RESET_BUTTON
+            text = "重置 T=0"
+            contentDescription = "重置时间轴到 T=0"
+            isAllCaps = false
+            minHeight = dp(48)
+            minimumHeight = dp(48)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            setTextColor(Color.WHITE)
+            background = pillBackground(Color.parseColor("#BF0B4254"), Color.parseColor("#6638C5D8"), dp(12))
+            setPadding(dp(12), dp(6), dp(12), dp(6))
+            setOnClickListener { onResetTimeline() }
+        }
+        speedToggleButton = Button(context).apply {
+            tag = TAG_SPEED_TOGGLE_BUTTON
+            text = "速度 1.0x"
+            contentDescription = "切换动态播放速度"
+            isAllCaps = false
+            minHeight = dp(48)
+            minimumHeight = dp(48)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            setTextColor(Color.WHITE)
+            background = pillBackground(Color.parseColor("#BF0B4254"), Color.parseColor("#6638C5D8"), dp(12))
+            setPadding(dp(12), dp(6), dp(12), dp(6))
+            setOnClickListener { onCycleSpeedScale() }
+        }
+        row1.addView(playPauseButton, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(6) })
+        row1.addView(resetButton, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(6) })
+        row1.addView(speedToggleButton, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+
+        staticRefButton = Button(context).apply {
+            tag = TAG_STATIC_REF_BUTTON
+            text = "切换静态参考 T=0 (回归对比)"
+            contentDescription = "切换静态参考 T=0 模式"
+            isAllCaps = false
+            minHeight = dp(48)
+            minimumHeight = dp(48)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.5f)
+            setTextColor(Color.WHITE)
+            background = pillBackground(Color.parseColor("#BF104D5A"), Color.parseColor("#665CE6C8"), dp(12))
+            setPadding(dp(12), dp(6), dp(12), dp(6))
+            setOnClickListener { onToggleStaticReference() }
+        }
+        sectionM.addView(motionStatusView)
+        sectionM.addView(row1)
+        sectionM.addView(
+            staticRefButton,
+            LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(6) }
+        )
+        scrollContent.addView(sectionM)
 
         // Section A: Render Pass Diagnostics (11 Passes)
         val sectionA = createSectionCard(TAG_SECTION_RENDER_PASS, "A. Render Pass Diagnostics (11 Passes)")
@@ -279,7 +376,28 @@ internal class WaterWorldDiagnosticsDrawer(
             setPadding(0, dp(8), 0, 0)
             text = "包含：11 Pass + 5 Optics + final_fbo.png + android_screen_capture.png、ANDROID_GPU_TELEMETRY.json、SCREEN_VS_FBO_DIFF.json、EVIDENCE_SHA256_MANIFEST.json 与零权限 SAF ZIP 导出。导出后自动恢复 FINAL_SCENE。"
         }
+        exportDynamicButton = Button(context).apply {
+            tag = TAG_EXPORT_DYNAMIC_BUTTON
+            text = "导出 Work 3 动态证据 (T=0,1,2,4,8,12s)"
+            contentDescription = "导出 Work 3 动态多时间点证据包"
+            isAllCaps = false
+            minHeight = dp(48)
+            minimumHeight = dp(48)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            setTextColor(Color.WHITE)
+            typeface = Typeface.DEFAULT_BOLD
+            background = pillBackground(Color.parseColor("#CC147D8E"), Color.parseColor("#9963DCEB"), dp(14))
+            setPadding(dp(14), dp(8), dp(14), dp(8))
+            setOnClickListener { onTriggerDynamicEvidenceExport() }
+        }
         sectionD.addView(exportButton)
+        sectionD.addView(
+            exportDynamicButton,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(8) }
+        )
         sectionD.addView(
             saveZipButton,
             LinearLayout.LayoutParams(
@@ -360,6 +478,17 @@ internal class WaterWorldDiagnosticsDrawer(
         updateGpuDiagnostics(pageState, lastTelemetry, errorDetail)
     }
 
+    fun updateMotionStatus(runtime: WaterWorldMotionRuntime) {
+        motionStatusView.text = runtime.statusSummaryText()
+        playPauseButton.text = if (runtime.isPlaying) "暂停" else "继续"
+        speedToggleButton.text = String.format(Locale.US, "速度 %.1fx", runtime.speedScale)
+        staticRefButton.text = if (runtime.staticReferenceMode) {
+            "当前: 静态参考 T=0 · 点击恢复动态"
+        } else {
+            "切换静态参考 T=0 (回归对比)"
+        }
+    }
+
     fun updateExportResult(
         outputDir: File?,
         statusMessage: String,
@@ -370,6 +499,7 @@ internal class WaterWorldDiagnosticsDrawer(
             latestExportDir = outputDir
         }
         exportButton.isEnabled = !inFlight
+        exportDynamicButton.isEnabled = !inFlight
         saveZipButton.isEnabled = !inFlight && zipReady
         saveZipButton.alpha = if (saveZipButton.isEnabled) 1.0f else 0.55f
         exportSummaryView.text = statusMessage
@@ -437,8 +567,8 @@ internal class WaterWorldDiagnosticsDrawer(
                     background = pillBackground(Color.parseColor("#BF0E5B6E"), Color.parseColor("#805CE6C8"), dp(10))
                     setPadding(dp(10), dp(4), dp(10), dp(4))
                     setOnClickListener {
-                        if (hasExportedPng) {
-                            showPassPngPreview(wireId, exportedPng!!)
+                        if (exportedPng != null && exportedPng.isFile) {
+                            showPassPngPreview(wireId, exportedPng)
                         } else if (livePassMode != null) {
                             onSelectDiagnosticMode(livePassMode)
                         }

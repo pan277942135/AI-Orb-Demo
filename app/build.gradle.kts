@@ -75,6 +75,7 @@ android {
 // non-destructive Work 1.5 geometry. The master PNG is deliberately excluded.
 val waterWorldArchive = rootProject.file("releases/water-world-v2/WATER_WORLD_V2_ASSETS.zip")
 val waterWorldScene = rootProject.file("releases/water-world-v2-v21/work1_5_scene_assembly/WATER_WORLD_V2_1")
+val waterWorldWork3Motion = rootProject.file("releases/water-world-v2-v21/work3_full_dynamic_runtime/02_MOTION")
 val prepareWaterWorldAssets = tasks.register<Copy>("prepareWaterWorldAssets") {
   into(layout.buildDirectory.dir("generated/waterWorldAssets/water_world_v2_1"))
   from(zipTree(waterWorldArchive)) {
@@ -84,6 +85,10 @@ val prepareWaterWorldAssets = tasks.register<Copy>("prepareWaterWorldAssets") {
   }
   from(waterWorldScene) {
     include("02_SUPPLEMENTED_ASSETS/**", "03_SCENE_GRAPH/**")
+  }
+  from(waterWorldWork3Motion) {
+    include("work3_motion_profile.json")
+    into("04_MOTION")
   }
 }
 val verifyFrozenWaterWorldArchive = tasks.register<Exec>("verifyFrozenWaterWorldArchive") {

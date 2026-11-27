@@ -1,16 +1,21 @@
 package com.example.waterworld
 
 /**
- * Eight dedicated GLSL ES 3.0 shader programs implementing the Water World V2.1 Work 1.6
- * 11-stage Render Graph and 5 independent optical effects (1:1 parity with optical_config.json):
+ * Eight dedicated GLSL ES 3.0 shader programs implementing the Water World V2.1
+ * 11-stage Render Graph and 5 independent optical effects (Work 1.6 / Work 2 / Work 3 Dynamic Runtime):
  *  1. OPAQUE           — Pass 01 background atmosphere & top glare suppression
- *  2. TRANSPARENT      — Pass 05/07/08 alpha-cutout plants, rocks (organic warped caustics), & 4 fish
- *  3. RESIDENT_RIBBON  — Pass 02/10 multi-strand silk & filament ribbons (emerald, amber-gold, ice-cyan)
- *  4. WATER            — Pass 04 tangent-space normal distortion, air dome, wavy meniscus & basin scatter
- *  5. GLASS            — Pass 03/09 screen-space spherical refraction, dispersion, Fresnel & solar flares
- *  6. CAUSTICS         — Pass 06 volumetric golden god-rays & underwater caustic lighting
+ *  2. TRANSPARENT      — Pass 05/07/08 alpha-cutout plants (root-pinned sway), rocks (flowing caustics) & 4 fish (tail/fin deformation)
+ *  3. RESIDENT_RIBBON  — Pass 02/10 multi-strand silk ribbons with directional arc-length flow, width & brightness pulse
+ *  4. WATER            — Pass 04 dynamic tangent-space normal drift, wavy meniscus, AI Orb core fluid & basin scatter
+ *  5. GLASS            — Pass 03/09 screen-space spherical refraction, dispersion, Fresnel & gentle optical response
+ *  6. CAUSTICS         — Pass 06 volumetric golden god-rays & flowing underwater caustic lighting
  *  7. BLOOM            — Pass 11 bright-pass, separable Gaussian blur & luminance-preserving tone composite
- *  8. PARTICLE_BOKEH   — Pass 01/08/11 background/foreground bokeh orbs, sparkles & glossy water droplets
+ *  8. PARTICLE_BOKEH   — Pass 01/08/11 background/foreground bokeh orbs, sparkles & rising water droplets
+ *
+ * T=0 Regression Contract: when all Work 3 dynamic uniforms are set to their zero/identity defaults
+ * (`uDeformMode=0`, `uFlowOffsetU=0`, `uBrightnessScale=1`, `uWaterNormalOffset=(0,0)`,
+ * `uCausticsPhase=0`, `uLightingShimmer=1`, `uGlassRefractionScale=1`, `uGlassFresnelScale=1`,
+ * `uCoreFluidParams=(0,0,0,0)`), shader evaluation is mathematically identical to Work 2 T=0.
  */
 internal class WaterWorldShaders {
 
@@ -65,11 +70,62 @@ internal class WaterWorldShaders {
             layout(location=2) in vec2 aUv;
             uniform mat4 uModel;
             uniform vec2 uCanvas;
+            // Work 3 dynamic vertex deformation (0=none/T=0, 1=fish_tail_fin, 2=plant_sway, 3=resident_ribbon_wave)
+            uniform int uDeformMode;
+            uniform vec4 uDeformParams;
             out vec2 vUv;
             out vec2 vScreenUv;
             out vec3 vNormal;
             void main() {
-                vec4 p = uModel * vec4(aPosition, 1.0);
+                vec3 localPos = aPosition;
+                if (uDeformMode == 1) {
+                    // Fish swimming deformation: u=0 is tail tip, u=1 is nose/head.
+                    // Head stays rigid; tail sweeps smoothly with traveling sinusoidal wave; dorsal/pelvic fins flutter.
+                    float tailAmp = uDeformParams.x;
+                    float tailPhase = uDeformParams.y;
+                    float finAmp = uDeformParams.z;
+                    float finPhase = uDeformParams.w;
+                    float tailMask = pow(clamp(1.0 - aUv.x / 0.58, 0.0, 1.0), 1.75);
+                    float tailWave = sin(tailPhase + (1.0 - aUv.x) * 3.8);
+                    float dyTail = tailMask * tailAmp * tailWave;
+                    float dxTail = abs(dyTail) * 0.14 * tailMask;
+                    float bodySpan = smoothstep(0.18, 0.42, aUv.x) * (1.0 - smoothstep(0.68, 0.88, aUv.x));
+                    float finEdge = (1.0 - smoothstep(0.0, 0.30, aUv.y)) + smoothstep(0.70, 1.0, aUv.y);
+                    float finWave = sin(finPhase + aUv.x * 5.2 + aUv.y * 2.4);
+                    float dyFin = bodySpan * finEdge * finAmp * finWave;
+                    localPos.x += dxTail;
+                    localPos.y += dyTail + dyFin;
+                } else if (uDeformMode == 2) {
+                    // Aquatic plant sway: v=1.0 is root (strictly pinned), v=0.0 is leaf tip.
+                    float swayAmp = uDeformParams.x;
+                    float swayPhase = uDeformParams.y;
+                    float flutterAmp = uDeformParams.z;
+                    float flutterPhase = uDeformParams.w;
+                    float bendWeight = pow(clamp(1.0 - aUv.y, 0.0, 1.0), 1.75);
+                    float dx = bendWeight * (
+                        swayAmp * sin(swayPhase + aUv.y * 1.65) +
+                        flutterAmp * sin(flutterPhase + aUv.x * 4.6 + aUv.y * 3.2)
+                    );
+                    localPos.x += dx;
+                    localPos.y += abs(dx) * 0.08 * bendWeight;
+                } else if (uDeformMode == 3) {
+                    // Resident silk ribbon: subtle non-uniform lateral wave & width breathing along local cross-axis.
+                    float widthPulse = uDeformParams.x - 1.0;
+                    float waveAmp = uDeformParams.y;
+                    float wavePhase = uDeformParams.z;
+                    float endAnchor = smoothstep(0.0, 0.12, aUv.x) * smoothstep(0.0, 0.12, 1.0 - aUv.x);
+                    vec2 crossDir = aNormal.xy;
+                    float cLen = length(crossDir);
+                    crossDir = (cLen > 0.001) ? (crossDir / cLen) : vec2(0.0, 1.0);
+                    float acrossSigned = aUv.y * 2.0 - 1.0;
+                    float wave = sin(wavePhase + aUv.x * 9.0 + acrossSigned * 0.8) * 0.65
+                               + cos(wavePhase * 0.72 - aUv.x * 5.2) * 0.35;
+                    localPos.xy += crossDir * (
+                        waveAmp * wave * endAnchor +
+                        widthPulse * acrossSigned * 18.0 * endAnchor
+                    );
+                }
+                vec4 p = uModel * vec4(localPos, 1.0);
                 gl_Position = vec4(p.x / uCanvas.x * 2.0 - 1.0, 1.0 - p.y / uCanvas.y * 2.0, p.z / 2048.0, 1.0);
                 vNormal = normalize(transpose(inverse(mat3(uModel))) * aNormal);
                 vUv = aUv;
@@ -129,14 +185,17 @@ internal class WaterWorldShaders {
             uniform vec3 uCoreColor;
             uniform float uEmission;
             uniform float uRibbonStyle;
+            uniform float uFlowOffsetU;
+            uniform float uBrightnessScale;
             out vec4 fragColor;
             void main() {
                 float u = vUv.x;
                 float v = vUv.y;
                 float across = abs(v * 2.0 - 1.0);
                 float endFade = smoothstep(0.0, 0.11, u) * smoothstep(0.0, 0.13, 1.0 - u);
-                float twist = 0.82 + 0.18 * sin(u * 10.5 + uRibbonStyle * 2.1);
-                float wave = 0.5 + 0.5 * cos((v * 2.0 - 1.0) * 10.5 + u * 6.8);
+                float uFlow = u - uFlowOffsetU * 2.2;
+                float twist = 0.82 + 0.18 * sin(uFlow * 10.5 + uRibbonStyle * 2.1);
+                float wave = 0.5 + 0.5 * cos((v * 2.0 - 1.0) * 10.5 + uFlow * 6.8);
                 float streak = 0.56 + 0.44 * pow(wave, 1.4);
                 float body;
                 float rim;
@@ -156,7 +215,7 @@ internal class WaterWorldShaders {
                 }
                 float alpha = clamp((body + rim * 0.60 + core * 0.68) * uTint.a * endFade * twist, 0.0, 1.0);
                 if (alpha < 0.002) discard;
-                vec3 rgb = (uTint.rgb * (body + rim) + uCoreColor * core) * uEmission;
+                vec3 rgb = (uTint.rgb * (body + rim) + uCoreColor * core) * uEmission * uBrightnessScale;
                 fragColor = vec4(rgb * alpha, alpha);
             }
         """.trimIndent()
@@ -179,6 +238,9 @@ internal class WaterWorldShaders {
             uniform vec2 uCanvas;
             uniform int uMaterialMode; // 0=fish, 1=plant, 2=rock, 3=rock_moss
             uniform float uFarHaze;
+            uniform vec2 uWaterNormalOffset;
+            uniform float uCausticsPhase;
+            uniform float uCausticsGain;
             out vec4 fragColor;
             void main() {
                 float clipAlpha = 1.0;
@@ -209,14 +271,14 @@ internal class WaterWorldShaders {
                                      uAmbient + 0.24 * topLight + tipSun * 0.04);
                     if (uFarHaze > 0.01) col = mix(col, vec3(0.022, 0.26, 0.28), uFarHaze);
                 } else {
-                    // Rocks: crisp organic water-warped golden-white caustics + sunlit olive-moss crown
-                    vec3 wn = texture(uWaterNormalTex, fract(vScreenUv * 2.2)).rgb;
-                    vec2 cauUv = fract(vec2(su * 1.75 + (wn.r - 0.5) * 0.24 + 0.15,
-                                            sv * 2.05 + (wn.g - 0.5) * 0.24 + 0.09));
+                    // Rocks: physically stationary with dynamically flowing water-warped golden-white caustics
+                    vec3 wn = texture(uWaterNormalTex, fract(vScreenUv * 2.2 + uWaterNormalOffset * 1.4)).rgb;
+                    vec2 cauUv = fract(vec2(su * 1.75 + (wn.r - 0.5) * 0.24 + 0.15 + uCausticsPhase * 0.032,
+                                            sv * 2.05 + (wn.g - 0.5) * 0.24 + 0.09 - uCausticsPhase * 0.022));
                     float cSample = texture(uCausticsTex, cauUv).r;
                     float topSurface = 1.0 - smoothstep(0.04, 0.66, vUv.y);
                     float ridge = pow(clamp(cSample, 0.0, 1.0), 4.0);
-                    float cGain = (uMaterialMode == 2) ? 1.48 : 0.92;
+                    float cGain = ((uMaterialMode == 2) ? 1.48 : 0.92) * uCausticsGain;
                     float cGlow = ridge * topSurface * cGain;
                     float mossBoost = (uMaterialMode == 3) ? pow(topSurface, 1.4) * 0.36 : 0.0;
                     col = col * vec3(uAmbient + 0.40 * topLight, uAmbient + 0.44 * topLight, uAmbient + 0.42 * topLight);
@@ -251,6 +313,11 @@ internal class WaterWorldShaders {
             uniform vec3 uWaterDeep;
             uniform float uWaterbedBlend;
             uniform int uDiagnosticOnly;
+            // Work 3 dynamic water & AI Orb Core 32-slice spatial fluid coupling (zero at T=0)
+            uniform vec2 uWaterNormalOffset;
+            uniform vec2 uMeniscusPhases;
+            uniform float uWaterFlowPhase;
+            uniform vec4 uCoreFluidParams; // x=fluidPhase, y=densityDelta, z=colorShift, w=filamentPhase
             out vec4 fragColor;
             void main() {
                 vec2 px = vUv * uCanvas;
@@ -259,7 +326,7 @@ internal class WaterWorldShaders {
                 if (r2 > 1.0) discard;
                 float r = sqrt(r2);
                 float edgeSoft = 1.0 - smoothstep(0.960, 1.0, r);
-                vec3 wn = texture(uWaterNormalTex, fract(vUv * 2.0)).rgb;
+                vec3 wn = texture(uWaterNormalTex, fract(vUv * 2.0 + uWaterNormalOffset)).rgb;
                 float tnx = wn.r * 2.0 - 1.0;
                 float tny = wn.g * 2.0 - 1.0;
                 float relDepth = texture(uWaterDepthTex, vUv).r;
@@ -267,11 +334,11 @@ internal class WaterWorldShaders {
                 vec2 sampleUv = clamp(vUv + disp, vec2(0.0), vec2(1.0));
                 vec3 preS = texture(uSceneSnapshot, vec2(sampleUv.x, 1.0 - sampleUv.y)).rgb;
                 vec3 wbed = texture(uWaterbedTex, clamp(vUv + disp * 1.2, vec2(0.0), vec2(1.0))).rgb;
-                float cau = texture(uCausticsTex, fract((vUv + disp * 1.5) * 1.8)).r;
+                float cau = texture(uCausticsTex, fract((vUv + disp * 1.5) * 1.8 + uWaterNormalOffset * 1.35)).r;
 
                 float waveY = uMeniscusBaseY
-                    + uMeniscusAmp * sin((vUv.x - 0.36) * 13.5)
-                    + uMeniscusAmp * 0.38 * cos((vUv.x - 0.54) * 24.0)
+                    + uMeniscusAmp * sin((vUv.x - 0.36) * 13.5 + uMeniscusPhases.x)
+                    + uMeniscusAmp * 0.38 * cos((vUv.x - 0.54) * 24.0 - uMeniscusPhases.y)
                     - 0.026 * smoothstep(0.56, 0.72, vUv.x)
                     + 0.024 * smoothstep(0.70, 0.84, vUv.x)
                     + tny * 0.005;
@@ -308,6 +375,17 @@ internal class WaterWorldShaders {
                     float basinD = length(vec2((vUv.x - 0.54) / 0.22, (vUv.y - 0.62) / 0.16));
                     float basinGlow = exp(-basinD * basinD * 1.4) * 0.26;
                     col += vec3(0.04, 0.74, 0.78) * basinGlow;
+                    // AI Orb Core 32-slice spatial fluid swirl & procedural filament modulation (strictly 0 at T=0)
+                    float coreActive = smoothstep(0.0, 0.08, abs(uCoreFluidParams.x));
+                    if (coreActive > 0.001) {
+                        float swirl = sin(d.x * 4.4 + d.y * 3.1 + uCoreFluidParams.x * 1.35)
+                                    * cos(d.y * 4.8 - d.x * 2.6 - uWaterFlowPhase * 0.95);
+                        float filament = exp(-pow(sin(d.x * 5.5 - d.y * 4.2 + uCoreFluidParams.w * 1.4), 2.0) * 14.0);
+                        float coreMask = (1.0 - smoothstep(0.55, 0.96, r)) * smoothstep(0.02, 0.28, depthT);
+                        col *= (1.0 + (uCoreFluidParams.y + swirl * 0.035) * coreMask * coreActive);
+                        col += vec3(0.012, 0.068 + uCoreFluidParams.z * 0.4, 0.075 - uCoreFluidParams.z * 0.2)
+                             * (0.35 + 0.65 * filament) * coreMask * coreActive * 0.48;
+                    }
                     col = mix(preS, col, 0.91);
                 }
 
@@ -347,6 +425,10 @@ internal class WaterWorldShaders {
             uniform vec2 uRightRimArc;
             uniform float uRightRimIntensity;
             uniform int uDiagnosticOnly;
+            // Work 3 subtle optical modulation (identity 1.0, 1.0, 0.0 at T=0; sphere never rotates!)
+            uniform float uGlassRefractionScale;
+            uniform float uGlassFresnelScale;
+            uniform float uGlassOpticalPhase;
             out vec4 fragColor;
 
             vec3 sampleSnap(vec2 uv) {
@@ -359,17 +441,18 @@ internal class WaterWorldShaders {
                 vec2 d = (px - uSphereCenter) / uSphereOuterRadius;
                 float r2 = dot(d, d);
                 vec3 base = sampleSnap(vUv);
+                float effRefract = uRefractionStrength * uGlassRefractionScale;
 
                 if (uPassSide == 0) {
                     if (r2 > 1.0) discard;
                     float r = sqrt(r2);
                     float nz = sqrt(max(0.0001, 1.0 - r2));
                     float mask = smoothstep(0.55, 1.0, r);
-                    vec2 ruv = vUv - d * uRefractionStrength * mask;
+                    vec2 ruv = vUv - d * effRefract * mask;
                     vec3 s = sampleSnap(ruv);
                     float shellM = texture(uGlassShellMask, vUv).r;
                     float fresnel = pow(1.0 - nz, uFresnelPower);
-                    float rimGlow = fresnel * 0.20 + shellM * 0.08;
+                    float rimGlow = (fresnel * 0.20 + shellM * 0.08) * uGlassFresnelScale;
                     if (uDiagnosticOnly == 1) {
                         fragColor = vec4(abs(ruv.x - vUv.x) * 18.0 + uRimCool.r * rimGlow,
                                          abs(ruv.y - vUv.y) * 18.0 + uRimCool.g * rimGlow,
@@ -389,7 +472,7 @@ internal class WaterWorldShaders {
                     float nz = sqrt(max(0.0001, 1.0 - min(0.9999, r2)));
                     float wallFactor = smoothstep(0.84, 0.995, r);
                     float dispMask = smoothstep(0.91, 0.995, r);
-                    float off = uRefractionStrength * wallFactor * (1.0 - nz * 0.55);
+                    float off = effRefract * wallFactor * (1.0 - nz * 0.55);
                     float sR = sampleSnap(vUv - d * (off + uDispersion * dispMask)).r;
                     float sG = sampleSnap(vUv - d * off).g;
                     float sB = sampleSnap(vUv - d * (off - uDispersion * dispMask)).b;
@@ -401,24 +484,19 @@ internal class WaterWorldShaders {
                     float innerBrightRing = exp(-pow((r - 0.936) / 0.014, 2.0));
                     float shellM = texture(uGlassShellMask, vUv).r;
 
-                    // Crisp physical crystal-wall TIR groove without blackening the rim
                     col *= (1.0 - innerDarkBand * vec3(0.28, 0.20, 0.14));
 
-                    // Physically grounded directional sunlight entry (upper-left) & lens focus (lower-right)
                     float ulSunGlass = exp(-pow(d.x + 0.72, 2.0) * 1.45 - pow(d.y + 0.42, 2.0) * 1.45);
                     float lrSunGlass = exp(-pow(d.x - 0.56, 2.0) * 1.55 - pow(d.y - 0.54, 2.0) * 1.55);
                     float warmWeight = clamp(ulSunGlass + lrSunGlass * 0.95, 0.0, 1.0);
                     vec3 rimTint = mix(uRimCool, uRimWarm, warmWeight);
 
-                    float rimSpec = outerBevel * 1.05 + innerBrightRing * 0.62 + fresnel * 0.30 + shellM * 0.10;
-                    // Smooth luminous crystal crescent wrapping right to lower-right wall
+                    float rimSpec = (outerBevel * 1.05 + innerBrightRing * 0.62 + fresnel * 0.30 + shellM * 0.10) * uGlassFresnelScale;
                     float rightCrescent = exp(-pow((vUv.x - uRightRimArc.x) / 0.068, 2.0)
-                                              -pow((vUv.y - uRightRimArc.y) / 0.22, 2.0)) * wallFactor * uRightRimIntensity;
-                    float topArch = smoothstep(0.25, 0.88, -d.y) * (outerBevel * 0.80 + innerBrightRing * 0.58);
-                    // Cool aqua-cyan refraction on lower-left crystal rim (135..180 deg)
+                                              -pow((vUv.y - uRightRimArc.y) / 0.22, 2.0)) * wallFactor * uRightRimIntensity * uGlassFresnelScale;
+                    float topArch = smoothstep(0.25, 0.88, -d.y) * (outerBevel * 0.80 + innerBrightRing * 0.58) * uGlassFresnelScale;
                     float blAqua = smoothstep(0.05, 0.80, d.y) * smoothstep(0.15, 0.85, -d.x)
                                    * (outerBevel * 0.55 + innerBrightRing * 0.52 + fresnel * 0.28);
-                    // Warm sunlit crystal wall glow along upper-left & lower-right arcs
                     float sunWallGlow = (ulSunGlass * 0.58 + lrSunGlass * 0.52) * smoothstep(0.76, 0.99, r);
 
                     col += rimTint * rimSpec * vec3(0.88, 0.92, 0.95)
@@ -440,10 +518,11 @@ internal class WaterWorldShaders {
                     return;
                 }
 
+                float flareBreath = 1.0 + 0.025 * sin(uGlassOpticalPhase);
                 float dTL = length(vUv - uTopLeftFlare) / max(uTopLeftRadius, 0.001);
-                float flareTL = (exp(-dTL * dTL * 3.4) * 0.62 + exp(-dTL * dTL * 26.0) * 1.38) * uTopLeftIntensity;
+                float flareTL = (exp(-dTL * dTL * 3.4) * 0.62 + exp(-dTL * dTL * 26.0) * 1.38) * uTopLeftIntensity * flareBreath;
                 float dBR = length(vUv - uBottomRightFlare) / max(uBottomRightRadius, 0.001);
-                float flareBR = (exp(-dBR * dBR * 3.4) * 0.60 + exp(-dBR * dBR * 24.0) * 1.32) * uBottomRightIntensity;
+                float flareBR = (exp(-dBR * dBR * 3.4) * 0.60 + exp(-dBR * dBR * 24.0) * 1.32) * uBottomRightIntensity * flareBreath;
                 outCol += uTopLeftColor * flareTL + uBottomRightColor * flareBR;
                 fragColor = vec4(outCol, 1.0);
             }
@@ -465,6 +544,10 @@ internal class WaterWorldShaders {
             uniform float uBedCausticStrength;
             uniform vec3 uBedCausticColor;
             uniform int uDiagnosticOnly;
+            // Work 3 dynamic caustics & gentle god-ray shimmer (zero / 1.0 at T=0)
+            uniform vec2 uWaterNormalOffset;
+            uniform float uCausticsPhase;
+            uniform float uLightingShimmer;
             out vec4 fragColor;
             void main() {
                 vec2 px = vUv * uCanvas;
@@ -476,18 +559,20 @@ internal class WaterWorldShaders {
                 vec2 sd = vUv - uSunOrigin;
                 float dist = length(sd);
                 float raySum = 0.0;
+                float beamMotionGate = smoothstep(0.0, 0.05, abs(uCausticsPhase));
                 if (sd.y > 0.01 && dist < 0.44) {
                     float angDeg = degrees(atan(sd.y, sd.x));
                     for (int i = 0; i < 6; i++) {
-                        float da = angDeg - uBeams[i].x;
+                        float swayDeg = sin(uCausticsPhase * 1.15 + float(i) * 1.3) * 0.85 * beamMotionGate;
+                        float da = angDeg - (uBeams[i].x + swayDeg);
                         raySum += uBeams[i].z * exp(-(da * da) / (2.0 * uBeams[i].y * uBeams[i].y));
                     }
                     float lenFade = smoothstep(0.02, 0.08, dist) * (1.0 - smoothstep(0.16, 0.40, dist));
-                    raySum = clamp(raySum, 0.0, 1.05) * lenFade * uGodRayIntensity;
+                    raySum = clamp(raySum, 0.0, 1.05) * lenFade * uGodRayIntensity * uLightingShimmer;
                 }
 
-                vec3 wn = texture(uWaterNormalTex, fract(vUv * 1.8)).rgb;
-                vec2 cauUv = fract(vUv * 1.35 + (wn.rg - 0.5) * 0.12);
+                vec3 wn = texture(uWaterNormalTex, fract(vUv * 1.8 + uWaterNormalOffset * 1.25)).rgb;
+                vec2 cauUv = fract(vUv * 1.35 + (wn.rg - 0.5) * 0.12 + vec2(uCausticsPhase * 0.026, -uCausticsPhase * 0.019));
                 float cVal = pow(clamp(texture(uCausticsTex, cauUv).r, 0.0, 1.0), 2.1);
 
                 float upperBand = exp(-pow((vUv.y - 0.255) / 0.042, 2.0));
@@ -561,7 +646,6 @@ internal class WaterWorldShaders {
                     return;
                 }
                 vec3 c = max(vec3(0.0), scene + bloom);
-                // Luminance-preserving highlight roll-off (preserves fiery amber-gold & electric cyan hues)
                 float maxC = max(c.r, max(c.g, c.b));
                 if (maxC > 0.82) {
                     float targetMax = 0.82 + 0.18 * tanh((maxC - 0.82) * 1.45);
@@ -585,6 +669,7 @@ internal class WaterWorldShaders {
             uniform float uSphereInnerRadius;
             uniform vec2 uCanvas;
             uniform int uIsOuterDroplet;
+            uniform float uAlphaScale;
             out vec4 fragColor;
             void main() {
                 float clipAlpha = 1.0;
@@ -603,13 +688,15 @@ internal class WaterWorldShaders {
                     float spec2 = exp(-dot(b - vec2(0.32, 0.35), b - vec2(0.32, 0.35)) * 14.0) * 0.45;
                     vec3 rgb = tex.rgb * vec3(0.45, 0.55, 0.62) + rim * vec3(0.72, 0.90, 0.96)
                         + vec3(spec1 * 1.15) + spec2 * vec3(0.65, 0.85, 0.95);
-                    float a = clamp((tex.a * 0.45 + rim * 0.72 + spec1 * 0.92 + spec2 * 0.45) * uTint.a, 0.0, 1.0);
+                    float a = clamp((tex.a * 0.45 + rim * 0.72 + spec1 * 0.92 + spec2 * 0.45) * uTint.a * uAlphaScale, 0.0, 1.0);
+                    if (a < 0.002) discard;
                     fragColor = vec4(rgb, a);
                 } else {
                     float rim = smoothstep(0.55, 0.92, br) * (1.0 - smoothstep(0.92, 1.0, br));
                     float spec = exp(-dot(b + vec2(0.34), b + vec2(0.34)) * 16.0);
                     vec3 rgb = tex.rgb * uTint.rgb * vec3(0.70, 0.80, 0.85) + rim * vec3(0.65, 0.85, 0.95) + vec3(spec * 1.1);
-                    float a = clamp((tex.a * 0.65 + spec * 0.85 + rim * 0.50) * uTint.a * clipAlpha, 0.0, 1.0);
+                    float a = clamp((tex.a * 0.65 + spec * 0.85 + rim * 0.50) * uTint.a * clipAlpha * uAlphaScale, 0.0, 1.0);
+                    if (a < 0.002) discard;
                     fragColor = vec4(rgb, a);
                 }
             }

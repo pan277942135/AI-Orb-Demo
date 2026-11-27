@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "WATER_WORLD_V21_WORK3_STABILITY_V1",
+  "runs": [
+    {"durationSec": 10, "framesEvaluated": 300, "evalTotalMs": 36.41, "meanEvalUsPerFrame": 121.35, "nanOrInfCount": 0, "maxSingleStepFishPx": 0.716, "passed": true},
+    {"durationSec": 30, "framesEvaluated": 900, "evalTotalMs": 66.93, "meanEvalUsPerFrame": 74.37, "nanOrInfCount": 0, "maxSingleStepFishPx": 0.752, "passed": true},
+    {"durationSec": 60, "framesEvaluated": 1800, "evalTotalMs": 134.72, "meanEvalUsPerFrame": 74.85, "nanOrInfCount": 0, "maxSingleStepFishPx": 0.852, "passed": true}
+  ]
+}

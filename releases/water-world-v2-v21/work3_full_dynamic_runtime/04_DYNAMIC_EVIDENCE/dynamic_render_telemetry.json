@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "WATER_WORLD_V21_WORK3_SOFTWARE_DYNAMIC_TELEMETRY_V1",
+  "classification": "SOFTWARE_DYNAMIC_REFERENCE_CPU_1TO1",
+  "hardware_gpu_verified": false,
+  "WORK3_HARDWARE_DYNAMIC_VERIFIED": "NOT_RUN",
+  "provenance": "WORK3_AUTHORED_RUNTIME_HYPOTHESIS",
+  "waterWorldMotionValuesValidated": false,
+  "coreVolumeSliceCount": 32,
+  "coreVolumeSliceSemantics": "SPATIAL_Z_SLICE_NOT_TIME_FRAME",
+  "t0VsWork2GpuFinalRgbMae": 0.558888,
+  "t0ExactMatchWithWork2": false,
+  "work2ReferenceSha256": "1b180ef149491754ac4f0741f0e5716316971d57dfad1352a2f4a363bdec47a4",
+  "contactSheetSha256": "2a36341af0994d1af3fc55eae01bc16fda2c8f7c8ab26f5d722d4e8324fd98f4",
+  "totalWallTimeMs": 72741.24,
+  "frames": [
+    {"timeSec": 0.0, "file": "frame_t000.png", "sha256": "495caa93bca92b8ada95efb5d5f643c544a346ff3d71921b46df56a3d99e450a", "renderMs": 13531.34},
+    {"timeSec": 1.0, "file": "frame_t001.png", "sha256": "5aaff329d6967c62e16022205f7e9b41403e9378eb9ee56d8a46dc9cc1c69d6f", "renderMs": 11705.25},
+    {"timeSec": 2.0, "file": "frame_t002.png", "sha256": "5ed92ac048e9489498ae59f3a1cedf655e824491e0a97a4e310fb54c01387fb4", "renderMs": 10199.37},
+    {"timeSec": 4.0, "file": "frame_t004.png", "sha256": "1a929739eb5119023ac28aebef43bf27616c16ea0ff759e897c8d70ade83ac29", "renderMs": 11796.31},
+    {"timeSec": 8.0, "file": "frame_t008.png", "sha256": "9d0da774b825d2ce3f2bdb885a6d769b96967208f64218dee939ddfdc303ecae", "renderMs": 11671.74},
+    {"timeSec": 12.0, "file": "frame_t012.png", "sha256": "3937f79776ce6ae0e6be3ccd52aeac2a9b9d476d8c1d5490dae7583ae6fbdc4e", "renderMs": 10055.11}
+  ],
+  "pairwiseRgbMae": {
+    "frame_t000.png_to_frame_t001.png": 7.5096,
+    "frame_t001.png_to_frame_t002.png": 6.3425,
+    "frame_t002.png_to_frame_t004.png": 9.5215,
+    "frame_t004.png_to_frame_t008.png": 11.2075,
+    "frame_t008.png_to_frame_t012.png": 11.0510,
+    "frame_t000.png_to_frame_t008.png": 9.0749,
+    "frame_t000.png_to_frame_t012.png": 8.7602
+  }
+}

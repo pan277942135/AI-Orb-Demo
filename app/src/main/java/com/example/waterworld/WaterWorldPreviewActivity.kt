@@ -216,14 +216,23 @@ class WaterWorldPreviewActivity : Activity() {
         Thread(runnable, "WaterWorldAssetStaging").apply { isDaemon = true }
     }
 
+    @Volatile
+    internal var motionRuntime: WaterWorldMotionRuntime = WaterWorldMotionRuntime()
+        private set
+
+    @Volatile
+    private var lastUiTelemetryUpdateNs: Long = 0L
+
     internal val pageState: PageState get() = currentPageState
     internal val errorDetail: String? get() = lastErrorMessage
     internal val activeDiagnosticMode: WaterWorldRenderGraph.DiagnosticMode get() = currentDiagnosticMode
     internal val isDiagnosticsExpanded: Boolean get() = diagnosticsDrawer.isExpanded
+    internal val currentRenderMode: Int get() = surface.renderMode
 
     private data class PreparedScene(
         val root: File,
         val scene: WaterWorldSceneBindings.LoadedScene,
+        val profile: WaterWorldMotionProfile,
         val generation: Long,
     )
 
@@ -467,6 +476,11 @@ class WaterWorldPreviewActivity : Activity() {
             onRestoreFinalScene = { selectDiagnosticMode(WaterWorldRenderGraph.DiagnosticMode.FINAL_SCENE) },
             onTriggerEvidenceExport = { triggerSynchronizedExport() },
             onSaveEvidenceZip = { launchSaveEvidenceZipSaf() },
+            onTogglePlayPause = { togglePlayPauseDynamic() },
+            onResetTimeline = { resetDynamic(autoPlay = motionRuntime.isPlaying) },
+            onToggleStaticReference = { setStaticReferenceMode(!motionRuntime.staticReferenceMode) },
+            onCycleSpeedScale = { cycleDynamicSpeedScale() },
+            onTriggerDynamicEvidenceExport = { triggerDynamicEvidenceExport() },
         )
         rootFrame.addView(
             diagnosticsDrawer.rootContainer,
@@ -540,7 +554,7 @@ class WaterWorldPreviewActivity : Activity() {
         val updateTime = runCatching {
             packageManager.getPackageInfo(packageName, 0).lastUpdateTime
         }.getOrDefault(0L)
-        return "$assetRootPath|$updateTime|v21_work2"
+        return "$assetRootPath|$updateTime|v21_work3_dynamic"
     }
 
     private fun startBackgroundScenePreparation(forceReextract: Boolean) {
@@ -576,10 +590,12 @@ class WaterWorldPreviewActivity : Activity() {
 
                 if (isActivityDestroyed || isFinishing || gen != preparationGeneration) return@execute
                 val scene = WaterWorldSceneBindings.loadScene(root)
+                val profile = WaterWorldMotionProfile.loadFromAssetRoot(root)
                 if (isActivityDestroyed || isFinishing || gen != preparationGeneration) return@execute
 
                 resourceStagingMs = (System.nanoTime() - stageStartNs) / 1_000_000.0
-                preparedScene = PreparedScene(root, scene, gen)
+                motionRuntime = WaterWorldMotionRuntime(profile = profile)
+                preparedScene = PreparedScene(root, scene, profile, gen)
                 runOnUiThread {
                     if (!isActivityDestroyed && !isFinishing) {
                         surface.requestRender()
@@ -626,6 +642,73 @@ class WaterWorldPreviewActivity : Activity() {
 
     internal fun setDiagnosticsExpanded(expanded: Boolean) {
         diagnosticsDrawer.setExpanded(expanded)
+        if (expanded) {
+            diagnosticsDrawer.updateMotionStatus(motionRuntime)
+        }
+    }
+
+    internal fun playDynamic() {
+        motionRuntime.play(System.nanoTime())
+        syncSurfaceRenderMode()
+        diagnosticsDrawer.updateMotionStatus(motionRuntime)
+    }
+
+    internal fun pauseDynamic() {
+        motionRuntime.pause()
+        syncSurfaceRenderMode()
+        diagnosticsDrawer.updateMotionStatus(motionRuntime)
+    }
+
+    internal fun resumeDynamic() {
+        motionRuntime.resume(System.nanoTime())
+        syncSurfaceRenderMode()
+        diagnosticsDrawer.updateMotionStatus(motionRuntime)
+    }
+
+    internal fun togglePlayPauseDynamic() {
+        if (motionRuntime.isPlaying) pauseDynamic() else resumeDynamic()
+    }
+
+    internal fun resetDynamic(autoPlay: Boolean = false) {
+        motionRuntime.reset(autoPlay = autoPlay, nowNanos = System.nanoTime())
+        syncSurfaceRenderMode()
+        diagnosticsDrawer.updateMotionStatus(motionRuntime)
+        surface.requestRender()
+    }
+
+    internal fun setSpeedScale(scale: Float) {
+        motionRuntime.setSpeedScale(scale)
+        diagnosticsDrawer.updateMotionStatus(motionRuntime)
+    }
+
+    internal fun cycleDynamicSpeedScale() {
+        val next = when {
+            motionRuntime.speedScale < 0.75f -> 1.0f
+            motionRuntime.speedScale < 1.25f -> 1.5f
+            else -> 0.5f
+        }
+        setSpeedScale(next)
+    }
+
+    internal fun setStaticReferenceMode(enabled: Boolean) {
+        motionRuntime.setStaticReferenceMode(enabled)
+        syncSurfaceRenderMode()
+        diagnosticsDrawer.updateMotionStatus(motionRuntime)
+        surface.requestRender()
+    }
+
+    private fun syncSurfaceRenderMode() {
+        val desired = if (motionRuntime.isPlaying && currentPageState == PageState.READY) {
+            GLSurfaceView.RENDERMODE_CONTINUOUSLY
+        } else {
+            GLSurfaceView.RENDERMODE_WHEN_DIRTY
+        }
+        if (surface.renderMode != desired) {
+            surface.renderMode = desired
+        }
+        if (desired == GLSurfaceView.RENDERMODE_CONTINUOUSLY) {
+            surface.requestRender()
+        }
     }
 
     internal fun selectDiagnosticMode(mode: WaterWorldRenderGraph.DiagnosticMode) {
@@ -719,11 +802,56 @@ class WaterWorldPreviewActivity : Activity() {
                                 telemetry = captured.telemetry,
                                 viewport = captured.viewport,
                                 fboFrameId = captured.fboFrameId,
+                                gpuFenceSignaled = captured.gpuFenceSignaled,
                             )
                         }
                     }.onFailure { err ->
                         exportInFlight = false
                         val msg = "证据导出失败: ${err.message ?: err.javaClass.simpleName}"
+                        diagnosticsDrawer.updateExportResult(null, msg, inFlight = false, zipReady = false)
+                        Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        )
+        surface.requestRender()
+    }
+
+    internal fun triggerDynamicEvidenceExport() {
+        if (currentPageState != PageState.READY) {
+            val reason = lastErrorMessage ?: "场景尚未就绪 (${currentPageState.name})"
+            diagnosticsDrawer.updateExportResult(null, "无法导出动态证据：$reason", inFlight = false)
+            Toast.makeText(this, "无法导出动态证据：$reason", Toast.LENGTH_LONG).show()
+            return
+        }
+        if (exportInFlight) return
+        val baseDir = getExternalFilesDir(null) ?: cacheDir
+        val outputDir = File(baseDir, "water_world_v2_1_work3_dynamic_${System.currentTimeMillis()}")
+        exportInFlight = true
+        diagnosticsDrawer.updateExportResult(
+            outputDir = null,
+            statusMessage = "正在确定性采集 Work 3 动态序列 (T=0,1,2,4,8,12s) + 47 元素 + 28 依赖 + SHA256…",
+            inFlight = true,
+        )
+        preview.scheduleDynamicSequenceCapture(
+            outputDir = outputDir,
+            onCompleted = { result ->
+                runOnUiThread {
+                    result.onSuccess { summary ->
+                        val zipFile = runCatching { packageDynamicEvidenceZip(summary.directory) }.getOrNull()
+                        exportInFlight = false
+                        latestEvidenceZipFile = zipFile
+                        val msg = "Work 3 动态证据已导出 (${summary.capturedFrames} 帧 T=0..12s · Fence ${summary.fenceSignaledCount}/${summary.capturedFrames})"
+                        diagnosticsDrawer.updateExportResult(
+                            outputDir = summary.directory,
+                            statusMessage = msg,
+                            inFlight = false,
+                            zipReady = zipFile?.isFile == true,
+                        )
+                        Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                    }.onFailure { err ->
+                        exportInFlight = false
+                        val msg = "Work 3 动态证据导出失败: ${err.message ?: err.javaClass.simpleName}"
                         diagnosticsDrawer.updateExportResult(null, msg, inFlight = false, zipReady = false)
                         Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
                     }
@@ -744,8 +872,10 @@ class WaterWorldPreviewActivity : Activity() {
         telemetry: JSONObject,
         viewport: WaterWorldStaticRenderer.PresentViewport?,
         fboFrameId: Long,
+        gpuFenceSignaled: Boolean = false,
     ) {
         enrichTelemetryWithActivityMetrics(telemetry)
+        telemetry.put("gpuFenceSignaled", gpuFenceSignaled)
         File(outputDir, "ANDROID_GPU_TELEMETRY.json").writeText(telemetry.toString(2))
         val sw = surface.width
         val sh = surface.height
@@ -775,6 +905,7 @@ class WaterWorldPreviewActivity : Activity() {
                             viewport = viewport,
                             fboFrameId = fboFrameId,
                             screenCaptureTimestampMs = screenCaptureMs,
+                            gpuFenceSignaled = gpuFenceSignaled,
                         )
                         File(outputDir, "SCREEN_VS_FBO_DIFF.json").writeText(diffReport.toString(2))
                         val manifestCount = writeEvidenceSha256Manifest(outputDir)
@@ -868,6 +999,29 @@ class WaterWorldPreviewActivity : Activity() {
         return zipFile
     }
 
+    internal fun packageDynamicEvidenceZip(outputDir: File): File {
+        val zipFile = File(outputDir, "WATER_WORLD_V2_1_WORK3_DYNAMIC_EVIDENCE.zip")
+        val files = outputDir.walkTopDown()
+            .filter { it.isFile && it.name != zipFile.name }
+            .sortedBy { it.relativeTo(outputDir).path }
+            .toList()
+        ZipOutputStream(FileOutputStream(zipFile)).use { zos ->
+            val buf = ByteArray(16 * 1024)
+            for (file in files) {
+                zos.putNextEntry(ZipEntry(file.relativeTo(outputDir).path))
+                FileInputStream(file).use { fis ->
+                    while (true) {
+                        val read = fis.read(buf)
+                        if (read <= 0) break
+                        zos.write(buf, 0, read)
+                    }
+                }
+                zos.closeEntry()
+            }
+        }
+        return zipFile
+    }
+
     internal fun launchSaveEvidenceZipSaf() {
         val zipFile = latestEvidenceZipFile
         if (zipFile == null || !zipFile.isFile) {
@@ -934,6 +1088,7 @@ class WaterWorldPreviewActivity : Activity() {
         viewport: WaterWorldStaticRenderer.PresentViewport?,
         fboFrameId: Long,
         screenCaptureTimestampMs: Long,
+        gpuFenceSignaled: Boolean = false,
     ): JSONObject {
         val fbo = BitmapFactory.decodeFile(fboFile.path)
             ?: throw IllegalStateException("Failed to decode final_fbo.png at ${fboFile.path}")
@@ -969,9 +1124,12 @@ class WaterWorldPreviewActivity : Activity() {
                     .put("fboFrameId", fboFrameId)
                     .put("screenCaptureTimestampMs", screenCaptureTimestampMs)
                     .put("sameSceneSnapshotVerified", true)
-                    .put("frameSyncVerification", "CHOREOGRAPHER_POST_SWAP_BEST_EFFORT")
-                    .put("strictHardwareFenceVerified", false)
-                    .put("sameFrameSynchronized", false)
+                    .put(
+                        "frameSyncVerification",
+                        if (gpuFenceSignaled) "GL_FENCE_SYNC_AND_CHOREOGRAPHER_POST_SWAP" else "CHOREOGRAPHER_POST_SWAP_BEST_EFFORT"
+                    )
+                    .put("strictHardwareFenceVerified", gpuFenceSignaled)
+                    .put("sameFrameSynchronized", gpuFenceSignaled)
                     .put("capturedMode", WaterWorldRenderGraph.DiagnosticMode.FINAL_SCENE.name)
                     .put("centerSquareRgbMae", mae)
                     .put("viewportCropRgbMae", mae)
@@ -986,6 +1144,8 @@ class WaterWorldPreviewActivity : Activity() {
     }
 
     override fun onPause() {
+        motionRuntime.onActivityPause()
+        surface.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
         surface.onPause()
         super.onPause()
     }
@@ -993,6 +1153,8 @@ class WaterWorldPreviewActivity : Activity() {
     override fun onResume() {
         super.onResume()
         surface.onResume()
+        motionRuntime.onActivityResume(System.nanoTime())
+        syncSurfaceRenderMode()
         if (currentPageState == PageState.READY) {
             surface.requestRender()
         }
@@ -1026,11 +1188,17 @@ class WaterWorldPreviewActivity : Activity() {
         val telemetry: JSONObject,
         val viewport: WaterWorldStaticRenderer.PresentViewport,
         val fboFrameId: Long,
+        val gpuFenceSignaled: Boolean,
     )
 
     private data class PendingCaptureRequest(
         val directory: File,
         val callback: (Result<SynchronizedCaptureResult>) -> Unit,
+    )
+
+    private data class PendingDynamicCaptureRequest(
+        val directory: File,
+        val callback: (Result<WaterWorldDynamicEvidenceRecorder.DynamicCaptureSummary>) -> Unit,
     )
 
     private inner class Preview(
@@ -1050,6 +1218,9 @@ class WaterWorldPreviewActivity : Activity() {
         @Volatile
         private var pendingCapture: PendingCaptureRequest? = null
 
+        @Volatile
+        private var pendingDynamicCapture: PendingDynamicCaptureRequest? = null
+
         fun setDiagnosticMode(mode: WaterWorldRenderGraph.DiagnosticMode) {
             activeMode = mode
         }
@@ -1059,6 +1230,13 @@ class WaterWorldPreviewActivity : Activity() {
             onFramePresented: (Result<SynchronizedCaptureResult>) -> Unit,
         ) {
             pendingCapture = PendingCaptureRequest(outputDir, onFramePresented)
+        }
+
+        fun scheduleDynamicSequenceCapture(
+            outputDir: File,
+            onCompleted: (Result<WaterWorldDynamicEvidenceRecorder.DynamicCaptureSummary>) -> Unit,
+        ) {
+            pendingDynamicCapture = PendingDynamicCaptureRequest(outputDir, onCompleted)
         }
 
         fun release() {
@@ -1143,25 +1321,49 @@ class WaterWorldPreviewActivity : Activity() {
             }
 
             val renderer = checkNotNull(engine)
+
+            // Handle deterministic multi-timestamp Work 3 dynamic evidence export (T=0,1,2,4,8,12)
+            val dynCaptureReq = pendingDynamicCapture
+            if (dynCaptureReq != null) {
+                pendingDynamicCapture = null
+                val result = runCatching {
+                    val recorder = WaterWorldDynamicEvidenceRecorder(motionRuntime)
+                    val summary = recorder.captureDeterministicSequence(renderer, dynCaptureReq.directory)
+                    // Re-present live frame cleanly so screen never stays frozen on T=12
+                    val liveSnap = motionRuntime.latestSnapshot
+                    renderer.renderDynamic(liveSnap, mode = activeMode)
+                    renderer.present(width, height)
+                    summary
+                }
+                dynCaptureReq.callback(result)
+                return
+            }
+
+            // Handle synchronized single-frame capture with GL Fence Sync
             val captureReq = pendingCapture
             if (captureReq != null) {
                 pendingCapture = null
                 val result = runCatching {
-                    val telemetry = renderer.capturePasses(captureReq.directory)
+                    val captureSnapshot = motionRuntime.latestSnapshot
+                    val telemetry = renderer.capturePasses(captureReq.directory, captureSnapshot)
                     val viewport = renderer.present(width, height)
+                    val fenceOk = renderer.waitForGpuFenceSync()
                     val frameId = renderer.currentPresentedFrameId()
                     telemetry.put("presentViewport", viewport.toJson())
                     telemetry.put("presentedFrameId", frameId)
+                    telemetry.put("gpuFenceSignaled", fenceOk)
                     GLES30.glFinish()
-                    SynchronizedCaptureResult(captureReq.directory, telemetry, viewport, frameId)
+                    SynchronizedCaptureResult(captureReq.directory, telemetry, viewport, frameId, fenceOk)
                 }
                 captureReq.callback(result)
                 return
             }
 
             try {
+                val nowNs = System.nanoTime()
+                val snapshot = motionRuntime.stepFrame(nowNs)
                 val modeToRender = activeMode
-                val telemetry = renderer.render(mode = modeToRender)
+                val telemetry = renderer.renderDynamic(snapshot = snapshot, mode = modeToRender)
                 val passCount = telemetry.optInt("passCount", 0)
                 val opticalCount = telemetry.optInt("opticalNodeCount", 0)
                 val fboComplete = telemetry.optBoolean("fboComplete", false)
@@ -1172,6 +1374,7 @@ class WaterWorldPreviewActivity : Activity() {
                 val viewport = renderer.present(width, height)
                 telemetry.put("presentViewport", viewport.toJson())
                 telemetry.put("presentedFrameId", renderer.currentPresentedFrameId())
+                telemetry.put("performanceStats", motionRuntime.currentPerformanceStats().toJson())
                 val glErr = GLES30.glGetError()
                 check(glErr == GLES30.GL_NO_ERROR) { "Present GL error 0x${glErr.toString(16)}" }
 
@@ -1182,9 +1385,31 @@ class WaterWorldPreviewActivity : Activity() {
                     }
                     enrichTelemetryWithActivityMetrics(telemetry)
                     reportPageState(PageState.READY, telemetry = telemetry)
+                    // Work 3 auto-play on Tab 3 entry once first FINAL_SCENE frame is live
+                    if (motionRuntime.profile.autoPlayOnEnter && !motionRuntime.staticReferenceMode) {
+                        motionRuntime.play(System.nanoTime())
+                        runOnUiThread {
+                            if (!isActivityDestroyed && !isFinishing) {
+                                syncSurfaceRenderMode()
+                                diagnosticsDrawer.updateMotionStatus(motionRuntime)
+                            }
+                        }
+                    }
                 } else if (hasPresentedFinalScene) {
-                    enrichTelemetryWithActivityMetrics(telemetry)
-                    reportPageState(PageState.READY, telemetry = telemetry)
+                    // Throttle UI drawer updates to ~4Hz during continuous 60Hz playback to avoid UI churn
+                    if (nowNs - lastUiTelemetryUpdateNs >= 250_000_000L) {
+                        lastUiTelemetryUpdateNs = nowNs
+                        enrichTelemetryWithActivityMetrics(telemetry)
+                        latestTelemetry = telemetry
+                        if (diagnosticsDrawer.isExpanded) {
+                            runOnUiThread {
+                                if (!isActivityDestroyed && !isFinishing) {
+                                    diagnosticsDrawer.updateTelemetry(currentPageState, telemetry, lastErrorMessage)
+                                    diagnosticsDrawer.updateMotionStatus(motionRuntime)
+                                }
+                            }
+                        }
+                    }
                 }
             } catch (failure: Throwable) {
                 android.util.Log.e("WaterWorldPreview", "Render frame failed", failure)
