@@ -387,6 +387,8 @@ uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProj;
 uniform float uFluidPhase;
+// Work 3.1: 0 = FULL_ORB (Tab 1 / Tab 2 default), 1 = CORE_VOLUME_ONLY (Water World Tab 3 rigid sphere alignment)
+uniform int uCoreRenderMode;
 
 out vec3 vWorldPos;
 out vec3 vWorldNormal;
@@ -406,16 +408,23 @@ vec3 displaceGlass(vec3 p, float phase) {
 
 void main() {
     vec3 p = normalize(aPos);
-    vec3 displaced = displaceGlass(p, uFluidPhase);
-
-    vec3 up = abs(p.y) < 0.92 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
-    vec3 tangent = normalize(cross(up, p));
-    vec3 bitangent = normalize(cross(p, tangent));
-    float eps = 0.014;
-    vec3 pT = displaceGlass(normalize(p + tangent * eps), uFluidPhase);
-    vec3 pB = displaceGlass(normalize(p + bitangent * eps), uFluidPhase);
-    vec3 localNormal = normalize(cross(pT - displaced, pB - displaced));
-    if (dot(localNormal, p) < 0.0) localNormal = -localNormal;
+    vec3 displaced;
+    vec3 localNormal;
+    if (uCoreRenderMode == 1) {
+        // Strictly rigid unit bounding sphere aligned <= 1px to Water World's inner glass sphere
+        displaced = p;
+        localNormal = p;
+    } else {
+        displaced = displaceGlass(p, uFluidPhase);
+        vec3 up = abs(p.y) < 0.92 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+        vec3 tangent = normalize(cross(up, p));
+        vec3 bitangent = normalize(cross(p, tangent));
+        float eps = 0.014;
+        vec3 pT = displaceGlass(normalize(p + tangent * eps), uFluidPhase);
+        vec3 pB = displaceGlass(normalize(p + bitangent * eps), uFluidPhase);
+        localNormal = normalize(cross(pT - displaced, pB - displaced));
+        if (dot(localNormal, p) < 0.0) localNormal = -localNormal;
+    }
 
     vec4 worldPos = uModel * vec4(displaced, 1.0);
     vec4 viewPos = uView * worldPos;
@@ -472,6 +481,15 @@ uniform int uRaymarchSteps;
 // 0=Full, 1=FluidDensity, 2=FluidFlow, 3=Meniscus, 4=CausticsOnly,
 // 5=GlassOnly, 6=DepthDebug, 7=FluidVolumeOnly, 8=VolumeDepth, 9=CavityOnly
 uniform int uDebugMode;
+// Work 3.1 Production Core Volume Mode (NOT a debug mode hack!):
+// uCoreRenderMode: 0 = FULL_ORB (Tab 1 / Tab 2 unchanged), 1 = CORE_VOLUME_ONLY (Water World Tab 3)
+uniform int uCoreRenderMode;
+// uCoreDiagMode (active only when uCoreRenderMode == 1):
+// 0 = PRODUCTION_COMPOSITE, 1 = CORE_VOLUME_ONLY_ISOLATED, 2 = CORE_DENSITY,
+// 3 = CORE_FLOW, 4 = CORE_CAUSTICS, 5 = CORE_OPTICAL_DEPTH, 6 = CORE_ROTATION
+uniform int uCoreDiagMode;
+// Subtle single-timeline cyan/emerald hue shift for Water World Core integration (0.0 at T=0)
+uniform float uCoreColorShift;
 // P0-1: 32-sample master crystal-cavity meniscus profile auto-generated from REFERENCE_VISUAL_REGIONS.json
 uniform float uReferenceMeniscusY[32];
 // V3.2 Master-Fitted Candidate B Crystal Lens + 3D Fold Relief + Crystal Optics Uniforms
@@ -955,6 +973,79 @@ void main() {
     float causticStrength = combinedCaustics * floorSubmerged * smoothstep(0.04, 0.36, liquidPath);
     vec3 causticColor = mix(vec3(0.030, 0.780, 1.120), vec3(0.550, 1.520, 1.660), clamp(combinedCaustics * 0.68, 0.0, 1.0))
                       * causticStrength * 1.28 * uFluidIntensity;
+
+    // -----------------------------------------------------------------------
+    // WORK 3.1 PRODUCTION CORE_VOLUME_ONLY MODE (Water World Tab 3 Pass 04)
+    // - Uses the EXACT 32-slice GL_TEXTURE_3D raymarch, transpose(uCoreRotMat),
+    //   3D curl advection, and 3D underwater caustics computed above.
+    // - NEVER draws AI Orb's outer glass shell, background copy, or duplicate bloom.
+    // - Premultiplied alpha composite (`GL_ONE, GL_ONE_MINUS_SRC_ALPHA`) into Water World.
+    // -----------------------------------------------------------------------
+    if (uCoreRenderMode == 1) {
+        vec3 colorShiftTint = vec3(
+            clamp(1.0 - uCoreColorShift * 0.25, 0.80, 1.20),
+            clamp(1.0 + uCoreColorShift * 0.35, 0.80, 1.25),
+            clamp(1.0 + uCoreColorShift * 0.22, 0.80, 1.22)
+        );
+        if (uCoreDiagMode == 2) {
+            // CORE_DENSITY: real 32-slice 3D texture density accumulation
+            fragColor = vec4(debugDensityAcc * 1.95 * uHdrScale, 1.0);
+            return;
+        }
+        if (uCoreDiagMode == 3) {
+            // CORE_FLOW: real 3D curl velocity field in Core Frame
+            vec3 fCol = debugFlowWeight > 0.5 ? debugFlowSample : vec3(0.015, 0.045, 0.075);
+            fragColor = vec4(fCol * uHdrScale, 1.0);
+            return;
+        }
+        if (uCoreDiagMode == 4) {
+            // CORE_CAUSTICS: real 3D domain-warped + WebP Core Frame caustics
+            fragColor = vec4((vec3(0.002, 0.014, 0.030) + causticColor * 1.65) * uHdrScale, 1.0);
+            return;
+        }
+        if (uCoreDiagMode == 5) {
+            // CORE_OPTICAL_DEPTH: Beer-Lambert accumulated optical depth heatmap
+            float odNorm = clamp(opticalDepth / 2.6, 0.0, 1.0);
+            vec3 depthHeat = mix(vec3(0.01, 0.05, 0.12), mix(vec3(0.04, 0.62, 0.54), vec3(0.95, 0.88, 0.35), smoothstep(0.45, 1.0, odNorm)), odNorm);
+            fragColor = vec4(depthHeat * uHdrScale, 1.0);
+            return;
+        }
+        if (uCoreDiagMode == 6) {
+            // CORE_ROTATION: rotated 3D Core-Frame coordinates modulated by 3D volume density
+            vec3 rotSamplePos = normalize(toCoreFrame(vLocalPos, invCoreRot));
+            float rotBand = 0.55 + 0.45 * sin(rotSamplePos.x * 8.0 + rotSamplePos.z * 6.0);
+            float densMod = clamp(0.32 + accumAlpha * 0.95, 0.0, 1.2);
+            vec3 rotCol = (rotSamplePos * 0.5 + 0.5) * rotBand * densMod;
+            float edge = smoothstep(0.0, 0.045, NdotV);
+            fragColor = vec4(mix(vec3(0.006, 0.024, 0.042), rotCol, edge) * uHdrScale, 1.0);
+            return;
+        }
+
+        // Smooth inner-sphere wall feather and submerged liquid gate (no hard circle rim, no outer glass!)
+        float wallFeather = smoothstep(0.02, 0.24, NdotV);
+        float submergedMask = smoothstep(0.02, 0.24, liquidPath);
+        // Tone-mapped soft-shoulder internal liquid radiance so Core never clips or washes out fish/plants
+        vec3 rawVol = (accumColor * colorShiftTint + causticColor * 0.38) * uHdrScale;
+        vec3 mappedVol = rawVol / (vec3(1.0) + rawVol * 0.32);
+
+        if (uCoreDiagMode == 1) {
+            // CORE_VOLUME_ONLY diagnostic isolation: pure internal 3D volume against deep ocean backdrop
+            float isoEdge = smoothstep(0.0, 0.045, NdotV);
+            vec3 isoBg = vec3(0.008, 0.036, 0.058);
+            vec3 isoCol = mix(isoBg, mappedVol * (0.45 + 0.75 * submergedMask) + isoBg * (1.0 - clamp(accumAlpha, 0.0, 1.0)) * 0.55, isoEdge);
+            fragColor = vec4(isoCol, 1.0);
+            return;
+        }
+
+        // Production Water World Tab 3 composite (uCoreDiagMode == 0):
+        // Single-pass in-shader premultiplied composite over Water Base (`originalBg` = `uRefractionTex`),
+        // keeping `GL_BLEND` disabled to eliminate duplicate blending and preserve opaque FBO alpha = 1.0.
+        float prodAlpha = clamp(accumAlpha * 0.44, 0.0, 0.54) * wallFeather * submergedMask;
+        vec3 premulRgb = mappedVol * prodAlpha * 0.88 + causticColor * 0.14 * wallFeather * submergedMask;
+        vec3 waterWithCore = originalBg * (1.0 - prodAlpha) + premulRgb;
+        fragColor = vec4(waterWithCore, 1.0);
+        return;
+    }
 
     // Diagnostic Mode 1: 3D WebP Volume Fluid Density & Emerald/Sapphire Structure
     if (uDebugMode == 1) {

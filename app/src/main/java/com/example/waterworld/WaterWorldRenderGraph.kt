@@ -85,7 +85,13 @@ internal class WaterWorldRenderGraph(
         OPTICAL_WATER_DISTORTION("Optical: Water Normal Distortion"),
         OPTICAL_CAUSTICS("Optical: Caustics & God-Rays"),
         OPTICAL_BLOOM("Optical: Bloom Pass"),
-        OPTICAL_BOKEH("Optical: Bokeh & Droplets")
+        OPTICAL_BOKEH("Optical: Bokeh & Droplets"),
+        CORE_VOLUME_ONLY("Core 3D: Volume Only"),
+        CORE_DENSITY("Core 3D: Volume Density"),
+        CORE_FLOW("Core 3D: Curl Advection Flow"),
+        CORE_CAUSTICS("Core 3D: Core Caustics"),
+        CORE_OPTICAL_DEPTH("Core 3D: Optical Depth"),
+        CORE_ROTATION("Core 3D: 3D Core Rotation")
     }
 
     data class Viewport(val x: Int, val y: Int, val width: Int, val height: Int)

@@ -22,6 +22,17 @@ enum class OrbV3LoadState(val label: String) {
 }
 
 /**
+ * Explicit Work 3.1 GPU 3D Volume lifecycle state machine (Section 4.2).
+ */
+enum class CoreVolumeLifecycleState {
+  CORE_VOLUME_LOADING,
+  CORE_VOLUME_READY,
+  CORE_VOLUME_ERROR,
+  CORE_VOLUME_CONTEXT_LOST,
+  CORE_VOLUME_REUPLOADING,
+}
+
+/**
  * Runtime diagnostics for V3 WebP decoding & OpenGL ES 3.0 3D Volume texture upload.
  * Tracks per-texture sRGB/linear upload formats independently (P0-6).
  */
@@ -41,10 +52,16 @@ data class OrbVolumeTelemetry(
   val isSrgbCaustics: Boolean = false,
   val isSrgbFluidDetail: Boolean = false,
   val statusMessage: String = "Pending V3 WebP load",
+  val lifecycleState: CoreVolumeLifecycleState = CoreVolumeLifecycleState.CORE_VOLUME_LOADING,
+  val uploadGlError: Int = GLES30.GL_NO_ERROR,
+  val lastGlError: Int = GLES30.GL_NO_ERROR,
+  val failedAssetPath: String? = null,
+  val uploadGlStatus: String = "PENDING",
+  val uploadAttemptCount: Int = 0,
 ) {
   val gpuMemoryMiB: Float get() = gpuMemoryBytes / (1024f * 1024f)
   val dimensionsLabel: String get() = "${volumeWidth}x${volumeHeight}x${volumeDepth}"
-  val hasError: Boolean get() = loadState == OrbV3LoadState.V3_ASSET_ERROR
+  val hasError: Boolean get() = loadState == OrbV3LoadState.V3_ASSET_ERROR || lifecycleState == CoreVolumeLifecycleState.CORE_VOLUME_ERROR
 }
 
 /**
@@ -76,13 +93,37 @@ class OrbVolumeTexture3D {
   private val preloadStarted = AtomicBoolean(false)
   private val decodedAssetsRef = AtomicReference<DecodedOrbV3Assets?>(null)
   private val decodeFailureRef = AtomicReference<Throwable?>(null)
+  @Volatile private var contextLostFlag: Boolean = false
+  @Volatile private var uploadAttempts: Int = 0
+
+  val lifecycleState: CoreVolumeLifecycleState
+    get() = telemetry.lifecycleState
 
   val isReady: Boolean
     get() = telemetry.loadState == OrbV3LoadState.LOADED &&
+      telemetry.lifecycleState == CoreVolumeLifecycleState.CORE_VOLUME_READY &&
       volumeTexId != 0 &&
       fluidDetailTexId != 0 &&
       causticsTexId != 0 &&
       glassEnvTexId != 0
+
+  /**
+   * Called when EGL context is lost or recreated: drops stale GL texture handles without invoking
+   * `glDeleteTextures` on an invalid context, while preserving decoded RGBA buffers in memory so
+   * subsequent [uploadIfReady] re-uploads immediately via `CORE_VOLUME_CONTEXT_LOST -> CORE_VOLUME_REUPLOADING -> CORE_VOLUME_READY`.
+   */
+  fun markContextLost() {
+    volumeTexId = 0
+    fluidDetailTexId = 0
+    causticsTexId = 0
+    glassEnvTexId = 0
+    contextLostFlag = true
+    telemetry = telemetry.copy(
+      isLoaded = false,
+      lifecycleState = CoreVolumeLifecycleState.CORE_VOLUME_CONTEXT_LOST,
+      statusMessage = "EGL context lost; awaiting GPU 3D volume re-upload",
+    )
+  }
 
   /**
    * Starts decoding all 35 Lossless RGBA WebP assets on a background daemon thread so
@@ -94,6 +135,8 @@ class OrbVolumeTexture3D {
       telemetry = OrbVolumeTelemetry(
         loadState = OrbV3LoadState.DIAGNOSTIC_PROCEDURAL_FALLBACK,
         isLoaded = false,
+        lifecycleState = CoreVolumeLifecycleState.CORE_VOLUME_ERROR,
+        uploadGlStatus = "NO_ASSET_MANAGER",
         statusMessage = "Diagnostic procedural fallback (no AssetManager)",
       )
       return
@@ -107,6 +150,8 @@ class OrbVolumeTexture3D {
     telemetry = telemetry.copy(
       loadState = OrbV3LoadState.LOADING,
       isLoaded = false,
+      lifecycleState = CoreVolumeLifecycleState.CORE_VOLUME_LOADING,
+      uploadGlStatus = "DECODING",
       statusMessage = "Decoding V3 WebP 3D Volume (background)...",
     )
     Thread(
@@ -140,6 +185,8 @@ class OrbVolumeTexture3D {
         telemetry = OrbVolumeTelemetry(
           loadState = OrbV3LoadState.DIAGNOSTIC_PROCEDURAL_FALLBACK,
           isLoaded = false,
+          lifecycleState = CoreVolumeLifecycleState.CORE_VOLUME_ERROR,
+          uploadGlStatus = "NO_ASSET_MANAGER",
           statusMessage = "Diagnostic procedural fallback (no AssetManager)",
         )
         return true
@@ -154,6 +201,8 @@ class OrbVolumeTexture3D {
         telemetry = OrbVolumeTelemetry(
           loadState = OrbV3LoadState.V3_ASSET_ERROR,
           isLoaded = false,
+          lifecycleState = CoreVolumeLifecycleState.CORE_VOLUME_ERROR,
+          uploadGlStatus = "DECODE_FAILED",
           statusMessage = "V3_ASSET_ERROR: ${failure.message ?: failure.javaClass.simpleName}",
         )
         return true
@@ -167,8 +216,15 @@ class OrbVolumeTexture3D {
     }
 
     return try {
+      if (contextLostFlag) {
+        telemetry = telemetry.copy(
+          lifecycleState = CoreVolumeLifecycleState.CORE_VOLUME_REUPLOADING,
+          statusMessage = "Re-uploading 32 Z-slice GL_TEXTURE_3D after EGL context recreation...",
+        )
+      }
       release()
       uploadDecoded(decoded)
+      contextLostFlag = false
       true
     } catch (t: Throwable) {
       Log.e(TAG, "V3_ASSET_ERROR: Failed to upload V3 WebP 3D Volume textures to GLES 3.0", t)
@@ -177,6 +233,9 @@ class OrbVolumeTexture3D {
       telemetry = OrbVolumeTelemetry(
         loadState = OrbV3LoadState.V3_ASSET_ERROR,
         isLoaded = false,
+        lifecycleState = CoreVolumeLifecycleState.CORE_VOLUME_ERROR,
+        uploadGlStatus = "UPLOAD_FAILED",
+        uploadAttemptCount = uploadAttempts,
         statusMessage = "V3_ASSET_ERROR: ${t.message ?: t.javaClass.simpleName}",
       )
       true
@@ -209,9 +268,14 @@ class OrbVolumeTexture3D {
     } catch (t: Throwable) {
       Log.e(TAG, "V3_ASSET_ERROR: Failed to load/upload V3 WebP 3D Volume textures", t)
       release()
+      val glErr = GLES30.glGetError()
       telemetry = OrbVolumeTelemetry(
         loadState = OrbV3LoadState.V3_ASSET_ERROR,
         isLoaded = false,
+        lifecycleState = CoreVolumeLifecycleState.CORE_VOLUME_ERROR,
+        uploadGlStatus = if (glErr != GLES30.GL_NO_ERROR) "GL_ERROR_0x${glErr.toString(16)}" else "LOAD_OR_UPLOAD_FAILED",
+        lastGlError = glErr,
+        failedAssetPath = extractAssetPathHint(t.message),
         statusMessage = "V3_ASSET_ERROR: ${t.message ?: t.javaClass.simpleName}",
       )
       telemetry
@@ -305,7 +369,9 @@ class OrbVolumeTexture3D {
       wrapT = GLES30.GL_CLAMP_TO_EDGE,
     )
 
+    uploadAttempts += 1
     val uploadMs = (System.nanoTime() - uploadStart) * 1e-6f
+    val postUploadErr = GLES30.glGetError()
     telemetry = OrbVolumeTelemetry(
       loadState = OrbV3LoadState.LOADED,
       isLoaded = true,
@@ -322,6 +388,10 @@ class OrbVolumeTexture3D {
       isSrgbCaustics = usedSrgbCaustics,
       isSrgbFluidDetail = usedSrgbDetail,
       statusMessage = "WebP 3D Volume OK (${decoded.volumeWidth}x${decoded.volumeHeight}x${decoded.volumeDepth})",
+      lifecycleState = CoreVolumeLifecycleState.CORE_VOLUME_READY,
+      uploadGlError = postUploadErr,
+      uploadGlStatus = if (postUploadErr == GLES30.GL_NO_ERROR) "GL_NO_ERROR" else "GL_ERROR_0x${postUploadErr.toString(16)}",
+      uploadAttemptCount = uploadAttempts,
     )
     Log.i(
       TAG,
@@ -437,6 +507,12 @@ class OrbVolumeTexture3D {
     fluidDetailTexId = 0
     causticsTexId = 0
     glassEnvTexId = 0
+  }
+
+  private fun extractAssetPathHint(message: String?): String? {
+    if (message.isNullOrBlank()) return null
+    val match = Regex("""orb_v3/[A-Za-z0-9_./-]+""").find(message)
+    return match?.value
   }
 
   companion object {

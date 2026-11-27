@@ -1250,6 +1250,7 @@ class WaterWorldPreviewActivity : Activity() {
         override fun onSurfaceCreated(unused: GL10?, config: EGLConfig?) {
             // Return immediately from onSurfaceCreated so GLSurfaceView swaps its first clear frame
             // inside <16ms and never stalls Android's 1000ms SurfaceSyncGroup window transaction.
+            engine?.handleCoreContextLost()
             engine = null
             initialized = false
             initializedGeneration = -1L
@@ -1301,7 +1302,7 @@ class WaterWorldPreviewActivity : Activity() {
                 try {
                     engine?.release()
                     engine = null
-                    val renderer = WaterWorldStaticRenderer(staged.root)
+                    val renderer = WaterWorldStaticRenderer(staged.root, assets)
                     renderer.initialize(staged.scene)
                     engine = renderer
                     initialized = true
@@ -1321,6 +1322,33 @@ class WaterWorldPreviewActivity : Activity() {
             }
 
             val renderer = checkNotNull(engine)
+
+            // Work 3.1 Core 3D Volume lifecycle gate (Section 4.2):
+            // Never mark PageState.READY while CORE_VOLUME_LOADING; surface CORE_VOLUME_ERROR explicitly!
+            if (renderer.requiresCoreVolume && !renderer.isCoreVolumeReady) {
+                renderer.pollCoreVolumeUpload()
+                val coreState = renderer.coreVolumeLifecycleState
+                if (coreState == com.example.orb.v3.CoreVolumeLifecycleState.CORE_VOLUME_ERROR) {
+                    clearOceanSurface()
+                    reportPageState(
+                        PageState.RESOURCE_FAILED,
+                        "CORE_VOLUME_ERROR: ${renderer.coreVolumeStatusMessage}",
+                    )
+                    return
+                }
+                if (!renderer.isCoreVolumeReady) {
+                    clearOceanSurface()
+                    surface.postDelayed(
+                        {
+                            if (!isActivityDestroyed && !isFinishing) {
+                                surface.requestRender()
+                            }
+                        },
+                        16L,
+                    )
+                    return
+                }
+            }
 
             // Handle deterministic multi-timestamp Work 3 dynamic evidence export (T=0,1,2,4,8,12)
             val dynCaptureReq = pendingDynamicCapture

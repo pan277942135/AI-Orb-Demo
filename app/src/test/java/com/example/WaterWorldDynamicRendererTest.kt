@@ -120,7 +120,10 @@ class WaterWorldDynamicRendererTest {
         assertTrue(WaterWorldShaders.TRANSPARENT_FRAGMENT.contains("uCausticsGain"))
         assertTrue(WaterWorldShaders.WATER_FRAGMENT.contains("uWaterNormalOffset"))
         assertTrue(WaterWorldShaders.WATER_FRAGMENT.contains("uMeniscusPhases"))
-        assertTrue(WaterWorldShaders.WATER_FRAGMENT.contains("uCoreFluidParams"))
+        assertTrue(
+            "Work 3.1 removed 2D fake core swirl uCoreFluidParams from WATER_FRAGMENT",
+            !WaterWorldShaders.WATER_FRAGMENT.contains("uCoreFluidParams"),
+        )
         assertTrue(WaterWorldShaders.GLASS_FRAGMENT.contains("uGlassRefractionScale"))
         assertTrue(WaterWorldShaders.GLASS_FRAGMENT.contains("uGlassFresnelScale"))
         assertTrue(WaterWorldShaders.GLASS_FRAGMENT.contains("uGlassOpticalPhase"))

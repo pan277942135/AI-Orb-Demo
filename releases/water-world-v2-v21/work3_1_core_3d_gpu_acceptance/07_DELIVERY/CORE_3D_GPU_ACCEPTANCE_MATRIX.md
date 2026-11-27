@@ -1,0 +1,18 @@
+# Water World V2.1 — Work 3.1 Core 3D GPU Acceptance Matrix
+
+**Task ID:** `WATER_WORLD_V2_1_WORK3_1_CORE_3D_VOLUME_GPU_CLOSURE_V1`  
+**APK SHA-256:** `9a13be476f854376d7d8789a817e5c33854dc751100d251938eb7b992c7b6041`
+
+| ID | Acceptance Criterion | Verification Layer | Evidence / Measurement | Status |
+|---|---|---|---|---|
+| **G1** | Real 32 spatial Z-slice WebP (`256×256×32`, `SPATIAL_Z_SLICE_NOT_TIME_FRAME`) uploaded to `GL_TEXTURE_3D` (`sampler3D uFluidVolume`) | Unit Test + APK Audit + Software Precheck | 32/32 `fluid_color_z00..z31.webp` SHA-256 verified in assets & APK; `OrbVolumeTexture3D` uploads `GL_TEXTURE_3D`; `WaterWorldCore3DVolumeAssetsTest` PASS | **PASS (Code/APK/Software)** |
+| **G2** | Production `CORE_VOLUME_ONLY` (`uCoreRenderMode == 1`) wired inside `PassId.WATER_INTERIOR` with ZERO duplicate outer glass & ZERO duplicate Bloom | Code Audit + Unit Test + Software Precheck | `CoreFluidShaders.kt` (`uCoreRenderMode == 1`), `OrbFluidVolumeRenderer.drawVolumeOnly`, `WaterWorldStaticRenderer.kt`, `nonCoreRegionMae == 0.000000` | **PASS (Code/Software)** |
+| **G3** | Fake 2D core swirl/filament (`uCoreFluidParams`) completely removed from `WATER_FRAGMENT` | Unit Test + Code Audit | `WaterWorldCore3DRendererIntegrationTest.t02` & `WaterWorldDynamicRendererTest.t04` PASS | **PASS** |
+| **G4** | Unified single timeline drives Core 3D rotation (`transpose(uCoreRotMat)`), `uFluidPhase`, `uCausticsPhase`, `uDensityScale`, `uCoreColorShift` | Unit Test + Software Precheck | `WaterWorldCore3DAdapterTest` (5/5 PASS); `det = 1.000000`, `orthoErr = 0.0`, Core 3D motion MAE `0.00 -> 32.16` over `T=0..12s` | **PASS (Code/Software)** |
+| **G5** | Exact off-axis perspective alignment to Water World sphere `(626.47575, 596.34413, r=395.75)` | Unit Test + Software Precheck | `centerErrorPx = 0.000000`, `radiusErrorPx = 0.000000` (`<= 1.0 px`) | **PASS (Code/Software)** |
+| **G6** | Explicit 5-state lifecycle (`LOADING / READY / ERROR / CONTEXT_LOST / REUPLOADING`) with zero silent 2D fallback | Unit Test + Robolectric | `WaterWorldCore3DVolumeAssetsTest.t03` & `WaterWorldCore3DRendererIntegrationTest.t04` (`CORE_VOLUME_ERROR -> RESOURCE_FAILED`) PASS | **PASS** |
+| **G7** | 6 Core 3D GPU isolation modes accessible inside collapsed-by-default drawer (`>= 48dp` touch targets) | Robolectric + Software Precheck | `WaterWorldCore3DRendererIntegrationTest.t03` PASS; `core3d_isolation_grid.png` visually verified | **PASS (Code/Software)** |
+| **G8** | Preserve 11 Render Passes, 5 Optical Nodes, 47 motion elements / 28 deps, Work 3 ecosystem, Tab 1 & Tab 2 zero regression | Full Regression Suite | 16 test suites / **83 tests PASS, 0 failures** (`WaterWorld*`, `ExistingOrbTabRegressionTest`, `AIOrbIntegrationRobolectricTest`, `AIOrbV31StructuralParityTest`, `AIOrbV3G0G4ParityCloseoutTest`) | **PASS** |
+| **G9** | Frozen resources untouched & Master PNG excluded from APK; zero broad storage permissions | Gradle Task + APK Audit | Master PNG / V2 ZIP / V2.1 lock SHA-256 exact match; `frozenMasterPngLeakedInApk = false`; `forbiddenStoragePermissions = []` | **PASS** |
+| **G10** | Debug APK built, audited, SHA-256 hashed, and CI workflow ready | Gradle Build + CI YAML | `AI-Orb-Demo-WaterWorld-V2.1-Work3.1-Core3D-debug.apk` (`26,956,902 bytes`); `.github/workflows/water-world-work3-1-core3d-android.yml` written (remote GitHub CI not executed because `GIT_EXISTS = False`) | **PASS (Local Build) / PENDING_REMOTE_CI** |
+| **G11** | **HUAWEI CMS-AL20 Real GPU Acceptance (`Maleoon 935`, Android 16 / API 36)** | **Real Hardware QA (User)** | `WORK3_1_HARDWARE_DYNAMIC_VERIFIED = NOT_RUN` — awaiting user verification per `WORK3_1_HARDWARE_QA_GUIDE.md` | **NOT_RUN (Awaiting User Device QA)** |

@@ -1,8 +1,12 @@
 package com.example.waterworld
 
+import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.opengl.GLES30
+import android.os.Debug
+import com.example.orb.scene.OrbFluidVolumeRenderer
+import com.example.orb.v3.CoreVolumeLifecycleState
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -12,17 +16,17 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * Production Android OpenGL ES 3.0 renderer for Water World V2.1 (Work 1.6 / Work 2 / Work 3 Dynamic Runtime).
+ * Production Android OpenGL ES 3.0 renderer for Water World V2.1 (Work 1.6 / Work 2 / Work 3 / Work 3.1 Core 3D Volume).
  *
  * Executes all 11 canonical composition stages and 5 independent optical nodes via
- * [WaterWorldRenderGraph], [WaterWorldRenderTargetPool], [WaterWorldTextureCache], and [WaterWorldShaders].
- *
- * Work 3 single-snapshot guarantee:
- * - [renderDynamic] consumes ONE immutable [WaterWorldDynamicFrameSnapshot] across all 11 passes & 5 optics.
- * - Zero per-frame texture re-uploads, zero per-frame mesh rebuilds, zero FBO feedback loops.
- * - [render] preserves 100% backward compatibility with Work 1.6 / Work 2 callers and exact T=0 static parity.
+ * [WaterWorldRenderGraph], [WaterWorldRenderTargetPool], [WaterWorldTextureCache], and [WaterWorldShaders],
+ * plus AI Orb V3's real 32 Z-slice `GL_TEXTURE_3D` (`256x256x32`) raymarched Core fluid volume inside
+ * Pass `04_WATER_INTERIOR` via [OrbFluidVolumeRenderer.drawVolumeOnly] (zero duplicate glass shell).
  */
-internal class WaterWorldStaticRenderer(private val root: File) {
+internal class WaterWorldStaticRenderer(
+    private val root: File,
+    private val assetManager: AssetManager? = null,
+) {
 
     data class Binding(
         val objectId: String,
@@ -95,6 +99,9 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     private var waterDepthTex = 0
     private var causticsHeightTex = 0
     private var glassShellMaskTex = 0
+    private var coreVolumeRenderer: OrbFluidVolumeRenderer? = null
+    private var coreVolumeCamera: WaterWorldCoreMotionAdapter.AlignedVolumeCamera? = null
+    @Volatile private var lastCoreInspection: OrbFluidVolumeRenderer.CoreGpuInspection? = null
     @Volatile private var lastPresentViewport: PresentViewport? = null
     @Volatile private var presentedFrameId: Long = 0L
     @Volatile private var glErrorCount: Int = 0
@@ -102,6 +109,22 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     internal fun currentPresentViewport(): PresentViewport? = lastPresentViewport
     internal fun currentPresentedFrameId(): Long = presentedFrameId
     internal fun currentGlErrorCount(): Int = glErrorCount
+    internal val requiresCoreVolume: Boolean get() = assetManager != null
+    internal val isCoreVolumeReady: Boolean
+        get() = coreVolumeRenderer?.isVolumeReady ?: (assetManager == null)
+    internal val coreVolumeLifecycleState: CoreVolumeLifecycleState
+        get() = coreVolumeRenderer?.lifecycleState ?: CoreVolumeLifecycleState.CORE_VOLUME_LOADING
+    internal val coreVolumeStatusMessage: String
+        get() = coreVolumeRenderer?.volumeTelemetry?.statusMessage ?: "Pending Core 3D Volume"
+
+    internal fun pollCoreVolumeUpload(): Boolean {
+        val coreVol = coreVolumeRenderer ?: return false
+        return coreVol.uploadReadyAssetsIfNeeded(assetManager)
+    }
+
+    internal fun handleCoreContextLost() {
+        coreVolumeRenderer?.handleContextLost()
+    }
 
     fun initialize(bindings: List<Binding>) {
         val loaded = WaterWorldSceneBindings.loadScene(root)
@@ -168,6 +191,19 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                 val item = DrawItem(binding, mesh, texture, residentKey, plantId, rockId)
                 allDraws += item
                 drawsByPass.getValue(binding.passId) += item
+            }
+
+            coreVolumeCamera = WaterWorldCoreMotionAdapter.buildAlignedVolumeCamera(
+                canvasWidth = scene.canvasSize.toFloat(),
+                canvasHeight = scene.canvasSize.toFloat(),
+                sphereCenterX = opt.sphereCenterPx[0],
+                sphereCenterY = opt.sphereCenterPx[1],
+                sphereInnerRadiusPx = opt.sphereInnerRadiusPx,
+            )
+            if (assetManager != null) {
+                val volRenderer = OrbFluidVolumeRenderer()
+                volRenderer.init(subdivisions = 4, assetManager = assetManager)
+                coreVolumeRenderer = volRenderer
             }
             checkError("initialize")
         } catch (failure: Throwable) {
@@ -315,6 +351,59 @@ internal class WaterWorldStaticRenderer(private val root: File) {
                     renderWaterPass(s, opt, snapshot, pool.snapshot, waterbedTex, pool.scene, diagnosticOnly = false)
                     drawCount = 1
                     opticalNodesExecuted += WaterWorldRenderGraph.OpticalNodeId.WATER_NORMAL_DISTORTION.wireId
+
+                    // Work 3.1 Real 32 Z-Slice GL_TEXTURE_3D Core Volume Sub-pass inside Pass 04_WATER_INTERIOR.
+                    // Strictly zero duplicate glass shell, zero FBO feedback, zero silent 2D fallback on error.
+                    val coreVol = coreVolumeRenderer
+                    val coreCam = coreVolumeCamera
+                    if (coreVol != null && coreCam != null) {
+                        coreVol.uploadReadyAssetsIfNeeded(assetManager)
+                        if (coreVol.volumeTelemetry.hasError) {
+                            throw IllegalStateException("CORE_VOLUME_ERROR: ${coreVol.volumeTelemetry.statusMessage}")
+                        }
+                        if (coreVol.isVolumeReady) {
+                            pool.copyColor(pool.scene, pool.snapshot, "pass04_pre_core_3d_volume")
+                            val orbMotion = WaterWorldCoreMotionAdapter.toAIOrbMotionSnapshot(snapshot)
+                            pool.scene.bind()
+                            lastCoreInspection = coreVol.drawVolumeOnly(
+                                modelMatrix = coreCam.modelMatrix,
+                                invModelMatrix = coreCam.invModelMatrix,
+                                viewMatrix = coreCam.viewMatrix,
+                                projMatrix = coreCam.projMatrix,
+                                cameraPos = coreCam.cameraPos,
+                                refractionTexId = pool.snapshot.texture,
+                                fboWidth = pool.fullSize,
+                                fboHeight = pool.fullSize,
+                                motion = orbMotion,
+                                densityScale = snapshot.coreState.densityScale,
+                                colorShift = snapshot.coreState.colorShift,
+                                diagMode = OrbFluidVolumeRenderer.CoreDiagMode.PRODUCTION_COMPOSITE,
+                            )
+                            drawCount += 1
+
+                            val requestedCoreDiag = coreDiagModeFor(mode)
+                            if (requestedCoreDiag != null) {
+                                pool.diagnostic.bind()
+                                GLES30.glClearColor(0.008f, 0.036f, 0.058f, 1f)
+                                GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT)
+                                lastCoreInspection = coreVol.drawVolumeOnly(
+                                    modelMatrix = coreCam.modelMatrix,
+                                    invModelMatrix = coreCam.invModelMatrix,
+                                    viewMatrix = coreCam.viewMatrix,
+                                    projMatrix = coreCam.projMatrix,
+                                    cameraPos = coreCam.cameraPos,
+                                    refractionTexId = pool.snapshot.texture,
+                                    fboWidth = pool.fullSize,
+                                    fboHeight = pool.fullSize,
+                                    motion = orbMotion,
+                                    densityScale = snapshot.coreState.densityScale,
+                                    colorShift = snapshot.coreState.colorShift,
+                                    diagMode = requestedCoreDiag,
+                                )
+                            }
+                        }
+                    }
+
                     if (capturePassDir != null || mode == WaterWorldRenderGraph.DiagnosticMode.OPTICAL_WATER_DISTORTION) {
                         renderWaterPass(s, opt, snapshot, pool.snapshot, waterbedTex, pool.diagnostic, diagnosticOnly = true)
                         if (capturePassDir != null) {
@@ -483,12 +572,24 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         }
 
         val fboMemBytes = pool.estimatedGpuMemoryBytes()
-        val texMemBytes = loader.uploadedTextureBytes
+        val coreTexMemBytes = coreVolumeRenderer?.volumeTelemetry?.gpuMemoryBytes ?: 0L
+        val texMemBytes = loader.uploadedTextureBytes + coreTexMemBytes
         val totalMemBytes = fboMemBytes + texMemBytes
         val mbDiv = 1024.0 * 1024.0
+        val extensions = GLES30.glGetString(GLES30.GL_EXTENSIONS).orEmpty()
+        val hasGpuTimerExt = extensions.contains("GL_EXT_disjoint_timer_query")
+        val runtimeMem = Runtime.getRuntime()
+        val javaHeapUsedMb = (runtimeMem.totalMemory() - runtimeMem.freeMemory()) / mbDiv
+        val nativeHeapMb = Debug.getNativeHeapAllocatedSize() / mbDiv
+        val coreValidation = WaterWorldCoreMotionAdapter.validateRotationMatrix(snapshot.coreState.rotationMat3)
+        val coreInspectionJson = lastCoreInspection?.toJson() ?: JSONObject()
+            .put("core3DVolumeEnabled", false)
+            .put("coreRenderMode", OrbFluidVolumeRenderer.CoreRenderMode.CORE_VOLUME_ONLY.name)
+            .put("coreVolumeLifecycleState", coreVolumeLifecycleState.name)
+            .put("statusMessage", coreVolumeStatusMessage)
 
         return JSONObject()
-            .put("sceneVersion", "water-world-v2.1-work3-dynamic")
+            .put("sceneVersion", "water-world-v2.1-work3.1-core3d-gpu")
             .put("glVendor", glVendor)
             .put("glRenderer", glRenderer)
             .put("glVersion", GLES30.glGetString(GLES30.GL_VERSION).orEmpty())
@@ -498,23 +599,27 @@ internal class WaterWorldStaticRenderer(private val root: File) {
             .put("renderResolution", JSONArray(listOf(pool.fullSize, pool.fullSize)))
             .put("fboFormat", "GL_RGBA8+GL_DEPTH_COMPONENT24")
             .put("shaderPrograms", JSONArray(WaterWorldShaders.SHADER_PROGRAM_NAMES))
-            .put("shaderProgramCount", s.allPrograms().size)
+            .put("shaderProgramCount", s.allPrograms().size + if (coreVolumeRenderer != null) 1 else 0)
             .put("shaderCompileLinkOk", true)
-            .put("uniqueTextureCount", cache.uniqueGpuTextureCount() + 1)
+            .put("uniqueTextureCount", cache.uniqueGpuTextureCount() + 1 + if (isCoreVolumeReady) 4 else 0)
             .put("logicalTextureAliasCount", cache.logicalAliasCount())
             .put("textureUploadCount", cache.totalUploadCount)
             .put("textureCacheHits", cache.totalCacheHitCount)
             .put("estimatedFboMemoryMb", fboMemBytes / mbDiv)
             .put("estimatedTextureMemoryMb", texMemBytes / mbDiv)
+            .put("estimatedCore3dVolumeMemoryMb", coreTexMemBytes / mbDiv)
             .put("estimatedTotalGpuMemoryMb", totalMemBytes / mbDiv)
+            .put("javaHeapUsedMb", javaHeapUsedMb)
+            .put("nativeHeapAllocatedMb", nativeHeapMb)
             .put("glErrorCount", glErrorCount)
             .put("presentedFrameId", presentedFrameId)
             .put("presentViewport", lastPresentViewport?.toJson() ?: JSONObject.NULL)
             .put("cpuFrameTimeMs", totalCpuMs)
-            .put("gpuFrameTimeMs", "NOT_MEASURED")
+            .put("gpuFrameTimeMs", if (hasGpuTimerExt) "TIMER_QUERY_AVAILABLE_NOT_SAMPLED" else "GPU_TIMER_UNAVAILABLE")
+            .put("gpuTimerStatus", if (hasGpuTimerExt) "EXT_DISJOINT_TIMER_QUERY_SUPPORTED" else "GPU_TIMER_UNAVAILABLE")
             .put("rendererClass", rendererClass)
             .put("hardwareGpuVerified", !isSoftware && glRenderer.isNotBlank())
-            .put("drawCount", allDraws.size)
+            .put("drawCount", allDraws.size + if (lastCoreInspection != null) 1 else 0)
             .put("passCount", passRecords.size)
             .put("stageCount", 11)
             .put("opticalNodeCount", opticalNodesExecuted.size)
@@ -530,6 +635,11 @@ internal class WaterWorldStaticRenderer(private val root: File) {
             .put("coreVolumeSliceCount", snapshot.coreState.sliceCount)
             .put("coreVolumeSliceSemantics", snapshot.coreState.sliceSemantics)
             .put("coreFilamentStatus", snapshot.coreState.filamentStatus)
+            .put("core3DVolumeEnabled", lastCoreInspection?.core3DVolumeEnabled ?: false)
+            .put("coreVolumeLifecycleState", coreVolumeLifecycleState.name)
+            .put("coreRotationMatDet", coreValidation.determinant.toDouble())
+            .put("coreRotationMatOrthoError", coreValidation.maxOrthogonalityError.toDouble())
+            .put("core3dGpuInspection", coreInspectionJson)
             .put("fboComplete", passRecords.all { it.fboComplete })
             .put("passPngSha256", passPngShas)
             .put("opticalPngSha256", opticalPngShas)
@@ -680,7 +790,6 @@ internal class WaterWorldStaticRenderer(private val root: File) {
             GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA)
         }
         val wo = snapshot.waterOptics
-        val core = snapshot.coreState
         s.water.use()
         GLES30.glUniform2f(s.water.uniform("uCanvas"), dst.size.toFloat(), dst.height.toFloat())
         GLES30.glUniform2f(s.water.uniform("uSphereCenter"), opt.sphereCenterPx[0], opt.sphereCenterPx[1])
@@ -699,13 +808,6 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         GLES30.glUniform2f(s.water.uniform("uWaterNormalOffset"), wo.waterNormalOffsetU, wo.waterNormalOffsetV)
         GLES30.glUniform2f(s.water.uniform("uMeniscusPhases"), wo.meniscusWavePhaseRad, wo.meniscusSecondaryPhaseRad)
         GLES30.glUniform1f(s.water.uniform("uWaterFlowPhase"), wo.waterFlowPhaseRad)
-        GLES30.glUniform4f(
-            s.water.uniform("uCoreFluidParams"),
-            core.fluidPhaseRad,
-            core.densityScale - 1f,
-            core.colorShift,
-            core.filamentPhaseRad,
-        )
         bindTex(0, snapshotTarget.texture); GLES30.glUniform1i(s.water.uniform("uSceneSnapshot"), 0)
         bindTex(1, waterbedTex); GLES30.glUniform1i(s.water.uniform("uWaterbedTex"), 1)
         bindTex(2, waterNormalTex); GLES30.glUniform1i(s.water.uniform("uWaterNormalTex"), 2)
@@ -1007,6 +1109,10 @@ internal class WaterWorldStaticRenderer(private val root: File) {
         for (draw in allDraws) draw.mesh.release()
         allDraws.clear()
         drawsByPass.clear()
+        coreVolumeRenderer?.release()
+        coreVolumeRenderer = null
+        coreVolumeCamera = null
+        lastCoreInspection = null
         textureCache?.releaseAll()
         textureCache = null
         targetPool?.releaseAll()
@@ -1037,6 +1143,16 @@ internal class WaterWorldStaticRenderer(private val root: File) {
     }
 
     internal companion object {
+        internal fun coreDiagModeFor(mode: WaterWorldRenderGraph.DiagnosticMode): OrbFluidVolumeRenderer.CoreDiagMode? = when (mode) {
+            WaterWorldRenderGraph.DiagnosticMode.CORE_VOLUME_ONLY -> OrbFluidVolumeRenderer.CoreDiagMode.CORE_VOLUME_ONLY_ISOLATED
+            WaterWorldRenderGraph.DiagnosticMode.CORE_DENSITY -> OrbFluidVolumeRenderer.CoreDiagMode.CORE_DENSITY
+            WaterWorldRenderGraph.DiagnosticMode.CORE_FLOW -> OrbFluidVolumeRenderer.CoreDiagMode.CORE_FLOW
+            WaterWorldRenderGraph.DiagnosticMode.CORE_CAUSTICS -> OrbFluidVolumeRenderer.CoreDiagMode.CORE_CAUSTICS
+            WaterWorldRenderGraph.DiagnosticMode.CORE_OPTICAL_DEPTH -> OrbFluidVolumeRenderer.CoreDiagMode.CORE_OPTICAL_DEPTH
+            WaterWorldRenderGraph.DiagnosticMode.CORE_ROTATION -> OrbFluidVolumeRenderer.CoreDiagMode.CORE_ROTATION
+            else -> null
+        }
+
         internal fun resolveResidentGroupKey(objectId: String): String? = when {
             objectId.startsWith("G01") -> "G01"
             objectId.startsWith("G02") -> "G02"

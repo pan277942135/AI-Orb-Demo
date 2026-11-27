@@ -53,6 +53,14 @@ internal class WaterWorldDiagnosticsDrawer(
         const val TAG_EXPORT_DYNAMIC_BUTTON = "water_world_export_dynamic_button"
         const val TAG_SECTION_RENDER_PASS = "water_world_diag_section_render_pass"
         const val TAG_SECTION_OPTICAL = "water_world_diag_section_optical"
+        const val TAG_SECTION_CORE_3D = "water_world_diag_section_core_3d"
+        const val TAG_CORE_STATUS = "water_world_diag_core_status"
+        const val TAG_CORE_VOLUME_ONLY = "water_world_diag_core_volume_only"
+        const val TAG_CORE_DENSITY = "water_world_diag_core_density"
+        const val TAG_CORE_FLOW = "water_world_diag_core_flow"
+        const val TAG_CORE_CAUSTICS = "water_world_diag_core_caustics"
+        const val TAG_CORE_OPTICAL_DEPTH = "water_world_diag_core_optical_depth"
+        const val TAG_CORE_ROTATION = "water_world_diag_core_rotation"
         const val TAG_SECTION_GPU = "water_world_diag_section_gpu"
         const val TAG_SECTION_EXPORT = "water_world_diag_section_export"
         const val TAG_OPTICAL_GLASS = "water_world_diag_optical_glass"
@@ -83,6 +91,7 @@ internal class WaterWorldDiagnosticsDrawer(
     val speedToggleButton: Button
 
     private val motionStatusView: TextView
+    private val coreStatusView: TextView
     private val passListContainer: LinearLayout
     private val passPreviewCard: LinearLayout
     private val passPreviewLabel: TextView
@@ -325,6 +334,51 @@ internal class WaterWorldDiagnosticsDrawer(
             )
         }
         scrollContent.addView(sectionB)
+
+        // Section E: Core 3D Volume GPU Isolation (Work 3.1 — 32 Z-Slice GL_TEXTURE_3D)
+        val sectionCore3d = createSectionCard(TAG_SECTION_CORE_3D, "E. Core 3D Volume GPU Isolation (32 Z-Slices)")
+        coreStatusView = TextView(context).apply {
+            tag = TAG_CORE_STATUS
+            text = "3D Volume: CORE_VOLUME_LOADING · 256x256x32 GL_TEXTURE_3D"
+            setTextColor(Color.parseColor("#E6DFF7FF"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.2f)
+            typeface = Typeface.MONOSPACE
+            setPadding(0, 0, 0, dp(6))
+        }
+        sectionCore3d.addView(coreStatusView)
+        val coreEntries = listOf(
+            Triple(TAG_CORE_VOLUME_ONLY, "1. CORE_VOLUME_ONLY (纯 3D 体积)", WaterWorldRenderGraph.DiagnosticMode.CORE_VOLUME_ONLY),
+            Triple(TAG_CORE_DENSITY, "2. CORE_DENSITY (3D 密度场)", WaterWorldRenderGraph.DiagnosticMode.CORE_DENSITY),
+            Triple(TAG_CORE_FLOW, "3. CORE_FLOW (3D Curl 流场)", WaterWorldRenderGraph.DiagnosticMode.CORE_FLOW),
+            Triple(TAG_CORE_CAUSTICS, "4. CORE_CAUSTICS (3D 焦散)", WaterWorldRenderGraph.DiagnosticMode.CORE_CAUSTICS),
+            Triple(TAG_CORE_OPTICAL_DEPTH, "5. CORE_OPTICAL_DEPTH (光学深度)", WaterWorldRenderGraph.DiagnosticMode.CORE_OPTICAL_DEPTH),
+            Triple(TAG_CORE_ROTATION, "6. CORE_ROTATION (3D 自转方向)", WaterWorldRenderGraph.DiagnosticMode.CORE_ROTATION),
+        )
+        for ((tagId, label, mode) in coreEntries) {
+            val btn = Button(context).apply {
+                tag = tagId
+                text = label
+                contentDescription = label
+                isAllCaps = false
+                minHeight = dp(48)
+                minimumHeight = dp(48)
+                gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                setTextColor(Color.WHITE)
+                background = pillBackground(Color.parseColor("#BF0B4254"), Color.parseColor("#6638C5D8"), dp(12))
+                setPadding(dp(12), dp(6), dp(12), dp(6))
+                setOnClickListener { onSelectDiagnosticMode(mode) }
+            }
+            opticalButtons[mode] = btn
+            sectionCore3d.addView(
+                btn,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                ).apply { topMargin = dp(6) }
+            )
+        }
+        scrollContent.addView(sectionCore3d)
 
         // Section C: GPU Diagnostics
         val sectionC = createSectionCard(TAG_SECTION_GPU, "C. GPU Diagnostics")
@@ -656,9 +710,46 @@ internal class WaterWorldDiagnosticsDrawer(
         }
         val deviceInfo = "${Build.MANUFACTURER} ${Build.MODEL} (API ${Build.VERSION.SDK_INT})"
 
+        val coreState = telemetry?.optString("coreVolumeLifecycleState").orEmpty().ifBlank { "CORE_VOLUME_LOADING" }
+        val coreEnabled = telemetry?.optBoolean("core3DVolumeEnabled", false) ?: false
+        val coreObj = telemetry?.optJSONObject("core3dGpuInspection")
+        val coreTexId = coreObj?.optInt("volumeTextureId", 0) ?: 0
+        val coreSamplerLoc = coreObj?.optInt("sampler3DUniformLocation", -1) ?: -1
+        val coreRotLoc = coreObj?.optInt("coreRotMatLocation", -1) ?: -1
+        val coreDims = if (coreObj != null && coreObj.optInt("volumeDepth", 0) > 0) {
+            "${coreObj.optInt("volumeWidth", 256)}x${coreObj.optInt("volumeHeight", 256)}x${coreObj.optInt("volumeDepth", 32)}"
+        } else {
+            "256x256x32"
+        }
+        val coreUploadMs = coreObj?.optDouble("uploadTimeMs", Double.NaN)
+            ?.takeIf { it.isFinite() }
+            ?.let { String.format(Locale.US, "%.2f ms", it) }
+            ?: "PENDING"
+        val coreVramMb = telemetry?.optDouble("estimatedCore3dVolumeMemoryMb", Double.NaN)
+            ?.takeIf { it.isFinite() }
+            ?.let { String.format(Locale.US, "%.2f MB", it) }
+            ?: "0.00 MB"
+        val coreDet = telemetry?.optDouble("coreRotationMatDet", Double.NaN)
+            ?.takeIf { it.isFinite() }
+            ?.let { String.format(Locale.US, "%.5f", it) }
+            ?: "1.00000"
+        val nativeHeapMb = telemetry?.optDouble("nativeHeapAllocatedMb", Double.NaN)
+            ?.takeIf { it.isFinite() }
+            ?.let { String.format(Locale.US, "%.1f MB", it) }
+            ?: "N/A"
+        val javaHeapMb = telemetry?.optDouble("javaHeapUsedMb", Double.NaN)
+            ?.takeIf { it.isFinite() }
+            ?.let { String.format(Locale.US, "%.1f MB", it) }
+            ?: "N/A"
+
+        coreStatusView.text = "3D Volume: $coreState · $coreDims · active=$coreEnabled · texId=$coreTexId"
+
         gpuInfoView.text = buildString {
             appendLine("Page State       : ${pageState.name}")
             appendLine("Active Mode      : ${currentMode.name}")
+            appendLine("Core 3D Volume   : $coreState (enabled=$coreEnabled · $coreDims)")
+            appendLine("Core GL Binding  : texId=$coreTexId · unit=1 · uVolLoc=$coreSamplerLoc · uRotLoc=$coreRotLoc")
+            appendLine("Core Upload/VRAM : $coreUploadMs / $coreVramMb · det(R)=$coreDet")
             appendLine("GL Vendor        : $vendor")
             appendLine("GL Renderer      : $renderer")
             appendLine("GLES Version     : $glesVer")
@@ -669,6 +760,7 @@ internal class WaterWorldDiagnosticsDrawer(
             appendLine("CPU Frame Time   : $cpuFrameTime")
             appendLine("Staging / 1stFrm : $stageMs / $firstFrameMs")
             appendLine("Est. GPU VRAM    : $totalVramMb")
+            appendLine("Heap (Nat / Java): $nativeHeapMb / $javaHeapMb")
             appendLine("Present Viewport : $vpStr")
             appendLine("GPU Class        : $gpuClass")
             append("Device           : $deviceInfo")

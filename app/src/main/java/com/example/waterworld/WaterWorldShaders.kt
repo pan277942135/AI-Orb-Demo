@@ -313,11 +313,12 @@ internal class WaterWorldShaders {
             uniform vec3 uWaterDeep;
             uniform float uWaterbedBlend;
             uniform int uDiagnosticOnly;
-            // Work 3 dynamic water & AI Orb Core 32-slice spatial fluid coupling (zero at T=0)
+            // Work 3.1 dynamic water surface/normal/meniscus uniforms (zero at T=0).
+            // Internal Core 3D fluid motion is owned exclusively by OrbFluidVolumeRenderer (32 Z-slice GL_TEXTURE_3D),
+            // never faked by 2D sin/cos swirl in WATER_FRAGMENT.
             uniform vec2 uWaterNormalOffset;
             uniform vec2 uMeniscusPhases;
             uniform float uWaterFlowPhase;
-            uniform vec4 uCoreFluidParams; // x=fluidPhase, y=densityDelta, z=colorShift, w=filamentPhase
             out vec4 fragColor;
             void main() {
                 vec2 px = vUv * uCanvas;
@@ -375,17 +376,8 @@ internal class WaterWorldShaders {
                     float basinD = length(vec2((vUv.x - 0.54) / 0.22, (vUv.y - 0.62) / 0.16));
                     float basinGlow = exp(-basinD * basinD * 1.4) * 0.26;
                     col += vec3(0.04, 0.74, 0.78) * basinGlow;
-                    // AI Orb Core 32-slice spatial fluid swirl & procedural filament modulation (strictly 0 at T=0)
-                    float coreActive = smoothstep(0.0, 0.08, abs(uCoreFluidParams.x));
-                    if (coreActive > 0.001) {
-                        float swirl = sin(d.x * 4.4 + d.y * 3.1 + uCoreFluidParams.x * 1.35)
-                                    * cos(d.y * 4.8 - d.x * 2.6 - uWaterFlowPhase * 0.95);
-                        float filament = exp(-pow(sin(d.x * 5.5 - d.y * 4.2 + uCoreFluidParams.w * 1.4), 2.0) * 14.0);
-                        float coreMask = (1.0 - smoothstep(0.55, 0.96, r)) * smoothstep(0.02, 0.28, depthT);
-                        col *= (1.0 + (uCoreFluidParams.y + swirl * 0.035) * coreMask * coreActive);
-                        col += vec3(0.012, 0.068 + uCoreFluidParams.z * 0.4, 0.075 - uCoreFluidParams.z * 0.2)
-                             * (0.35 + 0.65 * filament) * coreMask * coreActive * 0.48;
-                    }
+                    // Real 32 Z-slice GL_TEXTURE_3D Core Volume is composited immediately after Water Base
+                    // inside Pass 04_WATER_INTERIOR via OrbFluidVolumeRenderer.drawVolumeOnly().
                     col = mix(preS, col, 0.91);
                 }
 

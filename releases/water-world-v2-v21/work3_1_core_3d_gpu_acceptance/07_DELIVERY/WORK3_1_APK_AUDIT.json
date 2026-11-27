@@ -1,0 +1,14 @@
+{
+  "apkFile": "AI-Orb-Demo-WaterWorld-V2.1-Work3.1-Core3D-debug.apk",
+  "apkBytes": 26956902,
+  "apkMiB": 25.71,
+  "apkSha256": "9a13be476f854376d7d8789a817e5c33854dc751100d251938eb7b992c7b6041",
+  "orbV3SpatialZSlicesInApk": 32,
+  "orbV3ManifestInApk": true,
+  "waterWorldFrozenV2AssetsInApk": 65,
+  "waterWorldWork3MotionProfileInApk": true,
+  "frozenMasterPngLeakedInApk": false,
+  "forbiddenStoragePermissions": [],
+  "dexCount": 13,
+  "WORK3_1_HARDWARE_DYNAMIC_VERIFIED": "NOT_RUN"
+}

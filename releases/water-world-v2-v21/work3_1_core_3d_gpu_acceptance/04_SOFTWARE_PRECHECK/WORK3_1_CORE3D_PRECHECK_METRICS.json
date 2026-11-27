@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "WATER_WORLD_WORK3_1_CORE3D_PRECHECK_1_0",
+  "evaluationDomain": "SOFTWARE_GPU_PRECHECK_NOT_HARDWARE_ACCEPTANCE",
+  "WORK3_1_HARDWARE_DYNAMIC_VERIFIED": "NOT_RUN",
+  "volumeAsset": {
+    "width": 256,
+    "height": 256,
+    "depth": 32,
+    "slicesLoaded": 32,
+    "sliceSemantics": "SPATIAL_Z_SLICE_NOT_TIME_FRAME",
+    "softwareDecodeMs": 2255
+  },
+  "offAxisAlignment": {
+    "targetCenterPx": [626.47575, 596.34413],
+    "targetRadiusPx": 395.75,
+    "centerErrorPx": 0.000000,
+    "radiusErrorPx": 0.000000,
+    "passLe1Px": true
+  },
+  "frames": [
+    {
+      "tSeconds": 0,
+      "coreRotationAngleDeg": 0.0000,
+      "rotationMatDet": 1.000000,
+      "rotationMatOrthoError": 0.00000000,
+      "nonCoreRegionMae": 0.000000,
+      "coreInteriorDeltaVsWork3Base": 9.2441,
+      "coreInteriorMotionMaeVsT0": 0.0000
+    },
+    {
+      "tSeconds": 1,
+      "coreRotationAngleDeg": 3.6000,
+      "rotationMatDet": 1.000000,
+      "rotationMatOrthoError": 0.00000000,
+      "nonCoreRegionMae": 0.000000,
+      "coreInteriorDeltaVsWork3Base": 9.2589,
+      "coreInteriorMotionMaeVsT0": 6.2314
+    },
+    {
+      "tSeconds": 2,
+      "coreRotationAngleDeg": 7.2000,
+      "rotationMatDet": 1.000000,
+      "rotationMatOrthoError": 0.00000000,
+      "nonCoreRegionMae": 0.000000,
+      "coreInteriorDeltaVsWork3Base": 9.1156,
+      "coreInteriorMotionMaeVsT0": 9.8150
+    },
+    {
+      "tSeconds": 4,
+      "coreRotationAngleDeg": 14.4000,
+      "rotationMatDet": 1.000000,
+      "rotationMatOrthoError": 0.00000000,
+      "nonCoreRegionMae": 0.000000,
+      "coreInteriorDeltaVsWork3Base": 8.6324,
+      "coreInteriorMotionMaeVsT0": 14.0764
+    },
+    {
+      "tSeconds": 8,
+      "coreRotationAngleDeg": 28.8000,
+      "rotationMatDet": 1.000000,
+      "rotationMatOrthoError": 0.00000000,
+      "nonCoreRegionMae": 0.000000,
+      "coreInteriorDeltaVsWork3Base": 7.3912,
+      "coreInteriorMotionMaeVsT0": 28.2764
+    },
+    {
+      "tSeconds": 12,
+      "coreRotationAngleDeg": 43.2000,
+      "rotationMatDet": 1.000000,
+      "rotationMatOrthoError": 0.00000000,
+      "nonCoreRegionMae": 0.000000,
+      "coreInteriorDeltaVsWork3Base": 6.8163,
+      "coreInteriorMotionMaeVsT0": 32.1570
+    }
+  ],
+  "allSoftwarePrecheckGatesPass": true
+}
