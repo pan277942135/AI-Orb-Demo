@@ -10,6 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            docs/tab2
+            .github/workflows
+          sparse-checkout-cone-mode: true
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
