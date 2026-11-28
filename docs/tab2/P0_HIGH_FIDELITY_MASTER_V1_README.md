@@ -47,3 +47,8 @@ GitHub Main 文件元数据与本地原图的 Git Blob 校验：
 
 GitHub 目录 API 报告的文件大小和 Git Blob SHA-1 与本地原始 PNG 逐字节算法校验值一致；本地 SHA-256 同步复核通过。Lock JSON 已更新为 `GITHUB_BINARY_VERIFIED`。**后续自动资源拆分仍必须实际下载 PNG 并重新计算 SHA-256，不允许只依据此文档跳过取证。**
 
+## P0 外围水光资源与动效合同 V1.1
+
+- [完整资源与动效合同](./TAB2_PERIMETER_RESOURCE_MOTION_CONTRACT_V1_1.md)
+- [机器可读资源清单](./TAB2_PERIMETER_RESOURCE_MANIFEST_V1_1.json)
+- [可编辑视觉结构图](./assets/TAB2_PERIMETER_RESOURCE_MAP_V1_1.svg)
