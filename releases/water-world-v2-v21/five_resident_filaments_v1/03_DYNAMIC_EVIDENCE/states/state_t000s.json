@@ -1,0 +1,72 @@
+{
+  "timeSec": 0.0,
+  "frameFile": "frames/five_resident_t000s.png",
+  "maeVsWork2StaticFull255": 0.2578,
+  "residents": {
+    "G01": {
+      "residentId": "WW_RESIDENT_G01",
+      "flowDirection": 1.0,
+      "flowOffsetU": 0.0,
+      "traversalPercent": 0.0,
+      "highlightPeakCanonicalS": 0.0,
+      "lateralWaveAmpPx": 0.0,
+      "widthAmplitude": 0.0,
+      "widthPulseScale": 1.0,
+      "brightnessAmplitude": 0.0,
+      "brightnessScale": 1.0,
+      "roiMaeVsWork2Static255": 0.2897
+    },
+    "G02": {
+      "residentId": "WW_RESIDENT_G02",
+      "flowDirection": -1.0,
+      "flowOffsetU": 0.0,
+      "traversalPercent": 0.0,
+      "highlightPeakCanonicalS": 0.0,
+      "lateralWaveAmpPx": 0.0,
+      "widthAmplitude": 0.0,
+      "widthPulseScale": 1.0,
+      "brightnessAmplitude": 0.0,
+      "brightnessScale": 1.0,
+      "roiMaeVsWork2Static255": 0.3404
+    },
+    "A01": {
+      "residentId": "WW_RESIDENT_A01",
+      "flowDirection": 1.0,
+      "flowOffsetU": 0.0,
+      "traversalPercent": 0.0,
+      "highlightPeakCanonicalS": 0.0,
+      "lateralWaveAmpPx": 0.0,
+      "widthAmplitude": 0.0,
+      "widthPulseScale": 1.0,
+      "brightnessAmplitude": 0.0,
+      "brightnessScale": 1.0,
+      "roiMaeVsWork2Static255": 0.3461
+    },
+    "A02": {
+      "residentId": "WW_RESIDENT_A02",
+      "flowDirection": -1.0,
+      "flowOffsetU": 0.0,
+      "traversalPercent": 0.0,
+      "highlightPeakCanonicalS": 0.0,
+      "lateralWaveAmpPx": 0.0,
+      "widthAmplitude": 0.0,
+      "widthPulseScale": 1.0,
+      "brightnessAmplitude": 0.0,
+      "brightnessScale": 1.0,
+      "roiMaeVsWork2Static255": 0.2751
+    },
+    "C01": {
+      "residentId": "WW_RESIDENT_C01",
+      "flowDirection": 1.0,
+      "flowOffsetU": 0.0,
+      "traversalPercent": 0.0,
+      "highlightPeakCanonicalS": 0.0,
+      "lateralWaveAmpPx": 0.0,
+      "widthAmplitude": 0.0,
+      "widthPulseScale": 1.0,
+      "brightnessAmplitude": 0.0,
+      "brightnessScale": 1.0,
+      "roiMaeVsWork2Static255": 0.2641
+    }
+  }
+}

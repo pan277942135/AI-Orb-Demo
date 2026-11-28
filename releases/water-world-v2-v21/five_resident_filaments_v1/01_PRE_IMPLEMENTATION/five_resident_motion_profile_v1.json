@@ -1,0 +1,178 @@
+{
+  "contractId": "WATER_WORLD_FIVE_RESIDENT_FILAMENTS_DESIGN_FREEZE_V1",
+  "profileVersion": "V1_FROZEN",
+  "evidenceStatus": "MOTION_DESIGN_V1_FROZEN",
+  "provenance": "V1_DESIGN_TARGET_NOT_GROUND_TRUTH_MEASURED",
+  "groundTruthStatus": "NOT_MEASURED_FROM_LIVE_REFERENCE_VIDEO",
+  "canvasSizePx": 1254,
+  "formulas": {
+    "flowSpeedPerSec": "flowDirection / flowTraversalPeriodSec",
+    "flowOffsetU": "t * flowSpeedPerSec",
+    "waveFrequencyHz": "3.0 / flowTraversalPeriodSec",
+    "widthBreathingRule": "Relative to per-vertex local cross-section half-width aLocalHalfWidthPx (NO fixed 18px offset); spatially phased along vCanonicalS",
+    "brightnessBreathingRule": "Non-uniform spatially phased modulation within [1 - brightnessAmp, 1 + brightnessAmp] plus smooth moving energy highlight band along canonical s",
+    "t0IdentityRule": "At T=0 (or staticReferenceMode=true), lateralWavePx=0, widthDelta=0, brightnessScale=1.0, highlightFlowActive=0 -> exact Work 2 T=0 pixel identity"
+  },
+  "antiSyncChecks": {
+    "distinctFlowPeriodsSec": [
+      16.0,
+      18.0,
+      20.0,
+      14.0,
+      22.0
+    ],
+    "distinctDirections": [
+      1,
+      -1,
+      1,
+      -1,
+      1
+    ],
+    "distinctInitPhasesRad": [
+      0.0,
+      1.24,
+      2.41,
+      3.85,
+      5.02
+    ],
+    "minDisplacementAtT2SecPercent": 9.09,
+    "minDisplacementAtT5SecPercent": 22.73,
+    "contractTargetT2MinPercent": 9.0,
+    "contractTargetT5MinPercent": 22.0
+  },
+  "residents": [
+    {
+      "groupKey": "G01",
+      "residentId": "WW_RESIDENT_G01",
+      "flowElementId": "WW_RESIDENT_G01_FLOW",
+      "pulseElementId": "WW_RESIDENT_G01_PULSE",
+      "colorName": "Lime Green",
+      "colorHex": "#9FE226",
+      "flowDirection": 1,
+      "flowTraversalPeriodSec": 16.0,
+      "flowSpeedPerSec": 0.0625,
+      "initPhaseRad": 0.0,
+      "waveFrequencyHz": 0.1875,
+      "widthPulseAmp": 0.06,
+      "widthPulseHz": 0.19,
+      "brightnessPulseAmp": 0.09,
+      "brightnessPulseHz": 0.19,
+      "maxLateralWavePx": 8.0,
+      "traversalAtT2SecPercent": 12.5,
+      "traversalAtT5SecPercent": 31.25,
+      "drawIds": [
+        "G01_back_arch",
+        "G01_back_outer_veil",
+        "G01_front_lower_sweep"
+      ],
+      "occlusionStatus": "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
+      "provenance": "V1_DESIGN_TARGET_NOT_GROUND_TRUTH_MEASURED"
+    },
+    {
+      "groupKey": "G02",
+      "residentId": "WW_RESIDENT_G02",
+      "flowElementId": "WW_RESIDENT_G02_FLOW",
+      "pulseElementId": "WW_RESIDENT_G02_PULSE",
+      "colorName": "Warm Gold",
+      "colorHex": "#FFC247",
+      "flowDirection": -1,
+      "flowTraversalPeriodSec": 18.0,
+      "flowSpeedPerSec": -0.055556,
+      "initPhaseRad": 1.24,
+      "waveFrequencyHz": 0.166667,
+      "widthPulseAmp": 0.05,
+      "widthPulseHz": 0.18,
+      "brightnessPulseAmp": 0.08,
+      "brightnessPulseHz": 0.16,
+      "maxLateralWavePx": 7.0,
+      "traversalAtT2SecPercent": 11.11,
+      "traversalAtT5SecPercent": 27.78,
+      "drawIds": [
+        "G02_back_upper_arc",
+        "G02_back_upper_hairline",
+        "G02_back_right_rim",
+        "G02_front_right_embrace"
+      ],
+      "occlusionStatus": "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
+      "provenance": "V1_DESIGN_TARGET_NOT_GROUND_TRUTH_MEASURED"
+    },
+    {
+      "groupKey": "A01",
+      "residentId": "WW_RESIDENT_A01",
+      "flowElementId": "WW_RESIDENT_A01_FLOW",
+      "pulseElementId": "WW_RESIDENT_A01_PULSE",
+      "colorName": "Cyan",
+      "colorHex": "#37E7EF",
+      "flowDirection": 1,
+      "flowTraversalPeriodSec": 20.0,
+      "flowSpeedPerSec": 0.05,
+      "initPhaseRad": 2.41,
+      "waveFrequencyHz": 0.15,
+      "widthPulseAmp": 0.07,
+      "widthPulseHz": 0.21,
+      "brightnessPulseAmp": 0.1,
+      "brightnessPulseHz": 0.22,
+      "maxLateralWavePx": 9.0,
+      "traversalAtT2SecPercent": 10.0,
+      "traversalAtT5SecPercent": 25.0,
+      "drawIds": [
+        "A01_back_upper_left",
+        "A01_front_left_embrace"
+      ],
+      "occlusionStatus": "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
+      "provenance": "V1_DESIGN_TARGET_NOT_GROUND_TRUTH_MEASURED"
+    },
+    {
+      "groupKey": "A02",
+      "residentId": "WW_RESIDENT_A02",
+      "flowElementId": "WW_RESIDENT_A02_FLOW",
+      "pulseElementId": "WW_RESIDENT_A02_PULSE",
+      "colorName": "Cyan Teal",
+      "colorHex": "#15D8ED",
+      "flowDirection": -1,
+      "flowTraversalPeriodSec": 14.0,
+      "flowSpeedPerSec": -0.071429,
+      "initPhaseRad": 3.85,
+      "waveFrequencyHz": 0.214286,
+      "widthPulseAmp": 0.06,
+      "widthPulseHz": 0.25,
+      "brightnessPulseAmp": 0.09,
+      "brightnessPulseHz": 0.21,
+      "maxLateralWavePx": 8.0,
+      "traversalAtT2SecPercent": 14.29,
+      "traversalAtT5SecPercent": 35.71,
+      "drawIds": [
+        "A02_back_lower_halo",
+        "A02_front_lower_strand"
+      ],
+      "occlusionStatus": "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
+      "provenance": "V1_DESIGN_TARGET_NOT_GROUND_TRUTH_MEASURED"
+    },
+    {
+      "groupKey": "C01",
+      "residentId": "WW_RESIDENT_C01",
+      "flowElementId": "WW_RESIDENT_C01_FLOW",
+      "pulseElementId": "WW_RESIDENT_C01_PULSE",
+      "colorName": "Gold",
+      "colorHex": "#F6BB48",
+      "flowDirection": 1,
+      "flowTraversalPeriodSec": 22.0,
+      "flowSpeedPerSec": 0.045455,
+      "initPhaseRad": 5.02,
+      "waveFrequencyHz": 0.136364,
+      "widthPulseAmp": 0.045,
+      "widthPulseHz": 0.17,
+      "brightnessPulseAmp": 0.07,
+      "brightnessPulseHz": 0.15,
+      "maxLateralWavePx": 6.5,
+      "traversalAtT2SecPercent": 9.09,
+      "traversalAtT5SecPercent": 22.73,
+      "drawIds": [
+        "C01_back_lower_thread",
+        "C01_front_lower_right"
+      ],
+      "occlusionStatus": "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
+      "provenance": "V1_DESIGN_TARGET_NOT_GROUND_TRUTH_MEASURED"
+    }
+  ]
+}

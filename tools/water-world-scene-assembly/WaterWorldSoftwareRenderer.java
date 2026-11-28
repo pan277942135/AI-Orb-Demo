@@ -16,6 +16,10 @@ public class WaterWorldSoftwareRenderer {
     static final int W = 1254;
     static final int H = 1254;
     static final String EXPECTED_V2_SHA = "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095";
+    static boolean captureFloatSnapshots = false;
+    static Target snapshotPass01 = null;
+    static Target snapshotPass02 = null;
+    static Target snapshotPass09 = null;
 
     static class Target {
         final int w, h;
@@ -988,6 +992,11 @@ public class WaterWorldSoftwareRenderer {
 
                 double elapsedMs = (System.nanoTime() - ps) / 1e6;
                 passTimesMs.put(passId, elapsedMs);
+                if (captureFloatSnapshots) {
+                    if ("01_BACKGROUND".equals(passId)) { snapshotPass01 = new Target(W, H); snapshotPass01.copyFrom(scene); }
+                    else if ("02_RESIDENT_BACK".equals(passId)) { snapshotPass02 = new Target(W, H); snapshotPass02.copyFrom(scene); }
+                    else if ("09_SPHERE_FRONT".equals(passId)) { snapshotPass09 = new Target(W, H); snapshotPass09.copyFrom(scene); }
+                }
                 String pName = passId.toLowerCase() + ".png";
                 passPngShas.put(passId, savePng(scene, outDir.resolve(pName)));
             }

@@ -129,7 +129,7 @@ class WaterWorldShaderUniformContractTest {
         val programs: Map<String, Pair<String, String>> = linkedMapOf(
             "opaque" to (WaterWorldShaders.MESH_VERTEX to WaterWorldShaders.OPAQUE_FRAGMENT),
             "transparent" to (WaterWorldShaders.MESH_VERTEX to WaterWorldShaders.TRANSPARENT_FRAGMENT),
-            "residentRibbon" to (WaterWorldShaders.MESH_VERTEX to WaterWorldShaders.RESIDENT_RIBBON_FRAGMENT),
+            "residentRibbon" to (WaterWorldShaders.RESIDENT_RIBBON_VERTEX to WaterWorldShaders.RESIDENT_RIBBON_FRAGMENT),
             "water" to (WaterWorldShaders.FULLSCREEN_VERTEX to WaterWorldShaders.WATER_FRAGMENT),
             "glass" to (WaterWorldShaders.FULLSCREEN_VERTEX to WaterWorldShaders.GLASS_FRAGMENT),
             "caustics" to (WaterWorldShaders.FULLSCREEN_VERTEX to WaterWorldShaders.CAUSTICS_FRAGMENT),

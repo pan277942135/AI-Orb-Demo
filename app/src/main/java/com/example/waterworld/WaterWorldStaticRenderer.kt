@@ -78,6 +78,7 @@ internal class WaterWorldStaticRenderer(
         val mesh: WaterWorldMesh,
         val texture: Int,
         val residentGroupKey: String?,
+        val residentSegmentMapping: WaterWorldResidentContractV1.SegmentMapping?,
         val plantElementId: String?,
         val rockElementId: String?,
     )
@@ -184,11 +185,22 @@ internal class WaterWorldStaticRenderer(
                     cache.acquire(path, requireNotNull(binding.textureSha256))
                 } ?: whiteTexture
                 val isPlantMesh = binding.materialName == "plant"
-                val mesh = WaterWorldMesh(loader.json(binding.meshPath), subdividePlantGrid = isPlantMesh)
+                val isResidentMesh = binding.passId == WaterWorldRenderGraph.PassId.RESIDENT_BACK ||
+                    binding.passId == WaterWorldRenderGraph.PassId.RESIDENT_FRONT
+                val mesh = WaterWorldMesh(
+                    json = loader.json(binding.meshPath),
+                    subdividePlantGrid = isPlantMesh,
+                    computeRibbonHalfWidths = isResidentMesh,
+                )
                 val residentKey = resolveResidentGroupKey(binding.objectId)
+                val residentSegMap = if (isResidentMesh) {
+                    WaterWorldResidentContractV1.mappingForSegment(binding.objectId)
+                } else {
+                    null
+                }
                 val plantId = resolvePlantElementId(binding.objectId, isPlantMesh)
                 val rockId = resolveRockElementId(binding.objectId, binding.materialName == "rock")
-                val item = DrawItem(binding, mesh, texture, residentKey, plantId, rockId)
+                val item = DrawItem(binding, mesh, texture, residentKey, residentSegMap, plantId, rockId)
                 allDraws += item
                 drawsByPass.getValue(binding.passId) += item
             }
@@ -311,22 +323,39 @@ internal class WaterWorldStaticRenderer(
                     GLES30.glUniform2f(s.residentRibbon.uniform("uCanvas"), canvasW, canvasH)
                     for (item in stageDraws) {
                         val rState = item.residentGroupKey?.let { snapshot.residentStates[it] }
+                        val segMap = item.residentSegmentMapping
+                            ?: WaterWorldResidentContractV1.mappingForSegment(item.binding.objectId)
                         val deformMode = if (!snapshot.staticReferenceMode && rState != null) 3 else 0
                         GLES30.glUniform1i(s.residentRibbon.uniform("uDeformMode"), deformMode)
+                        GLES30.glUniform4f(
+                            s.residentRibbon.uniform("uSegmentArcRange"),
+                            segMap.segmentArcLengthStart,
+                            segMap.segmentArcLengthEnd,
+                            segMap.localUvDirection,
+                            segMap.localFlowPhaseOffset,
+                        )
                         if (deformMode == 3 && rState != null) {
                             GLES30.glUniform4f(
                                 s.residentRibbon.uniform("uDeformParams"),
-                                rState.widthPulseScale,
+                                rState.widthAmplitude,
                                 rState.lateralWavePx,
                                 rState.wavePhaseRad,
-                                rState.flowOffsetU,
+                                rState.widthTimePhaseRad,
                             )
                             GLES30.glUniform1f(s.residentRibbon.uniform("uFlowOffsetU"), rState.flowOffsetU)
                             GLES30.glUniform1f(s.residentRibbon.uniform("uBrightnessScale"), rState.brightnessScale)
+                            GLES30.glUniform4f(
+                                s.residentRibbon.uniform("uResidentFlowParams"),
+                                rState.flowActive,
+                                rState.brightnessAmplitude,
+                                rState.brightnessTimePhaseRad,
+                                rState.flowDirection,
+                            )
                         } else {
-                            GLES30.glUniform4f(s.residentRibbon.uniform("uDeformParams"), 1f, 0f, 0f, 0f)
+                            GLES30.glUniform4f(s.residentRibbon.uniform("uDeformParams"), 0f, 0f, 0f, 0f)
                             GLES30.glUniform1f(s.residentRibbon.uniform("uFlowOffsetU"), 0f)
                             GLES30.glUniform1f(s.residentRibbon.uniform("uBrightnessScale"), 1f)
+                            GLES30.glUniform4f(s.residentRibbon.uniform("uResidentFlowParams"), 0f, 0f, 0f, 1f)
                         }
                         GLES30.glUniformMatrix4fv(s.residentRibbon.uniform("uModel"), 1, false, item.binding.model, 0)
                         GLES30.glUniform4fv(s.residentRibbon.uniform("uTint"), 1, item.binding.tint, 0)

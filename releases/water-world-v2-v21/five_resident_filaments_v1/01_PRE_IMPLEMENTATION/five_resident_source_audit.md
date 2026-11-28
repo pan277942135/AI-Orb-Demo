@@ -1,0 +1,27 @@
+# Five Resident Filaments V1 — Pre-Implementation Source Audit
+
+**Contract ID:** `WATER_WORLD_FIVE_RESIDENT_FILAMENTS_DESIGN_FREEZE_V1`  
+**Audit Baseline:** Work 3.1.1 clean codebase (Static Baseline HEAD `120aeb2c1f716771351bf951826539350bedb512`)  
+**Scope:** Resident Filaments (`G01`, `G02`, `A01`, `A02`, `C01`) and their 13 frozen Render Segments only.
+
+---
+
+## 1. Audited Production Files (Pre-V1 State)
+
+| File | Current Pre-V1 Behavior | Identified Gap vs V1 Contract | Planned V1 Fix (Resident-Only) |
+|---|---|---|---|
+| `WaterWorldMotionProfile.kt` & `work3_motion_profile.json` | Resident periods are `26.5 / 31.0 / 35.5 / 23.0 / 41.0 s` (`C01` only moves `4.88%` in `2s` and `12.20%` in `5s`). Width amp `3.6–5.2%`, brightness amp `4.8–7.2%`, lateral wave `4.2–5.8 px`, `G01 widthHz=0.22`, `A01 brightHz=0.24`. | Below V1 readability targets (`>= 9%` in `2s`, `>= 22%` in `5s`); parameter table does not match frozen V1 values. | Update ONLY the 5 Resident profiles to exact frozen V1 periods (`16/18/20/14/22 s`), directions (`+1/-1/+1/-1/+1`), phases (`0.00/1.24/2.41/3.85/5.02`), width amps/Hz, brightness amps/Hz, and lateral wave limits (`8/7/9/8/6.5 px`). |
+| `WaterWorldDynamicFrameSnapshot.kt` & `WaterWorldMotionEvaluator.kt` | `evaluateResident` computes scalar `flowOffsetU`, `widthPulseScale`, `brightnessScale`, `lateralWavePx`, `wavePhaseRad`. Does not expose `widthAmplitude`, `brightnessAmplitude`, `waveFrequencyHz = 3 / T`, or per-segment canonical arc-length metadata. | Fragment/vertex shaders cannot produce spatially phased along-path width/brightness breathing or canonical multi-segment wave continuity. | Extend `ResidentMotionState` cleanly (preserving all existing fields) with `flowSpeedPerSec`, `flowDirection`, `phaseOffsetRad`, `waveFrequencyHz`, `widthAmplitude`, `brightnessAmplitude`, and add `WaterWorldResidentContractV1.kt` for the 13-segment canonical `s ∈ [0, 1]` table. |
+| `WaterWorldMesh.kt` | Uploads 8 floats/vertex (`aPosition`, `aNormal`, `aUv`) at 32-byte stride. Does not compute per-vertex local cross-section half-width. | Vertex shader cannot perform true relative width breathing without a hardcoded pixel constant. | Add opt-in `computeRibbonHalfWidths: Boolean = false` (enabled ONLY for `RESIDENT_BACK` / `RESIDENT_FRONT`) computing exact per-vertex `halfWidthPx = 0.5 * hypot(v1 - v0)` from frozen strip pairs in memory (zero JSON changes) and binding `location = 3` (`aLocalHalfWidthPx`). |
+| `WaterWorldShaders.kt` (`MESH_VERTEX` `uDeformMode == 3`) | Uses local `aUv.x` (restarts at `0` on every segment!) and **hardcoded `widthPulse * acrossSigned * 18.0 * endAnchor`**! | **CRITICAL VIOLATION of Contract Section 2.1.C** (hardcoded `18 px` distorts thin 14 px hairlines by >128%!) and breaks canonical `s` continuity across Back/Front segments. | Create dedicated `RESIDENT_RIBBON_VERTEX` (used ONLY by `s.residentRibbon`, leaving `MESH_VERTEX` and all non-Resident shaders untouched): computes canonical `vCanonicalS` from `uSegmentArcRange`, applies bounded lateral wave along cross-normal driven by `vCanonicalS`, and applies **true relative width breathing** using `aLocalHalfWidthPx * localWidthDelta`! |
+| `WaterWorldShaders.kt` (`RESIDENT_RIBBON_FRAGMENT`) | Subtle sinusoidal `twist` / `streak` using local `vUv.x` and uniform `uBrightnessScale`. | Lacks a clear moving energy highlight band with soft leading edge and smooth fading tail along canonical `s`; brightness modulation is uniform across the entire segment instead of spatially non-uniform. | Upgrade `RESIDENT_RIBBON_FRAGMENT` to consume `vCanonicalS`, render a smooth cyclic moving highlight band (soft leading edge + fading tail) + secondary micro-flow shimmer + spatially-phased brightness breathing bounded to `±brightnessAmp`, strictly `0`-effect at `T=0` (`uFlowActive == 0`). |
+| `WaterWorldStaticRenderer.kt` (`RESIDENT_BACK` / `RESIDENT_FRONT`) | Links `residentRibbon` with `MESH_VERTEX` and uploads local deform/flow uniforms without canonical segment mapping. | Must link `residentRibbon` with `RESIDENT_RIBBON_VERTEX`, build Resident meshes with `computeRibbonHalfWidths = true`, and upload canonical `uSegmentArcRange` + V1 Resident uniforms cleanly with 0 dead uniforms. | Update ONLY Resident mesh creation, `residentRibbon` program vertex shader reference, and the `PassId.RESIDENT_BACK` / `PassId.RESIDENT_FRONT` uniform upload block. |
+
+---
+
+## 2. Frozen Asset & Scope Boundary Verification
+
+- **13 Resident Mesh JSONs Verified:** All 13 meshes (`8 Back + 5 Front`) verified to be paired ribbon strips (`uv.y ∈ {0, 1}`, outward `aNormal.xy` matching `v0 - v1` with `0` inversions across all 1,600+ strip pairs).
+- **Exact Geometric Seam Discovered:** `A01_back_upper_left` end `(48.91, 570.57)` and `A01_front_left_embrace` start `(48.91, 570.57)` meet with `0.00 px` center gap (`s = 0.2863`).
+- **Disjoint/Parallel Bridges Honestly Flagged:** Non-contiguous back/front bridges on `G01`, `G02`, `A02`, `C01` and parallel secondary strands (`G01_back_outer_veil`, `G02_back_upper_hairline`) are explicitly flagged as `GROUND_TRUTH_UNKNOWN` render hypotheses in `five_resident_segment_mapping.json`.
+- **Untouched Systems Guaranteed:** AI Orb Core (`32 Z-slices`, `CoreFluidShaders.kt`, `OrbFluidVolumeRenderer.kt`, `WaterWorldCoreMotionAdapter.kt`), 4 fish, plants, rocks, bubbles, water shader (`WATER_FRAGMENT`), glass shell, caustics, bloom, bokeh, background, 11 Render Passes, and 5 Optical Nodes remain 100% unmodified.

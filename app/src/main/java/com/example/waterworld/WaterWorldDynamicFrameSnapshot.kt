@@ -59,6 +59,16 @@ data class WaterWorldDynamicFrameSnapshot(
         val lateralWavePx: Float,
         val wavePhaseRad: Float,
         val occlusionStatus: String,
+        // Five Resident Filaments V1 fields (exact T=0 neutral when staticReferenceMode / t==0)
+        val flowSpeedPerSec: Float = 0f,
+        val flowDirection: Float = 1f,
+        val flowActive: Float = 0f,
+        val widthAmplitude: Float = 0f,
+        val widthTimePhaseRad: Float = 0f,
+        val brightnessAmplitude: Float = 0f,
+        val brightnessTimePhaseRad: Float = 0f,
+        val waveFrequencyHz: Float = 0f,
+        val phaseOffsetRad: Float = 0f,
     )
 
     data class PlantMotionState(

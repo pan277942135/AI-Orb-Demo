@@ -1,0 +1,230 @@
+{
+  "contractId": "WATER_WORLD_FIVE_RESIDENT_FILAMENTS_DESIGN_FREEZE_V1",
+  "evidenceStatus": "STATIC_GEOMETRY_LOCKED",
+  "canonicalParameterization": "s in [0, 1] per Resident filament; vCanonicalS = mix(segmentArcLengthStart, segmentArcLengthEnd, localUvDirection > 0 ? aUv.x : 1.0 - aUv.x)",
+  "groundTruthDisclaimer": "Static 2D projections and pass splits come from Work 2 frozen render hypotheses. True 3D back/front occlusion topology beyond the exact 0 px A01 limb seam is GROUND_TRUTH_UNKNOWN and is explicitly flagged per segment.",
+  "totalSegments": 13,
+  "segments": [
+    {
+      "parentResidentId": "WW_RESIDENT_G01",
+      "parentResidentGroup": "G01",
+      "segmentId": "G01_back_arch",
+      "segmentPass": "02_RESIDENT_BACK",
+      "segmentArcLengthStart": 0.0,
+      "segmentArcLengthEnd": 0.56,
+      "localUvDirection": 1,
+      "localFlowPhaseOffset": 0.0,
+      "measuredArcLengthPx": 1344.0,
+      "widthRangePx": [
+        20.0,
+        85.07
+      ],
+      "continuityStatus": "HYPOTHESIS_DISJOINT_OCCLUDED_GAP_GROUND_TRUTH_UNKNOWN",
+      "notes": "Primary upper-right back arch; clockwise flow u:0->1"
+    },
+    {
+      "parentResidentId": "WW_RESIDENT_G01",
+      "parentResidentGroup": "G01",
+      "segmentId": "G01_back_outer_veil",
+      "segmentPass": "02_RESIDENT_BACK",
+      "segmentArcLengthStart": 0.24,
+      "segmentArcLengthEnd": 0.55,
+      "localUvDirection": 1,
+      "localFlowPhaseOffset": 0.0,
+      "measuredArcLengthPx": 744.87,
+      "widthRangePx": [
+        20.0,
+        59.04
+      ],
+      "continuityStatus": "PARALLEL_VEIL_CO_PHASED_GROUND_TRUTH_UNKNOWN",
+      "notes": "Secondary outer back veil co-phased alongside upper-right G01_back_arch"
+    },
+    {
+      "parentResidentId": "WW_RESIDENT_G02",
+      "parentResidentGroup": "G02",
+      "segmentId": "G02_back_upper_arc",
+      "segmentPass": "02_RESIDENT_BACK",
+      "segmentArcLengthStart": 0.0,
+      "segmentArcLengthEnd": 0.34,
+      "localUvDirection": 1,
+      "localFlowPhaseOffset": 0.0,
+      "measuredArcLengthPx": 906.15,
+      "widthRangePx": [
+        14.0,
+        58.01
+      ],
+      "continuityStatus": "HYPOTHESIS_PARTIAL_GAP_GROUND_TRUTH_UNKNOWN",
+      "notes": "Primary upper-left back arc; clockwise canonical s, negative direction (-1) flows CCW"
+    },
+    {
+      "parentResidentId": "WW_RESIDENT_G02",
+      "parentResidentGroup": "G02",
+      "segmentId": "G02_back_upper_hairline",
+      "segmentPass": "02_RESIDENT_BACK",
+      "segmentArcLengthStart": 0.02,
+      "segmentArcLengthEnd": 0.31,
+      "localUvDirection": 1,
+      "localFlowPhaseOffset": 0.0,
+      "measuredArcLengthPx": 779.87,
+      "widthRangePx": [
+        14.0,
+        38.42
+      ],
+      "continuityStatus": "PARALLEL_HAIRLINE_CO_PHASED_GROUND_TRUTH_UNKNOWN",
+      "notes": "Parallel upper-left back hairline co-phased with G02_back_upper_arc"
+    },
+    {
+      "parentResidentId": "WW_RESIDENT_G02",
+      "parentResidentGroup": "G02",
+      "segmentId": "G02_back_right_rim",
+      "segmentPass": "02_RESIDENT_BACK",
+      "segmentArcLengthStart": 0.43,
+      "segmentArcLengthEnd": 0.64,
+      "localUvDirection": 1,
+      "localFlowPhaseOffset": 0.0,
+      "measuredArcLengthPx": 550.51,
+      "widthRangePx": [
+        16.0,
+        38.19
+      ],
+      "continuityStatus": "HYPOTHESIS_PARTIAL_GAP_GROUND_TRUTH_UNKNOWN",
+      "notes": "Right-rim back arc bridging upper arc and front-right embrace"
+    },
+    {
+      "parentResidentId": "WW_RESIDENT_A01",
+      "parentResidentGroup": "A01",
+      "segmentId": "A01_back_upper_left",
+      "segmentPass": "02_RESIDENT_BACK",
+      "segmentArcLengthStart": 0.0,
+      "segmentArcLengthEnd": 0.2863,
+      "localUvDirection": 1,
+      "localFlowPhaseOffset": 0.0,
+      "measuredArcLengthPx": 416.7,
+      "widthRangePx": [
+        19.0,
+        60.0
+      ],
+      "continuityStatus": "GEOMETRICALLY_CONTIGUOUS_SEAM_0PX",
+      "notes": "Upper-left back segment; exact 0.0 px center seam at (48.9, 570.6) into A01_front_left_embrace"
+    },
+    {
+      "parentResidentId": "WW_RESIDENT_A02",
+      "parentResidentGroup": "A02",
+      "segmentId": "A02_back_lower_halo",
+      "segmentPass": "02_RESIDENT_BACK",
+      "segmentArcLengthStart": 0.47,
+      "segmentArcLengthEnd": 1.0,
+      "localUvDirection": 1,
+      "localFlowPhaseOffset": 0.0,
+      "measuredArcLengthPx": 753.03,
+      "widthRangePx": [
+        21.0,
+        56.08
+      ],
+      "continuityStatus": "HYPOTHESIS_OVERLAPPING_LOWER_HALO_GROUND_TRUTH_UNKNOWN",
+      "notes": "Back lower halo overlapping lower-right arc of A02_front_lower_strand"
+    },
+    {
+      "parentResidentId": "WW_RESIDENT_C01",
+      "parentResidentGroup": "C01",
+      "segmentId": "C01_back_lower_thread",
+      "segmentPass": "02_RESIDENT_BACK",
+      "segmentArcLengthStart": 0.5388,
+      "segmentArcLengthEnd": 1.0,
+      "localUvDirection": -1,
+      "localFlowPhaseOffset": 0.0,
+      "measuredArcLengthPx": 734.88,
+      "widthRangePx": [
+        14.0,
+        31.29
+      ],
+      "continuityStatus": "HYPOTHESIS_LOWER_BRIDGE_GAP_260PX_GROUND_TRUTH_UNKNOWN",
+      "notes": "Back lower-left gold thread; reversed UV (-1) continues clockwise from bottom-center across 260 px occluded bridge"
+    },
+    {
+      "parentResidentId": "WW_RESIDENT_G01",
+      "parentResidentGroup": "G01",
+      "segmentId": "G01_front_lower_sweep",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "segmentArcLengthStart": 0.6,
+      "segmentArcLengthEnd": 0.96,
+      "localUvDirection": -1,
+      "localFlowPhaseOffset": 0.0,
+      "measuredArcLengthPx": 870.18,
+      "widthRangePx": [
+        22.0,
+        76.78
+      ],
+      "continuityStatus": "HYPOTHESIS_DISJOINT_OCCLUDED_GAP_GROUND_TRUTH_UNKNOWN",
+      "notes": "Front lower-left sweep; reversed UV (-1) preserves clockwise canonical s across lower-right occluded gap"
+    },
+    {
+      "parentResidentId": "WW_RESIDENT_G02",
+      "parentResidentGroup": "G02",
+      "segmentId": "G02_front_right_embrace",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "segmentArcLengthStart": 0.64,
+      "segmentArcLengthEnd": 1.0,
+      "localUvDirection": 1,
+      "localFlowPhaseOffset": 0.0,
+      "measuredArcLengthPx": 944.29,
+      "widthRangePx": [
+        22.0,
+        60.69
+      ],
+      "continuityStatus": "HYPOTHESIS_PARTIAL_GAP_GROUND_TRUTH_UNKNOWN",
+      "notes": "Front right-lower embrace; shares phase boundary s=0.64 with G02_back_right_rim"
+    },
+    {
+      "parentResidentId": "WW_RESIDENT_A01",
+      "parentResidentGroup": "A01",
+      "segmentId": "A01_front_left_embrace",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "segmentArcLengthStart": 0.2863,
+      "segmentArcLengthEnd": 1.0,
+      "localUvDirection": 1,
+      "localFlowPhaseOffset": 0.0,
+      "measuredArcLengthPx": 1038.53,
+      "widthRangePx": [
+        18.0,
+        64.0
+      ],
+      "continuityStatus": "GEOMETRICALLY_CONTIGUOUS_SEAM_0PX",
+      "notes": "Lower-left front embrace; exact 0.0 px center seam at s=0.2863 from A01_back_upper_left"
+    },
+    {
+      "parentResidentId": "WW_RESIDENT_A02",
+      "parentResidentGroup": "A02",
+      "segmentId": "A02_front_lower_strand",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "segmentArcLengthStart": 0.0,
+      "segmentArcLengthEnd": 0.72,
+      "localUvDirection": 1,
+      "localFlowPhaseOffset": 0.0,
+      "measuredArcLengthPx": 1024.92,
+      "widthRangePx": [
+        18.0,
+        46.0
+      ],
+      "continuityStatus": "HYPOTHESIS_OVERLAPPING_LOWER_HALO_GROUND_TRUTH_UNKNOWN",
+      "notes": "Front lower cyan-teal strand; negative direction (-1) flows from bottom-right halo into front-left strand"
+    },
+    {
+      "parentResidentId": "WW_RESIDENT_C01",
+      "parentResidentGroup": "C01",
+      "segmentId": "C01_front_lower_right",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "segmentArcLengthStart": 0.0,
+      "segmentArcLengthEnd": 0.5388,
+      "localUvDirection": 1,
+      "localFlowPhaseOffset": 0.0,
+      "measuredArcLengthPx": 858.45,
+      "widthRangePx": [
+        22.0,
+        54.63
+      ],
+      "continuityStatus": "HYPOTHESIS_LOWER_BRIDGE_GAP_260PX_GROUND_TRUTH_UNKNOWN",
+      "notes": "Front lower-right gold filament; clockwise u:0->1 from right to bottom-center"
+    }
+  ]
+}

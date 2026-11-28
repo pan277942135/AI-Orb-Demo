@@ -321,6 +321,8 @@ object WaterWorldMotionEvaluator {
         isZero: Boolean,
         ramp: Float,
     ): WaterWorldDynamicFrameSnapshot.ResidentMotionState {
+        val flowSpeedPerSec = rp.flowDirection / rp.cyclePeriodSec
+        val waveFreqHz = 3.0f / rp.cyclePeriodSec
         if (isZero) {
             return WaterWorldDynamicFrameSnapshot.ResidentMotionState(
                 id = rp.id,
@@ -333,14 +335,27 @@ object WaterWorldMotionEvaluator {
                 lateralWavePx = 0f,
                 wavePhaseRad = 0f,
                 occlusionStatus = rp.occlusionStatus,
+                flowSpeedPerSec = flowSpeedPerSec,
+                flowDirection = rp.flowDirection,
+                flowActive = 0f,
+                widthAmplitude = 0f,
+                widthTimePhaseRad = 0f,
+                brightnessAmplitude = 0f,
+                brightnessTimePhaseRad = 0f,
+                waveFrequencyHz = waveFreqHz,
+                phaseOffsetRad = rp.phaseOffsetRad,
             )
         }
         val cycle = (t / rp.cyclePeriodSec.toDouble()).toFloat()
         val flowPhase = (cycle * TWO_PI.toFloat()) * rp.flowDirection
         val flowOffsetU = cycle * rp.flowDirection
-        val widthPulse = 1f + rp.widthPulseAmp * sin(TWO_PI * rp.widthPulseHz * t + rp.phaseOffsetRad).toFloat() * ramp
-        val brightness = 1f + rp.brightnessPulseAmp * sin(TWO_PI * rp.brightnessPulseHz * t + rp.phaseOffsetRad * 0.7f).toFloat() * ramp
-        val wavePhase = (TWO_PI * (1.0 / rp.cyclePeriodSec) * t * 3.0 + rp.phaseOffsetRad).toFloat()
+        val widthTimePhase = (TWO_PI * rp.widthPulseHz * t + rp.phaseOffsetRad).toFloat()
+        val brightnessTimePhase = (TWO_PI * rp.brightnessPulseHz * t + rp.phaseOffsetRad * 0.7).toFloat()
+        val widthAmpActive = rp.widthPulseAmp * ramp
+        val brightnessAmpActive = rp.brightnessPulseAmp * ramp
+        val widthPulse = 1f + widthAmpActive * sin(widthTimePhase.toDouble()).toFloat()
+        val brightness = 1f + brightnessAmpActive * sin(brightnessTimePhase.toDouble()).toFloat()
+        val wavePhase = (TWO_PI * waveFreqHz.toDouble() * t + rp.phaseOffsetRad).toFloat()
         return WaterWorldDynamicFrameSnapshot.ResidentMotionState(
             id = rp.id,
             groupKey = rp.groupKey,
@@ -352,6 +367,15 @@ object WaterWorldMotionEvaluator {
             lateralWavePx = rp.lateralWavePx * ramp,
             wavePhaseRad = wavePhase,
             occlusionStatus = rp.occlusionStatus,
+            flowSpeedPerSec = flowSpeedPerSec,
+            flowDirection = rp.flowDirection,
+            flowActive = ramp,
+            widthAmplitude = widthAmpActive,
+            widthTimePhaseRad = widthTimePhase,
+            brightnessAmplitude = brightnessAmpActive,
+            brightnessTimePhaseRad = brightnessTimePhase,
+            waveFrequencyHz = waveFreqHz,
+            phaseOffsetRad = rp.phaseOffsetRad,
         )
     }
 

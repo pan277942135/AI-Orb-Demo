@@ -1,0 +1,72 @@
+{
+  "timeSec": 60.0,
+  "frameFile": "frames/five_resident_t060s.png",
+  "maeVsT0Full255": 5.1934,
+  "residents": {
+    "G01": {
+      "residentId": "WW_RESIDENT_G01",
+      "flowDirection": 1.0,
+      "flowOffsetU": 3.75,
+      "traversalPercent": 375.0,
+      "highlightPeakCanonicalS": 0.75,
+      "lateralWaveAmpPx": 8.0,
+      "widthAmplitude": 0.06,
+      "widthPulseScale": 1.0353,
+      "brightnessAmplitude": 0.09,
+      "brightnessScale": 1.0529,
+      "roiMaeVsT0_255": 5.6452
+    },
+    "G02": {
+      "residentId": "WW_RESIDENT_G02",
+      "flowDirection": -1.0,
+      "flowOffsetU": -3.3333,
+      "traversalPercent": 333.33,
+      "highlightPeakCanonicalS": 0.6667,
+      "lateralWaveAmpPx": 7.0,
+      "widthAmplitude": 0.05,
+      "widthPulseScale": 0.9992,
+      "brightnessAmplitude": 0.08,
+      "brightnessScale": 0.9202,
+      "roiMaeVsT0_255": 5.9366
+    },
+    "A01": {
+      "residentId": "WW_RESIDENT_A01",
+      "flowDirection": 1.0,
+      "flowOffsetU": 3.0,
+      "traversalPercent": 300.0,
+      "highlightPeakCanonicalS": 0.0,
+      "lateralWaveAmpPx": 9.0,
+      "widthAmplitude": 0.07,
+      "widthPulseScale": 0.9928,
+      "brightnessAmplitude": 0.1,
+      "brightnessScale": 1.0197,
+      "roiMaeVsT0_255": 3.556
+    },
+    "A02": {
+      "residentId": "WW_RESIDENT_A02",
+      "flowDirection": -1.0,
+      "flowOffsetU": -4.2857,
+      "traversalPercent": 428.57,
+      "highlightPeakCanonicalS": 0.7143,
+      "lateralWaveAmpPx": 8.0,
+      "widthAmplitude": 0.06,
+      "widthPulseScale": 0.961,
+      "brightnessAmplitude": 0.09,
+      "brightnessScale": 1.0163,
+      "roiMaeVsT0_255": 4.5295
+    },
+    "C01": {
+      "residentId": "WW_RESIDENT_C01",
+      "flowDirection": 1.0,
+      "flowOffsetU": 2.7273,
+      "traversalPercent": 272.73,
+      "highlightPeakCanonicalS": 0.7273,
+      "lateralWaveAmpPx": 6.5,
+      "widthAmplitude": 0.045,
+      "widthPulseScale": 0.9997,
+      "brightnessAmplitude": 0.07,
+      "brightnessScale": 0.9745,
+      "roiMaeVsT0_255": 5.9648
+    }
+  }
+}

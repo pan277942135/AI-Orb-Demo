@@ -21,7 +21,7 @@ internal class WaterWorldShaders {
 
     val opaque = WaterWorldProgram(MESH_VERTEX, OPAQUE_FRAGMENT)
     val transparent = WaterWorldProgram(MESH_VERTEX, TRANSPARENT_FRAGMENT)
-    val residentRibbon = WaterWorldProgram(MESH_VERTEX, RESIDENT_RIBBON_FRAGMENT)
+    val residentRibbon = WaterWorldProgram(RESIDENT_RIBBON_VERTEX, RESIDENT_RIBBON_FRAGMENT)
     val water = WaterWorldProgram(FULLSCREEN_VERTEX, WATER_FRAGMENT)
     val glass = WaterWorldProgram(FULLSCREEN_VERTEX, GLASS_FRAGMENT)
     val caustics = WaterWorldProgram(FULLSCREEN_VERTEX, CAUSTICS_FRAGMENT)
@@ -176,27 +176,95 @@ internal class WaterWorldShaders {
             }
         """.trimIndent()
 
+        val RESIDENT_RIBBON_VERTEX = """#version 300 es
+            precision highp float;
+            layout(location=0) in vec3 aPosition;
+            layout(location=1) in vec3 aNormal;
+            layout(location=2) in vec2 aUv;
+            layout(location=3) in float aLocalHalfWidthPx;
+            uniform mat4 uModel;
+            uniform vec2 uCanvas;
+            // Five Resident Filaments V1 vertex deformation: 0 = exact T=0 static identity, 3 = V1 dynamic wave + relative width breathing
+            uniform int uDeformMode;
+            // x = widthAmp (relative fraction), y = maxLateralWavePx, z = wavePhaseRad, w = widthTimePhaseRad
+            uniform vec4 uDeformParams;
+            // x = segmentArcLengthStart, y = segmentArcLengthEnd, z = localUvDirection (+1/-1), w = localFlowPhaseOffset
+            uniform vec4 uSegmentArcRange;
+            out vec2 vUv;
+            out vec2 vScreenUv;
+            out vec3 vNormal;
+            out float vCanonicalS;
+            void main() {
+                float directedU = (uSegmentArcRange.z >= 0.0) ? aUv.x : (1.0 - aUv.x);
+                float canonicalS = mix(uSegmentArcRange.x, uSegmentArcRange.y, directedU) + uSegmentArcRange.w;
+                vec3 localPos = aPosition;
+                if (uDeformMode == 3) {
+                    float widthAmp = uDeformParams.x;
+                    float waveAmpPx = uDeformParams.y;
+                    float wavePhase = uDeformParams.z;
+                    float widthTimePhase = uDeformParams.w;
+                    float endAnchor = smoothstep(0.0, 0.09, aUv.x) * smoothstep(0.0, 0.09, 1.0 - aUv.x);
+
+                    // Outward cross-section direction from centerline toward this edge vertex (verified on all 13 frozen strips)
+                    vec2 outwardDir = aNormal.xy;
+                    float cLen = length(outwardDir);
+                    outwardDir = (cLen > 0.001) ? (outwardDir / cLen) : vec2(0.0, 1.0);
+                    float sideSign = (aUv.y < 0.5) ? 1.0 : -1.0;
+                    vec2 ribbonNormal = outwardDir * sideSign;
+
+                    // 1) Continuous local lateral wave along canonical arc-length s (strictly bounded within ±waveAmpPx)
+                    float lateralWave = sin(wavePhase - canonicalS * 12.5663706) * 0.68
+                                      + cos(wavePhase * 0.73 + canonicalS * 6.2831853) * 0.32;
+                    localPos.xy += ribbonNormal * (waveAmpPx * lateralWave * endAnchor);
+
+                    // 2) True relative cross-section width breathing proportional to exact local ribbon half-width (zero hardcoded 18px)
+                    float widthWave = sin(widthTimePhase - canonicalS * 9.424778) * 0.72
+                                    + cos(widthTimePhase * 0.65 + canonicalS * 6.2831853) * 0.28;
+                    float localWidthDelta = widthAmp * widthWave * endAnchor;
+                    localPos.xy += outwardDir * (aLocalHalfWidthPx * localWidthDelta);
+                }
+                vec4 p = uModel * vec4(localPos, 1.0);
+                gl_Position = vec4(p.x / uCanvas.x * 2.0 - 1.0, 1.0 - p.y / uCanvas.y * 2.0, p.z / 2048.0, 1.0);
+                vNormal = normalize(transpose(inverse(mat3(uModel))) * aNormal);
+                vUv = aUv;
+                vScreenUv = p.xy / uCanvas;
+                vCanonicalS = canonicalS;
+            }
+        """.trimIndent()
+
         val RESIDENT_RIBBON_FRAGMENT = """#version 300 es
             precision highp float;
             in vec2 vUv;
             in vec2 vScreenUv;
             in vec3 vNormal;
+            in float vCanonicalS;
             uniform vec4 uTint;
             uniform vec3 uCoreColor;
             uniform float uEmission;
             uniform float uRibbonStyle;
             uniform float uFlowOffsetU;
             uniform float uBrightnessScale;
+            // x = flowActive (0 at T=0, 1 at T>0), y = brightnessAmp, z = brightnessTimePhaseRad, w = flowDirection (+1/-1)
+            uniform vec4 uResidentFlowParams;
             out vec4 fragColor;
             void main() {
                 float u = vUv.x;
                 float v = vUv.y;
                 float across = abs(v * 2.0 - 1.0);
                 float endFade = smoothstep(0.0, 0.11, u) * smoothstep(0.0, 0.13, 1.0 - u);
-                float uFlow = u - uFlowOffsetU * 2.2;
+
+                float flowActive = clamp(uResidentFlowParams.x, 0.0, 1.0);
+                float brightAmp = uResidentFlowParams.y;
+                float brightPhase = uResidentFlowParams.z;
+                float flowDir = (uResidentFlowParams.w >= 0.0) ? 1.0 : -1.0;
+
+                // At T=0 (flowActive == 0, uFlowOffsetU == 0): exact Work 2 T=0 pixel-identical evaluation.
+                // At T>0: silk internal stream & moving highlight band travel continuously along canonical s in [0, 1].
+                float uFlow = mix(u, vCanonicalS * 2.4 - uFlowOffsetU * 2.8, flowActive);
                 float twist = 0.82 + 0.18 * sin(uFlow * 10.5 + uRibbonStyle * 2.1);
                 float wave = 0.5 + 0.5 * cos((v * 2.0 - 1.0) * 10.5 + uFlow * 6.8);
                 float streak = 0.56 + 0.44 * pow(wave, 1.4);
+
                 float body;
                 float rim;
                 float core;
@@ -213,9 +281,33 @@ internal class WaterWorldShaders {
                     rim = exp(-26.0 * pow(across - 0.58, 2.0)) * 0.50;
                     core = exp(-30.0 * across * across) * 0.94;
                 }
+
+                // Moving energy highlight band along canonical s with soft leading edge and smooth fading tail (seamless cyclic wrap)
+                float phaseHead1 = fract((vCanonicalS - uFlowOffsetU) * flowDir);
+                float leadEnv1 = exp(-pow(phaseHead1 / 0.068, 2.0));
+                float tailEnv1 = exp(-pow((1.0 - phaseHead1) / 0.20, 2.0));
+                float primaryBand = max(leadEnv1, tailEnv1);
+
+                float phaseHead2 = fract(phaseHead1 + 0.52);
+                float leadEnv2 = exp(-pow(phaseHead2 / 0.062, 2.0));
+                float tailEnv2 = exp(-pow((1.0 - phaseHead2) / 0.17, 2.0));
+                float secondaryBand = max(leadEnv2, tailEnv2);
+
+                float energyBand = (primaryBand * 0.36 + secondaryBand * 0.16) * flowActive;
+                float coreFocus = exp(-7.5 * across * across);
+
+                // Non-uniform spatially-phased brightness breathing strictly bounded to 1 ± brightnessAmp (zero whole-line strobe)
+                float brightWave = sin(brightPhase - vCanonicalS * 6.2831853) * 0.70
+                                 + cos(brightPhase * 0.62 + vCanonicalS * 9.424778) * 0.30;
+                float spatialBrightness = 1.0 + brightAmp * brightWave * flowActive;
+                float finalBrightness = mix(1.0, spatialBrightness * 0.72 + uBrightnessScale * 0.28, flowActive);
+
                 float alpha = clamp((body + rim * 0.60 + core * 0.68) * uTint.a * endFade * twist, 0.0, 1.0);
                 if (alpha < 0.002) discard;
-                vec3 rgb = (uTint.rgb * (body + rim) + uCoreColor * core) * uEmission * uBrightnessScale;
+
+                vec3 baseRgb = uTint.rgb * (body + rim) + uCoreColor * core;
+                vec3 highlightRgb = (uTint.rgb * 0.35 + uCoreColor * 0.65) * energyBand * (0.36 + 0.64 * coreFocus) * (body + core * 0.88);
+                vec3 rgb = (baseRgb + highlightRgb) * uEmission * finalBrightness;
                 fragColor = vec4(rgb * alpha, alpha);
             }
         """.trimIndent()

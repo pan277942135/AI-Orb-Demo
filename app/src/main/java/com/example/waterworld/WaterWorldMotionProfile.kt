@@ -169,6 +169,7 @@ data class WaterWorldMotionProfile(
         require(fish.map { it.tailFreqHz }.toSet().size == 4) { "All 4 fish must have distinct tail frequencies" }
         require(residents.size == 5) { "Expected 5 resident profiles, got ${residents.size}" }
         require(residents.map { it.cyclePeriodSec }.toSet().size == 5) { "All 5 residents must have distinct periods" }
+        require(residents.map { it.phaseOffsetRad }.toSet().size == 5) { "All 5 residents must have distinct initial phases" }
         require(plants.size == 2) { "Expected 2 plant profiles, got ${plants.size}" }
         require(rocks.size == 3 && rocks.all { it.physicallyStationary }) { "All 3 rocks must be stationary" }
         require(bubbles.size == 9) { "Expected 9 outer bubble profiles, got ${bubbles.size}" }
@@ -430,38 +431,38 @@ data class WaterWorldMotionProfile(
             residents = listOf(
                 ResidentProfile(
                     id = "WW_RESIDENT_G01", groupKey = "G01", flowId = "WW_RESIDENT_G01_FLOW", pulseId = "WW_RESIDENT_G01_PULSE",
-                    provenance = PROVENANCE_WORK3_HYPOTHESIS, occlusionStatus = "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
+                    provenance = WaterWorldResidentContractV1.PROVENANCE_V1_FROZEN, occlusionStatus = "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
                     drawIds = listOf("G01_back_arch", "G01_back_outer_veil", "G01_front_lower_sweep"),
-                    cyclePeriodSec = 26.5f, flowDirection = 1f, phaseOffsetRad = 0.0f,
-                    widthPulseAmp = 0.045f, widthPulseHz = 0.22f, brightnessPulseAmp = 0.062f, brightnessPulseHz = 0.19f, lateralWavePx = 5.2f,
+                    cyclePeriodSec = 16.0f, flowDirection = 1f, phaseOffsetRad = 0.00f,
+                    widthPulseAmp = 0.060f, widthPulseHz = 0.19f, brightnessPulseAmp = 0.090f, brightnessPulseHz = 0.19f, lateralWavePx = 8.0f,
                 ),
                 ResidentProfile(
                     id = "WW_RESIDENT_G02", groupKey = "G02", flowId = "WW_RESIDENT_G02_FLOW", pulseId = "WW_RESIDENT_G02_PULSE",
-                    provenance = PROVENANCE_WORK3_HYPOTHESIS, occlusionStatus = "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
+                    provenance = WaterWorldResidentContractV1.PROVENANCE_V1_FROZEN, occlusionStatus = "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
                     drawIds = listOf("G02_back_upper_arc", "G02_back_upper_hairline", "G02_back_right_rim", "G02_front_right_embrace"),
-                    cyclePeriodSec = 31.0f, flowDirection = -1f, phaseOffsetRad = 1.24f,
-                    widthPulseAmp = 0.038f, widthPulseHz = 0.18f, brightnessPulseAmp = 0.055f, brightnessPulseHz = 0.16f, lateralWavePx = 4.6f,
+                    cyclePeriodSec = 18.0f, flowDirection = -1f, phaseOffsetRad = 1.24f,
+                    widthPulseAmp = 0.050f, widthPulseHz = 0.18f, brightnessPulseAmp = 0.080f, brightnessPulseHz = 0.16f, lateralWavePx = 7.0f,
                 ),
                 ResidentProfile(
                     id = "WW_RESIDENT_A01", groupKey = "A01", flowId = "WW_RESIDENT_A01_FLOW", pulseId = "WW_RESIDENT_A01_PULSE",
-                    provenance = PROVENANCE_WORK3_HYPOTHESIS, occlusionStatus = "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
+                    provenance = WaterWorldResidentContractV1.PROVENANCE_V1_FROZEN, occlusionStatus = "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
                     drawIds = listOf("A01_back_upper_left", "A01_front_left_embrace"),
-                    cyclePeriodSec = 35.5f, flowDirection = 1f, phaseOffsetRad = 2.41f,
-                    widthPulseAmp = 0.052f, widthPulseHz = 0.21f, brightnessPulseAmp = 0.072f, brightnessPulseHz = 0.24f, lateralWavePx = 5.8f,
+                    cyclePeriodSec = 20.0f, flowDirection = 1f, phaseOffsetRad = 2.41f,
+                    widthPulseAmp = 0.070f, widthPulseHz = 0.21f, brightnessPulseAmp = 0.100f, brightnessPulseHz = 0.22f, lateralWavePx = 9.0f,
                 ),
                 ResidentProfile(
                     id = "WW_RESIDENT_A02", groupKey = "A02", flowId = "WW_RESIDENT_A02_FLOW", pulseId = "WW_RESIDENT_A02_PULSE",
-                    provenance = PROVENANCE_WORK3_HYPOTHESIS, occlusionStatus = "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
+                    provenance = WaterWorldResidentContractV1.PROVENANCE_V1_FROZEN, occlusionStatus = "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
                     drawIds = listOf("A02_back_lower_halo", "A02_front_lower_strand"),
-                    cyclePeriodSec = 23.0f, flowDirection = -1f, phaseOffsetRad = 3.85f,
-                    widthPulseAmp = 0.042f, widthPulseHz = 0.25f, brightnessPulseAmp = 0.068f, brightnessPulseHz = 0.21f, lateralWavePx = 4.9f,
+                    cyclePeriodSec = 14.0f, flowDirection = -1f, phaseOffsetRad = 3.85f,
+                    widthPulseAmp = 0.060f, widthPulseHz = 0.25f, brightnessPulseAmp = 0.090f, brightnessPulseHz = 0.21f, lateralWavePx = 8.0f,
                 ),
                 ResidentProfile(
                     id = "WW_RESIDENT_C01", groupKey = "C01", flowId = "WW_RESIDENT_C01_FLOW", pulseId = "WW_RESIDENT_C01_PULSE",
-                    provenance = PROVENANCE_WORK3_HYPOTHESIS, occlusionStatus = "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
+                    provenance = WaterWorldResidentContractV1.PROVENANCE_V1_FROZEN, occlusionStatus = "GROUND_TRUTH_UNKNOWN_RENDER_HYPOTHESIS_WORK2",
                     drawIds = listOf("C01_back_lower_thread", "C01_front_lower_right"),
-                    cyclePeriodSec = 41.0f, flowDirection = 1f, phaseOffsetRad = 5.02f,
-                    widthPulseAmp = 0.036f, widthPulseHz = 0.17f, brightnessPulseAmp = 0.048f, brightnessPulseHz = 0.15f, lateralWavePx = 4.2f,
+                    cyclePeriodSec = 22.0f, flowDirection = 1f, phaseOffsetRad = 5.02f,
+                    widthPulseAmp = 0.045f, widthPulseHz = 0.17f, brightnessPulseAmp = 0.070f, brightnessPulseHz = 0.15f, lateralWavePx = 6.5f,
                 ),
             ),
             plants = listOf(

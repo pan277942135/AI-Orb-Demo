@@ -15,6 +15,7 @@ import java.nio.ByteOrder
 internal class WaterWorldMesh(
     json: JSONObject,
     subdividePlantGrid: Boolean = false,
+    computeRibbonHalfWidths: Boolean = false,
 ) {
     private val handles = IntArray(3)
     private val count: Int
@@ -29,10 +30,11 @@ internal class WaterWorldMesh(
         val rawIndices = json.getJSONArray("indices")
         require(rawIndices.length() > 0 && rawIndices.length() % 3 == 0)
 
-        val built = if (subdividePlantGrid && rawVertices.length() == 4 && rawIndices.length() == 6) {
-            buildSubdividedQuadGrid(rawVertices, cols = 6, rows = 12)
-        } else {
-            buildDirectBuffers(rawVertices, rawIndices)
+        val built = when {
+            computeRibbonHalfWidths -> buildRibbonBuffersWithHalfWidths(rawVertices, rawIndices)
+            subdividePlantGrid && rawVertices.length() == 4 && rawIndices.length() == 6 ->
+                buildSubdividedQuadGrid(rawVertices, cols = 6, rows = 12)
+            else -> buildDirectBuffers(rawVertices, rawIndices)
         }
 
         vertexCount = built.vertexCount
@@ -59,9 +61,14 @@ internal class WaterWorldMesh(
         GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, vertexData.capacity() * 4, vertexData, GLES30.GL_STATIC_DRAW)
         GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, handles[2])
         GLES30.glBufferData(GLES30.GL_ELEMENT_ARRAY_BUFFER, count * 4, indexData, GLES30.GL_STATIC_DRAW)
+        val strideBytes = built.floatsPerVertex * 4
         for ((location, size, offset) in listOf(Triple(0, 3, 0), Triple(1, 3, 12), Triple(2, 2, 24))) {
             GLES30.glEnableVertexAttribArray(location)
-            GLES30.glVertexAttribPointer(location, size, GLES30.GL_FLOAT, false, 32, offset)
+            GLES30.glVertexAttribPointer(location, size, GLES30.GL_FLOAT, false, strideBytes, offset)
+        }
+        if (built.floatsPerVertex >= 9) {
+            GLES30.glEnableVertexAttribArray(3)
+            GLES30.glVertexAttribPointer(3, 1, GLES30.GL_FLOAT, false, strideBytes, 32)
         }
         GLES30.glBindVertexArray(0)
         check(GLES30.glGetError() == GLES30.GL_NO_ERROR) { "WaterWorld geometry upload failed" }
@@ -89,6 +96,7 @@ internal class WaterWorldMesh(
         val centerY: Float,
         val widthPx: Float,
         val heightPx: Float,
+        val floatsPerVertex: Int = 8,
     )
 
     companion object {
@@ -133,6 +141,60 @@ internal class WaterWorldMesh(
                 centerY = (minY + maxY) * 0.5f,
                 widthPx = (maxX - minX).coerceAtLeast(0f),
                 heightPx = (maxY - minY).coerceAtLeast(0f),
+                floatsPerVertex = 8,
+            )
+        }
+
+        /**
+         * Five Resident Filaments V1 load-time vertex builder: reads the exact frozen paired ribbon
+         * strip vertices without modifying any frozen asset files, computes each cross-section's exact
+         * local half-width `0.5 * hypot(v0.x - v1.x, v0.y - v1.y)`, and appends it as vertex attribute
+         * `location = 3` (`aLocalHalfWidthPx`) so GPU width breathing scales strictly relative to
+         * local ribbon thickness rather than a hardcoded pixel offset.
+         */
+        internal fun buildRibbonBuffersWithHalfWidths(
+            rawVertices: org.json.JSONArray,
+            rawIndices: org.json.JSONArray,
+        ): BuiltMeshData {
+            val base = buildDirectBuffers(rawVertices, rawIndices)
+            val vCount = base.vertexCount
+            val outFloats = FloatArray(vCount * 9)
+            var i = 0
+            while (i < vCount) {
+                val hasPair = (i + 1) < vCount
+                val halfWidthPx = if (hasPair) {
+                    val x0 = base.vertexFloats[i * 8]
+                    val y0 = base.vertexFloats[i * 8 + 1]
+                    val x1 = base.vertexFloats[(i + 1) * 8]
+                    val y1 = base.vertexFloats[(i + 1) * 8 + 1]
+                    0.5f * kotlin.math.hypot((x1 - x0).toDouble(), (y1 - y0).toDouble()).toFloat()
+                } else {
+                    0f
+                }
+                for (j in 0 until 8) {
+                    outFloats[i * 9 + j] = base.vertexFloats[i * 8 + j]
+                }
+                outFloats[i * 9 + 8] = halfWidthPx
+                if (hasPair) {
+                    for (j in 0 until 8) {
+                        outFloats[(i + 1) * 9 + j] = base.vertexFloats[(i + 1) * 8 + j]
+                    }
+                    outFloats[(i + 1) * 9 + 8] = halfWidthPx
+                    i += 2
+                } else {
+                    i += 1
+                }
+            }
+            return BuiltMeshData(
+                vertexFloats = outFloats,
+                indices = base.indices,
+                vertexCount = base.vertexCount,
+                indexCount = base.indexCount,
+                centerX = base.centerX,
+                centerY = base.centerY,
+                widthPx = base.widthPx,
+                heightPx = base.heightPx,
+                floatsPerVertex = 9,
             )
         }
 

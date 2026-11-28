@@ -1,0 +1,741 @@
+{
+  "contractId": "WATER_WORLD_FIVE_RESIDENT_FILAMENTS_DESIGN_FREEZE_V1",
+  "evidenceStatus": "STATIC_GEOMETRY_LOCKED",
+  "staticBaselineHead": "120aeb2c1f716771351bf951826539350bedb512",
+  "masterCanvasPx": [
+    1254,
+    1254
+  ],
+  "masterPngSha256": "fef8225a7322aa9edf77d2c753efe51af2189384e757eb0e974a68a88f44c589",
+  "drawBindingsPath": "releases/water-world-v2-v21/work1_5_scene_assembly/WATER_WORLD_V2_1/03_SCENE_GRAPH/draw_bindings.json",
+  "drawBindingsSha256": "0518a3a179be9801a37256bc4f626e5be4303d438183be51e0652da55af3ebf7",
+  "residentCount": 5,
+  "totalSegmentCount": 13,
+  "backSegmentCount": 8,
+  "frontSegmentCount": 5,
+  "residents": [
+    {
+      "groupKey": "G01",
+      "residentId": "WW_RESIDENT_G01",
+      "colorName": "Lime Green",
+      "colorHex": "#9FE226",
+      "backSegments": [
+        "G01_back_arch",
+        "G01_back_outer_veil"
+      ],
+      "frontSegments": [
+        "G01_front_lower_sweep"
+      ],
+      "unionBboxPx": [
+        128.74,
+        64.2,
+        1208.57,
+        1224.45
+      ],
+      "roiCropPx": [
+        96,
+        32,
+        1241,
+        1254
+      ]
+    },
+    {
+      "groupKey": "G02",
+      "residentId": "WW_RESIDENT_G02",
+      "colorName": "Warm Gold",
+      "colorHex": "#FFC247",
+      "backSegments": [
+        "G02_back_upper_arc",
+        "G02_back_upper_hairline",
+        "G02_back_right_rim"
+      ],
+      "frontSegments": [
+        "G02_front_right_embrace"
+      ],
+      "unionBboxPx": [
+        75.12,
+        83.5,
+        1234.91,
+        995.66
+      ],
+      "roiCropPx": [
+        43,
+        51,
+        1254,
+        1028
+      ]
+    },
+    {
+      "groupKey": "A01",
+      "residentId": "WW_RESIDENT_A01",
+      "colorName": "Cyan",
+      "colorHex": "#37E7EF",
+      "backSegments": [
+        "A01_back_upper_left"
+      ],
+      "frontSegments": [
+        "A01_front_left_embrace"
+      ],
+      "unionBboxPx": [
+        19.05,
+        240.8,
+        937.41,
+        1012.33
+      ],
+      "roiCropPx": [
+        0,
+        208,
+        970,
+        1045
+      ]
+    },
+    {
+      "groupKey": "A02",
+      "residentId": "WW_RESIDENT_A02",
+      "colorName": "Cyan Teal",
+      "colorHex": "#15D8ED",
+      "backSegments": [
+        "A02_back_lower_halo"
+      ],
+      "frontSegments": [
+        "A02_front_lower_strand"
+      ],
+      "unionBboxPx": [
+        75.19,
+        507.68,
+        1060.28,
+        1168.92
+      ],
+      "roiCropPx": [
+        43,
+        475,
+        1093,
+        1201
+      ]
+    },
+    {
+      "groupKey": "C01",
+      "residentId": "WW_RESIDENT_C01",
+      "colorName": "Gold",
+      "colorHex": "#F6BB48",
+      "backSegments": [
+        "C01_back_lower_thread"
+      ],
+      "frontSegments": [
+        "C01_front_lower_right"
+      ],
+      "unionBboxPx": [
+        153.1,
+        601.82,
+        1158.18,
+        1186.31
+      ],
+      "roiCropPx": [
+        121,
+        569,
+        1191,
+        1219
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "segmentId": "G01_back_arch",
+      "parentResidentGroup": "G01",
+      "parentResidentId": "WW_RESIDENT_G01",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G01_back_arch_mesh.json",
+      "bytes": 28599,
+      "sha256": "314939e1ad29edee47c73919daeeb40305d3216eead6061e4face0682649740c",
+      "vertexCount": 366,
+      "indexCount": 1092,
+      "stripPairCount": 183,
+      "arcLengthPx": 1344.0,
+      "widthMinPx": 20.0,
+      "widthMedianPx": 56.79,
+      "widthMaxPx": 85.07,
+      "startCenterPx": [
+        303.47,
+        206.91
+      ],
+      "endCenterPx": [
+        1045.84,
+        782.5
+      ],
+      "bboxPx": [
+        299.73,
+        64.2,
+        1166.3,
+        787.51
+      ],
+      "modelZ": 520.0,
+      "ribbonStyle": 0.0,
+      "tint": [
+        0.48,
+        0.85,
+        0.15,
+        0.92
+      ],
+      "coreColor": [
+        0.88,
+        1.0,
+        0.4
+      ],
+      "emissionOverride": 1.16,
+      "hypothesisStatus": "RENDER_HYPOTHESIS_WORK2_G01_UPPER_RIGHT_BACK",
+      "geometryModificationAllowed": false
+    },
+    {
+      "segmentId": "G01_back_outer_veil",
+      "parentResidentGroup": "G01",
+      "parentResidentId": "WW_RESIDENT_G01",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G01_back_outer_veil_mesh.json",
+      "bytes": 16392,
+      "sha256": "9039ff8914dd05661248b11ffd2e948f4494bfff25c15dfd21156e5a69a8c888",
+      "vertexCount": 210,
+      "indexCount": 624,
+      "stripPairCount": 105,
+      "arcLengthPx": 744.87,
+      "widthMinPx": 20.0,
+      "widthMedianPx": 45.28,
+      "widthMaxPx": 59.04,
+      "startCenterPx": [
+        815.1,
+        194.37
+      ],
+      "endCenterPx": [
+        1116.06,
+        732.34
+      ],
+      "bboxPx": [
+        809.9,
+        182.45,
+        1208.57,
+        736.88
+      ],
+      "modelZ": 515.0,
+      "ribbonStyle": 0.0,
+      "tint": [
+        0.34,
+        0.76,
+        0.18,
+        0.7
+      ],
+      "coreColor": [
+        0.78,
+        0.98,
+        0.38
+      ],
+      "emissionOverride": 0.98,
+      "hypothesisStatus": "RENDER_HYPOTHESIS_WORK2_G01_SECONDARY_VEIL",
+      "geometryModificationAllowed": false
+    },
+    {
+      "segmentId": "G02_back_upper_arc",
+      "parentResidentGroup": "G02",
+      "parentResidentId": "WW_RESIDENT_G02",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G02_back_upper_arc_mesh.json",
+      "bytes": 24344,
+      "sha256": "87f45808443bea392c20b4e97e9b5a455f9a265400d01bd981b156257b19ff00",
+      "vertexCount": 314,
+      "indexCount": 936,
+      "stripPairCount": 157,
+      "arcLengthPx": 906.15,
+      "widthMinPx": 14.0,
+      "widthMedianPx": 43.62,
+      "widthMaxPx": 58.01,
+      "startCenterPx": [
+        85.27,
+        514.14
+      ],
+      "endCenterPx": [
+        774.97,
+        233.24
+      ],
+      "bboxPx": [
+        75.12,
+        116.02,
+        777.65,
+        518.37
+      ],
+      "modelZ": 505.0,
+      "ribbonStyle": 1.0,
+      "tint": [
+        1.0,
+        0.58,
+        0.06,
+        0.94
+      ],
+      "coreColor": [
+        1.0,
+        0.93,
+        0.5
+      ],
+      "emissionOverride": 1.36,
+      "hypothesisStatus": "RENDER_HYPOTHESIS_WORK2_G02_UPPER_LEFT_BACK",
+      "geometryModificationAllowed": false
+    },
+    {
+      "segmentId": "G02_back_upper_hairline",
+      "parentResidentGroup": "G02",
+      "parentResidentId": "WW_RESIDENT_G02",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G02_back_upper_hairline_mesh.json",
+      "bytes": 16208,
+      "sha256": "8fadf5a9ef75eedeeb80f4f294b02e11c21039b53c3644adb437a780c3f4d1d0",
+      "vertexCount": 210,
+      "indexCount": 624,
+      "stripPairCount": 105,
+      "arcLengthPx": 779.87,
+      "widthMinPx": 14.0,
+      "widthMedianPx": 27.13,
+      "widthMaxPx": 38.42,
+      "startCenterPx": [
+        119.13,
+        451.44
+      ],
+      "endCenterPx": [
+        682.18,
+        168.04
+      ],
+      "bboxPx": [
+        111.72,
+        83.5,
+        683.95,
+        454.46
+      ],
+      "modelZ": 502.0,
+      "ribbonStyle": 1.0,
+      "tint": [
+        1.0,
+        0.62,
+        0.1,
+        0.84
+      ],
+      "coreColor": [
+        1.0,
+        0.94,
+        0.56
+      ],
+      "emissionOverride": 1.24,
+      "hypothesisStatus": "RENDER_HYPOTHESIS_WORK2_G02_UPPER_HAIRLINE",
+      "geometryModificationAllowed": false
+    },
+    {
+      "segmentId": "G02_back_right_rim",
+      "parentResidentGroup": "G02",
+      "parentResidentId": "WW_RESIDENT_G02",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G02_back_right_rim_mesh.json",
+      "bytes": 12311,
+      "sha256": "bdd13ed610b00b31ad0cfae6d11fcefd85fd45ad6f19c992434051aaae43433e",
+      "vertexCount": 158,
+      "indexCount": 468,
+      "stripPairCount": 79,
+      "arcLengthPx": 550.51,
+      "widthMinPx": 16.0,
+      "widthMedianPx": 34.0,
+      "widthMaxPx": 38.19,
+      "startCenterPx": [
+        1045.84,
+        300.96
+      ],
+      "endCenterPx": [
+        1161.2,
+        779.99
+      ],
+      "bboxPx": [
+        1040.17,
+        295.31,
+        1234.91,
+        784.68
+      ],
+      "modelZ": 500.0,
+      "ribbonStyle": 1.0,
+      "tint": [
+        1.0,
+        0.6,
+        0.08,
+        0.88
+      ],
+      "coreColor": [
+        1.0,
+        0.93,
+        0.52
+      ],
+      "emissionOverride": 1.38,
+      "hypothesisStatus": "RENDER_HYPOTHESIS_WORK2_G02_RIGHT_RIM_BACK",
+      "geometryModificationAllowed": false
+    },
+    {
+      "segmentId": "A01_back_upper_left",
+      "parentResidentGroup": "A01",
+      "parentResidentId": "WW_RESIDENT_A01",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/A01_back_upper_left_mesh.json",
+      "bytes": 12062,
+      "sha256": "9bb3f706a883fc675d5110de3f457b04f56b90007ca7074b6ffff4bebb3e38d2",
+      "vertexCount": 158,
+      "indexCount": 468,
+      "stripPairCount": 79,
+      "arcLengthPx": 416.7,
+      "widthMinPx": 19.0,
+      "widthMedianPx": 51.31,
+      "widthMaxPx": 60.0,
+      "startCenterPx": [
+        278.39,
+        248.29
+      ],
+      "endCenterPx": [
+        48.91,
+        570.57
+      ],
+      "bboxPx": [
+        19.05,
+        240.8,
+        284.23,
+        573.47
+      ],
+      "modelZ": 495.0,
+      "ribbonStyle": 2.0,
+      "tint": [
+        0.06,
+        0.78,
+        0.94,
+        0.9
+      ],
+      "coreColor": [
+        0.74,
+        0.98,
+        0.99
+      ],
+      "emissionOverride": 1.28,
+      "hypothesisStatus": "RENDER_HYPOTHESIS_WORK2_A01_UPPER_LEFT_BACK",
+      "geometryModificationAllowed": false
+    },
+    {
+      "segmentId": "A02_back_lower_halo",
+      "parentResidentGroup": "A02",
+      "parentResidentId": "WW_RESIDENT_A02",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/A02_back_lower_halo_mesh.json",
+      "bytes": 16446,
+      "sha256": "4144ff29f09f2d1ef91562cb3033722cf0d7d5bf1fdb6d78b157b9a4445956e4",
+      "vertexCount": 210,
+      "indexCount": 624,
+      "stripPairCount": 105,
+      "arcLengthPx": 753.03,
+      "widthMinPx": 21.0,
+      "widthMedianPx": 48.53,
+      "widthMaxPx": 56.08,
+      "startCenterPx": [
+        421.34,
+        1047.09
+      ],
+      "endCenterPx": [
+        1048.34,
+        896.61
+      ],
+      "bboxPx": [
+        416.8,
+        889.29,
+        1060.28,
+        1168.92
+      ],
+      "modelZ": 490.0,
+      "ribbonStyle": 2.0,
+      "tint": [
+        0.06,
+        0.76,
+        0.94,
+        0.86
+      ],
+      "coreColor": [
+        0.68,
+        0.97,
+        0.99
+      ],
+      "emissionOverride": 1.24,
+      "hypothesisStatus": "RENDER_HYPOTHESIS_WORK2_A02_BOTTOM_HALO_BACK",
+      "geometryModificationAllowed": false
+    },
+    {
+      "segmentId": "C01_back_lower_thread",
+      "parentResidentGroup": "C01",
+      "parentResidentId": "WW_RESIDENT_C01",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/C01_back_lower_thread_mesh.json",
+      "bytes": 16400,
+      "sha256": "8236f4286d7178d0a114bbeed289d84f50855b61079900ccd854f3a587bfeba6",
+      "vertexCount": 210,
+      "indexCount": 624,
+      "stripPairCount": 105,
+      "arcLengthPx": 734.88,
+      "widthMinPx": 14.0,
+      "widthMedianPx": 26.27,
+      "widthMaxPx": 31.29,
+      "startCenterPx": [
+        160.51,
+        695.97
+      ],
+      "endCenterPx": [
+        645.81,
+        1183.78
+      ],
+      "bboxPx": [
+        153.1,
+        692.97,
+        652.48,
+        1186.31
+      ],
+      "modelZ": 485.0,
+      "ribbonStyle": 1.0,
+      "tint": [
+        1.0,
+        0.64,
+        0.14,
+        0.86
+      ],
+      "coreColor": [
+        1.0,
+        0.93,
+        0.56
+      ],
+      "emissionOverride": 1.38,
+      "hypothesisStatus": "RENDER_HYPOTHESIS_WORK2_C01_LOWER_THREAD_BACK",
+      "geometryModificationAllowed": false
+    },
+    {
+      "segmentId": "G01_front_lower_sweep",
+      "parentResidentGroup": "G01",
+      "parentResidentId": "WW_RESIDENT_G01",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G01_front_lower_sweep_mesh.json",
+      "bytes": 20459,
+      "sha256": "1b3ce58e4dc47897c068290b2da951750c5cd7c5c04db77eb19060f7ef1d1dcb",
+      "vertexCount": 262,
+      "indexCount": 780,
+      "stripPairCount": 131,
+      "arcLengthPx": 870.18,
+      "widthMinPx": 22.0,
+      "widthMedianPx": 61.99,
+      "widthMaxPx": 76.78,
+      "startCenterPx": [
+        140.45,
+        634.52
+      ],
+      "endCenterPx": [
+        704.75,
+        1213.87
+      ],
+      "bboxPx": [
+        128.74,
+        632.83,
+        707.75,
+        1224.45
+      ],
+      "modelZ": -520.0,
+      "ribbonStyle": 0.0,
+      "tint": [
+        0.54,
+        0.87,
+        0.16,
+        0.92
+      ],
+      "coreColor": [
+        0.94,
+        1.0,
+        0.42
+      ],
+      "emissionOverride": 1.2,
+      "hypothesisStatus": "RENDER_HYPOTHESIS_WORK2_G01_LOWER_LEFT_FRONT",
+      "geometryModificationAllowed": false
+    },
+    {
+      "segmentId": "G02_front_right_embrace",
+      "parentResidentGroup": "G02",
+      "parentResidentId": "WW_RESIDENT_G02",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G02_front_right_embrace_mesh.json",
+      "bytes": 20456,
+      "sha256": "77fa953287fc513f6b13f14c380acc56cd48e049e9e14389bc7c08eb7df2129d",
+      "vertexCount": 262,
+      "indexCount": 780,
+      "stripPairCount": 131,
+      "arcLengthPx": 944.29,
+      "widthMinPx": 22.0,
+      "widthMedianPx": 49.28,
+      "widthMaxPx": 60.69,
+      "startCenterPx": [
+        1023.26,
+        544.24
+      ],
+      "endCenterPx": [
+        608.19,
+        950.53
+      ],
+      "bboxPx": [
+        606.91,
+        534.84,
+        1202.28,
+        995.66
+      ],
+      "modelZ": -505.0,
+      "ribbonStyle": 1.0,
+      "tint": [
+        1.0,
+        0.58,
+        0.06,
+        0.96
+      ],
+      "coreColor": [
+        1.0,
+        0.94,
+        0.54
+      ],
+      "emissionOverride": 1.54,
+      "hypothesisStatus": "RENDER_HYPOTHESIS_WORK2_G02_RIGHT_LOWER_FRONT",
+      "geometryModificationAllowed": false
+    },
+    {
+      "segmentId": "A01_front_left_embrace",
+      "parentResidentGroup": "A01",
+      "parentResidentId": "WW_RESIDENT_A01",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/A01_front_left_embrace_mesh.json",
+      "bytes": 24409,
+      "sha256": "1c7d5b8a886795974f7a88ea3b0e4e411565011dd96c9dd5d14edb9e8e337080",
+      "vertexCount": 314,
+      "indexCount": 936,
+      "stripPairCount": 157,
+      "arcLengthPx": 1038.53,
+      "widthMinPx": 18.0,
+      "widthMedianPx": 55.61,
+      "widthMaxPx": 64.0,
+      "startCenterPx": [
+        48.91,
+        570.57
+      ],
+      "endCenterPx": [
+        935.48,
+        959.31
+      ],
+      "bboxPx": [
+        26.1,
+        554.32,
+        937.41,
+        1012.33
+      ],
+      "modelZ": -510.0,
+      "ribbonStyle": 2.0,
+      "tint": [
+        0.06,
+        0.82,
+        0.96,
+        0.94
+      ],
+      "coreColor": [
+        0.78,
+        0.99,
+        1.0
+      ],
+      "emissionOverride": 1.42,
+      "hypothesisStatus": "RENDER_HYPOTHESIS_WORK2_A01_LOWER_LEFT_FRONT",
+      "geometryModificationAllowed": false
+    },
+    {
+      "segmentId": "A02_front_lower_strand",
+      "parentResidentGroup": "A02",
+      "parentResidentId": "WW_RESIDENT_A02",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/A02_front_lower_strand_mesh.json",
+      "bytes": 20314,
+      "sha256": "919f583bbd245b16d426264bcd93ec61f86a44ec35db63471507b928f79c657f",
+      "vertexCount": 262,
+      "indexCount": 780,
+      "stripPairCount": 131,
+      "arcLengthPx": 1024.92,
+      "widthMinPx": 18.0,
+      "widthMedianPx": 39.15,
+      "widthMaxPx": 46.0,
+      "startCenterPx": [
+        86.53,
+        511.63
+      ],
+      "endCenterPx": [
+        876.55,
+        984.39
+      ],
+      "bboxPx": [
+        75.19,
+        507.68,
+        877.71,
+        1020.56
+      ],
+      "modelZ": -508.0,
+      "ribbonStyle": 2.0,
+      "tint": [
+        0.08,
+        0.8,
+        0.95,
+        0.86
+      ],
+      "coreColor": [
+        0.74,
+        0.98,
+        0.99
+      ],
+      "emissionOverride": 1.28,
+      "hypothesisStatus": "RENDER_HYPOTHESIS_WORK2_A02_LOWER_STRAND_FRONT",
+      "geometryModificationAllowed": false
+    },
+    {
+      "segmentId": "C01_front_lower_right",
+      "parentResidentGroup": "C01",
+      "parentResidentId": "WW_RESIDENT_C01",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/C01_front_lower_right_mesh.json",
+      "bytes": 20454,
+      "sha256": "06846fbd1db5b160090dd514c68d61a6b7f2d661c9c4730a4ddb2c4ab16379ec",
+      "vertexCount": 262,
+      "indexCount": 780,
+      "stripPairCount": 131,
+      "arcLengthPx": 858.45,
+      "widthMinPx": 22.0,
+      "widthMedianPx": 51.76,
+      "widthMaxPx": 54.63,
+      "startCenterPx": [
+        1037.06,
+        608.19
+      ],
+      "endCenterPx": [
+        571.82,
+        934.23
+      ],
+      "bboxPx": [
+        569.23,
+        601.82,
+        1158.18,
+        999.72
+      ],
+      "modelZ": -512.0,
+      "ribbonStyle": 1.0,
+      "tint": [
+        1.0,
+        0.62,
+        0.12,
+        0.96
+      ],
+      "coreColor": [
+        1.0,
+        0.96,
+        0.6
+      ],
+      "emissionOverride": 1.62,
+      "hypothesisStatus": "RENDER_HYPOTHESIS_WORK2_C01_LOWER_RIGHT_FRONT",
+      "geometryModificationAllowed": false
+    }
+  ]
+}

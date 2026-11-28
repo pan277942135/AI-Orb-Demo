@@ -1,0 +1,671 @@
+{
+  "contractId": "WATER_WORLD_FIVE_RESIDENT_FILAMENTS_DESIGN_FREEZE_V1",
+  "evidenceLevel": "SOFTWARE_MOTION_VERIFIED",
+  "hardwareGpuVerified": false,
+  "glesShaderVerified": "NOT_RUN_NO_EGL_DRIVER_IN_CONTAINER",
+  "canvasPx": [1254, 1254],
+  "timestampsSec": [0, 1, 2, 4, 8, 12, 20, 40, 60],
+  "t0ParityFullSceneMae255": 0.2578,
+  "t0ParityTargetMaxMae255": 0.6,
+  "t0ParityPass": true,
+  "t0ParityPerResidentRoiMae255": {
+    "G01": 0.2897,
+    "G02": 0.3404,
+    "A01": 0.3461,
+    "A02": 0.2751,
+    "C01": 0.2641
+  },
+  "a01BackFrontSeamCanonicalS": 0.2863,
+  "a01BackFrontSeamGapPx": 0.0,
+  "renderElapsedSec": 37.45,
+  "frames": [
+    {
+      "timeSec": 0.0,
+      "frameFile": "frames/five_resident_t000s.png",
+      "maeVsWork2StaticFull255": 0.2578,
+      "residents": {
+        "G01": {
+          "residentId": "WW_RESIDENT_G01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.0,
+          "traversalPercent": 0.0,
+          "highlightPeakCanonicalS": 0.0,
+          "lateralWaveAmpPx": 0.0,
+          "widthAmplitude": 0.0,
+          "widthPulseScale": 1.0,
+          "brightnessAmplitude": 0.0,
+          "brightnessScale": 1.0,
+          "roiMaeVsWork2Static255": 0.2897
+        },
+        "G02": {
+          "residentId": "WW_RESIDENT_G02",
+          "flowDirection": -1.0,
+          "flowOffsetU": 0.0,
+          "traversalPercent": 0.0,
+          "highlightPeakCanonicalS": 0.0,
+          "lateralWaveAmpPx": 0.0,
+          "widthAmplitude": 0.0,
+          "widthPulseScale": 1.0,
+          "brightnessAmplitude": 0.0,
+          "brightnessScale": 1.0,
+          "roiMaeVsWork2Static255": 0.3404
+        },
+        "A01": {
+          "residentId": "WW_RESIDENT_A01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.0,
+          "traversalPercent": 0.0,
+          "highlightPeakCanonicalS": 0.0,
+          "lateralWaveAmpPx": 0.0,
+          "widthAmplitude": 0.0,
+          "widthPulseScale": 1.0,
+          "brightnessAmplitude": 0.0,
+          "brightnessScale": 1.0,
+          "roiMaeVsWork2Static255": 0.3461
+        },
+        "A02": {
+          "residentId": "WW_RESIDENT_A02",
+          "flowDirection": -1.0,
+          "flowOffsetU": 0.0,
+          "traversalPercent": 0.0,
+          "highlightPeakCanonicalS": 0.0,
+          "lateralWaveAmpPx": 0.0,
+          "widthAmplitude": 0.0,
+          "widthPulseScale": 1.0,
+          "brightnessAmplitude": 0.0,
+          "brightnessScale": 1.0,
+          "roiMaeVsWork2Static255": 0.2751
+        },
+        "C01": {
+          "residentId": "WW_RESIDENT_C01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.0,
+          "traversalPercent": 0.0,
+          "highlightPeakCanonicalS": 0.0,
+          "lateralWaveAmpPx": 0.0,
+          "widthAmplitude": 0.0,
+          "widthPulseScale": 1.0,
+          "brightnessAmplitude": 0.0,
+          "brightnessScale": 1.0,
+          "roiMaeVsWork2Static255": 0.2641
+        }
+      }
+    },
+    {
+      "timeSec": 1.0,
+      "frameFile": "frames/five_resident_t001s.png",
+      "maeVsT0Full255": 4.9393,
+      "residents": {
+        "G01": {
+          "residentId": "WW_RESIDENT_G01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.0625,
+          "traversalPercent": 6.25,
+          "highlightPeakCanonicalS": 0.0625,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 1.0558,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 1.0837,
+          "roiMaeVsT0_255": 5.3623
+        },
+        "G02": {
+          "residentId": "WW_RESIDENT_G02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -0.0556,
+          "traversalPercent": 5.56,
+          "highlightPeakCanonicalS": 0.9444,
+          "lateralWaveAmpPx": 7.0,
+          "widthAmplitude": 0.05,
+          "widthPulseScale": 1.0348,
+          "brightnessAmplitude": 0.08,
+          "brightnessScale": 1.0764,
+          "roiMaeVsT0_255": 5.5215
+        },
+        "A01": {
+          "residentId": "WW_RESIDENT_A01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.05,
+          "traversalPercent": 5.0,
+          "highlightPeakCanonicalS": 0.05,
+          "lateralWaveAmpPx": 9.0,
+          "widthAmplitude": 0.07,
+          "widthPulseScale": 0.9612,
+          "brightnessAmplitude": 0.1,
+          "brightnessScale": 1.0072,
+          "roiMaeVsT0_255": 3.9425
+        },
+        "A02": {
+          "residentId": "WW_RESIDENT_A02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -0.0714,
+          "traversalPercent": 7.14,
+          "highlightPeakCanonicalS": 0.9286,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 0.9544,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 0.931,
+          "roiMaeVsT0_255": 5.1968
+        },
+        "C01": {
+          "residentId": "WW_RESIDENT_C01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.0455,
+          "traversalPercent": 4.55,
+          "highlightPeakCanonicalS": 0.0455,
+          "lateralWaveAmpPx": 6.5,
+          "widthAmplitude": 0.045,
+          "widthPulseScale": 0.9913,
+          "brightnessAmplitude": 0.07,
+          "brightnessScale": 0.9323,
+          "roiMaeVsT0_255": 6.2571
+        }
+      }
+    },
+    {
+      "timeSec": 2.0,
+      "frameFile": "frames/five_resident_t002s.png",
+      "maeVsT0Full255": 4.7616,
+      "residents": {
+        "G01": {
+          "residentId": "WW_RESIDENT_G01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.125,
+          "traversalPercent": 12.5,
+          "highlightPeakCanonicalS": 0.125,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 1.0411,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 1.0616,
+          "roiMaeVsT0_255": 5.0896
+        },
+        "G02": {
+          "residentId": "WW_RESIDENT_G02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -0.1111,
+          "traversalPercent": 11.11,
+          "highlightPeakCanonicalS": 0.8889,
+          "lateralWaveAmpPx": 7.0,
+          "widthAmplitude": 0.05,
+          "widthPulseScale": 0.9824,
+          "brightnessAmplitude": 0.08,
+          "brightnessScale": 1.0208,
+          "roiMaeVsT0_255": 5.0662
+        },
+        "A01": {
+          "residentId": "WW_RESIDENT_A01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.1,
+          "traversalPercent": 10.0,
+          "highlightPeakCanonicalS": 0.1,
+          "lateralWaveAmpPx": 9.0,
+          "widthAmplitude": 0.07,
+          "widthPulseScale": 0.9339,
+          "brightnessAmplitude": 0.1,
+          "brightnessScale": 0.9034,
+          "roiMaeVsT0_255": 3.698
+        },
+        "A02": {
+          "residentId": "WW_RESIDENT_A02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -0.1429,
+          "traversalPercent": 14.29,
+          "highlightPeakCanonicalS": 0.8571,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 1.039,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 0.9268,
+          "roiMaeVsT0_255": 5.1161
+        },
+        "C01": {
+          "residentId": "WW_RESIDENT_C01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.0909,
+          "traversalPercent": 9.09,
+          "highlightPeakCanonicalS": 0.0909,
+          "lateralWaveAmpPx": 6.5,
+          "widthAmplitude": 0.045,
+          "widthPulseScale": 1.0345,
+          "brightnessAmplitude": 0.07,
+          "brightnessScale": 0.9459,
+          "roiMaeVsT0_255": 6.3017
+        }
+      }
+    },
+    {
+      "timeSec": 4.0,
+      "frameFile": "frames/five_resident_t004s.png",
+      "maeVsT0Full255": 5.1541,
+      "residents": {
+        "G01": {
+          "residentId": "WW_RESIDENT_G01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.25,
+          "traversalPercent": 25.0,
+          "highlightPeakCanonicalS": 0.25,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 0.9401,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 0.9102,
+          "roiMaeVsT0_255": 5.5858
+        },
+        "G02": {
+          "residentId": "WW_RESIDENT_G02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -0.2222,
+          "traversalPercent": 22.22,
+          "highlightPeakCanonicalS": 0.7778,
+          "lateralWaveAmpPx": 7.0,
+          "widthAmplitude": 0.05,
+          "widthPulseScale": 0.9752,
+          "brightnessAmplitude": 0.08,
+          "brightnessScale": 0.9212,
+          "roiMaeVsT0_255": 5.7876
+        },
+        "A01": {
+          "residentId": "WW_RESIDENT_A01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.2,
+          "traversalPercent": 20.0,
+          "highlightPeakCanonicalS": 0.2,
+          "lateralWaveAmpPx": 9.0,
+          "widthAmplitude": 0.07,
+          "widthPulseScale": 1.069,
+          "brightnessAmplitude": 0.1,
+          "brightnessScale": 1.0803,
+          "roiMaeVsT0_255": 4.2493
+        },
+        "A02": {
+          "residentId": "WW_RESIDENT_A02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -0.2857,
+          "traversalPercent": 28.57,
+          "highlightPeakCanonicalS": 0.7143,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 0.961,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 1.0894,
+          "roiMaeVsT0_255": 5.2096
+        },
+        "C01": {
+          "residentId": "WW_RESIDENT_C01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.1818,
+          "traversalPercent": 18.18,
+          "highlightPeakCanonicalS": 0.1818,
+          "lateralWaveAmpPx": 6.5,
+          "widthAmplitude": 0.045,
+          "widthPulseScale": 1.0059,
+          "brightnessAmplitude": 0.07,
+          "brightnessScale": 1.0589,
+          "roiMaeVsT0_255": 6.2669
+        }
+      }
+    },
+    {
+      "timeSec": 8.0,
+      "frameFile": "frames/five_resident_t008s.png",
+      "maeVsT0Full255": 5.5228,
+      "residents": {
+        "G01": {
+          "residentId": "WW_RESIDENT_G01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.5,
+          "traversalPercent": 50.0,
+          "highlightPeakCanonicalS": 0.5,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 0.9925,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 0.9887,
+          "roiMaeVsT0_255": 5.9669
+        },
+        "G02": {
+          "residentId": "WW_RESIDENT_G02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -0.4444,
+          "traversalPercent": 44.44,
+          "highlightPeakCanonicalS": 0.5556,
+          "lateralWaveAmpPx": 7.0,
+          "widthAmplitude": 0.05,
+          "widthPulseScale": 0.962,
+          "brightnessAmplitude": 0.08,
+          "brightnessScale": 1.0394,
+          "roiMaeVsT0_255": 6.0181
+        },
+        "A01": {
+          "residentId": "WW_RESIDENT_A01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.4,
+          "traversalPercent": 40.0,
+          "highlightPeakCanonicalS": 0.4,
+          "lateralWaveAmpPx": 9.0,
+          "widthAmplitude": 0.07,
+          "widthPulseScale": 1.0272,
+          "brightnessAmplitude": 0.1,
+          "brightnessScale": 1.0178,
+          "roiMaeVsT0_255": 4.1491
+        },
+        "A02": {
+          "residentId": "WW_RESIDENT_A02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -0.5714,
+          "traversalPercent": 57.14,
+          "highlightPeakCanonicalS": 0.4286,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 0.961,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 1.0569,
+          "roiMaeVsT0_255": 5.7046
+        },
+        "C01": {
+          "residentId": "WW_RESIDENT_C01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.3636,
+          "traversalPercent": 36.36,
+          "highlightPeakCanonicalS": 0.3636,
+          "lateralWaveAmpPx": 6.5,
+          "widthAmplitude": 0.045,
+          "widthPulseScale": 1.0378,
+          "brightnessAmplitude": 0.07,
+          "brightnessScale": 0.9301,
+          "roiMaeVsT0_255": 7.0313
+        }
+      }
+    },
+    {
+      "timeSec": 12.0,
+      "frameFile": "frames/five_resident_t012s.png",
+      "maeVsT0Full255": 5.2656,
+      "residents": {
+        "G01": {
+          "residentId": "WW_RESIDENT_G01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.75,
+          "traversalPercent": 75.0,
+          "highlightPeakCanonicalS": 0.75,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 1.0589,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 1.0884,
+          "roiMaeVsT0_255": 5.6792
+        },
+        "G02": {
+          "residentId": "WW_RESIDENT_G02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -0.6667,
+          "traversalPercent": 66.67,
+          "highlightPeakCanonicalS": 0.3333,
+          "lateralWaveAmpPx": 7.0,
+          "widthAmplitude": 0.05,
+          "widthPulseScale": 1.0391,
+          "brightnessAmplitude": 0.08,
+          "brightnessScale": 1.0286,
+          "roiMaeVsT0_255": 6.0049
+        },
+        "A01": {
+          "residentId": "WW_RESIDENT_A01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.6,
+          "traversalPercent": 60.0,
+          "highlightPeakCanonicalS": 0.6,
+          "lateralWaveAmpPx": 9.0,
+          "widthAmplitude": 0.07,
+          "widthPulseScale": 0.9601,
+          "brightnessAmplitude": 0.1,
+          "brightnessScale": 0.9456,
+          "roiMaeVsT0_255": 3.9044
+        },
+        "A02": {
+          "residentId": "WW_RESIDENT_A02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -0.8571,
+          "traversalPercent": 85.71,
+          "highlightPeakCanonicalS": 0.1429,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 0.961,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 0.9716,
+          "roiMaeVsT0_255": 5.3419
+        },
+        "C01": {
+          "residentId": "WW_RESIDENT_C01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.5455,
+          "traversalPercent": 54.55,
+          "highlightPeakCanonicalS": 0.5455,
+          "lateralWaveAmpPx": 6.5,
+          "widthAmplitude": 0.045,
+          "widthPulseScale": 0.9618,
+          "brightnessAmplitude": 0.07,
+          "brightnessScale": 1.0541,
+          "roiMaeVsT0_255": 7.3016
+        }
+      }
+    },
+    {
+      "timeSec": 20.0,
+      "frameFile": "frames/five_resident_t020s.png",
+      "maeVsT0Full255": 5.0924,
+      "residents": {
+        "G01": {
+          "residentId": "WW_RESIDENT_G01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 1.25,
+          "traversalPercent": 125.0,
+          "highlightPeakCanonicalS": 0.25,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 0.9429,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 0.9144,
+          "roiMaeVsT0_255": 5.5079
+        },
+        "G02": {
+          "residentId": "WW_RESIDENT_G02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -1.1111,
+          "traversalPercent": 111.11,
+          "highlightPeakCanonicalS": 0.8889,
+          "lateralWaveAmpPx": 7.0,
+          "widthAmplitude": 0.05,
+          "widthPulseScale": 0.9522,
+          "brightnessAmplitude": 0.08,
+          "brightnessScale": 1.068,
+          "roiMaeVsT0_255": 5.658
+        },
+        "A01": {
+          "residentId": "WW_RESIDENT_A01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 1.0,
+          "traversalPercent": 100.0,
+          "highlightPeakCanonicalS": 0.0,
+          "lateralWaveAmpPx": 9.0,
+          "widthAmplitude": 0.07,
+          "widthPulseScale": 0.9649,
+          "brightnessAmplitude": 0.1,
+          "brightnessScale": 0.9128,
+          "roiMaeVsT0_255": 3.8197
+        },
+        "A02": {
+          "residentId": "WW_RESIDENT_A02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -1.4286,
+          "traversalPercent": 142.86,
+          "highlightPeakCanonicalS": 0.5714,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 0.961,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 0.9348,
+          "roiMaeVsT0_255": 5.1445
+        },
+        "C01": {
+          "residentId": "WW_RESIDENT_C01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 0.9091,
+          "traversalPercent": 90.91,
+          "highlightPeakCanonicalS": 0.9091,
+          "lateralWaveAmpPx": 6.5,
+          "widthAmplitude": 0.045,
+          "widthPulseScale": 1.0427,
+          "brightnessAmplitude": 0.07,
+          "brightnessScale": 0.9745,
+          "roiMaeVsT0_255": 6.1597
+        }
+      }
+    },
+    {
+      "timeSec": 40.0,
+      "frameFile": "frames/five_resident_t040s.png",
+      "maeVsT0Full255": 5.0421,
+      "residents": {
+        "G01": {
+          "residentId": "WW_RESIDENT_G01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 2.5,
+          "traversalPercent": 250.0,
+          "highlightPeakCanonicalS": 0.5,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 0.9647,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 0.9471,
+          "roiMaeVsT0_255": 5.5118
+        },
+        "G02": {
+          "residentId": "WW_RESIDENT_G02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -2.2222,
+          "traversalPercent": 222.22,
+          "highlightPeakCanonicalS": 0.7778,
+          "lateralWaveAmpPx": 7.0,
+          "widthAmplitude": 0.05,
+          "widthPulseScale": 1.0301,
+          "brightnessAmplitude": 0.08,
+          "brightnessScale": 0.981,
+          "roiMaeVsT0_255": 5.4017
+        },
+        "A01": {
+          "residentId": "WW_RESIDENT_A01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 2.0,
+          "traversalPercent": 200.0,
+          "highlightPeakCanonicalS": 0.0,
+          "lateralWaveAmpPx": 9.0,
+          "widthAmplitude": 0.07,
+          "widthPulseScale": 0.9316,
+          "brightnessAmplitude": 0.1,
+          "brightnessScale": 1.0417,
+          "roiMaeVsT0_255": 3.9059
+        },
+        "A02": {
+          "residentId": "WW_RESIDENT_A02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -2.8571,
+          "traversalPercent": 285.71,
+          "highlightPeakCanonicalS": 0.1429,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 0.961,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 0.9208,
+          "roiMaeVsT0_255": 5.5531
+        },
+        "C01": {
+          "residentId": "WW_RESIDENT_C01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 1.8182,
+          "traversalPercent": 181.82,
+          "highlightPeakCanonicalS": 0.8182,
+          "lateralWaveAmpPx": 6.5,
+          "widthAmplitude": 0.045,
+          "widthPulseScale": 0.9738,
+          "brightnessAmplitude": 0.07,
+          "brightnessScale": 0.9745,
+          "roiMaeVsT0_255": 6.8659
+        }
+      }
+    },
+    {
+      "timeSec": 60.0,
+      "frameFile": "frames/five_resident_t060s.png",
+      "maeVsT0Full255": 5.1934,
+      "residents": {
+        "G01": {
+          "residentId": "WW_RESIDENT_G01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 3.75,
+          "traversalPercent": 375.0,
+          "highlightPeakCanonicalS": 0.75,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 1.0353,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 1.0529,
+          "roiMaeVsT0_255": 5.6452
+        },
+        "G02": {
+          "residentId": "WW_RESIDENT_G02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -3.3333,
+          "traversalPercent": 333.33,
+          "highlightPeakCanonicalS": 0.6667,
+          "lateralWaveAmpPx": 7.0,
+          "widthAmplitude": 0.05,
+          "widthPulseScale": 0.9992,
+          "brightnessAmplitude": 0.08,
+          "brightnessScale": 0.9202,
+          "roiMaeVsT0_255": 5.9366
+        },
+        "A01": {
+          "residentId": "WW_RESIDENT_A01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 3.0,
+          "traversalPercent": 300.0,
+          "highlightPeakCanonicalS": 0.0,
+          "lateralWaveAmpPx": 9.0,
+          "widthAmplitude": 0.07,
+          "widthPulseScale": 0.9928,
+          "brightnessAmplitude": 0.1,
+          "brightnessScale": 1.0197,
+          "roiMaeVsT0_255": 3.556
+        },
+        "A02": {
+          "residentId": "WW_RESIDENT_A02",
+          "flowDirection": -1.0,
+          "flowOffsetU": -4.2857,
+          "traversalPercent": 428.57,
+          "highlightPeakCanonicalS": 0.7143,
+          "lateralWaveAmpPx": 8.0,
+          "widthAmplitude": 0.06,
+          "widthPulseScale": 0.961,
+          "brightnessAmplitude": 0.09,
+          "brightnessScale": 1.0163,
+          "roiMaeVsT0_255": 4.5295
+        },
+        "C01": {
+          "residentId": "WW_RESIDENT_C01",
+          "flowDirection": 1.0,
+          "flowOffsetU": 2.7273,
+          "traversalPercent": 272.73,
+          "highlightPeakCanonicalS": 0.7273,
+          "lateralWaveAmpPx": 6.5,
+          "widthAmplitude": 0.045,
+          "widthPulseScale": 0.9997,
+          "brightnessAmplitude": 0.07,
+          "brightnessScale": 0.9745,
+          "roiMaeVsT0_255": 5.9648
+        }
+      }
+    }
+  ]
+}
