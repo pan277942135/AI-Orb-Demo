@@ -31,8 +31,10 @@ data class Tab2DebugOptions(
     }
     return TaskRenderDebugOptions(
       mode = mappedMode,
-      showMainStream = false,
-      showSecondaryStreams = false,
+      // Tab 2 production owns the Task Energy path. These defaults must not silently
+      // disable KF01-KF05 while leaving only the later perimeter reveal visible.
+      showMainStream = true,
+      showSecondaryStreams = true,
       showL1 = showL1,
       showL2 = showL2,
       showL3 = showL3,

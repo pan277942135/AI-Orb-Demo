@@ -391,7 +391,7 @@ void main() {
 precision highp float;
 precision highp int;
 layout(location = 0) in vec2 aPosNdc;
-layout(location = 1) in vec2 aArcU;      // x = sNorm in [0,1], y = crossU in [0,1] (0=inner photo edge, 1=outer)
+layout(location = 1) in vec3 aArcU;      // x = side progress, y = crossU, z = closed-loop U
 layout(location = 2) in vec2 aNormalNdc; // Outward unit normal scaled into NDC per px
 
 uniform float uFlowTime;
@@ -400,13 +400,15 @@ uniform float uSideSign; // -1.0 Left, +1.0 Right
 uniform float uPhotoWidthPx;
 
 out vec2 vArcU;
+out float vLoopU;
 out float vWave;
 out vec2 vNormalDir;
 
 void main() {
-    vArcU = aArcU;
+    vArcU = aArcU.xy;
     float s = aArcU.x;
     float u = aArcU.y;
+    vLoopU = aArcU.z;
 
     // True outward unit normal in OpenGL UV orientation (+X right, +Y up) for P0-4 liquid refraction
     vNormalDir = normalize(aNormalNdc + vec2(1e-5, 0.0));
@@ -438,6 +440,7 @@ precision highp float;
 precision highp int;
 
 in vec2 vArcU;
+in float vLoopU;
 in float vWave;
 in vec2 vNormalDir;
 
@@ -458,6 +461,12 @@ uniform float uRefractionStrength;
 uniform int uTaskVisualDebug;     // 0=NORMAL, 1=GEOMETRY_MAGENTA, 2=ALPHA_HEATMAP
 uniform float uLayerAlphaCapOverride; // <=0 uses frozen default cap; >0 tightens cap for Tab 2 V2.2
 uniform int uDirectDisplayLdr;    // 0=legacy HDR FBO, 1=Tab 2 direct sRGB LDR display soft tone-fit
+uniform int uUseV2Material;
+uniform float uLayerSpeed;
+uniform float uLoopElapsedSec;
+uniform sampler2D uLayerRgbaTex;
+uniform sampler2D uLayerNormalTex;
+uniform sampler2D uLayerFlowTex;
 
 vec3 alphaToHeatmap(float a) {
     float t = clamp(a / 0.52, 0.0, 1.0);
@@ -514,7 +523,59 @@ void main() {
     vec3 col;
     float alpha;
     float alphaCap;
-    if (uLayerKind == 0) {
+    if (uUseV2Material == 1) {
+        // V2 textures are authored across one closed photo perimeter; each half-strip carries
+        // its runtime-derived closed-loop coordinate, never the locked master's pixel geometry.
+        vec2 baseUv = vec2(vLoopU, u);
+        vec2 flowVector = texture(uLayerFlowTex, baseUv).rg * 2.0 - 1.0;
+        vec3 normalVector = texture(uLayerNormalTex, baseUv).rgb * 2.0 - 1.0;
+        normalVector = normalize(vec3(normalVector.xy * 0.38, max(normalVector.z, 0.24)));
+        float layerTime = uFlowTime * uLayerSpeed;
+        vec2 animatedUv = vec2(
+            fract(vLoopU - layerTime * 0.018 + flowVector.x * 0.012),
+            clamp(u + flowVector.y * 0.018 + sin(layerTime + vLoopU * 18.8496) * 0.004, 0.0, 1.0)
+        );
+        vec4 source = texture(uLayerRgbaTex, animatedUv);
+        vec3 lightDir = normalize(vec3(-0.32, 0.48, 0.82));
+        float normalLight = max(dot(normalVector, lightDir), 0.0);
+        float specular = pow(normalLight, 18.0) * (0.28 + 0.72 * shimmer);
+
+        // Two fronts split from the real top-center join and keep advancing in opposite
+        // directions after KF06. Wrapped distance keeps the positions continuous at q=0/1.
+        float frontA = fract(0.5 + uLoopElapsedSec * uLayerSpeed * 0.035);
+        float frontB = fract(0.5 - uLoopElapsedSec * uLayerSpeed * 0.035);
+        float distA = abs(fract(vLoopU - frontA + 0.5) - 0.5);
+        float distB = abs(fract(vLoopU - frontB + 0.5) - 0.5);
+        float loopPulse = max(exp(-pow(distA / 0.012, 2.0)), exp(-pow(distB / 0.012, 2.0)))
+            * uCoverageComplete;
+
+        if (uLayerKind == 0) {
+            col = source.rgb * (0.88 + 0.18 * normalLight)
+                + vec3(0.42, 0.78, 1.0) * (specular * 0.34 + loopPulse * 0.14)
+                + vec3(0.48, 0.74, 0.90) * frontBoost * 0.10;
+            alpha = source.a;
+            alphaCap = 0.30;
+        } else if (uLayerKind == 1) {
+            float plume = 0.72 + 0.28 * (0.5 + 0.5 * sin(vLoopU * 37.6991 - layerTime * 1.1 + flowVector.x * 3.0));
+            col = source.rgb * (0.82 + 0.22 * normalLight)
+                + vec3(0.16, 0.46, 0.28) * (specular * 0.20 + loopPulse * 0.08);
+            alpha = source.a * plume;
+            alphaCap = 0.16;
+        } else {
+            // L3 keeps the sparse V2 gold marks and adds two narrow, asynchronous, gated
+            // strands whose changing separation creates local branch, merge and fade behavior.
+            float branchA = vLoopU * 25.1327 - layerTime * 1.55 + flowVector.x * 2.0;
+            float branchB = vLoopU * 37.6991 + layerTime * 1.08 - flowVector.y * 2.0;
+            float strandA = exp(-pow((u - (0.34 + 0.18 * sin(branchA))) / 0.024, 2.0));
+            float strandB = exp(-pow((u - (0.66 + 0.15 * sin(branchB))) / 0.022, 2.0));
+            float branchGate = smoothstep(-0.25, 0.55, sin(vLoopU * 25.1327 - layerTime * 1.3));
+            float branchAlpha = max(strandA, strandB) * branchGate * 0.15;
+            alpha = max(source.a, branchAlpha);
+            alphaCap = 0.28;
+            col = mix(vec3(0.96, 0.70, 0.36), source.rgb, step(0.012, source.a));
+            col += vec3(0.48, 0.32, 0.12) * (specular * 0.25 + loopPulse * 0.11 + frontBoost * 0.08);
+        }
+    } else if (uLayerKind == 0) {
         // L1: High-contrast translucent sapphire-ice liquid film (strict frozen cap <= 0.38!)
         // Deep sapphire-cyan core + dark meniscus rim + bright specular liquid crest ensures crisp daylight visibility!
         vec3 deepSapphire = vec3(0.04, 0.44, 0.90);
@@ -568,6 +629,11 @@ void main() {
         // Refract inward near inner photo edge and outward near outer crest for genuine curved meniscus lens feel
         float lensProfile = (u - 0.35) * 2.0;
         vec2 nDir = normalize(vNormalDir + vec2(1e-5, 0.0));
+        if (uUseV2Material == 1) {
+            vec2 materialUv = vec2(vLoopU, u);
+            vec3 materialNormal = texture(uLayerNormalTex, materialUv).rgb * 2.0 - 1.0;
+            nDir = normalize(nDir + materialNormal.xy * 0.18);
+        }
         vec2 refrUv = clamp(baseUv + nDir * (lensProfile * uRefractionPx) / safeFbo, vec2(0.002), vec2(0.998));
         float invHdr = 1.0 / max(uHdrScale, 1e-4);
         vec3 baseBg = texture(uTaskRefractionTex, baseUv).rgb * invHdr;
@@ -592,17 +658,20 @@ layout(location = 0) in vec2 aPosNdc;
 layout(location = 1) in float aSizePx;
 layout(location = 2) in float aAlpha;
 layout(location = 3) in float aKind;   // 0=CrystalDroplet, 1=WarmGoldStarburst, 2=CyanRippleHalo
-layout(location = 4) in vec2 aQuadUv; // Used strictly when uUseQuad == 1
+layout(location = 4) in float aSpriteIndex;
+layout(location = 5) in vec2 aQuadUv; // Used strictly when uUseQuad == 1
 
 uniform int uUseQuad;
 
 out float vAlpha;
 out float vKind;
+out float vSpriteIndex;
 out vec2 vQuadUv;
 
 void main() {
     vAlpha = aAlpha;
     vKind = aKind;
+    vSpriteIndex = aSpriteIndex;
     vQuadUv = aQuadUv;
     gl_Position = vec4(aPosNdc, 0.0, 1.0);
     gl_PointSize = (uUseQuad == 0) ? aSizePx : 1.0;
@@ -615,6 +684,7 @@ precision highp int;
 
 in float vAlpha;
 in float vKind;
+in float vSpriteIndex;
 in vec2 vQuadUv;
 
 out vec4 fragColor;
@@ -623,6 +693,8 @@ uniform int uUseQuad;
 uniform float uHdrScale;
 uniform int uTaskVisualDebug; // 0=NORMAL, 1=GEOMETRY_MAGENTA, 2=ALPHA_HEATMAP
 uniform int uDirectDisplayLdr; // 0=legacy HDR FBO, 1=Tab 2 direct sRGB LDR display soft tone-fit
+uniform int uUseDropletAtlas;
+uniform sampler2D uDropletAtlas;
 
 vec3 alphaToHeatmap(float a) {
     float t = clamp(a / 0.90, 0.0, 1.0);
@@ -650,15 +722,26 @@ void main() {
     vec3 col;
     float alpha;
     if (vKind < 0.5) {
-        // L4: Translucent crystal water droplet (dark refractive rim + clear body + pinpoint top-left glint)
-        float rim = exp(-pow((r - 0.72) / 0.15, 2.0));
-        float darkOutline = exp(-pow((r - 0.84) / 0.10, 2.0));
-        float body = (1.0 - smoothstep(0.0, 0.85, r)) * 0.22;
-        float glint = exp(-pow(length(p - vec2(-0.26, -0.28)) / 0.20, 2.0));
-        col = vec3(0.16, 0.74, 1.06) * (body + rim * 0.78)
-            + vec3(1.62, 1.72, 1.80) * glint * 0.88;
-        col = mix(col, vec3(0.02, 0.22, 0.40), darkOutline * 0.30);
-        alpha = clamp((body + rim * 0.68 + glint * 0.82) * vAlpha, 0.0, 0.82);
+        if (uUseDropletAtlas == 1 && vSpriteIndex >= 0.0) {
+            // V2 atlas is a 4x4 RGBA sprite sheet; inset UVs prevent neighboring-cell bleed.
+            float cellIndex = clamp(floor(vSpriteIndex + 0.5), 0.0, 15.0);
+            vec2 cell = vec2(mod(cellIndex, 4.0), floor(cellIndex / 4.0));
+            vec2 localUv = mix(vec2(0.035), vec2(0.965), uv);
+            vec2 atlasUv = (cell + localUv) / 4.0;
+            vec4 droplet = texture(uDropletAtlas, atlasUv);
+            col = droplet.rgb;
+            alpha = droplet.a * vAlpha;
+        } else {
+            // Legacy non-V2 crystal droplet material, retained for the separate frozen Orb scene.
+            float rim = exp(-pow((r - 0.72) / 0.15, 2.0));
+            float darkOutline = exp(-pow((r - 0.84) / 0.10, 2.0));
+            float body = (1.0 - smoothstep(0.0, 0.85, r)) * 0.22;
+            float glint = exp(-pow(length(p - vec2(-0.26, -0.28)) / 0.20, 2.0));
+            col = vec3(0.16, 0.74, 1.06) * (body + rim * 0.78)
+                + vec3(1.62, 1.72, 1.80) * glint * 0.88;
+            col = mix(col, vec3(0.02, 0.22, 0.40), darkOutline * 0.30);
+            alpha = clamp((body + rim * 0.68 + glint * 0.82) * vAlpha, 0.0, 0.82);
+        }
     } else if (vKind < 1.5) {
         // P0-7: Compact KF02 Contact / KF05 Top-Join localized warm champagne-gold optical focus
         float core = exp(-r * r * 14.0);

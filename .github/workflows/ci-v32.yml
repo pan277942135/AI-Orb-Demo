@@ -11,21 +11,32 @@ jobs:
   verify-v32-final-closure:
     name: Verify V3.2 Master Lock, Offline Gates, Negative CI Tests, Unit Tests & Exact-HEAD APK
     runs-on: ubuntu-latest
+    env:
+      EXACT_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
     steps:
       - name: Checkout Exact HEAD
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Install ffmpeg for Lossless RGBA WebP Verification
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          # Robolectric SDK 36 requires Java 21; Android production compilation
+          # still targets the project's configured Java/Kotlin toolchain.
+          java-version: '21'
+
+      - name: Set up repository Gradle version
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '9.3.1'
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -40,14 +51,41 @@ jobs:
           test "$ACTUAL" = "$EXPECTED"
 
       - name: Validate WebP Assets, Volume Continuity, Strict Fit Gates & 10 Negative CI Tests
+        id: validate_v32_gates
+        continue-on-error: true
         run: |
           python3 tools/orb-v3-generator/validate_webp_assets.py
           python3 tools/orb-v3-generator/validate_volume_continuity.py
           python3 tools/orb-v3-generator/fitting/validate_fit.py
           python3 tools/orb-v3-generator/test_v32_closure_gates.py
 
+      - name: Validate Tab 2 V2 source lock and runtime texture inputs
+        run: python3 tools/tab2-perimeter/package_v25.py
+
+      - name: Provide the ignored debug keystore expected by the existing signing config
+        run: |
+          if [ ! -f debug.keystore ]; then
+            keytool -genkeypair -v \
+              -keystore debug.keystore \
+              -storetype JKS \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US" \
+              -noprompt
+          fi
+
       - name: Compile, Run All JVM/Robolectric Tests & Assemble Debug APK
-        run: ./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :app:assembleDebug --console=plain
+        id: compile_tests_assemble
+        continue-on-error: true
+        run: |
+          ACTUAL_HEAD=$(git rev-parse HEAD)
+          echo "Exact source HEAD: $ACTUAL_HEAD"
+          test "$ACTUAL_HEAD" = "$EXACT_HEAD_SHA"
+          gradle :app:compileDebugKotlin :app:testDebugUnitTest :app:assembleDebug --continue --console=plain --no-configuration-cache --stacktrace
 
       - name: Package Exact-HEAD Final Debug APK & Verify Embedded APK Assets SHA-256
         run: |
@@ -85,7 +123,7 @@ jobs:
           {
             "schema": "AI_ORB_V3_2_EXACT_HEAD_BUILD_FINGERPRINT_1_0",
             "taskId": "AI_ORB_V32_FINAL_FIDELITY_CLOSURE_V2",
-            "gitCommitSha": "${GITHUB_SHA}",
+            "gitCommitSha": "${EXACT_HEAD_SHA}",
             "githubRunId": "${GITHUB_RUN_ID}",
             "githubRef": "${GITHUB_REF}",
             "referenceMasterSha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
@@ -114,3 +152,35 @@ jobs:
             docs/v3/BUILD_FINGERPRINT.json
             docs/v3/AI_ORB_V3_2_*
             tools/orb-v3-generator/fitting/FIT_VALIDATION_RESULT.json
+
+      - name: Package Tab 2 V2.5 Exact-HEAD APK and fingerprint
+        env:
+          EXACT_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 tools/tab2-perimeter/package_v25.py \
+            --apk app/build/outputs/apk/debug/app-debug.apk \
+            --out dist/tab2-v25
+
+      - name: Upload Tab 2 V2.5 Exact-HEAD APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tab2-v25-perimeter-exact-head
+          path: dist/tab2-v25/*
+          if-no-files-found: error
+
+      - name: Preserve V3.2 gates and Android test outcome as required checks
+        if: always()
+        env:
+          V3_GATE_OUTCOME: ${{ steps.validate_v32_gates.outcome }}
+          ANDROID_BUILD_OUTCOME: ${{ steps.compile_tests_assemble.outcome }}
+        run: |
+          FAILED=0
+          if [ "$V3_GATE_OUTCOME" != "success" ]; then
+            echo "::error::The frozen V3.2 offline fidelity gates failed; see the validation step above."
+            FAILED=1
+          fi
+          if [ "$ANDROID_BUILD_OUTCOME" != "success" ]; then
+            echo "::error::Android compile/test/assemble reported failure; inspect the task log and Tab 2 V2.5 test fingerprint."
+            FAILED=1
+          fi
+          exit "$FAILED"

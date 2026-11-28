@@ -1,4 +1,8 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+import java.io.ByteArrayInputStream
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+import javax.imageio.ImageIO
 
 plugins {
   alias(libs.plugins.android.application)
@@ -69,6 +73,7 @@ android {
     includeInBundle = true
   }
   sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/waterWorldAssets").get().asFile)
+  sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/tab2PerimeterAssets").get().asFile)
 }
 
 // Assemble debug assets from the byte-frozen V2 archive and the checked-in
@@ -96,10 +101,113 @@ val verifyFrozenWaterWorldArchive = tasks.register<Exec>("verifyFrozenWaterWorld
   commandLine("python3", "tools/water-world-scene-assembly/verify_android_asset_plan.py")
 }
 prepareWaterWorldAssets.configure { dependsOn(verifyFrozenWaterWorldArchive) }
+
+// Package only the production V2 perimeter textures and their small runtime descriptors.
+// The ZIP remains the immutable source of truth; the master, CPU previews and duplicate
+// reference images are deliberately excluded from the APK.
+val tab2PerimeterArchive = rootProject.file("docs/tab2/assets/TAB2_PERIMETER_HIFI_REFERENCE_ASSETS_V2.zip")
+val tab2PerimeterMaster = rootProject.file("docs/tab2/assets/TAB2_P0_HIGH_FIDELITY_MASTER_V1.png")
+val tab2PerimeterOutput = layout.buildDirectory.dir("generated/tab2PerimeterAssets")
+val tab2PerimeterInputFiles = listOf(
+  "textures/L1_RGBA.png",
+  "textures/L1_NORMAL_RGB.png",
+  "textures/L1_FLOW_RG.png",
+  "textures/L2_RGBA.png",
+  "textures/L2_NORMAL_RGB.png",
+  "textures/L2_FLOW_RG.png",
+  "textures/L3_RGBA.png",
+  "textures/L3_NORMAL_RGB.png",
+  "textures/L3_FLOW_RG.png",
+  "textures/L4_DROPLET_ATLAS_RGBA.png",
+  "geometry/CLOSED_ARC_LENGTH_LUT.json",
+  "motion/KF01_KF06.json",
+)
+val prepareTab2PerimeterAssets = tasks.register("prepareTab2PerimeterAssets") {
+  inputs.file(tab2PerimeterArchive)
+  inputs.file(tab2PerimeterMaster)
+  outputs.dir(tab2PerimeterOutput)
+  doLast {
+    fun sha256(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256")
+      .digest(bytes)
+      .joinToString("") { "%02x".format(it) }
+
+    val expectedArchiveSha = "f724393fa8254b9d18543747ec356ded8a6e91dd61311d72a9a5028d174b0004"
+    val expectedMasterSha = "a37819bba6b144ca7fec27ace55e5b319c41e67b89a11e70d51200bce8749d67"
+    val archiveBytes = tab2PerimeterArchive.readBytes()
+    val masterBytes = tab2PerimeterMaster.readBytes()
+    check(sha256(archiveBytes) == expectedArchiveSha) {
+      "TAB2_V25_RESOURCE_ZIP_SHA_MISMATCH: expected=$expectedArchiveSha actual=${sha256(archiveBytes)}"
+    }
+    check(sha256(masterBytes) == expectedMasterSha) {
+      "TAB2_V25_MASTER_SHA_MISMATCH: expected=$expectedMasterSha actual=${sha256(masterBytes)}"
+    }
+
+    val outputRoot = tab2PerimeterOutput.get().asFile
+    outputRoot.deleteRecursively()
+    val files = linkedMapOf<String, Any>()
+    ZipFile(tab2PerimeterArchive).use { zip ->
+      for (entryName in tab2PerimeterInputFiles) {
+        val entry = zip.getEntry(entryName)
+          ?: error("TAB2_V25_RESOURCE_MISSING: $entryName")
+        val bytes = zip.getInputStream(entry).use { it.readBytes() }
+        val descriptor = linkedMapOf<String, Any>(
+          "asset_path" to "tab2_perimeter/$entryName",
+          "sha256" to sha256(bytes),
+          "size_bytes" to bytes.size,
+        )
+        if (entryName.endsWith(".png")) {
+          val image = ImageIO.read(ByteArrayInputStream(bytes))
+            ?: error("TAB2_V25_PNG_DECODE_FAILED: $entryName")
+          val expectedWidth = if (entryName == "textures/L4_DROPLET_ATLAS_RGBA.png") 512 else 2048
+          val expectedHeight = if (entryName == "textures/L4_DROPLET_ATLAS_RGBA.png") 512 else 128
+          val expectedChannels = if (entryName.contains("_RGBA")) "RGBA" else "RGB"
+          check(image.width == expectedWidth && image.height == expectedHeight) {
+            "TAB2_V25_PNG_DIMENSIONS_INVALID: $entryName ${image.width}x${image.height}, expected ${expectedWidth}x${expectedHeight}"
+          }
+          check(image.colorModel.hasAlpha() == (expectedChannels == "RGBA")) {
+            "TAB2_V25_PNG_CHANNELS_INVALID: $entryName expected=$expectedChannels"
+          }
+          descriptor["width"] = image.width
+          descriptor["height"] = image.height
+          descriptor["channels"] = expectedChannels
+        }
+        val target = outputRoot.resolve("tab2_perimeter/$entryName")
+        target.parentFile.mkdirs()
+        target.writeBytes(bytes)
+        files[entryName] = descriptor
+      }
+    }
+
+    val motion = groovy.json.JsonSlurper().parseText(
+      outputRoot.resolve("tab2_perimeter/motion/KF01_KF06.json").readText()
+    ) as Map<*, *>
+    val manifest = linkedMapOf<String, Any>(
+      "schema" to "TAB2_PERIMETER_V25_ASSET_MANIFEST_V1",
+      "repository" to "pan277942135/AI-Orb-Demo",
+      "archive_sha256" to expectedArchiveSha,
+      "master_sha256" to expectedMasterSha,
+      "files" to files,
+      "relative_speed" to (motion["relative_speed"] ?: error("TAB2_V25_MOTION_SPEEDS_MISSING")),
+      "loop_contract" to "continuous_closed_perimeter_two_opposed_phases",
+    )
+    val manifestFile = outputRoot.resolve("tab2_perimeter/manifest.json")
+    manifestFile.parentFile.mkdirs()
+    manifestFile.writeText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(manifest)))
+  }
+}
+
 tasks.matching {
   (it.name.startsWith("merge") && it.name.endsWith("Assets")) ||
-    it.name.contains("lint", ignoreCase = true)
+    it.name.contains("lint", ignoreCase = true) ||
+    it.name == "preBuild" ||
+    it.name.startsWith("test")
 }.configureEach { dependsOn(prepareWaterWorldAssets) }
+tasks.matching {
+  (it.name.startsWith("merge") && it.name.endsWith("Assets")) ||
+    it.name.contains("lint", ignoreCase = true) ||
+    it.name == "preBuild" ||
+    it.name.startsWith("test")
+}.configureEach { dependsOn(prepareTab2PerimeterAssets) }
 
 // Configure the Secrets Gradle Plugin to use .env and .env.example files
 // to match the convention used in Web projects.
