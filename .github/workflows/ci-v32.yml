@@ -79,11 +79,13 @@ jobs:
           fi
 
       - name: Compile, Run All JVM/Robolectric Tests & Assemble Debug APK
+        id: compile_tests_assemble
+        continue-on-error: true
         run: |
           ACTUAL_HEAD=$(git rev-parse HEAD)
           echo "Exact source HEAD: $ACTUAL_HEAD"
           test "$ACTUAL_HEAD" = "$EXACT_HEAD_SHA"
-          gradle :app:compileDebugKotlin :app:testDebugUnitTest :app:assembleDebug --console=plain --no-configuration-cache --stacktrace
+          gradle :app:compileDebugKotlin :app:testDebugUnitTest :app:assembleDebug --continue --console=plain --no-configuration-cache --stacktrace
 
       - name: Package Exact-HEAD Final Debug APK & Verify Embedded APK Assets SHA-256
         run: |
@@ -166,12 +168,19 @@ jobs:
           path: dist/tab2-v25/*
           if-no-files-found: error
 
-      - name: Preserve V3.2 offline fidelity gates as required checks
+      - name: Preserve V3.2 gates and Android test outcome as required checks
         if: always()
         env:
           V3_GATE_OUTCOME: ${{ steps.validate_v32_gates.outcome }}
+          ANDROID_BUILD_OUTCOME: ${{ steps.compile_tests_assemble.outcome }}
         run: |
+          FAILED=0
           if [ "$V3_GATE_OUTCOME" != "success" ]; then
             echo "::error::The frozen V3.2 offline fidelity gates failed; see the validation step above."
-            exit 1
+            FAILED=1
           fi
+          if [ "$ANDROID_BUILD_OUTCOME" != "success" ]; then
+            echo "::error::Android compile/test/assemble reported failure; inspect the task log and Tab 2 V2.5 test fingerprint."
+            FAILED=1
+          fi
+          exit "$FAILED"

@@ -11,6 +11,7 @@ import shutil
 import struct
 import subprocess
 import zipfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
@@ -102,8 +103,69 @@ def verify_source() -> dict:
     }
 
 
+def read_unit_test_result() -> dict:
+    report_dir = ROOT / "app/build/test-results/testDebugUnitTest"
+    reports = sorted(report_dir.glob("TEST-*.xml"))
+    assert reports, f"JUnit XML reports are missing: {report_dir}"
+
+    cases = []
+    for report in reports:
+        root = ET.parse(report).getroot()
+        for case in root.iter("testcase"):
+            failure = case.find("failure")
+            error = case.find("error")
+            if failure is not None or error is not None:
+                issue = failure if failure is not None else error
+                message = issue.attrib.get("message") or (issue.text or "").strip()
+                cases.append({
+                    "classname": case.attrib.get("classname", ""),
+                    "name": case.attrib.get("name", ""),
+                    "failed": True,
+                    "message": message.splitlines()[0][:500] if message else "",
+                })
+            else:
+                cases.append({
+                    "classname": case.attrib.get("classname", ""),
+                    "name": case.attrib.get("name", ""),
+                    "failed": False,
+                })
+
+    failures = [case for case in cases if case["failed"]]
+    target_class = "com.example.Tab2PerimeterV25IntegrationTest"
+    target_cases = [case for case in cases if case["classname"] == target_class]
+    target_failures = [case for case in target_cases if case["failed"]]
+    assert target_cases, f"Tab 2 V2.5 integration tests were not reported: {target_class}"
+    assert not target_failures, f"Tab 2 V2.5 integration test failure(s): {target_failures}"
+
+    # The frozen V3.2 visual-loss fixture already declares these hard gates as
+    # failed on the locked Main baseline. Permit only that known, unchanged test
+    # to coexist with a review APK; every new or unrelated test failure blocks it.
+    known_baseline_failure = (
+        "com.example.AIOrbV32ReferenceFittingTest",
+        "v32_04_stageACameraAndStageEOpticsHardGatesPassInVisualLoss",
+    )
+    unexpected_failures = [
+        case for case in failures
+        if (case["classname"], case["name"]) != known_baseline_failure
+    ]
+    assert not unexpected_failures, f"Unexpected unit test failure(s): {unexpected_failures}"
+
+    return {
+        "status": "PASS" if not failures else "FAIL_KNOWN_V3_2_BASELINE_GATE",
+        "tests_total": len(cases),
+        "tests_failed": len(failures),
+        "tab2_v25": {
+            "status": "PASS",
+            "tests_total": len(target_cases),
+            "tests_failed": len(target_failures),
+        },
+        "known_baseline_failures": failures,
+    }
+
+
 def verify_apk(apk_path: Path, output_dir: Path) -> None:
     source = verify_source()
+    unit_tests = read_unit_test_result()
     manifest_path = GENERATED_ROOT / "manifest.json"
     manifest = json.loads(manifest_path.read_text())
     assert manifest["archive_sha256"] == source["archive_sha256"]
@@ -165,12 +227,13 @@ def verify_apk(apk_path: Path, output_dir: Path) -> None:
         "apk_sha256": apk_sha,
         "v2_resource_zip_sha256": source["archive_sha256"],
         "master_sha256": source["master_sha256"],
-        "unit_test_result": "PASS",
+        "unit_test_result": unit_tests,
         "gpu_validation_status": "GPU_NOT_RUN",
         "debug_signing": "CI generated a temporary debug keystore because the repository-excluded debug.keystore was absent.",
         "unresolved_issues": [
             "Real-device/GLES visual capture remains pending; this CI artifact is for device visual acceptance.",
             "A device with an app signed by another debug key may require uninstalling it before installing this APK.",
+            *(["The full test suite retains one pre-existing V3.2 visual-fit gate failure on frozen Main data; the Tab 2 V2.5 integration tests passed. CI remains failed and this APK is for review only."] if unit_tests["tests_failed"] else []),
         ],
         "apk_asset_sha256": expected_assets,
     }
