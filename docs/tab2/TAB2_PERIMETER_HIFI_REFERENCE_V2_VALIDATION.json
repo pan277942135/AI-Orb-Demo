@@ -1,0 +1,32 @@
+{
+  "master_sha256": "a37819bba6b144ca7fec27ace55e5b319c41e67b89a11e70d51200bce8749d67",
+  "source_lock": "PASS",
+  "texture_stats": [
+    {
+      "id": "L1",
+      "alpha_cap": 0.3,
+      "max_alpha": 0.2980392156862745,
+      "active_pixels": 155730,
+      "seam_error": 0
+    },
+    {
+      "id": "L2",
+      "alpha_cap": 0.16,
+      "max_alpha": 0.1568627450980392,
+      "active_pixels": 61298,
+      "seam_error": 0
+    },
+    {
+      "id": "L3",
+      "alpha_cap": 0.28,
+      "max_alpha": 0.2784313725490196,
+      "active_pixels": 8365,
+      "seam_error": 0
+    }
+  ],
+  "path_seam_tangent_dot": 1.0,
+  "atlas_seams": "PASS",
+  "true_alpha_source": false,
+  "source": "RGB-reference-derived heuristic masks",
+  "visual_gpu_acceptance": "NOT_VERIFIED"
+}

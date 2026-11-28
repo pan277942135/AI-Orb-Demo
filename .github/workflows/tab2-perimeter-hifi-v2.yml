@@ -1,0 +1,151 @@
+name: TAB2 perimeter V2 material build
+on:
+  push:
+    branches: [codex/tab2-perimeter-hifi-materials-v2]
+    paths: [.github/workflows/tab2-perimeter-hifi-v2.yml]
+permissions:
+  contents: write
+jobs:
+  build-materials:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            docs/tab2
+            .github/workflows
+          sparse-checkout-cone-mode: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy==1.26.4 Pillow==10.4.0 opencv-python-headless==4.10.0.84
+      - name: Generate from locked master
+        run: |
+          python - <<'PY'
+          import hashlib,json,math,zipfile
+          from pathlib import Path
+          import cv2,numpy as np
+          from PIL import Image
+          S='a37819bba6b144ca7fec27ace55e5b319c41e67b89a11e70d51200bce8749d67'
+          src=Path('docs/tab2/assets/TAB2_P0_HIGH_FIDELITY_MASTER_V1.png')
+          assert hashlib.sha256(src.read_bytes()).hexdigest()==S,'SOURCE_SHA_MISMATCH'
+          img=np.array(Image.open(src).convert('RGB'))
+          assert img.shape==(1672,941,3)
+          out=Path('tab2_generated');out.mkdir(exist_ok=True)
+          def save(name,im):
+              p=out/name;p.parent.mkdir(parents=True,exist_ok=True);Image.fromarray(im).save(p,optimize=True)
+          def dump(name,obj):
+              p=out/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n')
+          l,t,r,b,R=93,179,858,1079,65
+          lengths=[(r-l)/2-R,math.pi*R/2,b-t-2*R,math.pi*R/2,(r-l)/2-R]
+          L=sum(lengths)
+          def half(s,left):
+              j=0
+              while j<4 and s>lengths[j]:s-=lengths[j];j+=1
+              u=s/lengths[j]
+              if j==0:return ((l+r)/2+(-s if left else s),b,-1 if left else 1,0,0,1)
+              if j==1:
+                  a=math.pi/2+u*math.pi/2*(1 if left else -1)
+                  return ((l+R if left else r-R)+R*math.cos(a),b-R+R*math.sin(a),-math.sin(a) if left else math.sin(a),math.cos(a) if left else -math.cos(a),math.cos(a),math.sin(a))
+              if j==2:return (l if left else r,b-R-s,0,-1,-1 if left else 1,0)
+              if j==3:
+                  a=(math.pi if left else 0)+u*math.pi/2*(1 if left else -1)
+                  return ((l+R if left else r-R)+R*math.cos(a),t+R+R*math.sin(a),-math.sin(a) if left else math.sin(a),math.cos(a) if left else -math.cos(a),math.cos(a),math.sin(a))
+              return ((l+R+s) if left else (r-R-s),t,1 if left else -1,0,0,-1)
+          N=2048;H=128
+          pts=[]
+          for i in range(N):
+              u=i/N
+              if u<.5:p=half(u*L*2,True)
+              else:
+                  q=half((1-u)*L*2,False)
+                  p=(q[0],q[1],-q[2],-q[3],q[4],q[5])
+              pts.append(p)
+          pts=np.array(pts,np.float32)
+          d=np.linspace(0,58,H,dtype=np.float32)[:,None]
+          mx=np.clip(pts[:,0][None,:]+pts[:,4][None,:]*d,0,940).astype(np.float32)
+          my=np.clip(pts[:,1][None,:]+pts[:,5][None,:]*d,0,1671).astype(np.float32)
+          strip=cv2.remap(img,mx,my,cv2.INTER_LINEAR,borderMode=cv2.BORDER_REFLECT_101)
+          strip[:,-1]=strip[:,0]
+          save('reference/MASTER_UNWRAPPED_RGB.png',strip)
+          save('reference/MASTER_LOCKED_RGB.png',img)
+          hsv=cv2.cvtColor(strip,cv2.COLOR_RGB2HSV)
+          blur=cv2.GaussianBlur(strip,(0,0),sigmaX=56,sigmaY=10)
+          contrast=np.mean(np.abs(strip.astype(float)-blur.astype(float)),axis=2)
+          hue=hsv[:,:,0].astype(float);light=hsv[:,:,2]/255
+          material={}
+          stats=[]
+          for name,(lo,hi,cap) in {'L1':(75,117,.30),'L2':(32,95,.16),'L3':(8,43,.28)}.items():
+              band=np.clip((hue-lo)/14,0,1)*np.clip((hi-hue)/16,0,1)
+              strength=np.clip((contrast-4)/38,0,1)*band*light
+              alpha=np.uint8(np.clip(strength*cap*255,0,255))
+              rgba=np.dstack([strip,alpha]);rgba[:,-1]=rgba[:,0]
+              height=cv2.GaussianBlur(strength.astype(np.float32),(0,0),1)
+              dx=(np.roll(height,1,1)-np.roll(height,-1,1))*3
+              dy=(np.roll(height,1,0)-np.roll(height,-1,0))*3
+              normal=np.dstack([dx,dy,np.ones_like(dx)])
+              normal/=np.linalg.norm(normal,axis=2,keepdims=True)
+              normal=np.uint8((normal*.5+.5)*255);normal[:,-1]=normal[:,0]
+              x=np.arange(N)[None,:]*2*math.pi/N;y=np.arange(H)[:,None]/H
+              flow=np.zeros((H,N,3),np.uint8)
+              flow[:,:,0]=np.uint8((.65+.15*np.sin(4*x+3*y))*255)
+              flow[:,:,1]=np.uint8((.5+.06*np.cos(5*x-7*y))*255)
+              flow[:,:,2]=128;flow[:,-1]=flow[:,0]
+              for suffix,asset in [('RGBA',rgba),('NORMAL_RGB',normal),('FLOW_RG',flow)]:
+                  save('textures/'+name+'_'+suffix+'.png',asset)
+              material[name]=rgba
+              stats.append({'id':name,'alpha_cap':cap,'max_alpha':float(alpha.max()/255),'active_pixels':int((alpha>3).sum()),'seam_error':int(abs(rgba[:,0].astype(int)-rgba[:,-1].astype(int)).max())})
+          atlas=np.zeros((512,512,4),np.uint8)
+          yy,xx=np.mgrid[:128,:128].astype(float)
+          for i in range(16):
+              rad=34+(i*7)%16
+              dist=np.hypot((xx-64)/rad,(yy-64)/rad)
+              rim=np.exp(-((dist-.88)/.06)**2)
+              glint=np.exp(-(((xx-50)/9)**2+((yy-49)/7)**2))
+              cell=np.zeros((128,128,4),np.uint8);cell[:,:,:3]=[150,218,243]
+              cell[:,:,3]=np.uint8(np.clip(np.clip((1.05-dist)/.12,0,1)*(.13+.30*rim+.22*glint),0,1)*255)
+              atlas[(i//4)*128:(i//4+1)*128,(i%4)*128:(i%4+1)*128]=cell
+          save('textures/L4_DROPLET_ATLAS_RGBA.png',atlas)
+          lut=np.column_stack([np.arange(N)/N,(pts[:,0]-93)/765,(pts[:,1]-179)/900,pts[:,2:]])
+          dump('geometry/CLOSED_ARC_LENGTH_LUT.json',{'master_sha256':S,'reference_photo':{'left':93,'top':179,'right':858,'bottom':1079,'radius':65},'perimeter_length_px':2*L,'samples':np.round(lut,5).tolist(),'runtime':'derive from live PhotoFrameGeometry'})
+          dump('motion/KF01_KF06.json',{'stages':['ORB_RELEASE','ARRIVAL','BOTTOM_SPLIT','SIDE_ASCEND','TOP_CONVERGE','PERIMETER_LOOP'],'loop':'two opposed phases on continuous full perimeter','clock':'existing single runtime clock','stage_duration':'NOT_FROZEN','relative_speed':{'L1':1,'L2':.72,'L3':1.31,'L4':.94},'source':'V1.1 contract'})
+          frames=[]
+          for j in range(8):
+              canvas=np.zeros((H,N,3),float);canvas[:]=[25,125,148]
+              for name in ['L2','L1','L3']:
+                  tex=np.roll(material[name],int(j/8*N*{'L1':1,'L2':.72,'L3':1.31}[name]),1)
+                  a=tex[:,:,3:]/255
+                  canvas=canvas*(1-a)+tex[:,:,:3]*a
+              arr=np.uint8(canvas)
+              save('preview/PHASE_%02d.png'%j,arr)
+              frames.append(Image.fromarray(arr).resize((1024,64)).convert('P',palette=Image.Palette.ADAPTIVE,colors=64))
+          frames[0].save(out/'preview/CPU_MOTION_LOOP.gif',save_all=True,append_images=frames[1:],duration=160,loop=0)
+          dot=float(np.dot(pts[0,2:4],pts[-1,2:4]))
+          assert dot>.99 and all(v['seam_error']==0 and v['active_pixels']>100 for v in stats)
+          report={'master_sha256':S,'source_lock':'PASS','texture_stats':stats,'path_seam_tangent_dot':dot,'atlas_seams':'PASS','true_alpha_source':False,'source':'RGB-reference-derived heuristic masks','visual_gpu_acceptance':'NOT_VERIFIED'}
+          dump('validation/VALIDATION_REPORT.json',report)
+          (out/'README.md').write_text('TAB2 V2 reference-derived GPU-sampleable RGBA normal flow textures and KF01-KF06 CPU previews. Original RGB does not contain true layer alpha; visual GPU QA NOT_RUN.\n')
+          zipfile_path=Path('docs/tab2/assets/TAB2_PERIMETER_HIFI_REFERENCE_ASSETS_V2.zip')
+          with zipfile.ZipFile(zipfile_path,'w',zipfile.ZIP_DEFLATED,compresslevel=5) as z:
+              for p in sorted(out.rglob('*')):
+                  if p.is_file():z.write(p,p.relative_to(out))
+          Path('docs/tab2/TAB2_PERIMETER_HIFI_REFERENCE_V2_VALIDATION.json').write_text(json.dumps(report,indent=2)+'\n')
+          print('P0_REFERENCE_ASSET_GATES_PASS',zipfile_path.stat().st_size)
+          PY
+      - name: Verify and commit outputs
+        run: |
+          python - <<'PY'
+          import zipfile,json
+          p='docs/tab2/assets/TAB2_PERIMETER_HIFI_REFERENCE_ASSETS_V2.zip'
+          with zipfile.ZipFile(p) as z:
+              assert z.testzip() is None
+              for name in ('textures/L1_RGBA.png','textures/L2_RGBA.png','textures/L3_RGBA.png','textures/L4_DROPLET_ATLAS_RGBA.png','motion/KF01_KF06.json','geometry/CLOSED_ARC_LENGTH_LUT.json','validation/VALIDATION_REPORT.json'):
+                  assert name in z.namelist(),name
+          print('ZIP_STRUCTURE_PASS')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/tab2/assets/TAB2_PERIMETER_HIFI_REFERENCE_ASSETS_V2.zip docs/tab2/TAB2_PERIMETER_HIFI_REFERENCE_V2_VALIDATION.json
+          git commit -m 'assets(tab2): generate RGB-derived L1-L4 material candidates'
+          git push origin HEAD:codex/tab2-perimeter-hifi-materials-v2
