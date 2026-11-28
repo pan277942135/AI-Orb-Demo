@@ -404,3 +404,51 @@ class TaskEnergyController {
     private const val MAX_HITCH_CLAMP_SEC = 0.25
   }
 }
+
+/**
+ * Thin adapter from the existing WaterWorldMotionRuntime absolute time to TaskEnergyController.
+ * It owns no clock: callers provide the single runtime's current time on every frame.
+ */
+class TaskEnergyTimelineAdapter(
+  val controller: TaskEnergyController = TaskEnergyController(),
+) {
+  private var lastRuntimeTimeSeconds: Double? = null
+
+  @Synchronized
+  fun restartAt(runtimeTimeSeconds: Double): TaskEnergySnapshot {
+    val safeTime = runtimeTimeSeconds.takeIf { it.isFinite() && it >= 0.0 } ?: 0.0
+    lastRuntimeTimeSeconds = safeTime
+    return controller.restart(unpause = true)
+  }
+
+  @Synchronized
+  fun advanceAt(
+    runtimeTimeSeconds: Double,
+    isPlaying: Boolean,
+    perimeter: PerimeterPathGeometry,
+  ): TaskEnergySnapshot {
+    val now = runtimeTimeSeconds.takeIf { it.isFinite() && it >= 0.0 } ?: 0.0
+    val previous = lastRuntimeTimeSeconds
+    if (previous == null) {
+      lastRuntimeTimeSeconds = now
+      controller.ensureStarted()
+      controller.setPaused(!isPlaying)
+      return controller.snapshot()
+    }
+    if (now + 1e-9 < previous) {
+      // A runtime profile replacement reset the authoritative clock; restart at KF01 against
+      // the new epoch rather than applying a negative or stale delta.
+      lastRuntimeTimeSeconds = now
+      controller.restart(unpause = isPlaying)
+      controller.setPaused(!isPlaying)
+      return controller.snapshot()
+    }
+    val delta = (now - previous).coerceAtLeast(0.0)
+    lastRuntimeTimeSeconds = now
+    controller.setPaused(!isPlaying)
+    return controller.step(delta, perimeter)
+  }
+
+  @Synchronized
+  fun snapshot(): TaskEnergySnapshot = controller.snapshot()
+}

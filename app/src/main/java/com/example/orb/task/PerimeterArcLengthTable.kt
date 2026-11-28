@@ -47,6 +47,25 @@ class PerimeterArcLengthTable(
     )
   }
 
+  /**
+   * Samples the actual rounded photo as one closed route:
+   * bottom center -> left side -> top center -> right side -> bottom center.
+   * Right-branch tangents are reversed so position and flow direction meet continuously at
+   * both the top join and the bottom seam.
+   */
+  fun sampleClosedLoop(fraction: Float): PathSample {
+    val q = if (fraction.isFinite()) fraction - floor(fraction) else 0f
+    return if (q < 0.5f) {
+      sample(PerimeterSide.LEFT, q * 2f).copy(arcLengthPx = q * 2f * totalHalfLengthPx)
+    } else {
+      val right = sample(PerimeterSide.RIGHT, (1f - q) * 2f)
+      right.copy(
+        tangent = right.tangent * -1f,
+        arcLengthPx = 2f * totalHalfLengthPx - right.arcLengthPx,
+      )
+    }
+  }
+
   fun rawSamples(side: PerimeterSide): Array<PathSample> =
     if (side == PerimeterSide.LEFT) leftSamples else rightSamples
 

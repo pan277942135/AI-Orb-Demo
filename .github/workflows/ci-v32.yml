@@ -11,10 +11,14 @@ jobs:
   verify-v32-final-closure:
     name: Verify V3.2 Master Lock, Offline Gates, Negative CI Tests, Unit Tests & Exact-HEAD APK
     runs-on: ubuntu-latest
+    env:
+      EXACT_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
     steps:
       - name: Checkout Exact HEAD
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Install ffmpeg for Lossless RGBA WebP Verification
         run: |
@@ -26,6 +30,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+
+      - name: Set up repository Gradle version
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '9.3.1'
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -46,8 +55,15 @@ jobs:
           python3 tools/orb-v3-generator/fitting/validate_fit.py
           python3 tools/orb-v3-generator/test_v32_closure_gates.py
 
+      - name: Validate Tab 2 V2 source lock and runtime texture inputs
+        run: python3 tools/tab2-perimeter/package_v25.py
+
       - name: Compile, Run All JVM/Robolectric Tests & Assemble Debug APK
-        run: ./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :app:assembleDebug --console=plain
+        run: |
+          ACTUAL_HEAD=$(git rev-parse HEAD)
+          echo "Exact source HEAD: $ACTUAL_HEAD"
+          test "$ACTUAL_HEAD" = "$EXACT_HEAD_SHA"
+          gradle :app:compileDebugKotlin :app:testDebugUnitTest :app:assembleDebug --console=plain
 
       - name: Package Exact-HEAD Final Debug APK & Verify Embedded APK Assets SHA-256
         run: |
@@ -85,7 +101,7 @@ jobs:
           {
             "schema": "AI_ORB_V3_2_EXACT_HEAD_BUILD_FINGERPRINT_1_0",
             "taskId": "AI_ORB_V32_FINAL_FIDELITY_CLOSURE_V2",
-            "gitCommitSha": "${GITHUB_SHA}",
+            "gitCommitSha": "${EXACT_HEAD_SHA}",
             "githubRunId": "${GITHUB_RUN_ID}",
             "githubRef": "${GITHUB_REF}",
             "referenceMasterSha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
@@ -114,3 +130,18 @@ jobs:
             docs/v3/BUILD_FINGERPRINT.json
             docs/v3/AI_ORB_V3_2_*
             tools/orb-v3-generator/fitting/FIT_VALIDATION_RESULT.json
+
+      - name: Package Tab 2 V2.5 Exact-HEAD APK and fingerprint
+        env:
+          EXACT_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 tools/tab2-perimeter/package_v25.py \
+            --apk app/build/outputs/apk/debug/app-debug.apk \
+            --out dist/tab2-v25
+
+      - name: Upload Tab 2 V2.5 Exact-HEAD APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tab2-v25-perimeter-exact-head
+          path: dist/tab2-v25/*
+          if-no-files-found: error

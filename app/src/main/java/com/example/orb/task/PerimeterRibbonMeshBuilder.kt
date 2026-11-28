@@ -32,12 +32,18 @@ enum class PerimeterRibbonWidthProfile {
  * All width modulations (`cornerFlare`, `flankMask`) are strictly C1-continuous functions of
  * arc length `sPx` (ZERO discrete `when (sample.segment)` jumps across rounded corners!).
  *
- * Vertex layout (6 floats per vertex):
- *   aPosNdc.xy (2) | aArcU.x = sNorm in [0,1] (1) | aArcU.y = crossU in [0,1] (1) | aNormalNdc.xy (2)
+ * Vertex layout (7 floats per vertex):
+ *   aPosNdc.xy (2) | aArcU.xyz = sideProgress, crossU, closedLoopU (3) | aNormalNdc.xy (2)
  */
 object PerimeterRibbonMeshBuilder {
 
-  const val FLOATS_PER_VERTEX = 6
+  const val FLOATS_PER_VERTEX = 7
+
+  /** Closed-route texture coordinate for a bottom-to-top half-path sample. */
+  fun closedLoopU(side: PerimeterSide, sideProgress: Float): Float {
+    val s = sideProgress.coerceIn(0f, 1f)
+    return if (side == PerimeterSide.LEFT) 0.5f * s else 1f - 0.5f * s
+  }
 
   /** Smooth Gaussian bump centered at [centerPx] with width [sigmaPx]. */
   fun smoothBump(sPx: Float, centerPx: Float, sigmaPx: Float): Float {
@@ -189,11 +195,14 @@ object PerimeterRibbonMeshBuilder {
       val normNdcX = (outN.x / sw) * 2f
       val normNdcY = -(outN.y / sh) * 2f
 
+      val loopU = closedLoopU(side, sNorm)
+
       // Inner vertex (crossU = 0.0, strictly on/outside photo edge!)
       verts[cursor++] = (pInner.x / sw) * 2f - 1f
       verts[cursor++] = 1f - (pInner.y / sh) * 2f
       verts[cursor++] = sNorm
       verts[cursor++] = 0f
+      verts[cursor++] = loopU
       verts[cursor++] = normNdcX
       verts[cursor++] = normNdcY
 
@@ -202,6 +211,7 @@ object PerimeterRibbonMeshBuilder {
       verts[cursor++] = 1f - (pOuter.y / sh) * 2f
       verts[cursor++] = sNorm
       verts[cursor++] = 1f
+      verts[cursor++] = loopU
       verts[cursor++] = normNdcX
       verts[cursor++] = normNdcY
     }

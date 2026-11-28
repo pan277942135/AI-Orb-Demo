@@ -1,9 +1,15 @@
 package com.example.orb.task
 
+import android.content.res.AssetManager
 import android.opengl.GLES30
 import com.example.orb.gl.GlBufferUtils
 import com.example.orb.gl.GlShaderProgram
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.FloatBuffer
 import kotlin.math.cos
+import kotlin.math.floor
+import kotlin.math.PI
 import kotlin.math.sin
 
 /**
@@ -90,6 +96,8 @@ data class PerimeterDrawStats(
   val maxAliasedPointSizePx: Float = 64f,
   val refractionEnabled: Boolean = false,
   val refractionTexId: Int = 0,
+  val usedV2Material: Boolean = false,
+  val boundMaterialTextureIds: List<Int> = emptyList(),
 )
 
 /**
@@ -104,30 +112,48 @@ class PerimeterWaterLightParticles(
 ) {
   // Deterministic irregular droplet anchors (never uniform mechanical bead rows!)
   private data class DropletSeed(
-    val side: PerimeterSide,
-    val arcFrac: Float,
+    val loopU: Float,
     val outwardOffsetRatio: Float, // fraction of PhotoW strictly outside border!
     val sizeRatio: Float,
-    val speed: Float,
+    val loopSpeed: Float,
+    val direction: Float,
     val phase: Float,
+    val lifetimeSec: Float,
+    val spriteIndex: Float,
   )
 
   private val seeds: List<DropletSeed> = buildList {
-    val leftFracs = floatArrayOf(0.08f, 0.17f, 0.29f, 0.37f, 0.48f, 0.57f, 0.68f, 0.77f, 0.86f, 0.94f, 0.23f)
-    val rightFracs = floatArrayOf(0.11f, 0.21f, 0.33f, 0.43f, 0.52f, 0.63f, 0.72f, 0.81f, 0.90f, 0.96f, 0.60f)
-    val offsets = floatArrayOf(0.018f, 0.032f, 0.024f, 0.038f, 0.021f, 0.035f, 0.026f, 0.041f, 0.022f, 0.031f, 0.029f)
-    val sizes = floatArrayOf(0.011f, 0.008f, 0.013f, 0.007f, 0.010f, 0.012f, 0.008f, 0.009f, 0.011f, 0.007f, 0.009f)
-    val n = material.dropletCountPerSide.coerceAtMost(leftFracs.size)
-    for (i in 0 until n) {
-      add(DropletSeed(PerimeterSide.LEFT, leftFracs[i], offsets[i], sizes[i], 0.025f + (i % 3) * 0.011f, i * 1.9f))
-      add(DropletSeed(PerimeterSide.RIGHT, rightFracs[i], offsets[(i + 4) % offsets.size], sizes[(i + 2) % sizes.size], 0.022f + (i % 4) * 0.009f, i * 2.3f + 0.7f))
+    val perSide = material.dropletCountPerSide.coerceIn(1, 16)
+    for (side in 0..1) {
+      for (i in 0 until perSide) {
+        val index = side * perSide + i
+        val jitter = seedValue(index, 1)
+        val laneU = ((i + 0.5f + (jitter - 0.5f) * 0.72f) / perSide).coerceIn(0.02f, 0.98f)
+        val loopU = side * 0.5f + laneU * 0.5f
+        add(
+          DropletSeed(
+            loopU = loopU,
+            outwardOffsetRatio = 0.013f + seedValue(index, 2) * 0.026f,
+            sizeRatio = 0.006f + seedValue(index, 3) * 0.009f,
+            loopSpeed = 0.012f + seedValue(index, 4) * 0.022f,
+            direction = if (seedValue(index, 5) < 0.5f) -1f else 1f,
+            phase = seedValue(index, 6) * 2f * PI.toFloat(),
+            lifetimeSec = 3.4f + seedValue(index, 7) * 5.2f,
+            spriteIndex = ((index * 7 + (seedValue(index, 8) * 16f).toInt()) % 16).toFloat(),
+          ),
+        )
+      }
     }
   }
 
-  // Float packing per point: posNdc(2) + sizePx(1) + alpha(1) + kind(1) = 5 floats
+  // Float packing per point: posNdc(2) + sizePx + alpha + kind + atlas sprite index.
   private val pointBuffer = FloatArray(MAX_POINTS * POINT_STRIDE_FLOATS)
-  // Screen-space quad buffer: 6 vertices per point * 7 floats (posNdc 2 + sizePx 1 + alpha 1 + kind 1 + quadUv 2)
+  private val pointUploadBuffer = ByteBuffer.allocateDirect(MAX_POINTS * POINT_STRIDE_FLOATS * 4)
+    .order(ByteOrder.nativeOrder()).asFloatBuffer()
+  // Screen-space quad buffer: 6 vertices * posNdc(2) + size + alpha + kind + atlas index + quadUv(2).
   private val quadBuffer = FloatArray(MAX_POINTS * 6 * QUAD_STRIDE_FLOATS)
+  private val quadUploadBuffer = ByteBuffer.allocateDirect(MAX_POINTS * 6 * QUAD_STRIDE_FLOATS * 4)
+    .order(ByteOrder.nativeOrder()).asFloatBuffer()
 
   var maxEmittedPointSizePx: Float = 0f
     private set
@@ -141,6 +167,7 @@ class PerimeterWaterLightParticles(
     table: PerimeterArcLengthTable,
     layout: TaskSceneLayoutSnapshot,
     snapshot: TaskEnergySnapshot,
+    dropletRelativeSpeed: Float = 1f,
   ): Int {
     val sw = layout.surfaceWidthPx.coerceAtLeast(1).toFloat()
     val sh = layout.surfaceHeightPx.coerceAtLeast(1).toFloat()
@@ -149,7 +176,7 @@ class PerimeterWaterLightParticles(
     var count = 0
     maxEmittedPointSizePx = 0f
 
-    fun emit(px: Vec2, sizePx: Float, alpha: Float, kind: Float) {
+    fun emit(px: Vec2, sizePx: Float, alpha: Float, kind: Float, spriteIndex: Float = -1f) {
       if (count >= MAX_POINTS || alpha <= 0.005f) return
       val clampedSize = sizePx.coerceIn(4f, 160f)
       if (clampedSize > maxEmittedPointSizePx) maxEmittedPointSizePx = clampedSize
@@ -159,6 +186,7 @@ class PerimeterWaterLightParticles(
       pointBuffer[o + 2] = clampedSize
       pointBuffer[o + 3] = alpha.coerceIn(0f, 1f)
       pointBuffer[o + 4] = kind
+      pointBuffer[o + 5] = spriteIndex
       count++
     }
 
@@ -178,26 +206,29 @@ class PerimeterWaterLightParticles(
           y = start.y - driftY * spanY,
         )
         val sz = (photoW * (0.009f + (i % 3) * 0.0025f)).coerceAtLeast(6f)
-        emit(p, sz, 0.54f, 0f)
+        emit(p, sz, 0.54f, 0f, i.toFloat())
       }
     }
 
     // 2. Sparse irregular L4 crystal droplets strictly outside activated perimeter segments
     for (seed in seeds) {
-      val maxProg = if (seed.side == PerimeterSide.LEFT) snapshot.leftProgress else snapshot.rightProgress
-      val sFrac = if (snapshot.coverageComplete) {
-        (seed.arcFrac + t * seed.speed) % 0.98f
-      } else {
-        seed.arcFrac
-      }
-      if (sFrac > maxProg - 0.015f || maxProg <= 0.02f) continue
-      val sample = table.sample(seed.side, sFrac)
-      val wobble = 0.75f + 0.35f * sin(t * 1.7f + seed.phase)
+      val q = fract(seed.loopU + t * seed.loopSpeed * dropletRelativeSpeed.coerceAtLeast(0f) * seed.direction)
+      val sample = table.sampleClosedLoop(q)
+      val side = if (q < 0.5f) PerimeterSide.LEFT else PerimeterSide.RIGHT
+      val sideProgress = if (q < 0.5f) q * 2f else (1f - q) * 2f
+      val maxProg = if (side == PerimeterSide.LEFT) snapshot.leftProgress else snapshot.rightProgress
+      if (sideProgress > maxProg + 0.012f || maxProg <= 0.02f) continue
+      val life = fract(t / seed.lifetimeSec + seed.phase / (2f * PI.toFloat()))
+      val fadeIn = smoothUnit(life / 0.16f)
+      val fadeOut = 1f - smoothUnit((life - 0.72f) / 0.28f)
+      val lifeAlpha = fadeIn * fadeOut
+      if (lifeAlpha <= 0.015f) continue
+      val wobble = 0.82f + 0.22f * sin(t * 1.7f + seed.phase)
       val outPx = photoW * seed.outwardOffsetRatio * wobble + 3.5f
       val pos = sample.positionPx + sample.outwardNormal * outPx
       val sz = (photoW * seed.sizeRatio).coerceAtLeast(6f)
-      val alpha = (0.42f + 0.24f * cos(t * 2.1f + seed.phase)).coerceIn(0.18f, 0.68f)
-      emit(pos, sz, alpha, 0f)
+      val alpha = (0.46f + 0.20f * cos(t * 1.8f + seed.phase)).coerceIn(0.18f, 0.70f) * lifeAlpha
+      emit(pos, sz, alpha, 0f, seed.spriteIndex)
     }
 
     // 3. P0-7: Compact KF02 Bottom-Center localized warm gold contact focus + subtle cyan ripple
@@ -233,6 +264,7 @@ class PerimeterWaterLightParticles(
       val sizePx = pointBuffer[pOff + 2]
       val alpha = pointBuffer[pOff + 3]
       val kind = pointBuffer[pOff + 4]
+      val spriteIndex = pointBuffer[pOff + 5]
 
       val halfNdcX = (sizePx / sw)
       val halfNdcY = (sizePx / sh)
@@ -243,6 +275,7 @@ class PerimeterWaterLightParticles(
         quadBuffer[qOff++] = sizePx
         quadBuffer[qOff++] = alpha
         quadBuffer[qOff++] = kind
+        quadBuffer[qOff++] = spriteIndex
         quadBuffer[qOff++] = u
         quadBuffer[qOff++] = v
       }
@@ -262,10 +295,38 @@ class PerimeterWaterLightParticles(
   fun rawPointBuffer(): FloatArray = pointBuffer
   fun rawQuadBuffer(): FloatArray = quadBuffer
 
+  fun pointUploadBuffer(pointCount: Int): FloatBuffer {
+    val length = pointCount.coerceIn(0, MAX_POINTS) * POINT_STRIDE_FLOATS
+    pointUploadBuffer.clear()
+    pointUploadBuffer.put(pointBuffer, 0, length)
+    pointUploadBuffer.flip()
+    return pointUploadBuffer
+  }
+
+  fun quadUploadBuffer(vertexCount: Int): FloatBuffer {
+    val length = vertexCount.coerceIn(0, MAX_POINTS * 6) * QUAD_STRIDE_FLOATS
+    quadUploadBuffer.clear()
+    quadUploadBuffer.put(quadBuffer, 0, length)
+    quadUploadBuffer.flip()
+    return quadUploadBuffer
+  }
+
+  private fun seedValue(index: Int, stream: Int): Float {
+    val x = sin(index * 12.9898 + stream * 78.233) * 43_758.5453
+    return (x - floor(x)).toFloat()
+  }
+
+  private fun fract(value: Float): Float = value - floor(value)
+
+  private fun smoothUnit(value: Float): Float {
+    val x = value.coerceIn(0f, 1f)
+    return x * x * (3f - 2f * x)
+  }
+
   companion object {
     const val MAX_POINTS = 64
-    const val POINT_STRIDE_FLOATS = 5
-    const val QUAD_STRIDE_FLOATS = 7
+    const val POINT_STRIDE_FLOATS = 6
+    const val QUAD_STRIDE_FLOATS = 8
     const val CONTACT_GOLD_FOCUS_RATIO = 0.065f
     const val CONTACT_CYAN_RIPPLE_RATIO = 0.11f
     const val JOIN_GOLD_FOCUS_RATIO = 0.075f
@@ -283,6 +344,7 @@ class PerimeterWaterLightParticles(
  */
 class PerimeterWaterLightRenderer(
   val material: PerimeterWaterLightMaterial = PerimeterWaterLightMaterial(),
+  private val useV2Material: Boolean = false,
 ) {
   private class StripGpuMesh(
     val side: PerimeterSide,
@@ -294,6 +356,7 @@ class PerimeterWaterLightRenderer(
 
   private var ribbonProgram: GlShaderProgram? = null
   private var sparkleProgram: GlShaderProgram? = null
+  private var v2Textures: Tab2PerimeterGpuTextures? = null
   private val strips: List<StripGpuMesh> = buildList {
     for (layer in listOf(
       PerimeterRibbonLayer.L2_EMERALD_VEIL,
@@ -319,8 +382,28 @@ class PerimeterWaterLightRenderer(
   var lastDrawStats: PerimeterDrawStats = PerimeterDrawStats()
     private set
 
+  val isV2MaterialLoaded: Boolean get() = v2Textures != null
+  val loadedV2TextureIds: List<Int> get() = v2Textures?.allTextureIds ?: emptyList()
+
   fun init() {
+    check(!useV2Material) { "V2 perimeter renderer must be initialized with the APK AssetManager" }
     release()
+    initializePrograms()
+  }
+
+  fun init(assetManager: AssetManager) {
+    check(useV2Material) { "AssetManager initialization is reserved for the V2 perimeter renderer" }
+    release()
+    try {
+      v2Textures = Tab2PerimeterGpuTextures.load(assetManager)
+      initializePrograms()
+    } catch (t: Throwable) {
+      release()
+      throw t
+    }
+  }
+
+  private fun initializePrograms() {
     ribbonProgram = GlShaderProgram(
       TaskWaterLightShaders.PERIMETER_RIBBON_VERT,
       TaskWaterLightShaders.PERIMETER_RIBBON_FRAG,
@@ -354,6 +437,21 @@ class PerimeterWaterLightRenderer(
     pointVbo = pVbos[0]
     quadVao = pVaos[1]
     quadVbo = pVbos[1]
+    GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, pointVbo)
+    GLES30.glBufferData(
+      GLES30.GL_ARRAY_BUFFER,
+      PerimeterWaterLightParticles.MAX_POINTS * PerimeterWaterLightParticles.POINT_STRIDE_FLOATS * 4,
+      null,
+      GLES30.GL_STREAM_DRAW,
+    )
+    GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, quadVbo)
+    GLES30.glBufferData(
+      GLES30.GL_ARRAY_BUFFER,
+      PerimeterWaterLightParticles.MAX_POINTS * 6 * PerimeterWaterLightParticles.QUAD_STRIDE_FLOATS * 4,
+      null,
+      GLES30.GL_STREAM_DRAW,
+    )
+    GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0)
   }
 
   fun draw(
@@ -376,6 +474,11 @@ class PerimeterWaterLightRenderer(
         vboIds = strips.map { it.vbo },
         maxAliasedPointSizePx = maxAliasedPointSizePx,
       )
+      return
+    }
+    val gpuMaterials = v2Textures
+    if (useV2Material && gpuMaterials == null) {
+      lastDrawStats = PerimeterDrawStats(shaderLinked = true, usedV2Material = true)
       return
     }
     rebuildStripsIfNeeded(layout, table)
@@ -405,11 +508,19 @@ class PerimeterWaterLightRenderer(
       rProg.setFloat("uRefractionStrength", TaskEnergyRibbonRenderer.DEFAULT_REFRACTION_STRENGTH)
       rProg.setInt("uTaskVisualDebug", debugOptions.mode.shaderDebugId)
       rProg.setFloat("uFlowTime", snapshot.flowTimeSec)
+      rProg.setFloat(
+        "uLoopElapsedSec",
+        ((snapshot.elapsedMs / 1000.0) - (TaskEnergyController.T_LOOP_START_MS / 1000.0)).coerceAtLeast(0.0).toFloat(),
+      )
       rProg.setFloat("uPhotoWidthPx", table.geometry.widthPx)
       // P0-1: Strictly driven from real snapshot.coverageComplete (left>=0.999 && right>=0.999), never stage label!
       rProg.setFloat("uCoverageComplete", if (snapshot.coverageComplete) 1f else 0f)
       rProg.setFloat("uHdrScale", hdrScale)
       rProg.setInt("uDirectDisplayLdr", if (material.directDisplayLdr) 1 else 0)
+      rProg.setInt("uUseV2Material", if (gpuMaterials != null) 1 else 0)
+      rProg.setInt("uLayerRgbaTex", LAYER_RGBA_TEXTURE_UNIT)
+      rProg.setInt("uLayerNormalTex", LAYER_NORMAL_TEXTURE_UNIT)
+      rProg.setInt("uLayerFlowTex", LAYER_FLOW_TEXTURE_UNIT)
 
       for (strip in strips) {
         if (strip.vertexCount <= 0 || strip.vao == 0) continue
@@ -427,6 +538,16 @@ class PerimeterWaterLightRenderer(
         rProg.setInt("uLayerKind", strip.layer.shaderLayerId)
         rProg.setFloat("uLayerAlphaScale", material.alphaScaleFor(strip.layer))
         rProg.setFloat("uLayerAlphaCapOverride", material.alphaCapOverrideFor(strip.layer))
+        if (gpuMaterials != null) {
+          val textures = gpuMaterials.layers.getValue(strip.layer)
+          GLES30.glActiveTexture(GLES30.GL_TEXTURE1)
+          GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textures.rgba)
+          GLES30.glActiveTexture(GLES30.GL_TEXTURE2)
+          GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textures.normal)
+          GLES30.glActiveTexture(GLES30.GL_TEXTURE3)
+          GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textures.flow)
+          rProg.setFloat("uLayerSpeed", gpuMaterials.relativeSpeeds.getValue(strip.layer))
+        }
         rProg.setFloat("uSideSign", sideSign)
         rProg.setFloat("uRevealProgress", progress)
 
@@ -436,6 +557,12 @@ class PerimeterWaterLightRenderer(
         drawnRibbonCalls++
       }
       GLES30.glBindVertexArray(0)
+      if (gpuMaterials != null) {
+        for (unit in intArrayOf(GLES30.GL_TEXTURE1, GLES30.GL_TEXTURE2, GLES30.GL_TEXTURE3)) {
+          GLES30.glActiveTexture(unit)
+          GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
+        }
+      }
       if (hasRefraction) {
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
@@ -448,7 +575,12 @@ class PerimeterWaterLightRenderer(
     var usedQuadFallback = false
     val sProg = sparkleProgram
     if (debugOptions.showL4 && sProg != null && pointVao != 0 && pointVbo != 0) {
-      sparkleCount = particles.buildDynamicPoints(table, layout, snapshot)
+      sparkleCount = particles.buildDynamicPoints(
+        table = table,
+        layout = layout,
+        snapshot = snapshot,
+        dropletRelativeSpeed = gpuMaterials?.dropletRelativeSpeed ?: 1f,
+      )
       if (sparkleCount > 0) {
         val useQuad = particles.maxEmittedPointSizePx > maxAliasedPointSizePx - 1f
         usedQuadFallback = useQuad
@@ -457,17 +589,23 @@ class PerimeterWaterLightRenderer(
         sProg.setFloat("uHdrScale", hdrScale)
         sProg.setInt("uTaskVisualDebug", debugOptions.mode.shaderDebugId)
         sProg.setInt("uDirectDisplayLdr", if (material.directDisplayLdr) 1 else 0)
+        sProg.setInt("uUseDropletAtlas", if (gpuMaterials != null) 1 else 0)
+        if (gpuMaterials != null) {
+          GLES30.glActiveTexture(GLES30.GL_TEXTURE4)
+          GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, gpuMaterials.dropletAtlas)
+          sProg.setInt("uDropletAtlas", DROPLET_ATLAS_TEXTURE_UNIT)
+        }
 
         if (useQuad && quadVao != 0 && quadVbo != 0) {
           val quadVerts = particles.buildQuadVertices(sparkleCount, layout.surfaceWidthPx, layout.surfaceHeightPx)
           val strideBytes = PerimeterWaterLightParticles.QUAD_STRIDE_FLOATS * 4
           GLES30.glBindVertexArray(quadVao)
           GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, quadVbo)
-          GLES30.glBufferData(
+          GLES30.glBufferSubData(
             GLES30.GL_ARRAY_BUFFER,
+            0,
             quadVerts * strideBytes,
-            GlBufferUtils.toFloatBuffer(particles.rawQuadBuffer().copyOf(quadVerts * PerimeterWaterLightParticles.QUAD_STRIDE_FLOATS)),
-            GLES30.GL_STREAM_DRAW,
+            particles.quadUploadBuffer(quadVerts),
           )
           GLES30.glEnableVertexAttribArray(0)
           GLES30.glVertexAttribPointer(0, 2, GLES30.GL_FLOAT, false, strideBytes, 0)
@@ -478,7 +616,9 @@ class PerimeterWaterLightRenderer(
           GLES30.glEnableVertexAttribArray(3)
           GLES30.glVertexAttribPointer(3, 1, GLES30.GL_FLOAT, false, strideBytes, 16)
           GLES30.glEnableVertexAttribArray(4)
-          GLES30.glVertexAttribPointer(4, 2, GLES30.GL_FLOAT, false, strideBytes, 20)
+          GLES30.glVertexAttribPointer(4, 1, GLES30.GL_FLOAT, false, strideBytes, 20)
+          GLES30.glEnableVertexAttribArray(5)
+          GLES30.glVertexAttribPointer(5, 2, GLES30.GL_FLOAT, false, strideBytes, 24)
           GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, quadVerts)
           GLES30.glBindVertexArray(0)
           sparkleCalls = 1
@@ -486,11 +626,11 @@ class PerimeterWaterLightRenderer(
           val strideBytes = PerimeterWaterLightParticles.POINT_STRIDE_FLOATS * 4
           GLES30.glBindVertexArray(pointVao)
           GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, pointVbo)
-          GLES30.glBufferData(
+          GLES30.glBufferSubData(
             GLES30.GL_ARRAY_BUFFER,
+            0,
             sparkleCount * strideBytes,
-            GlBufferUtils.toFloatBuffer(particles.rawPointBuffer().copyOf(sparkleCount * PerimeterWaterLightParticles.POINT_STRIDE_FLOATS)),
-            GLES30.GL_STREAM_DRAW,
+            particles.pointUploadBuffer(sparkleCount),
           )
           GLES30.glEnableVertexAttribArray(0)
           GLES30.glVertexAttribPointer(0, 2, GLES30.GL_FLOAT, false, strideBytes, 0)
@@ -500,11 +640,17 @@ class PerimeterWaterLightRenderer(
           GLES30.glVertexAttribPointer(2, 1, GLES30.GL_FLOAT, false, strideBytes, 12)
           GLES30.glEnableVertexAttribArray(3)
           GLES30.glVertexAttribPointer(3, 1, GLES30.GL_FLOAT, false, strideBytes, 16)
-          GLES30.glDisableVertexAttribArray(4)
-          GLES30.glVertexAttrib2f(4, 0.5f, 0.5f)
+          GLES30.glEnableVertexAttribArray(4)
+          GLES30.glVertexAttribPointer(4, 1, GLES30.GL_FLOAT, false, strideBytes, 20)
+          GLES30.glDisableVertexAttribArray(5)
+          GLES30.glVertexAttrib2f(5, 0.5f, 0.5f)
           GLES30.glDrawArrays(GLES30.GL_POINTS, 0, sparkleCount)
           GLES30.glBindVertexArray(0)
           sparkleCalls = 1
+        }
+        if (gpuMaterials != null) {
+          GLES30.glActiveTexture(GLES30.GL_TEXTURE4)
+          GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
         }
       }
     }
@@ -521,6 +667,10 @@ class PerimeterWaterLightRenderer(
       maxAliasedPointSizePx = maxAliasedPointSizePx,
       refractionEnabled = hasRefraction,
       refractionTexId = if (hasRefraction) refractionTexId else 0,
+      usedV2Material = gpuMaterials != null,
+      boundMaterialTextureIds = gpuMaterials?.let { bundle ->
+        bundle.layers.values.flatMap { listOf(it.rgba, it.normal, it.flow) } + bundle.dropletAtlas
+      } ?: emptyList(),
     )
   }
 
@@ -562,14 +712,16 @@ class PerimeterWaterLightRenderer(
       GLES30.glEnableVertexAttribArray(0)
       GLES30.glVertexAttribPointer(0, 2, GLES30.GL_FLOAT, false, strideBytes, 0)
       GLES30.glEnableVertexAttribArray(1)
-      GLES30.glVertexAttribPointer(1, 2, GLES30.GL_FLOAT, false, strideBytes, 8)
+      GLES30.glVertexAttribPointer(1, 3, GLES30.GL_FLOAT, false, strideBytes, 8)
       GLES30.glEnableVertexAttribArray(2)
-      GLES30.glVertexAttribPointer(2, 2, GLES30.GL_FLOAT, false, strideBytes, 16)
+      GLES30.glVertexAttribPointer(2, 2, GLES30.GL_FLOAT, false, strideBytes, 20)
     }
     GLES30.glBindVertexArray(0)
   }
 
   fun release() {
+    v2Textures?.releaseOnGlThread()
+    v2Textures = null
     ribbonProgram?.release()
     ribbonProgram = null
     sparkleProgram?.release()
@@ -594,5 +746,12 @@ class PerimeterWaterLightRenderer(
     cachedPhoto = null
     cachedTable = null
     lastDrawStats = PerimeterDrawStats()
+  }
+
+  companion object {
+    const val LAYER_RGBA_TEXTURE_UNIT = 1
+    const val LAYER_NORMAL_TEXTURE_UNIT = 2
+    const val LAYER_FLOW_TEXTURE_UNIT = 3
+    const val DROPLET_ATLAS_TEXTURE_UNIT = 4
   }
 }

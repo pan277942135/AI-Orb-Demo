@@ -296,8 +296,8 @@ class TaskWaterLightVisualParityV4Test {
     for (v in 0 until quadVertCount) {
       val o = v * PerimeterWaterLightParticles.QUAD_STRIDE_FLOATS
       assertTrue(qBuf[o].isFinite() && qBuf[o + 1].isFinite())
-      assertTrue(qBuf[o + 5] in 0f..1f)
       assertTrue(qBuf[o + 6] in 0f..1f)
+      assertTrue(qBuf[o + 7] in 0f..1f)
     }
 
     assertTrue(TaskWaterLightShaders.TASK_SPARKLE_VERT.contains("uniform int uUseQuad;"))

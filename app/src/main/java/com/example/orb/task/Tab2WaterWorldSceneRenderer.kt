@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView
 import com.example.orb.gl.GlShaderProgram
 import com.example.orb.v3.CoreVolumeLifecycleState
 import com.example.waterworld.WaterWorldAssetStaging
+import com.example.waterworld.WaterWorldDynamicFrameSnapshot
 import com.example.waterworld.WaterWorldMotionRuntime
 import com.example.waterworld.WaterWorldRenderGraph
 import com.example.waterworld.WaterWorldStaticRenderer
@@ -37,6 +38,22 @@ data class Tab2WaterWorldRuntimeStatus(
   val refractionEnabled: Boolean = true,
   val refractionTexId: Int = 0,
   val perimeterShaderLinked: Boolean = true,
+  val taskEnergyStage: TaskEnergyStage = TaskEnergyStage.ORB_RELEASE,
+  val taskEnergyElapsedMs: Long = 0L,
+  val taskEnergyFlowTimeSec: Float = 0f,
+  val perimeterLoopElapsedSec: Float = 0f,
+  val perimeterV2MaterialLoaded: Boolean = false,
+  val perimeterV2MaterialDrawn: Boolean = false,
+  val perimeterDrawCalls: Int = 0,
+  val perimeterSparkleCount: Int = 0,
+  val perimeterSparkleDrawCalls: Int = 0,
+  val taskRibbonDrawCalls: Int = 0,
+  val taskRibbonShaderLinked: Boolean = false,
+  val perimeterTextureIds: List<Int> = emptyList(),
+  val perimeterTextureUnits: List<Int> = emptyList(),
+  val gpuVendor: String = "NOT_QUERIED",
+  val gpuRenderer: String = "NOT_QUERIED",
+  val glesVersion: String = "NOT_QUERIED",
 )
 
 /**
@@ -49,7 +66,7 @@ data class Tab2WaterWorldRuntimeStatus(
  *      Core 3D 32 Z-slices, Work 3.2 Five Residents 3D Orbital Motion, 4 Fish, 2 Plants, 3 Rocks)
  *   3. Upper rounded photo ([PhotoTextureRenderer]) with direct sRGB display color mode and
  *      aspect-locked CENTER_CROP UV transform + standalone RGBA8 perimeter refraction snapshot
- *      ([PerimeterWaterLightRenderer] with Tab2 V2.2 slender material profile).
+ *      ([PerimeterWaterLightRenderer] using the real V2 GPU materials).
  */
 class Tab2WaterWorldSceneRenderer(
   private val appContext: Context,
@@ -60,13 +77,11 @@ class Tab2WaterWorldSceneRenderer(
   private val backgroundRenderer = Tab2UnderwaterBackgroundRenderer()
   private val photoRenderer = PhotoTextureRenderer()
   private val perimeterRenderer = PerimeterWaterLightRenderer(
-    material = PerimeterWaterLightMaterial(
-      l1IceAlphaScale = 0.95f,
-      l2EmeraldAlphaScale = 0.85f,
-      l3GoldAlphaScale = 0.90f,
-    ),
+    material = PerimeterWaterLightMaterial.Tab2V22,
+    useV2Material = true,
   )
-  private val perimeterController = Tab2IndependentPerimeterController()
+  private val taskEnergyRenderer = TaskEnergyRibbonRenderer()
+  private val taskEnergyTimeline = TaskEnergyTimelineAdapter()
 
   private var compositeProgram: GlShaderProgram? = null
   private var compositeVao: Int = 0
@@ -98,7 +113,6 @@ class Tab2WaterWorldSceneRenderer(
   @Volatile private var surfaceHeight: Int = 2340
   @Volatile private var bottomSafeInsetPx: Float = 0f
   @Volatile private var hasPresentedFirstReadyFrame: Boolean = false
-  @Volatile private var lastPerimeterFrameNs: Long = 0L
   @Volatile private var lastUiReportNs: Long = 0L
   @Volatile private var lastOrbViewport: Tab2OrbViewportRect? = null
   @Volatile private var lastTelemetry: JSONObject? = null
@@ -111,6 +125,10 @@ class Tab2WaterWorldSceneRenderer(
   private var refractionTexHeight: Int = 0
 
   private var initializedStagingRoot: String? = null
+  @Volatile private var perimeterAssetError: String? = null
+  @Volatile private var gpuVendor: String = "NOT_QUERIED"
+  @Volatile private var gpuRenderer: String = "NOT_QUERIED"
+  @Volatile private var glesVersion: String = "NOT_QUERIED"
 
   @Volatile var debugOptions: Tab2DebugOptions = Tab2DebugOptions.Default
 
@@ -123,7 +141,11 @@ class Tab2WaterWorldSceneRenderer(
           isCancelled = { disposed.get() },
         )
         if (disposed.get()) return@execute
-        motionRuntime = WaterWorldMotionRuntime(profile = staged.profile)
+        val stagedRuntime = WaterWorldMotionRuntime(profile = staged.profile)
+        if (staged.profile.autoPlayOnEnter && !stagedRuntime.staticReferenceMode) {
+          stagedRuntime.play(System.nanoTime())
+        }
+        motionRuntime = stagedRuntime
         stagedScene = staged
         stagingError = null
         requestRenderCallback()
@@ -142,23 +164,20 @@ class Tab2WaterWorldSceneRenderer(
 
   fun onPhotoUriSelected(uri: android.net.Uri?) {
     photoLoader.requestLoad(uri)
-    perimeterController.onPhotoSelected(unpause = true)
+    taskEnergyTimeline.restartAt(motionRuntime.currentTimeSeconds)
     requestRenderCallback()
   }
 
   fun triggerPhotoRecognitionRestart() {
-    perimeterController.onPhotoSelected(unpause = true)
+    taskEnergyTimeline.restartAt(motionRuntime.currentTimeSeconds)
     requestRenderCallback()
   }
 
   fun togglePlayPause() {
     if (motionRuntime.isPlaying) {
       motionRuntime.pause()
-      perimeterController.setPaused(true)
     } else {
       motionRuntime.resume(System.nanoTime())
-      perimeterController.setPaused(false)
-      lastPerimeterFrameNs = System.nanoTime()
     }
     publishStatus(isReady = hasPresentedFirstReadyFrame)
     requestRenderCallback()
@@ -166,21 +185,16 @@ class Tab2WaterWorldSceneRenderer(
 
   fun onHostPause() {
     motionRuntime.onActivityPause()
-    perimeterController.setPaused(true)
-    lastPerimeterFrameNs = 0L
   }
 
   fun onHostResume() {
     motionRuntime.onActivityResume(System.nanoTime())
-    perimeterController.setPaused(false)
-    lastPerimeterFrameNs = System.nanoTime()
     requestRenderCallback()
   }
 
   fun dispose() {
     disposed.set(true)
     motionRuntime.onActivityPause()
-    perimeterController.setPaused(true)
     photoLoader.dispose()
     ioExecutor.shutdownNow()
   }
@@ -192,6 +206,7 @@ class Tab2WaterWorldSceneRenderer(
     backgroundRenderer.release()
     photoRenderer.release()
     perimeterRenderer.release()
+    taskEnergyRenderer.release()
     compositeProgram?.release()
     compositeProgram = null
     if (compositeVao != 0) {
@@ -209,7 +224,7 @@ class Tab2WaterWorldSceneRenderer(
 
   internal fun currentTelemetry(): JSONObject? = lastTelemetry
   internal fun currentOrbViewport(): Tab2OrbViewportRect? = lastOrbViewport
-  internal fun currentPerimeterSnapshot(): Tab2PhotoPerimeterSnapshot = perimeterController.snapshot()
+  internal fun currentPerimeterSnapshot(): Tab2PhotoPerimeterSnapshot = taskEnergyTimeline.snapshot().toLegacyPerimeterSnapshot()
 
   override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
     waterWorldRenderer?.handleCoreContextLost()
@@ -218,7 +233,19 @@ class Tab2WaterWorldSceneRenderer(
     GLES30.glClearColor(0.02f, 0.20f, 0.30f, 1f)
     backgroundRenderer.init(appContext.assets)
     photoRenderer.init()
-    perimeterRenderer.init()
+    taskEnergyRenderer.init()
+    try {
+      perimeterRenderer.init(appContext.assets)
+      perimeterAssetError = null
+    } catch (t: Throwable) {
+      perimeterAssetError = t.message ?: t.javaClass.simpleName
+      // Keep the independent Water World / Orb scene alive. A perimeter asset failure is
+      // fail-closed for V2 materials only; it must not suppress the Orb renderer.
+      publishStatus(isReady = false, errorMessage = perimeterAssetError)
+    }
+    gpuVendor = GLES30.glGetString(GLES30.GL_VENDOR) ?: "UNKNOWN"
+    gpuRenderer = GLES30.glGetString(GLES30.GL_RENDERER) ?: "UNKNOWN"
+    glesVersion = GLES30.glGetString(GLES30.GL_VERSION) ?: "UNKNOWN"
 
     compositeProgram = GlShaderProgram(
       SPHERE_COMPOSITE_VERT,
@@ -230,7 +257,6 @@ class Tab2WaterWorldSceneRenderer(
     compositeVao = vaoArr[0]
 
     startStagingIfNeeded()
-    lastPerimeterFrameNs = System.nanoTime()
   }
 
   override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -242,6 +268,13 @@ class Tab2WaterWorldSceneRenderer(
 
   override fun onDrawFrame(gl: GL10?) {
     if (disposed.get()) return
+    val nowNs = System.nanoTime()
+    // Exactly one authoritative clock tick per GL frame. Task Energy below consumes this
+    // runtime time even when the staged Water World renderer is not ready yet.
+    val frameRuntime = motionRuntime
+    val motionSnapshot = frameRuntime.stepFrame(nowNs)
+    val frameRuntimeTime = frameRuntime.currentTimeSeconds
+    val frameRuntimeIsPlaying = frameRuntime.isPlaying
     val sw = surfaceWidth
     val sh = surfaceHeight
 
@@ -260,6 +293,12 @@ class Tab2WaterWorldSceneRenderer(
 
     // 2. Resolve unified layout for upper photo frame & lower 1:1 Water World sphere viewport
     val resolvedLayout = resolveEffectiveLayout(sw, sh)
+    val table = getOrBuildPerimeterTable(resolvedLayout.photoFrame)
+    val taskEnergySnapshot = taskEnergyTimeline.advanceAt(
+      runtimeTimeSeconds = frameRuntimeTime,
+      isPlaying = frameRuntimeIsPlaying,
+      perimeter = table.geometry,
+    )
     val orbViewport = Tab2OrbViewportRect.compute(
       surfaceWidthPx = sw,
       surfaceHeightPx = sh,
@@ -278,11 +317,22 @@ class Tab2WaterWorldSceneRenderer(
         if (ww != null) {
           val coreReady = checkCoreVolumeReady(ww)
           if (coreReady) {
-            renderAndCompositeWaterWorld(ww, orbViewport, sw, sh)
+            renderAndCompositeWaterWorld(ww, orbViewport, sw, sh, motionSnapshot)
           }
         }
       }
     }
+
+    // Draw the real Orb-to-photo energy channel before the photo so it ends at the live
+    // bottom-center boundary and cannot cover the photo contents.
+    GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
+    GLES30.glViewport(0, 0, sw, sh)
+    taskEnergyRenderer.draw(
+      layout = resolvedLayout,
+      snapshot = taskEnergySnapshot,
+      hdrScale = 1.0f,
+      debugOptions = debugOptions.toPerimeterDebugOptions(),
+    )
 
     // 4. Layer 3: Upper Rounded Photo (Direct sRGB display color mode + CENTER_CROP UV transform)
     GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
@@ -306,20 +356,11 @@ class Tab2WaterWorldSceneRenderer(
       0
     }
 
-    // 6. Layer 4: Independent Perimeter Water-Light (Tab 2 V2.2 Slender Material Profile + Refraction)
-    val nowNs = System.nanoTime()
-    val dtSec = if (lastPerimeterFrameNs > 0L) {
-      ((nowNs - lastPerimeterFrameNs) / 1_000_000_000.0).coerceIn(0.0, 0.05)
-    } else {
-      0.0
-    }
-    lastPerimeterFrameNs = nowNs
-    val perimeterSnap = perimeterController.step(dtSec)
-    val table = getOrBuildPerimeterTable(resolvedLayout.photoFrame)
+    // 6. Layer 4: V2 L1-L4 GPU materials, driven by the same Task Energy snapshot.
     perimeterRenderer.draw(
       layout = resolvedLayout,
       table = table,
-      snapshot = perimeterSnap.toPerimeterRenderSnapshot(),
+      snapshot = taskEnergySnapshot,
       hdrScale = 1.0f,
       refractionTexId = activeRefractionTexId,
       fboWidth = sw,
@@ -331,9 +372,9 @@ class Tab2WaterWorldSceneRenderer(
       lastUiReportNs = nowNs
       publishStatus(
         isReady = hasPresentedFirstReadyFrame,
-        errorMessage = stagingError,
+        errorMessage = perimeterAssetError ?: stagingError,
         orbViewport = orbViewport,
-        perimeterState = perimeterSnap.state,
+        perimeterState = taskEnergySnapshot.toLegacyPerimeterSnapshot().state,
       )
     }
   }
@@ -395,10 +436,9 @@ class Tab2WaterWorldSceneRenderer(
     viewport: Tab2OrbViewportRect,
     surfaceW: Int,
     surfaceH: Int,
+    snapshot: WaterWorldDynamicFrameSnapshot,
   ) {
     try {
-      val nowNs = System.nanoTime()
-      val snapshot = motionRuntime.stepFrame(nowNs)
       val telemetry = ww.renderDynamic(
         snapshot = snapshot,
         mode = WaterWorldRenderGraph.DiagnosticMode.FINAL_SCENE,
@@ -415,13 +455,10 @@ class Tab2WaterWorldSceneRenderer(
 
       if (!hasPresentedFirstReadyFrame) {
         hasPresentedFirstReadyFrame = true
-        if (motionRuntime.profile.autoPlayOnEnter && !motionRuntime.staticReferenceMode) {
-          motionRuntime.play(System.nanoTime())
-        }
         publishStatus(
           isReady = true,
           orbViewport = viewport,
-          perimeterState = perimeterController.snapshot().state,
+          perimeterState = taskEnergyTimeline.snapshot().toLegacyPerimeterSnapshot().state,
         )
       }
     } catch (t: Throwable) {
@@ -487,9 +524,12 @@ class Tab2WaterWorldSceneRenderer(
     isReady: Boolean,
     errorMessage: String? = null,
     orbViewport: Tab2OrbViewportRect? = lastOrbViewport,
-    perimeterState: Tab2PhotoPerimeterState = perimeterController.snapshot().state,
+    perimeterState: Tab2PhotoPerimeterState = taskEnergyTimeline.snapshot().toLegacyPerimeterSnapshot().state,
   ) {
     val tel = lastTelemetry
+    val energy = taskEnergyTimeline.snapshot()
+    val drawStats = perimeterRenderer.lastDrawStats
+    val taskDrawStats = taskEnergyRenderer.lastDrawStats
     onStatusChanged(
       Tab2WaterWorldRuntimeStatus(
         isReady = isReady,
@@ -497,17 +537,62 @@ class Tab2WaterWorldSceneRenderer(
         isPlaying = motionRuntime.isPlaying,
         passCount = tel?.optInt("passCount", 0) ?: 0,
         opticalNodeCount = tel?.optInt("opticalNodeCount", 0) ?: 0,
-        errorMessage = errorMessage,
+        errorMessage = perimeterAssetError ?: errorMessage,
         perimeterState = perimeterState,
         dynamicTimeSeconds = motionRuntime.currentTimeSeconds,
         orbViewportSidePx = orbViewport?.sidePx ?: 0,
         photoTextureLoaded = photoRenderer.isPhotoTextureLoaded,
         refractionEnabled = debugOptions.enableRefraction,
         refractionTexId = refractionSnapshotTexId,
-        perimeterShaderLinked = perimeterRenderer.lastDrawStats.shaderLinked,
+        perimeterShaderLinked = drawStats.shaderLinked,
+        taskEnergyStage = energy.stage,
+        taskEnergyElapsedMs = energy.elapsedMs,
+        taskEnergyFlowTimeSec = energy.flowTimeSec,
+        perimeterLoopElapsedSec = ((energy.elapsedMs - TaskEnergyController.T_LOOP_START_MS).coerceAtLeast(0L) / 1000f),
+        perimeterV2MaterialLoaded = perimeterRenderer.isV2MaterialLoaded,
+        perimeterV2MaterialDrawn = drawStats.usedV2Material && drawStats.drawCalls > 0,
+        perimeterDrawCalls = drawStats.drawCalls,
+        perimeterSparkleCount = drawStats.sparkleCount,
+        perimeterSparkleDrawCalls = drawStats.sparkleDrawCalls,
+        taskRibbonDrawCalls = taskDrawStats.drawCalls,
+        taskRibbonShaderLinked = taskDrawStats.shaderLinked,
+        perimeterTextureIds = perimeterRenderer.loadedV2TextureIds,
+        perimeterTextureUnits = if (perimeterRenderer.isV2MaterialLoaded) {
+          listOf(
+            PerimeterWaterLightRenderer.LAYER_RGBA_TEXTURE_UNIT,
+            PerimeterWaterLightRenderer.LAYER_NORMAL_TEXTURE_UNIT,
+            PerimeterWaterLightRenderer.LAYER_FLOW_TEXTURE_UNIT,
+            PerimeterWaterLightRenderer.DROPLET_ATLAS_TEXTURE_UNIT,
+          )
+        } else {
+          emptyList()
+        },
+        gpuVendor = gpuVendor,
+        gpuRenderer = gpuRenderer,
+        glesVersion = glesVersion,
       ),
     )
   }
+
+/** Compatibility-only status projection; it does not drive or advance the production runtime. */
+private fun TaskEnergySnapshot.toLegacyPerimeterSnapshot(): Tab2PhotoPerimeterSnapshot {
+  val elapsedSec = elapsedMs / 1000.0
+  val state = when {
+    elapsedSec < Tab2IndependentPerimeterController.PHOTO_STABLE_START_SEC -> Tab2PhotoPerimeterState.PHOTO_SELECTED
+    elapsedSec < Tab2IndependentPerimeterController.PERIMETER_ACTIVATE_START_SEC -> Tab2PhotoPerimeterState.PHOTO_STABLE
+    else -> Tab2PhotoPerimeterState.PERIMETER_LIGHT_ACTIVATED
+  }
+  val shimmer = (0.5f + 0.5f * kotlin.math.sin(flowTimeSec * (2.0 * Math.PI / 3.4)).toFloat()).coerceIn(0f, 1f)
+  return Tab2PhotoPerimeterSnapshot(
+    state = state,
+    elapsedSec = elapsedSec,
+    perimeterProgress = maxOf(leftProgress, rightProgress),
+    shimmerIntensity = shimmer,
+    flowTimeSec = flowTimeSec,
+    isPaused = isPaused,
+    orbToPhotoBeamActive = releaseProgress > 0.001f,
+  )
+}
 
   companion object {
     val SPHERE_COMPOSITE_VERT = """#version 300 es
