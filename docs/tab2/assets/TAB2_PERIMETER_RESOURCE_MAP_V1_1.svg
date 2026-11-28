@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1400" height="1672" viewBox="0 0 1400 1672" role="img" aria-labelledby="title desc">
+  <title id="title">TAB2 P0 外围水光资源结构图 V1.1</title>
+  <desc id="desc">左侧为 SHA 锁定的真实母版原图，右侧与覆盖标注为可编辑的照片路径、L1 至 L4、KF01 至 KF06 和连续闭环说明。所有光效覆盖线仅表达结构关系，不代表生产宽度、Alpha 或材质参数。</desc>
+  <defs>
+    <linearGradient id="panel" x1="0" x2="1">
+      <stop offset="0" stop-color="#102c37"/>
+      <stop offset="1" stop-color="#081b25"/>
+    </linearGradient>
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#9cf4ff"/>
+    </marker>
+    <marker id="arrow-gold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#ffe3a0"/>
+    </marker>
+    <style>
+      .label { font-family: sans-serif; font-size: 20px; font-weight: 700; fill: #ffffff; }
+      .small { font-family: sans-serif; font-size: 16px; fill: #e8f6f7; }
+      .panel-title { font-family: sans-serif; font-size: 28px; font-weight: 700; fill: #ffffff; }
+      .panel-sub { font-family: sans-serif; font-size: 18px; fill: #c7dce1; }
+      .kf { font-family: sans-serif; font-size: 17px; font-weight: 700; fill: #08212a; }
+      .box { fill: #071d27; fill-opacity: .88; stroke: #d7f6fb; stroke-width: 1.5; }
+    </style>
+  </defs>
+
+  <rect width="1400" height="1672" fill="#061720"/>
+  <image id="locked-master" x="0" y="0" width="941" height="1672" href="TAB2_P0_HIGH_FIDELITY_MASTER_V1.png" xlink:href="TAB2_P0_HIGH_FIDELITY_MASTER_V1.png" preserveAspectRatio="none"/>
+
+  <!-- Approximate measured photo frame: x=93..858, y=179..1079, radius≈65px, ±5..8px. -->
+  <path id="photo-frame-measured-approx" d="M158 179 H793 Q858 179 858 244 V1014 Q858 1079 793 1079 H158 Q93 1079 93 1014 V244 Q93 179 158 179 Z"
+        fill="none" stroke="#ffffff" stroke-width="3" stroke-dasharray="13 8"/>
+  <rect x="256" y="185" width="440" height="37" rx="12" class="box"/>
+  <text x="476" y="211" text-anchor="middle" class="label">Photo Frame · measured approx</text>
+
+  <!-- L2 first: broad volume envelope; schematic vector overlay, not production geometry or opacity. -->
+  <path id="L2-emerald-veil-schematic" d="M149 165 C230 159 327 167 476 164 C625 167 723 157 801 166 C875 172 889 222 883 304 C879 444 888 581 884 724 C889 871 883 1003 866 1054 C843 1112 765 1119 682 1111 C602 1104 538 1113 476 1110 C400 1115 326 1101 241 1110 C157 1117 94 1105 76 1050 C57 976 65 866 62 720 C63 574 58 431 63 302 C60 219 77 174 149 165 Z"
+        fill="none" stroke="#6dffb6" stroke-opacity=".58" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- L1 main liquid flow centerline, shown as one continuous perimeter path. -->
+  <path id="L1-ice-blue-loop-schematic" d="M476 1079 C386 1079 259 1081 158 1079 C112 1079 93 1058 93 1014 V244 C93 200 114 179 158 179 H793 C838 179 858 200 858 244 V1014 C858 1059 837 1079 793 1079 C688 1081 570 1079 476 1079 Z"
+        fill="none" stroke="#94f2ff" stroke-opacity=".92" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"
+        marker-mid="url(#arrow-cyan)"/>
+  <!-- Orb-to-photo connector joins the same logical Task Energy network at bottom center. -->
+  <path id="L1-orb-photo-connector-schematic" d="M470 1355 C465 1288 480 1227 476 1174 C473 1130 476 1104 476 1080"
+        fill="none" stroke="#9cf4ff" stroke-opacity=".95" stroke-width="7" stroke-linecap="round" marker-end="url(#arrow-cyan)"/>
+  <!-- L3 uses branching illustrative paths only; strand count and topology are not frozen. -->
+  <g id="L3-champagne-filament-schematic" fill="none" stroke="#ffe2a0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M130 215 C160 195 188 200 217 216 C265 238 306 210 348 204 C400 197 437 208 476 202 C526 194 579 205 628 211 C685 217 727 192 774 203 C822 213 835 250 841 296"/>
+    <path d="M840 880 C827 931 844 977 817 1020 C791 1060 748 1065 707 1060 C663 1055 620 1081 580 1092 C540 1102 507 1083 476 1080"/>
+    <path d="M135 920 C162 952 139 989 163 1022 C193 1063 239 1058 281 1061 C339 1064 383 1084 422 1090 C448 1094 462 1086 476 1080"/>
+  </g>
+  <!-- L4 markers are examples only; not a fixed particle count or placement. -->
+  <g id="L4-droplet-examples" fill="#d8fbff" fill-opacity=".78" stroke="#ffffff" stroke-width="2">
+    <circle cx="48" cy="382" r="14"/>
+    <circle cx="876" cy="161" r="20"/>
+    <circle cx="894" cy="1117" r="10"/>
+    <circle cx="64" cy="731" r="7"/>
+  </g>
+
+  <!-- KF state markers. Positions on the source image are approximate; KF03 shares KF02's physical split node. -->
+  <g id="kf-markers">
+    <g transform="translate(470 1355)"><circle r="18" fill="#ffe39a"/><text y="6" text-anchor="middle" class="kf">01</text></g>
+    <g transform="translate(476 1080)"><circle r="18" fill="#ffe39a"/><text y="6" text-anchor="middle" class="kf">02</text></g>
+    <g transform="translate(496 1064)"><circle r="18" fill="#b8f7ff"/><text y="6" text-anchor="middle" class="kf">03</text></g>
+    <g transform="translate(92 630)"><circle r="18" fill="#b8f7ff"/><text y="6" text-anchor="middle" class="kf">04</text></g>
+    <g transform="translate(858 630)"><circle r="18" fill="#b8f7ff"/><text y="6" text-anchor="middle" class="kf">04</text></g>
+    <g transform="translate(476 179)"><circle r="18" fill="#ffe39a"/><text y="6" text-anchor="middle" class="kf">05</text></g>
+    <g transform="translate(790 218)"><circle r="18" fill="#b8f7ff"/><text y="6" text-anchor="middle" class="kf">06</text></g>
+  </g>
+  <text x="534" y="1065" class="small" fill="#ffffff">左右分流</text>
+  <text x="704" y="154" class="small">顶部汇合后继续循环</text>
+
+  <!-- Editable legend and measurement limits. -->
+  <rect x="941" y="0" width="459" height="1672" fill="url(#panel)"/>
+  <text x="980" y="72" class="panel-title">TAB2 P0</text>
+  <text x="980" y="112" class="panel-title">外围水光资源图 V1.1</text>
+  <text x="980" y="151" class="panel-sub">真实母版叠加可编辑路径与 KF 标记</text>
+  <line x1="980" y1="180" x2="1360" y2="180" stroke="#55717c" stroke-width="2"/>
+
+  <g id="layer-legend">
+    <line x1="988" y1="232" x2="1050" y2="232" stroke="#94f2ff" stroke-width="9" stroke-linecap="round"/>
+    <text x="1070" y="239" class="label">L1 冰蓝主水光</text>
+    <text x="1070" y="270" class="panel-sub">主路径、连续能量脉冲</text>
+
+    <line x1="988" y1="323" x2="1050" y2="323" stroke="#6dffb6" stroke-opacity=".72" stroke-width="24" stroke-linecap="round"/>
+    <text x="1070" y="330" class="label">L2 翡翠水雾</text>
+    <text x="1070" y="361" class="panel-sub">柔性体积、独立相位与延迟</text>
+
+    <path d="M988 420 C1006 403 1023 437 1041 414 C1049 404 1056 409 1064 420" fill="none" stroke="#ffe2a0" stroke-width="4" stroke-linecap="round"/>
+    <text x="1078" y="427" class="label">L3 香槟金细丝</text>
+    <text x="1078" y="458" class="panel-sub">异步分支与局部汇合，数量不冻结</text>
+
+    <circle cx="1002" cy="521" r="10" fill="#d8fbff" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="1030" cy="516" r="6" fill="#d8fbff" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="1052" cy="526" r="13" fill="#d8fbff" stroke="#ffffff" stroke-width="2"/>
+    <text x="1080" y="527" class="label">L4 水滴粒子</text>
+    <text x="1080" y="558" class="panel-sub">独立速度与生命周期；点位仅作示意</text>
+  </g>
+
+  <line x1="980" y1="600" x2="1360" y2="600" stroke="#55717c" stroke-width="2"/>
+  <text x="980" y="650" class="panel-title">KF01–KF06</text>
+  <text x="980" y="696" class="small">01  Orb 向照片释放同一股能量</text>
+  <text x="980" y="737" class="small">02  抵达照片真实下边中心</text>
+  <text x="980" y="778" class="small">03  下边中心向左右分流</text>
+  <text x="980" y="819" class="small">04  沿左右圆角与侧边攀升</text>
+  <text x="980" y="860" class="small">05  顶部汇合后继续向前传播</text>
+  <text x="980" y="901" class="small">06  围绕完整照片边框持续循环</text>
+
+  <line x1="980" y1="945" x2="1360" y2="945" stroke="#55717c" stroke-width="2"/>
+  <text x="980" y="995" class="panel-title">测量边界</text>
+  <text x="980" y="1037" class="small">照片边界约 x=93..858, y=179..1079 px</text>
+  <text x="980" y="1076" class="small">圆角约 65 px；测量误差约 ±5–8 px</text>
+  <text x="980" y="1115" class="small">可见外围范围约 0–50 px；误差约 ±10 px</text>
+  <text x="980" y="1168" class="small">虚线与覆盖路径是结构示意，非生产参数。</text>
+  <text x="980" y="1203" class="small">母版为 RGB 合成图，不能反解 Alpha/法线。</text>
+  <text x="980" y="1238" class="small">KF01–KF05 的因果关系来自全局运动合同。</text>
+
+  <line x1="980" y1="1281" x2="1360" y2="1281" stroke="#55717c" stroke-width="2"/>
+  <text x="980" y="1332" class="panel-title">KF06 连续性</text>
+  <text x="980" y="1373" class="small">底边中心 → 左侧 → 顶部 → 右侧 → 底边</text>
+  <text x="980" y="1412" class="small">位置、切线速度、相位跨 seam 连续</text>
+  <text x="980" y="1451" class="small">L1–L4 不整体重置；Orb 补充同一网络</text>
+
+  <rect x="980" y="1502" width="380" height="118" rx="14" fill="#163b48" stroke="#547581"/>
+  <text x="1000" y="1545" class="small">母版 SHA-256 已在 Main 复算通过</text>
+  <text x="1000" y="1585" class="small">图示只冻结结构，不宣称 GPU 已验收</text>
+</svg>

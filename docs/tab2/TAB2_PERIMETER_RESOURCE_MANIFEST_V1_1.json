@@ -1,0 +1,364 @@
+{
+  "schema_version": "1.1",
+  "contract_id": "TAB2_PERIMETER_RESOURCE_MOTION_CONTRACT_V1_1",
+  "task_id": "TAB2_PERIMETER_RESOURCE_MOTION_CONTRACT_FREEZE_V1_1",
+  "status": "DESIGN_FROZEN",
+  "repository": "pan277942135/AI-Orb-Demo",
+  "source_lock": {
+    "main_head": "86c77d9781c9c88a56c98a0521d39647ae541a3d",
+    "path": "docs/tab2/assets/TAB2_P0_HIGH_FIDELITY_MASTER_V1.png",
+    "image_format": "PNG",
+    "color_model": "RGB",
+    "alpha_channel": false,
+    "width_px": 941,
+    "height_px": 1672,
+    "size_bytes": 2171118,
+    "sha256_expected": "a37819bba6b144ca7fec27ace55e5b319c41e67b89a11e70d51200bce8749d67",
+    "sha256_computed": "a37819bba6b144ca7fec27ace55e5b319c41e67b89a11e70d51200bce8749d67",
+    "sha256_match": true,
+    "git_blob_sha1": "a8d055b0dff734c3f8f9905b7b21cd57981c82d6",
+    "lock_json_path": "docs/tab2/P0_HIGH_FIDELITY_MASTER_V1.lock.json",
+    "global_motion_contract_path": "docs/tab2/TAB2_AI_ORB_PHOTO_RECOGNITION_VISUAL_MOTION_CONTRACT_V1.md",
+    "lock_json_modified": false,
+    "global_motion_contract_modified": false
+  },
+  "measurement_legend": {
+    "coordinate_space": "source_image_px; origin top-left; +x right; +y down",
+    "measured": "Directly observed in the locked RGB master or read from exact Main source.",
+    "inferred": "Interpretation of a composited still or the frozen global motion contract.",
+    "unknown": "Cannot be resolved from a static composited RGB image or static source inspection.",
+    "image_measurements_are_approximate": true,
+    "measurement_uncertainty_px": {
+      "photo_bounds": 5,
+      "corner_radius": 8,
+      "perimeter_extent": 10
+    },
+    "alpha_recoverable_from_master": false,
+    "material_or_motion_recoverable_from_master": false
+  },
+  "photo_geometry": {
+    "photo_frame_bounds_px_approx": {
+      "left": 93,
+      "top": 179,
+      "right": 858,
+      "bottom": 1079
+    },
+    "photo_frame_size_px_approx": {
+      "width": 765,
+      "height": 900
+    },
+    "corner_radius_px_approx": 65,
+    "top_center_px_approx": {
+      "x": 476,
+      "y": 179
+    },
+    "bottom_center_px_approx": {
+      "x": 476,
+      "y": 1079
+    },
+    "orb_to_photo_energy_axis_x_px_approx": 470,
+    "visible_perimeter_waterlight_extent_outside_frame_px_approx": {
+      "min": 0,
+      "max": 50
+    },
+    "full_path_order": [
+      "bottom_center",
+      "left_bottom_corner",
+      "left_side",
+      "left_top_corner",
+      "top_center_converge",
+      "right_top_corner",
+      "right_side",
+      "right_bottom_corner",
+      "bottom_center"
+    ],
+    "classifications": {
+      "frame_bounds": "MEASURED_APPROXIMATE",
+      "corner_radius": "MEASURED_APPROXIMATE",
+      "bottom_split_at_bottom_center": "INFERRED_FROM_GLOBAL_CONTRACT",
+      "top_converge_at_top_center": "INFERRED_FROM_GLOBAL_CONTRACT",
+      "continuous_motion": "UNKNOWN_FROM_STATIC_MASTER"
+    }
+  },
+  "energy_network": {
+    "logical_source": "AI Orb Core",
+    "task_energy_network_count": 1,
+    "perimeter_path_shared_by_layers": true,
+    "orb_connector_is_separate_path_segment": true,
+    "loop_replenishment": "Orb continues to supply the same logical network; do not create a second energy source."
+  },
+  "layers": [
+    {
+      "id": "L1",
+      "name_zh": "冰蓝主水光",
+      "visual_role": "主能量路径与主传播脉冲",
+      "geometry_resource": "Independent ribbon/mesh generated along the true rounded photo perimeter, outside the photo boundary.",
+      "material_resource": "Translucent icy-blue/cyan liquid body with dynamic width, edge and highlight; exact values remain GPU-calibrated.",
+      "optics_resource": "Independent alpha, liquid crest, edge glint and environment refraction; must preserve source photo pixels.",
+      "motion_resource": "Primary path phase and pulse, bottom-center split, side ascent, top-center convergence and seamless perimeter loop.",
+      "observed_from_master": {
+        "color_family": [
+          "ice blue",
+          "cyan",
+          "cool white"
+        ],
+        "visual_width": "narrow perimeter band; approximate visible spacing recorded in photo_geometry",
+        "alpha": "UNKNOWN; master has no alpha channel",
+        "distribution": "visible along all four rounded sides"
+      },
+      "current_code": {
+        "files": [
+          "PerimeterRibbonMeshBuilder.kt",
+          "PerimeterWaterLightRenderer.kt",
+          "TaskWaterLightShaders.kt"
+        ],
+        "exists": true,
+        "independently_toggled": true,
+        "runtime_draw_call_connected": true,
+        "closed_loop_motion_verified": false,
+        "state": "CODE_PRESENT_RENDER_WIRED_LOOP_NOT_VERIFIED"
+      }
+    },
+    {
+      "id": "L2",
+      "name_zh": "翡翠水雾",
+      "visual_role": "水体体积与柔性扩散",
+      "geometry_resource": "Independent flexible veil mesh sharing the photo path and allowing wider organic offsets.",
+      "material_resource": "Translucent emerald/jade/cyan-green veil with spatially varying density.",
+      "optics_resource": "Soft volume and restrained refraction; no photo-content alteration.",
+      "motion_resource": "Independent phase with slight lag behind L1; continuous deformation and diffusion.",
+      "observed_from_master": {
+        "color_family": [
+          "emerald",
+          "jade green",
+          "teal"
+        ],
+        "visual_width": "broader than L1 in visible perimeter regions; exact source geometry UNKNOWN",
+        "alpha": "UNKNOWN; master has no alpha channel",
+        "distribution": "outer flanks and rounded corners"
+      },
+      "current_code": {
+        "files": [
+          "PerimeterRibbonMeshBuilder.kt",
+          "PerimeterWaterLightRenderer.kt",
+          "TaskWaterLightShaders.kt"
+        ],
+        "exists": true,
+        "independently_toggled": true,
+        "runtime_draw_call_connected": true,
+        "independent_delayed_phase_verified": false,
+        "state": "CODE_PRESENT_RENDER_WIRED_MOTION_CONTRACT_PARTIAL"
+      }
+    },
+    {
+      "id": "L3",
+      "name_zh": "香槟金细丝",
+      "visual_role": "精细能量网络、动态分支和局部汇合",
+      "geometry_resource": "Independent variable-topology filament meshes; branch count is not fixed.",
+      "material_resource": "Thin champagne-gold and warm-white specular filament with local highlight control.",
+      "optics_resource": "Localized highlight and restrained refractive glint over L1/L2.",
+      "motion_resource": "Asynchronous strand phases and speeds; branches, merges, strengthens and fades without a fixed strand count.",
+      "observed_from_master": {
+        "color_family": [
+          "champagne gold",
+          "warm white",
+          "pale gold"
+        ],
+        "visual_width": "fine compared with L1/L2; exact source width UNKNOWN",
+        "alpha": "UNKNOWN; master has no alpha channel",
+        "distribution": "overlapping perimeter network with local corner/contact highlights"
+      },
+      "current_code": {
+        "files": [
+          "PerimeterRibbonMeshBuilder.kt",
+          "PerimeterWaterLightRenderer.kt",
+          "TaskWaterLightShaders.kt"
+        ],
+        "exists": true,
+        "independently_toggled": true,
+        "runtime_draw_call_connected": true,
+        "dynamic_branch_network_present": false,
+        "state": "CODE_PRESENT_SINGLE_RIBBON_PER_SIDE_BRANCH_NETWORK_MISSING"
+      }
+    },
+    {
+      "id": "L4",
+      "name_zh": "水滴粒子",
+      "visual_role": "微观水体折射与高光细节",
+      "geometry_resource": "Independent sparse Particle/Billboard geometry anchored to the shared waterlight direction.",
+      "material_resource": "Variable-size crystal droplet with independent brightness, alpha and highlight.",
+      "optics_resource": "Droplet rim, body refraction and directional glint; protect photo content.",
+      "motion_resource": "Independent speed, phase and lifetime along the true flow direction; no fixed point grid or fixed count.",
+      "observed_from_master": {
+        "color_family": [
+          "transparent cyan",
+          "cool white",
+          "sparse warm highlight"
+        ],
+        "visual_width": "multiple visible sizes; not sufficient to infer a count",
+        "alpha": "UNKNOWN; master has no alpha channel",
+        "distribution": "visible outside photo; some bubbles may be ambient background elements"
+      },
+      "current_code": {
+        "files": [
+          "PerimeterWaterLightRenderer.kt",
+          "TaskWaterLightShaders.kt"
+        ],
+        "exists": true,
+        "independently_toggled": true,
+        "runtime_draw_call_connected": true,
+        "fixed_seed_arrays_present": true,
+        "state": "CODE_PRESENT_BUT_SEED_COUNT_AND_ANCHORS_ARE_FIXED"
+      }
+    }
+  ],
+  "gpu_render_order": [
+    {
+      "order": 1,
+      "layer": "L2",
+      "reason": "Broad soft water volume establishes depth behind the primary flow."
+    },
+    {
+      "order": 2,
+      "layer": "L1",
+      "reason": "Primary flow remains visually dominant over the veil."
+    },
+    {
+      "order": 3,
+      "layer": "L3",
+      "reason": "Fine gold network stays legible above the broader layers."
+    },
+    {
+      "order": 4,
+      "layer": "L4",
+      "reason": "Sparse optical details sit above the ribbons without hiding the photo."
+    }
+  ],
+  "motion_contract": {
+    "clock": "Use the single existing global motion clock defined by the global visual-motion contract.",
+    "adds_millisecond_timeline": false,
+    "keyframes": [
+      {
+        "id": "KF01",
+        "state": "ORB_RELEASE",
+        "behavior": "Orb Core emits the single logical Task Energy network toward the photo."
+      },
+      {
+        "id": "KF02",
+        "state": "ARRIVAL",
+        "behavior": "Energy arrives at the real photo bottom-center and creates contact response."
+      },
+      {
+        "id": "KF03",
+        "state": "BOTTOM_SPLIT",
+        "behavior": "The same flow splits left and right along the photo bottom edge."
+      },
+      {
+        "id": "KF04",
+        "state": "SIDE_ASCEND",
+        "behavior": "Both branches climb the true rounded side paths."
+      },
+      {
+        "id": "KF05",
+        "state": "TOP_CONVERGE",
+        "behavior": "Both branches converge at top center and continue propagating."
+      },
+      {
+        "id": "KF06",
+        "state": "PERIMETER_LOOP",
+        "behavior": "All four layers continuously traverse the complete closed perimeter with no visible seam or global reset."
+      }
+    ],
+    "layer_motion": {
+      "L1": "Primary continuous path, pulse and propagation.",
+      "L2": "Follows L1 with an independent phase and slight delay.",
+      "L3": "Asynchronous variable branches, merges and local energy accents.",
+      "L4": "Independent particle speed and lifetime along the real flow direction."
+    },
+    "kf06_requirements": [
+      "left and right branches form one complete closed path",
+      "top convergence continues through the loop",
+      "position, tangent velocity and phase remain continuous at the seam",
+      "no full-layer reset",
+      "Orb replenishes the same logical energy network",
+      "no second motion clock"
+    ]
+  },
+  "current_code_mapping": {
+    "source_head": "86c77d9781c9c88a56c98a0521d39647ae541a3d",
+    "files": [
+      "app/src/main/java/com/example/orb/task/PerimeterPathGeometry.kt",
+      "app/src/main/java/com/example/orb/task/PerimeterArcLengthTable.kt",
+      "app/src/main/java/com/example/orb/task/PerimeterRibbonMeshBuilder.kt",
+      "app/src/main/java/com/example/orb/task/PerimeterWaterLightRenderer.kt",
+      "app/src/main/java/com/example/orb/task/Tab2IndependentPerimeterController.kt",
+      "app/src/main/java/com/example/orb/task/Tab2WaterWorldSceneRenderer.kt",
+      "app/src/main/java/com/example/orb/task/TaskEnergyController.kt",
+      "app/src/main/java/com/example/orb/task/PhotoFrameGeometry.kt",
+      "app/src/main/java/com/example/orb/task/TaskSceneLayoutSnapshot.kt",
+      "app/src/main/java/com/example/orb/task/TaskWaterLightShaders.kt"
+    ],
+    "path_geometry": "EXISTS_AND_USED; two half-perimeter paths are sampled from bottom center to top center.",
+    "kf01_kf05": "NOT_CONNECTED_TO_ACTIVE_TAB2_PERIMETER_CONTROLLER; current adapter forces releaseProgress and contactIntensity to zero.",
+    "kf06": "PARTIAL; full reveal, shader flow and particle drift exist, but a continuous closed energy-front seam is not verified.",
+    "v2_2_material": {
+      "named_preset": {
+        "l1_alpha_scale": 0.96,
+        "l2_alpha_scale": 0.86,
+        "l3_alpha_scale": 0.92,
+        "droplet_count_per_side": 8,
+        "width_profile": "TAB2_V22_SLENDER",
+        "alpha_caps": {
+          "L1": 0.3,
+          "L2": 0.16,
+          "L3": 0.28
+        },
+        "direct_display_ldr": true
+      },
+      "active_scene_values": {
+        "l1_alpha_scale": 0.95,
+        "l2_alpha_scale": 0.85,
+        "l3_alpha_scale": 0.9,
+        "droplet_count_per_side": 11,
+        "width_profile": "LEGACY_6KF_FROZEN",
+        "alpha_caps": {
+          "L1": 0.38,
+          "L2": 0.24,
+          "L3": 0.5
+        },
+        "direct_display_ldr": false
+      },
+      "note": "Alpha cap values are maxima, not fixed output alpha. The active SceneRenderer does not apply the named V2.2 preset."
+    },
+    "gpu_composite": "CODE_PATH_EXISTS; EXACT_HEAD_GPU_EVIDENCE_NOT_REVIEWED; status NOT_VERIFIED",
+    "production_code_modified": false
+  },
+  "layer_isolation_outputs": [
+    "L1_ONLY",
+    "L2_ONLY",
+    "L3_ONLY",
+    "L4_ONLY",
+    "L1_L2_L3_L4_COMPOSITE"
+  ],
+  "required_gpu_evidence": [
+    "independent GPU image for each layer",
+    "per-layer Alpha Heatmap based on actual shader output alpha",
+    "KF01-KF06 frame set with shared photo identity and motion clock",
+    "continuous KF06 video that crosses the loop seam",
+    "final GPU composite",
+    "GPU vendor, renderer, GLES version and shader compile/link status",
+    "source-photo identity check before and after perimeter rendering"
+  ],
+  "implementation_status": {
+    "design_frozen": true,
+    "code_mapping_completed": true,
+    "json_svg_validation_required": true,
+    "gpu_verified": false,
+    "visual_accepted": false
+  },
+  "delivery_files": [
+    "docs/tab2/TAB2_PERIMETER_RESOURCE_MOTION_CONTRACT_V1_1.md",
+    "docs/tab2/TAB2_PERIMETER_RESOURCE_MANIFEST_V1_1.json",
+    "docs/tab2/assets/TAB2_PERIMETER_RESOURCE_MAP_V1_1.svg"
+  ]
+}
