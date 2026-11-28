@@ -26,7 +26,19 @@ import kotlin.math.sin
 internal class WaterWorldStaticRenderer(
     private val root: File,
     private val assetManager: AssetManager? = null,
+    private val backdropMode: BackdropMode = BackdropMode.WATER_WORLD_NATIVE,
 ) {
+
+    enum class BackdropMode {
+        /** Tab 3 native full dark ocean backdrop (100% frozen Work 2/3/3.1/3.2 behavior). */
+        WATER_WORLD_NATIVE,
+        /**
+         * Tab 2 composite backdrop: keeps full refraction backdrop inside the crystal sphere
+         * while leaving outside pixels pure black so only the 5 orbiting Residents, 9 outer
+         * bubbles, and soft bloom composite cleanly over Tab 2's underwater PNG background.
+         */
+        TRANSPARENT_COMPOSITE,
+    }
 
     data class Binding(
         val objectId: String,
@@ -110,6 +122,10 @@ internal class WaterWorldStaticRenderer(
     internal fun currentPresentViewport(): PresentViewport? = lastPresentViewport
     internal fun currentPresentedFrameId(): Long = presentedFrameId
     internal fun currentGlErrorCount(): Int = glErrorCount
+    internal val finalTargetTextureId: Int get() = targetPool?.finalTarget?.texture ?: 0
+    internal val finalTargetSize: Int get() = targetPool?.fullSize ?: 1254
+    internal val activeOpticalConfig: WaterWorldSceneBindings.OpticalConfig? get() = opticalConfig
+    internal val activeBackdropMode: BackdropMode get() = backdropMode
     internal val requiresCoreVolume: Boolean get() = assetManager != null
     internal val isCoreVolumeReady: Boolean
         get() = coreVolumeRenderer?.isVolumeReady ?: (assetManager == null)
@@ -300,6 +316,12 @@ internal class WaterWorldStaticRenderer(
                     GLES30.glUniform1f(s.opaque.uniform("uHaloRadius"), opt.bgHaloRadius)
                     GLES30.glUniform3fv(s.opaque.uniform("uHaloColor"), 1, opt.bgHaloColor, 0)
                     GLES30.glUniform1f(s.opaque.uniform("uHaloIntensity"), opt.bgHaloIntensity)
+                    val backdropMaskRadius = if (backdropMode == BackdropMode.TRANSPARENT_COMPOSITE) {
+                        opt.sphereOuterRadiusPx * 1.06f
+                    } else {
+                        0f
+                    }
+                    GLES30.glUniform1f(s.opaque.uniform("uSphereBackdropRadius"), backdropMaskRadius)
                     GLES30.glUniform1i(s.opaque.uniform("uTexture"), 0)
                     for (item in stageDraws) {
                         GLES30.glUniformMatrix4fv(s.opaque.uniform("uModel"), 1, false, item.binding.model, 0)
@@ -1024,6 +1046,11 @@ internal class WaterWorldStaticRenderer(
         var count = 0
         for ((idx, orb) in opt.bokehOrbs.withIndex()) {
             if (orb.layer != layer) continue
+            if (backdropMode == BackdropMode.TRANSPARENT_COMPOSITE && layer == "BG") {
+                val dx = orb.x - (opt.sphereCenterPx[0] / dst.size.toFloat())
+                val dy = orb.y - (opt.sphereCenterPx[1] / dst.height.toFloat())
+                if (dx * dx + dy * dy > 0.36f * 0.36f) continue
+            }
             val sign = if (idx % 2 == 0) 1f else -1f
             val cx = orb.x + wo.bokehDriftOffsetU * sign
             val cy = orb.y + wo.bokehDriftOffsetV * (if (idx % 3 == 0) -1f else 1f)

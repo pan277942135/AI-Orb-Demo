@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.orb.task.PhotoFrameGeometry
+import com.example.orb.task.Tab2WaterWorldRuntimeStatus
 import com.example.orb.task.TaskEnergyEvidence
 import com.example.orb.task.TaskEnergyStage
 import com.example.orb.task.TaskGpuCaptureProgress
@@ -104,6 +105,8 @@ fun TaskRecognitionDemoScreen(
   onUpdateDebugOptions: (TaskRenderDebugOptions) -> Unit,
   onExport6KfEvidence: () -> Unit,
   onPhotoWindowBoundsChanged: (Float, Float, Float, Float, Float) -> Unit,
+  waterWorldStatus: Tab2WaterWorldRuntimeStatus? = null,
+  onPickPhoto: (() -> Unit)? = null,
   modifier: Modifier = Modifier,
 ) {
   val density = LocalDensity.current
@@ -127,12 +130,12 @@ fun TaskRecognitionDemoScreen(
   ) {
     val maxAvailHeight = maxHeight
     val maxAvailWidth = maxWidth
-    // Match frozen overview photo proportion (~75.7% width, capped cleanly for tablets/landscape)
-    // while guaranteeing generous bottom clearance (~34% height) for status text + shared V3 Orb!
+    // Keep upper photo gracefully proportioned (~72% width, max 43% height) so the lower
+    // full Water World V2.1 ecosystem sphere & 5 orbiting Residents have generous clearance!
     val targetPhotoWidth = minOf(
       maxAvailWidth * PhotoFrameGeometry.CANONICAL_WIDTH_RATIO,
-      (maxAvailHeight * 0.50f) * PhotoFrameGeometry.CANONICAL_ASPECT_W_OVER_H,
-      440.dp,
+      (maxAvailHeight * 0.43f) * PhotoFrameGeometry.CANONICAL_ASPECT_W_OVER_H,
+      420.dp,
     ).coerceAtLeast(140.dp)
     val cornerRadiusDp = targetPhotoWidth * PhotoFrameGeometry.CANONICAL_CORNER_RADIUS_OF_W
 
@@ -178,6 +181,31 @@ fun TaskRecognitionDemoScreen(
             .align(Alignment.Center)
             .testTag("task_header_title"),
         )
+
+        if (onPickPhoto != null) {
+          Surface(
+            onClick = onPickPhoto,
+            shape = RoundedCornerShape(16.dp),
+            color = FrostedDaylightSurface,
+            border = BorderStroke(1.dp, FrostedDaylightBorder),
+            modifier = Modifier
+              .align(Alignment.CenterEnd)
+              .padding(end = 6.dp)
+              .heightIn(min = 48.dp)
+              .testTag("tab2_pick_photo_button"),
+          ) {
+            Box(
+              contentAlignment = Alignment.Center,
+              modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            ) {
+              Text(
+                text = stringResource(R.string.task_pick_photo),
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                color = AquaticInkPrimary,
+              )
+            }
+          }
+        }
       }
 
       Spacer(modifier = Modifier.height(6.dp))
@@ -200,7 +228,7 @@ fun TaskRecognitionDemoScreen(
 
       Spacer(modifier = Modifier.height(18.dp))
 
-      // Centered recognition status caption directly beneath photo & above shared V3 AI Orb
+      // Centered recognition status caption directly beneath photo & above lower Water World sphere
       Text(
         text = stringResource(R.string.task_status_understanding),
         style = MaterialTheme.typography.bodyLarge.copy(
@@ -214,6 +242,40 @@ fun TaskRecognitionDemoScreen(
           .padding(horizontal = 24.dp)
           .testTag("task_status_understanding"),
       )
+
+      if (waterWorldStatus != null && waterWorldStatus.errorMessage != null) {
+        Spacer(modifier = Modifier.height(6.dp))
+        Surface(
+          shape = RoundedCornerShape(12.dp),
+          color = Color(0xD9FFE5E5),
+          border = BorderStroke(1.dp, Color(0xFFE07A7A)),
+          modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .testTag("tab2_water_world_error_badge"),
+        ) {
+          Text(
+            text = waterWorldStatus.errorMessage,
+            style = MaterialTheme.typography.labelSmall,
+            color = Color(0xFF7A1C1C),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+          )
+        }
+      } else if (waterWorldStatus != null && !waterWorldStatus.isReady) {
+        Spacer(modifier = Modifier.height(6.dp))
+        Surface(
+          shape = RoundedCornerShape(12.dp),
+          color = FrostedDaylightSurface,
+          border = BorderStroke(1.dp, FrostedDaylightBorder),
+          modifier = Modifier.testTag("tab2_water_world_loading_badge"),
+        ) {
+          Text(
+            text = stringResource(R.string.tab2_water_world_loading),
+            style = MaterialTheme.typography.labelSmall,
+            color = AquaticInkPrimary,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+          )
+        }
+      }
     }
 
     // Default-collapsed bottom-right floating 6KF Playback & V4 GPU Diagnostic Panel
@@ -245,7 +307,11 @@ fun TaskRecognitionDemoScreen(
               modifier = Modifier.size(18.dp),
             )
             Text(
-              text = snapshot.stage.code,
+              text = when {
+                waterWorldStatus == null -> snapshot.stage.code
+                waterWorldStatus.isReady -> "WW · ${waterWorldStatus.passCount}P"
+                else -> "WW…"
+              },
               style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
               color = AquaticInkPrimary,
             )

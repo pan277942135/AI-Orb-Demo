@@ -1,0 +1,353 @@
+{
+  "task_id": "TAB2_WATER_WORLD_FULL_ECOSYSTEM_MIGRATION_V1",
+  "gradle_tasks": {
+    ":app:assembleDebug": "PASS",
+    ":app:assembleAndroidTest": "PASS",
+    ":app:compileReleaseKotlin": "PASS",
+    ":app:lintDebug": "PASS",
+    ":app:verifyFrozenWaterWorldArchive": "PASS",
+    ":app:testDebugUnitTest": "204_PASS_1_PREEXISTING_UNRELATED_FAILURE"
+  },
+  "unit_test_summary": {
+    "total_tests": 205,
+    "passed": 204,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "tab2_migration_suite_tests": 16,
+    "tab2_migration_suite_passed": 16,
+    "tab2_migration_suite_failures": 0,
+    "failed_cases": [
+      "com.example.AIOrbV32ReferenceFittingTest.v32_04_stageACameraAndStageEOpticsHardGatesPassInVisualLoss"
+    ],
+    "preexisting_unrelated_failure_note": "AIOrbV32ReferenceFittingTest.v32_04_stageACameraAndStageEOpticsHardGatesPassInVisualLoss is a pre-existing Tab 1 fitting test failure inherited from Base Main HEAD and untouched by this migration."
+  },
+  "debug_apk_audit": {
+    "apk_path": "app/build/outputs/apk/debug/app-debug.apk",
+    "apk_size_bytes": 28757505,
+    "apk_sha256": "09e540e62e773c10cce84e88baacf8e4b0d779f2c3ef48e2be0e1a76eb7b7119",
+    "tab2_background_entry": "assets/tab2_background/tab2_underwater_bg.png",
+    "tab2_background_size_bytes": 1557320,
+    "tab2_background_sha256": "f3dc1549919f48f939df5a6cf5baf18fb6846164c6f857df8e20cfe247b495ba",
+    "tab2_background_git_blob_sha1": "92562ff0a60bc63f3064c98af1922f817fee22c9",
+    "tab2_background_exact_match": true,
+    "water_world_asset_count": 148,
+    "core_3d_volume_slice_count": 32,
+    "master_png_leak_count": 0
+  },
+  "hardware_gpu_gates": {
+    "GLES_SHADER_PASS": "NOT_RUN",
+    "HARDWARE_GPU_VERIFIED": "NOT_RUN",
+    "reason": "AI Studio build container has no real Android GPU / ADB runtime; real GPU & visual acceptance runs on HUAWEI CMS-AL20 after GitHub Exact-HEAD APK delivery."
+  },
+  "suites": [
+    {
+      "suite": "com.example.AIOrbConfigTest",
+      "tests": 3,
+      "passed": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.AIOrbFluidMathTest",
+      "tests": 7,
+      "passed": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.AIOrbIntegrationRobolectricTest",
+      "tests": 1,
+      "passed": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.AIOrbMotionTest",
+      "tests": 10,
+      "passed": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.AIOrbShaderContractTest",
+      "tests": 8,
+      "passed": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.AIOrbV31StructuralParityTest",
+      "tests": 8,
+      "passed": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.AIOrbV32ClosureContractTest",
+      "tests": 6,
+      "passed": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.AIOrbV32ReferenceFittingTest",
+      "tests": 10,
+      "passed": 9,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": [
+        "com.example.AIOrbV32ReferenceFittingTest.v32_04_stageACameraAndStageEOpticsHardGatesPassInVisualLoss"
+      ]
+    },
+    {
+      "suite": "com.example.AIOrbV3G0G4ParityCloseoutTest",
+      "tests": 9,
+      "passed": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.AIOrbV3ReferenceAndAssetTest",
+      "tests": 2,
+      "passed": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.AIOrbV3VolumeShaderAndLoaderTest",
+      "tests": 3,
+      "passed": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.ExampleRobolectricTest",
+      "tests": 1,
+      "passed": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.ExampleUnitTest",
+      "tests": 1,
+      "passed": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.ExistingOrbTabRegressionTest",
+      "tests": 3,
+      "passed": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.PerimeterPathGeometryTest",
+      "tests": 3,
+      "passed": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.Tab2WaterWorldMigrationV1Test",
+      "tests": 16,
+      "passed": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.TaskDemoLayoutTest",
+      "tests": 4,
+      "passed": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.TaskEnergyControllerTest",
+      "tests": 4,
+      "passed": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.TaskWaterLightVisualParityV4Test",
+      "tests": 20,
+      "passed": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldCore3DAdapterTest",
+      "tests": 5,
+      "passed": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldCore3DRendererIntegrationTest",
+      "tests": 4,
+      "passed": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldCore3DVolumeAssetsTest",
+      "tests": 3,
+      "passed": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldDynamicDeterminismTest",
+      "tests": 3,
+      "passed": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldDynamicPlaybackLifecycleTest",
+      "tests": 3,
+      "passed": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldDynamicRendererTest",
+      "tests": 4,
+      "passed": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldFiveResidentFilamentsV1Test",
+      "tests": 6,
+      "passed": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldMotionEvaluatorTest",
+      "tests": 5,
+      "passed": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldMotionRuntimeTest",
+      "tests": 3,
+      "passed": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldMotionTimelineTest",
+      "tests": 4,
+      "passed": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldShaderUniformContractTest",
+      "tests": 5,
+      "passed": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldThirdTabIntegrationTest",
+      "tests": 9,
+      "passed": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldWork16ClosureTest",
+      "tests": 12,
+      "passed": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldWork2StaticFidelityTest",
+      "tests": 7,
+      "passed": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    },
+    {
+      "suite": "com.example.WaterWorldWork32ResidentOrbitalMotionTest",
+      "tests": 13,
+      "passed": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_cases": []
+    }
+  ]
+}

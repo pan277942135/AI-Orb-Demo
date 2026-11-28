@@ -78,4 +78,7 @@
     <string name="qa_export_task6kf_evidence">导出 6KF V4 GPU 证据包</string>
     <string name="qa_export_task6kf_capturing">采集中 %1$d/%2$d…</string>
     <string name="cd_export_task6kf_v4_evidence">在 GL 线程导出 16 张零 UI 6KF 诊断与实机图及运行 JSON</string>
+    <string name="task_pick_photo">选图</string>
+    <string name="cd_task_pick_photo">选择新照片触发独立水光</string>
+    <string name="tab2_water_world_loading">水下生态加载中…</string>
 </resources>

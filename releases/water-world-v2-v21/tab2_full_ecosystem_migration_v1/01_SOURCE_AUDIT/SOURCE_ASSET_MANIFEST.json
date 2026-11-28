@@ -1,0 +1,188 @@
+{
+  "task_id": "TAB2_WATER_WORLD_FULL_ECOSYSTEM_MIGRATION_V1",
+  "phase": "PHASE_0_SOURCE_LOCK",
+  "workspace_git_status": "NO_LOCAL_DOT_GIT_METADATA (baseline on disk includes Work 3 + Work 3.1 + Work 3.1.1 + Five Resident Filaments V1 + Work 3.2 True Orbital Motion)",
+  "background_source_lock": {
+    "status": "BACKGROUND_SOURCE_LOCK_VERIFIED",
+    "source_path": "public/assets/aistudio/ChatGPT 图像 2026年11月23日 10_33_32.png",
+    "target_apk_asset_path": "app/src/main/assets/tab2_background/tab2_underwater_bg.png",
+    "size_bytes": 1557320,
+    "width_px": 852,
+    "height_px": 1846,
+    "sha256": "f3dc1549919f48f939df5a6cf5baf18fb6846164c6f857df8e20cfe247b495ba",
+    "git_blob_sha1": "92562ff0a60bc63f3064c98af1922f817fee22c9",
+    "expected_git_blob_sha1": "92562ff0a60bc63f3064c98af1922f817fee22c9",
+    "git_blob_exact_match": true
+  },
+  "water_world_v2_archive": {
+    "path": "releases/water-world-v2/WATER_WORLD_V2_ASSETS.zip",
+    "sha256": "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095",
+    "expected_sha256": "6b85708fc5eccf8f5c130b1d9c48bfd59abc829b178db9dd0729b4ef7b065095",
+    "member_count": 65
+  },
+  "core_3d_volume_slices": {
+    "directory": "app/src/main/assets/orb_v3/volume",
+    "slice_count": 32,
+    "first_slice": "fluid_color_z00.webp",
+    "last_slice": "fluid_color_z31.webp",
+    "first_slice_sha256": "e0518ca9cfc22df378d6d6d5a97e7a14b658221211a82ce79f78502cea910961",
+    "last_slice_sha256": "fefc0ce809112ebdcae75ef5b33ed49c06f905a0b807ee47fdbabc36eb8b689d"
+  },
+  "tab2_existing_photo_asset": {
+    "path": "app/src/main/assets/task_demo/fishing_photo.webp",
+    "size_bytes": 689142,
+    "sha256": "798f6299616087ea2075bcd2a870c6cc2709d08ba5da996dfae3dcabff0e3a0d"
+  },
+  "water_world_source_files": [
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldAssetLoader.kt",
+      "sha256": "22f330e279ccea0c5ac6f1f53864665ea92b957e61f501ff8087e1befa76be43"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldCoreMotionAdapter.kt",
+      "sha256": "c6b0fa65df89671718731a7f606820607e79a55e85591cfa3bf6677335695c93"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldDiagnosticsDrawer.kt",
+      "sha256": "30976d26a5976283296c78b699841f5e63f44f3bb30e63b0ab4f6316cc1c1c6b"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldDynamicEvidenceRecorder.kt",
+      "sha256": "837b7ac1e2dfef274bf5f40dc20bc128467faece23cad222b5d752457ecc0bfc"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldDynamicFrameSnapshot.kt",
+      "sha256": "613fb09a7fdc80e06ffd72bacffc5e50b4a725f816ae3cb40f90b75316794e04"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldMesh.kt",
+      "sha256": "986042ecf74cb942c4854618ee137c1609487ac23a2540a252e4cd45a264b600"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldMotionContract.kt",
+      "sha256": "12dec2d0e9fd5871a02abb97ef071340ebf58079f2fd5c881e1ec31b423c2899"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldMotionEvaluator.kt",
+      "sha256": "8c9e2f813889d839b76b91b92a6fbd3e69f712be0554e2fc81d60824a8dd52cf"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldMotionProfile.kt",
+      "sha256": "75c18e05e86b176cea497e8da26327f2f0b3317a1a10410ff09f79a989e20e5c"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldMotionRuntime.kt",
+      "sha256": "0b74890697be274e458be02dcda47f93136a02cbc4f156781d4eaf159fabe81e"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldMotionTimeline.kt",
+      "sha256": "5f2f951d13167a4031ef7b885b10a50bb14ed253bc52cce2f0de60e79eabc15e"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldOffscreenCapture.kt",
+      "sha256": "4ecf7a60e8329d3195e2a43600e5bb93a2bc1f7b492da67914452d0e6b0c0aeb"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldPreviewActivity.kt",
+      "sha256": "e9ffc97cc26191422ae568dc4b1f1b95dc21d966256d62ce0378749609e04f0c"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldProgram.kt",
+      "sha256": "332bc36f90eeb5cfe2e4a8b0ba88611ccec19bcf76c3960f8f8bd6ef7afa91bf"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldRenderGraph.kt",
+      "sha256": "2ecd08f48980ac7c24551d113b55c12aed908a7f0ce7ff63c0aeb3ad4ce51366"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldRenderTarget.kt",
+      "sha256": "5edff491a0567bf8c2a9dd8e26cb12b2fbb35fc15ab29822ec34269930d450a0"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldRenderTargetPool.kt",
+      "sha256": "72b785e25192121aff424b516469dc567ff0044aa16cfd3966d1709c40b87a01"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldResidentContractV1.kt",
+      "sha256": "8e05a971fb3c7a0e6b135dd00600d3efb827c533fb9a11202e36596bf0f3e5d2"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldResidentOrbitalMath.kt",
+      "sha256": "04291eeb7ded9f95cc41709f8bbb975fca777ef6d3fc0062e6fcf951becca801"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldSceneBindings.kt",
+      "sha256": "4c45dcf003a0aff840db87a1b0a8477b666c40d555d3b44e76ba71c877232537"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldShaders.kt",
+      "sha256": "791f4b6d690990b0ea21391708dbefe5401f54761577be2a1e42bad7e989cd3d"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldStaticRenderer.kt",
+      "sha256": "aef15c37ec299e6aee45bcde815a6eb12c0f1d769e1ea09e841fc56883ea9c5f"
+    },
+    {
+      "path": "app/src/main/java/com/example/waterworld/WaterWorldTextureCache.kt",
+      "sha256": "bce7aa6a5da91a74903a3df06bef7f056c922ac447c66e98aa87b6d5f9bcf4d3"
+    }
+  ],
+  "tab2_task_source_files": [
+    {
+      "path": "app/src/main/java/com/example/orb/task/OrbViewportTransform.kt",
+      "sha256": "cd35dcaaac7d5dd05e8e77c3595cc4611d4a0fcea423264f87d9a60050074821"
+    },
+    {
+      "path": "app/src/main/java/com/example/orb/task/PerimeterArcLengthTable.kt",
+      "sha256": "06bc96011efe2489c42bd001cf3b97d45451dad08bef22ba243a9b11ceeec87b"
+    },
+    {
+      "path": "app/src/main/java/com/example/orb/task/PerimeterPathGeometry.kt",
+      "sha256": "9e0585427050639dc9d7f03291530b00013c3acc5d66fccf3ed9c9e815cd6bfe"
+    },
+    {
+      "path": "app/src/main/java/com/example/orb/task/PerimeterRibbonMeshBuilder.kt",
+      "sha256": "8d29615d3f375d71cd492a367f0f890dea5eab7ec2b6337731b3052aec69ac72"
+    },
+    {
+      "path": "app/src/main/java/com/example/orb/task/PerimeterWaterLightRenderer.kt",
+      "sha256": "6eeac92fffc18eb9f09cfe6a131cef8301901dbb3c77b3f36f57d92f0acdd481"
+    },
+    {
+      "path": "app/src/main/java/com/example/orb/task/PhotoFrameGeometry.kt",
+      "sha256": "744d1280c11e36f75823406fba7b2cf5c8fb332b88523183fc492521febe0236"
+    },
+    {
+      "path": "app/src/main/java/com/example/orb/task/PhotoTextureRenderer.kt",
+      "sha256": "674c985b72294ba1777f35b571d1a28979d11757ad162b7067334bb9ae53d109"
+    },
+    {
+      "path": "app/src/main/java/com/example/orb/task/TaskEnergyController.kt",
+      "sha256": "8a55b384113eeedb46e3507eb58220de232bbf40f3f7c66f68f30691a2a9d41a"
+    },
+    {
+      "path": "app/src/main/java/com/example/orb/task/TaskEnergyEvidence.kt",
+      "sha256": "28348b05ed552a117c420f07af2d858ccdf603b6f3d8e3cc1e41977deb5b7d66"
+    },
+    {
+      "path": "app/src/main/java/com/example/orb/task/TaskEnergyGeometry.kt",
+      "sha256": "a8f6b77182bca6f41aa10764c42ddbf1d1cce8d90e70faba95f4cd89bb611100"
+    },
+    {
+      "path": "app/src/main/java/com/example/orb/task/TaskEnergyRibbonRenderer.kt",
+      "sha256": "822a9489fa3087e69f9c2ba8c1fe73a838df03f82acdba658502a78b930307dc"
+    },
+    {
+      "path": "app/src/main/java/com/example/orb/task/TaskGpuEvidenceCapture.kt",
+      "sha256": "42ad4dad5addb5a6be32e900c9100e54709b9f72bf8d5b8876a9f3a2fca55387"
+    },
+    {
+      "path": "app/src/main/java/com/example/orb/task/TaskSceneLayoutSnapshot.kt",
+      "sha256": "21a2a9a9bfdc914b488d8493e06022ac27fc4f03cff707e27f646550444d260d"
+    },
+    {
+      "path": "app/src/main/java/com/example/orb/task/TaskWaterLightShaders.kt",
+      "sha256": "2a2038c8fbf1fa9da30d0c3b2f17f7451531b405561bc36a332ef8d60203a66f"
+    }
+  ]
+}

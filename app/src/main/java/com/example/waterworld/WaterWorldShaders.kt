@@ -159,6 +159,7 @@ internal class WaterWorldShaders {
             uniform float uHaloRadius;
             uniform vec3 uHaloColor;
             uniform float uHaloIntensity;
+            uniform float uSphereBackdropRadius;
             out vec4 fragColor;
             void main() {
                 vec4 bg = texture(uTexture, vUv);
@@ -172,7 +173,12 @@ internal class WaterWorldShaders {
                 float hd = length(vUv - uHaloCenter) / max(uHaloRadius, 0.001);
                 float halo = exp(-hd * hd * 1.6) * uHaloIntensity;
                 col += uHaloColor * halo;
-                fragColor = vec4(col, 1.0);
+                float bgMask = 1.0;
+                if (uSphereBackdropRadius > 0.5) {
+                    float sr = length(px - uSphereCenter);
+                    bgMask = 1.0 - smoothstep(uSphereBackdropRadius - 12.0, uSphereBackdropRadius + 4.0, sr);
+                }
+                fragColor = vec4(col * bgMask, 1.0);
             }
         """.trimIndent()
 

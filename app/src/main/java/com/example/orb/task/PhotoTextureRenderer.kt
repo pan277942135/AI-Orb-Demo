@@ -93,6 +93,29 @@ class PhotoTextureRenderer {
     }
   }
 
+  /**
+   * Replaces the photo texture on the GL thread with a caller-supplied bitmap (e.g. chosen via
+   * Android zero-permission PickVisualMedia). Does not recycle [bitmap] (caller owns lifecycle).
+   */
+  fun uploadCustomPhotoBitmap(bitmap: Bitmap) {
+    if (bitmap.isRecycled || bitmap.width <= 0 || bitmap.height <= 0) return
+    if (photoTextureId == 0) {
+      val texArr = IntArray(1)
+      GLES30.glGenTextures(1, texArr, 0)
+      photoTextureId = texArr[0]
+    }
+    GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, photoTextureId)
+    GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR_MIPMAP_LINEAR)
+    GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR)
+    GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE)
+    GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE)
+    GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0)
+    GLES30.glGenerateMipmap(GLES30.GL_TEXTURE_2D)
+    GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
+    photoLoadAttempted = true
+    photoLoaded = true
+  }
+
   fun drawBackground(
     time: Float,
     renderWidth: Int,

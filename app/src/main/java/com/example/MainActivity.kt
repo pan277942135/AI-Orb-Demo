@@ -1,12 +1,18 @@
 package com.example
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,9 +20,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -49,12 +59,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.orb.config.RenderDebugMode
 import com.example.orb.scene.AIOrbScene
+import com.example.orb.task.Tab2WaterWorldRuntimeStatus
 import com.example.orb.task.TaskGpuEvidenceCapture
 import com.example.orb.task.TaskSceneLayoutSnapshot
 import com.example.orb.ui.AIOrbCanvas
 import com.example.orb.ui.AIOrbControlsOverlay
 import com.example.orb.ui.AIOrbViewModel
 import com.example.orb.ui.DemoTab
+import com.example.orb.ui.Tab2WaterWorldCanvas
 import com.example.orb.ui.TaskRecognitionDemoScreen
 import com.example.orb.v3.OrbGpuReferenceCapture
 import com.example.ui.theme.AbyssEmerald
@@ -94,19 +106,32 @@ class MainActivity : ComponentActivity() {
         var sharedScene by remember { mutableStateOf<AIOrbScene?>(null) }
         var surfaceMetrics by remember { mutableStateOf(SurfaceWindowMetrics()) }
         var photoMetrics by remember { mutableStateOf<PhotoWindowMetrics?>(null) }
+        var tab2WaterWorldStatus by remember { mutableStateOf(Tab2WaterWorldRuntimeStatus()) }
+        var tab2SelectedPhoto by remember { mutableStateOf<Bitmap?>(null) }
+        var tab2RestartToken by remember { mutableIntStateOf(0) }
+        var tab2TogglePlayPauseToken by remember { mutableIntStateOf(0) }
 
         val isTaskTab = uiState.activeTab == DemoTab.TASK_PERIMETER
+        val navBottomInsetPx = WindowInsets.navigationBars.getBottom(LocalDensity.current).toFloat()
+
+        val photoPickerLauncher = rememberLauncherForActivityResult(
+          contract = ActivityResultContracts.PickVisualMedia(),
+        ) { uri: Uri? ->
+          if (uri != null) {
+            decodePickerBitmap(uri)?.let { bmp ->
+              tab2SelectedPhoto = bmp
+            }
+          }
+        }
 
         LaunchedEffect(isTaskTab) {
           applyImmersiveFullscreen(isLightBars = isTaskTab)
         }
 
-        // Synchronize live Compose window bounds -> GLSurfaceView local physical pixels
-        LaunchedEffect(sharedScene, surfaceMetrics, photoMetrics) {
-          val scene = sharedScene ?: return@LaunchedEffect
-          val photo = photoMetrics ?: return@LaunchedEffect
-          if (surfaceMetrics.widthPx >= 64 && surfaceMetrics.heightPx >= 64) {
-            val snapshot = TaskSceneLayoutSnapshot.fromComposeWindowBounds(
+        val currentTab2LayoutSnapshot = remember(surfaceMetrics, photoMetrics) {
+          val photo = photoMetrics
+          if (photo != null && surfaceMetrics.widthPx >= 64 && surfaceMetrics.heightPx >= 64) {
+            TaskSceneLayoutSnapshot.fromComposeWindowBounds(
               surfaceWindowLeftPx = surfaceMetrics.leftPx,
               surfaceWindowTopPx = surfaceMetrics.topPx,
               surfaceWidthPx = surfaceMetrics.widthPx,
@@ -117,27 +142,53 @@ class MainActivity : ComponentActivity() {
               photoWindowBottomPx = photo.bottomPx,
               photoCornerRadiusPx = photo.cornerRadiusPx,
             )
-            scene.updateTaskLayout(snapshot)
+          } else {
+            null
           }
+        }
+
+        // Keep legacy sharedScene layout synchronized when Tab 1 scene exists
+        LaunchedEffect(sharedScene, currentTab2LayoutSnapshot) {
+          val scene = sharedScene ?: return@LaunchedEffect
+          val snap = currentTab2LayoutSnapshot ?: return@LaunchedEffect
+          scene.updateTaskLayout(snap)
         }
 
         Box(
           modifier = Modifier
             .fillMaxSize()
-            .background(if (isTaskTab) ComposeColor(0xFFCDEEF7) else AbyssEmerald),
+            .background(if (isTaskTab) ComposeColor(0xFF0A4B63) else AbyssEmerald),
         ) {
-          // SINGLE persistent OpenGL ES 3.0 GLSurfaceView + AIOrbScene shared across BOTH tabs!
-          // Never unmounted on tab switch -> zero EGL recreation, zero WebP reload, seamless motion.
-          AIOrbCanvas(
-            config = uiState.config,
-            onTelemetryUpdated = viewModel::reportTelemetry,
-            onTaskEvidenceUpdated = viewModel::reportTaskEvidence,
-            onSceneReady = { sharedScene = it },
-            onSurfaceWindowBoundsChanged = { l, t, w, h ->
-              surfaceMetrics = SurfaceWindowMetrics(l, t, w, h)
-            },
-            enableOrbitDrag = !isTaskTab,
-          )
+          // Strict GL Surface & Lifecycle Isolation:
+          // - Tab 1 (`AI Orb`): mounts ONLY AIOrbCanvas (100% preserved V3 Orb)
+          // - Tab 2 (`照片水光`): mounts ONLY Tab2WaterWorldCanvas (frozen underwater PNG +
+          //   shared Tab 3 Water World V2.1 Full Dynamic Ecosystem + independent photo perimeter light)
+          // Never runs two overlapping GLSurfaceViews simultaneously!
+          if (!isTaskTab) {
+            AIOrbCanvas(
+              config = uiState.config,
+              onTelemetryUpdated = viewModel::reportTelemetry,
+              onTaskEvidenceUpdated = viewModel::reportTaskEvidence,
+              onSceneReady = { sharedScene = it },
+              onSurfaceWindowBoundsChanged = { l, t, w, h ->
+                surfaceMetrics = SurfaceWindowMetrics(l, t, w, h)
+              },
+              enableOrbitDrag = true,
+            )
+          } else {
+            Tab2WaterWorldCanvas(
+              layoutSnapshot = currentTab2LayoutSnapshot,
+              bottomInsetPx = navBottomInsetPx,
+              selectedPhotoBitmap = tab2SelectedPhoto,
+              restartToken = tab2RestartToken,
+              togglePlayPauseToken = tab2TogglePlayPauseToken,
+              onStatusChanged = { status -> tab2WaterWorldStatus = status },
+              onSurfaceWindowBoundsChanged = { l, t, w, h ->
+                surfaceMetrics = SurfaceWindowMetrics(l, t, w, h)
+              },
+              modifier = Modifier.fillMaxSize(),
+            )
+          }
 
           // Tab 1 isolated QA Reference Master viewer (strictly Tab 1 only, never composited with GPU)
           if (!isTaskTab && uiState.config.debugMode == RenderDebugMode.REFERENCE_ONLY) {
@@ -183,8 +234,8 @@ class MainActivity : ComponentActivity() {
               onBackToOrb = { viewModel.selectTab(DemoTab.AI_ORB) },
               onToggleControls = viewModel::toggleTaskControls,
               onCloseControls = viewModel::closeTaskControls,
-              onTogglePlayPause = { sharedScene?.toggleTaskPaused() },
-              onRestart = { sharedScene?.restartTask() },
+              onTogglePlayPause = { tab2TogglePlayPauseToken += 1 },
+              onRestart = { tab2RestartToken += 1 },
               onJumpKeyframe = { stage -> sharedScene?.jumpToTaskKeyframe(stage) },
               onUpdateDebugOptions = { opts ->
                 viewModel.updateTaskDebugOptions(opts)
@@ -198,6 +249,12 @@ class MainActivity : ComponentActivity() {
               },
               onPhotoWindowBoundsChanged = { l, t, r, b, cr ->
                 photoMetrics = PhotoWindowMetrics(l, t, r, b, cr)
+              },
+              waterWorldStatus = tab2WaterWorldStatus,
+              onPickPhoto = {
+                photoPickerLauncher.launch(
+                  PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                )
               },
             )
           } else {
@@ -248,6 +305,19 @@ class MainActivity : ComponentActivity() {
       )
     )
   }
+
+  private fun decodePickerBitmap(uri: Uri): Bitmap? = runCatching {
+    val boundsOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, boundsOpts) }
+    val maxDim = maxOf(boundsOpts.outWidth, boundsOpts.outHeight)
+    var sampleSize = 1
+    while (maxDim / sampleSize > 1024) sampleSize *= 2
+    val decodeOpts = BitmapFactory.Options().apply {
+      inSampleSize = sampleSize
+      inPreferredConfig = Bitmap.Config.ARGB_8888
+    }
+    contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, decodeOpts) }
+  }.getOrNull()
 
   override fun onWindowFocusChanged(hasFocus: Boolean) {
     super.onWindowFocusChanged(hasFocus)

@@ -1,0 +1,29 @@
+{
+  "verification_class": "SOFTWARE_VISUAL_PRECHECK",
+  "hardware_gpu_verified": "NOT_RUN",
+  "surface_dimensions": {"width": 852, "height": 1846},
+  "photo_rect_px": [119.28, 212.29, 732.72, 962.22, 44.17],
+  "orb_viewport_rect_px": {"left": 26, "top": 1012, "side": 801},
+  "tab2_vs_tab3_sphere_interior_metrics": {
+    "mae_rgb_0_255": 2.0151,
+    "rmse_rgb_0_255": 4.5692,
+    "psnr_db": 34.93
+  },
+  "temporal_motion_deltas": {
+    "T0s_to_T1s_mean_abs_diff": 10.1360,
+    "T1s_to_T2s_mean_abs_diff": 9.8105,
+    "T2s_to_T4s_mean_abs_diff": 10.8965,
+    "T4s_to_T8s_mean_abs_diff": 12.3073,
+    "T8s_to_T12s_mean_abs_diff": 10.8372,
+    "T12s_to_T20s_mean_abs_diff": 11.6456,
+    "T20s_to_T40s_mean_abs_diff": 11.3806,
+    "T40s_to_T60s_mean_abs_diff": 11.5710
+  },
+  "output_files_sha256": {
+    "TAB2_FULL_SCENE.png": "29e646643daad75b71126014de83ca9151dc71c72a8d1142421da958f307a934",
+    "TAB2_WATER_WORLD_ORB.png": "b31090822c29b9de4531467087f38b55a6e860a75534ee2a3d330685fc066dad",
+    "TAB3_REFERENCE.png": "4a3fedf1cc595e8dc523cbbf4c0ae2d81ef156d59657517c9cb4fdb162d666eb",
+    "TAB2_TAB3_COMPARISON.png": "601ed34655a2327a1a50a521cebe1328db97d91a2c58d360db26e1b3f9bec7ec",
+    "DYNAMIC_CONTACT_SHEET.png": "a6aefb4a982c7074cb0f087812d5266d5f2aeba84baef8214aed289320f5e670"
+  }
+}
