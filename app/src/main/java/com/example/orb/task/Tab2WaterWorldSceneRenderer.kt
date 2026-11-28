@@ -548,7 +548,9 @@ class Tab2WaterWorldSceneRenderer(
         taskEnergyStage = energy.stage,
         taskEnergyElapsedMs = energy.elapsedMs,
         taskEnergyFlowTimeSec = energy.flowTimeSec,
-        perimeterLoopElapsedSec = ((energy.elapsedMs - TaskEnergyController.T_LOOP_START_MS).coerceAtLeast(0L) / 1000f),
+        perimeterLoopElapsedSec = (
+          (energy.elapsedMs.toDouble() - TaskEnergyController.T_LOOP_START_MS).coerceAtLeast(0.0) / 1000.0
+        ).toFloat(),
         perimeterV2MaterialLoaded = perimeterRenderer.isV2MaterialLoaded,
         perimeterV2MaterialDrawn = drawStats.usedV2Material && drawStats.drawCalls > 0,
         perimeterDrawCalls = drawStats.drawCalls,

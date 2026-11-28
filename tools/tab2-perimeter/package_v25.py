@@ -167,7 +167,11 @@ def verify_apk(apk_path: Path, output_dir: Path) -> None:
         "master_sha256": source["master_sha256"],
         "unit_test_result": "PASS",
         "gpu_validation_status": "GPU_NOT_RUN",
-        "unresolved_issues": ["Real-device/GLES visual capture remains pending; this CI artifact is for device visual acceptance."],
+        "debug_signing": "CI generated a temporary debug keystore because the repository-excluded debug.keystore was absent.",
+        "unresolved_issues": [
+            "Real-device/GLES visual capture remains pending; this CI artifact is for device visual acceptance.",
+            "A device with an app signed by another debug key may require uninstalling it before installing this APK.",
+        ],
         "apk_asset_sha256": expected_assets,
     }
     fingerprint_path = output_dir / "TAB2_V25_BUILD_FINGERPRINT.json"

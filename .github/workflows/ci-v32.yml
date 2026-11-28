@@ -60,6 +60,22 @@ jobs:
       - name: Validate Tab 2 V2 source lock and runtime texture inputs
         run: python3 tools/tab2-perimeter/package_v25.py
 
+      - name: Provide the ignored debug keystore expected by the existing signing config
+        run: |
+          if [ ! -f debug.keystore ]; then
+            keytool -genkeypair -v \
+              -keystore debug.keystore \
+              -storetype JKS \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US" \
+              -noprompt
+          fi
+
       - name: Compile, Run All JVM/Robolectric Tests & Assemble Debug APK
         run: |
           ACTUAL_HEAD=$(git rev-parse HEAD)
