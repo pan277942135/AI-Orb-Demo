@@ -142,6 +142,8 @@ uniform vec2 uPhotoSizePx;
 uniform float uCornerRadiusPx;
 uniform float uPadPx;
 uniform float uHdrScale;
+uniform int uDirectDisplaySrgb; // 0=legacy HDR+ACES FBO, 1=Tab 2 direct sRGB display framebuffer
+uniform vec4 uPhotoUvRect;      // (uMin, vMin, uMax, vMax) in top-down Bitmap UV space
 
 // Exact rounded-rectangle SDF in physical pixels relative to photo center
 float roundedRectSdf(vec2 pPx, vec2 halfExtents, float radius) {
@@ -165,9 +167,10 @@ void main() {
     vec2 halfPhoto = uPhotoSizePx * 0.5;
     float sdf = roundedRectSdf(localPx, halfPhoto, uCornerRadiusPx);
 
-    // Map expanded quad UV back into exact photo [0..1] UV (OpenGL V=0 bottom -> flip Y for Android top-down texture)
+    // Map expanded quad UV back into top-down photo [0..1] UV, then apply aspect-locked CENTER_CROP rect
     vec2 photoUv = (localPx + halfPhoto) / max(uPhotoSizePx, vec2(1.0));
-    vec2 sampleUv = vec2(clamp(photoUv.x, 0.0, 1.0), clamp(1.0 - photoUv.y, 0.0, 1.0));
+    vec2 topDownUv = vec2(clamp(photoUv.x, 0.0, 1.0), clamp(1.0 - photoUv.y, 0.0, 1.0));
+    vec2 sampleUv = clamp(mix(uPhotoUvRect.xy, uPhotoUvRect.zw, topDownUv), vec2(0.0), vec2(1.0));
 
     float insideAlpha = 1.0 - smoothstep(-0.75, 0.75, sdf);
     // Crisp 1.8px white-frost hairline border matching the frozen overview
@@ -176,13 +179,16 @@ void main() {
     float outerShadow = (1.0 - smoothstep(0.0, uPadPx * 0.92, max(sdf, 0.0))) * (1.0 - insideAlpha) * 0.16;
 
     vec3 photoSrgb = texture(uPhotoTex, sampleUv).rgb;
-    vec3 photoLin = photoSrgbToPostCompLinear(photoSrgb);
+    vec3 photoCol = (uDirectDisplaySrgb == 1) ? photoSrgb : photoSrgbToPostCompLinear(photoSrgb);
 
-    vec3 hairlineCol = vec3(0.92, 0.98, 1.02);
-    vec3 shadowCol = vec3(0.02, 0.14, 0.20);
+    vec3 hairlineCol = (uDirectDisplaySrgb == 1) ? vec3(0.94, 0.99, 1.0) : vec3(0.92, 0.98, 1.02);
+    vec3 shadowCol = (uDirectDisplaySrgb == 1) ? vec3(0.05, 0.22, 0.30) : vec3(0.02, 0.14, 0.20);
 
-    vec3 rgb = mix(shadowCol, photoLin, insideAlpha);
-    rgb = mix(rgb, hairlineCol, hairline * (1.0 - insideAlpha * 0.35));
+    vec3 rgb = mix(shadowCol, photoCol, insideAlpha);
+    float borderMix = (uDirectDisplaySrgb == 1)
+        ? hairline * (1.0 - insideAlpha)
+        : hairline * (1.0 - insideAlpha * 0.35);
+    rgb = mix(rgb, hairlineCol, borderMix);
     float alpha = clamp(max(insideAlpha, max(hairline, outerShadow)), 0.0, 1.0);
 
     if (alpha < 0.004) discard;
@@ -449,7 +455,9 @@ uniform int uHasRefractionTex;
 uniform vec2 uFboSize;
 uniform float uRefractionPx;
 uniform float uRefractionStrength;
-uniform int uTaskVisualDebug;   // 0=NORMAL, 1=GEOMETRY_MAGENTA, 2=ALPHA_HEATMAP
+uniform int uTaskVisualDebug;     // 0=NORMAL, 1=GEOMETRY_MAGENTA, 2=ALPHA_HEATMAP
+uniform float uLayerAlphaCapOverride; // <=0 uses frozen default cap; >0 tightens cap for Tab 2 V2.2
+uniform int uDirectDisplayLdr;    // 0=legacy HDR FBO, 1=Tab 2 direct sRGB LDR display soft tone-fit
 
 vec3 alphaToHeatmap(float a) {
     float t = clamp(a / 0.52, 0.0, 1.0);
@@ -541,6 +549,9 @@ void main() {
 
     // P0-6: Apply revealMask and PerimeterWaterLightMaterial scale, then strictly enforce frozen alphaCap!
     alpha = clamp(alpha * revealMask * uLayerAlphaScale, 0.0, alphaCap);
+    if (uLayerAlphaCapOverride > 0.0) {
+        alpha = min(alpha, uLayerAlphaCapOverride);
+    }
 
     // G1 ALPHA_HEATMAP: opaque visualization of real per-layer alpha after cap enforcement
     if (uTaskVisualDebug == 2) {
@@ -565,7 +576,12 @@ void main() {
         col = max(col + refrDelta / max(alpha, 0.08), vec3(0.0));
     }
 
-    fragColor = vec4(col * uHdrScale, alpha);
+    vec3 outRgb = col * uHdrScale;
+    if (uDirectDisplayLdr == 1) {
+        // Soft display-referred highlight fit into [0, 1] sRGB without harsh channel clipping
+        outRgb = clamp(outRgb / (vec3(1.0) + outRgb * 0.45), vec3(0.0), vec3(1.0));
+    }
+    fragColor = vec4(outRgb, alpha);
 }
 """
 
@@ -606,6 +622,7 @@ out vec4 fragColor;
 uniform int uUseQuad;
 uniform float uHdrScale;
 uniform int uTaskVisualDebug; // 0=NORMAL, 1=GEOMETRY_MAGENTA, 2=ALPHA_HEATMAP
+uniform int uDirectDisplayLdr; // 0=legacy HDR FBO, 1=Tab 2 direct sRGB LDR display soft tone-fit
 
 vec3 alphaToHeatmap(float a) {
     float t = clamp(a / 0.90, 0.0, 1.0);
@@ -665,7 +682,11 @@ void main() {
     }
 
     if (alpha < 0.005) discard;
-    fragColor = vec4(col * uHdrScale, alpha);
+    vec3 outRgb = col * uHdrScale;
+    if (uDirectDisplayLdr == 1) {
+        outRgb = clamp(outRgb / (vec3(1.0) + outRgb * 0.45), vec3(0.0), vec3(1.0));
+    }
+    fragColor = vec4(outRgb, alpha);
 }
 """
 }

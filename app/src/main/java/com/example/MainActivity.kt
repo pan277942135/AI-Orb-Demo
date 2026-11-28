@@ -1,8 +1,6 @@
 package com.example
 
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -16,14 +14,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -37,20 +31,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -59,8 +49,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.orb.config.RenderDebugMode
 import com.example.orb.scene.AIOrbScene
+import com.example.orb.task.Tab2DebugOptions
 import com.example.orb.task.Tab2WaterWorldRuntimeStatus
-import com.example.orb.task.TaskGpuEvidenceCapture
 import com.example.orb.task.TaskSceneLayoutSnapshot
 import com.example.orb.ui.AIOrbCanvas
 import com.example.orb.ui.AIOrbControlsOverlay
@@ -107,7 +97,9 @@ class MainActivity : ComponentActivity() {
         var surfaceMetrics by remember { mutableStateOf(SurfaceWindowMetrics()) }
         var photoMetrics by remember { mutableStateOf<PhotoWindowMetrics?>(null) }
         var tab2WaterWorldStatus by remember { mutableStateOf(Tab2WaterWorldRuntimeStatus()) }
-        var tab2SelectedPhoto by remember { mutableStateOf<Bitmap?>(null) }
+
+        var tab2SelectedPhotoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+        var tab2DebugOptions by remember { mutableStateOf(Tab2DebugOptions.Default) }
         var tab2RestartToken by remember { mutableIntStateOf(0) }
         var tab2TogglePlayPauseToken by remember { mutableIntStateOf(0) }
 
@@ -118,9 +110,13 @@ class MainActivity : ComponentActivity() {
           contract = ActivityResultContracts.PickVisualMedia(),
         ) { uri: Uri? ->
           if (uri != null) {
-            decodePickerBitmap(uri)?.let { bmp ->
-              tab2SelectedPhoto = bmp
+            runCatching {
+              contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION,
+              )
             }
+            tab2SelectedPhotoUri = uri
           }
         }
 
@@ -147,23 +143,11 @@ class MainActivity : ComponentActivity() {
           }
         }
 
-        // Keep legacy sharedScene layout synchronized when Tab 1 scene exists
-        LaunchedEffect(sharedScene, currentTab2LayoutSnapshot) {
-          val scene = sharedScene ?: return@LaunchedEffect
-          val snap = currentTab2LayoutSnapshot ?: return@LaunchedEffect
-          scene.updateTaskLayout(snap)
-        }
-
         Box(
           modifier = Modifier
             .fillMaxSize()
             .background(if (isTaskTab) ComposeColor(0xFF0A4B63) else AbyssEmerald),
         ) {
-          // Strict GL Surface & Lifecycle Isolation:
-          // - Tab 1 (`AI Orb`): mounts ONLY AIOrbCanvas (100% preserved V3 Orb)
-          // - Tab 2 (`照片水光`): mounts ONLY Tab2WaterWorldCanvas (frozen underwater PNG +
-          //   shared Tab 3 Water World V2.1 Full Dynamic Ecosystem + independent photo perimeter light)
-          // Never runs two overlapping GLSurfaceViews simultaneously!
           if (!isTaskTab) {
             AIOrbCanvas(
               config = uiState.config,
@@ -179,9 +163,10 @@ class MainActivity : ComponentActivity() {
             Tab2WaterWorldCanvas(
               layoutSnapshot = currentTab2LayoutSnapshot,
               bottomInsetPx = navBottomInsetPx,
-              selectedPhotoBitmap = tab2SelectedPhoto,
+              selectedPhotoUri = tab2SelectedPhotoUri,
               restartToken = tab2RestartToken,
               togglePlayPauseToken = tab2TogglePlayPauseToken,
+              debugOptions = tab2DebugOptions,
               onStatusChanged = { status -> tab2WaterWorldStatus = status },
               onSurfaceWindowBoundsChanged = { l, t, w, h ->
                 surfaceMetrics = SurfaceWindowMetrics(l, t, w, h)
@@ -190,7 +175,6 @@ class MainActivity : ComponentActivity() {
             )
           }
 
-          // Tab 1 isolated QA Reference Master viewer (strictly Tab 1 only, never composited with GPU)
           if (!isTaskTab && uiState.config.debugMode == RenderDebugMode.REFERENCE_ONLY) {
             Box(
               modifier = Modifier
@@ -224,29 +208,16 @@ class MainActivity : ComponentActivity() {
             }
           }
 
-          // Tab-specific UI overlay
           if (isTaskTab) {
             TaskRecognitionDemoScreen(
-              evidence = uiState.taskEvidence,
-              debugOptions = uiState.taskDebugOptions,
-              captureProgress = uiState.taskCaptureProgress,
+              debugOptions = tab2DebugOptions,
               isControlsExpanded = uiState.isTaskControlsExpanded,
               onBackToOrb = { viewModel.selectTab(DemoTab.AI_ORB) },
               onToggleControls = viewModel::toggleTaskControls,
               onCloseControls = viewModel::closeTaskControls,
               onTogglePlayPause = { tab2TogglePlayPauseToken += 1 },
               onRestart = { tab2RestartToken += 1 },
-              onJumpKeyframe = { stage -> sharedScene?.jumpToTaskKeyframe(stage) },
-              onUpdateDebugOptions = { opts ->
-                viewModel.updateTaskDebugOptions(opts)
-                sharedScene?.updateTaskDebugOptions(opts)
-              },
-              onExport6KfEvidence = {
-                val outDir = TaskGpuEvidenceCapture.resolveEvidenceDir(applicationContext)
-                sharedScene?.requestTask6KfEvidenceExport(outDir) { progress ->
-                  viewModel.reportTaskCaptureProgress(progress)
-                }
-              },
+              onUpdateDebugOptions = { opts -> tab2DebugOptions = opts },
               onPhotoWindowBoundsChanged = { l, t, r, b, cr ->
                 photoMetrics = PhotoWindowMetrics(l, t, r, b, cr)
               },
@@ -278,19 +249,20 @@ class MainActivity : ComponentActivity() {
             )
           }
 
-          // Floating Segmented Switcher (`AI Orb` | `照片水光` | Debug-only `水下世界`)
-          DemoTabSwitcherBar(
-            activeTab = uiState.activeTab,
-            onSelectTab = viewModel::selectTab,
-            isLightTheme = isTaskTab,
-            showWaterWorldTab = BuildConfig.DEBUG,
-            onOpenWaterWorld = { openWaterWorldPreview() },
-            modifier = Modifier
-              .align(Alignment.TopCenter)
-              .statusBarsPadding()
-              .displayCutoutPadding()
-              .padding(top = 6.dp, start = 8.dp, end = 8.dp),
-          )
+          if (!isTaskTab) {
+            com.example.ui.DemoTabSwitcherBar(
+              activeTab = uiState.activeTab,
+              onSelectTab = viewModel::selectTab,
+              isLightTheme = isTaskTab,
+              showWaterWorldTab = BuildConfig.DEBUG,
+              onOpenWaterWorld = { openWaterWorldPreview() },
+              modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .displayCutoutPadding()
+                .padding(top = 6.dp, start = 8.dp, end = 8.dp),
+            )
+          }
         }
       }
     }
@@ -306,19 +278,6 @@ class MainActivity : ComponentActivity() {
     )
   }
 
-  private fun decodePickerBitmap(uri: Uri): Bitmap? = runCatching {
-    val boundsOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-    contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, boundsOpts) }
-    val maxDim = maxOf(boundsOpts.outWidth, boundsOpts.outHeight)
-    var sampleSize = 1
-    while (maxDim / sampleSize > 1024) sampleSize *= 2
-    val decodeOpts = BitmapFactory.Options().apply {
-      inSampleSize = sampleSize
-      inPreferredConfig = Bitmap.Config.ARGB_8888
-    }
-    contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, decodeOpts) }
-  }.getOrNull()
-
   override fun onWindowFocusChanged(hasFocus: Boolean) {
     super.onWindowFocusChanged(hasFocus)
     if (hasFocus) {
@@ -333,119 +292,5 @@ class MainActivity : ComponentActivity() {
     controller.isAppearanceLightStatusBars = isLightBars
     controller.isAppearanceLightNavigationBars = isLightBars
     controller.hide(WindowInsetsCompat.Type.systemBars())
-  }
-}
-
-@Composable
-internal fun DemoTabSwitcherBar(
-  activeTab: DemoTab,
-  onSelectTab: (DemoTab) -> Unit,
-  isLightTheme: Boolean,
-  modifier: Modifier = Modifier,
-  showWaterWorldTab: Boolean = BuildConfig.DEBUG,
-  onOpenWaterWorld: () -> Unit = {},
-) {
-  val containerColor = if (isLightTheme) {
-    ComposeColor(0xD8F1FCFF)
-  } else {
-    ComposeColor(0xA6061A20)
-  }
-  val borderColor = if (isLightTheme) {
-    ComposeColor(0x8A78CEE0)
-  } else {
-    ComposeColor(0x6636B8C9)
-  }
-  val activePillColor = if (isLightTheme) {
-    ComposeColor(0xFF0A8FA8)
-  } else {
-    ComposeColor(0xCC1293A8)
-  }
-  val activeTextColor = ComposeColor.White
-  val inactiveTextColor = if (isLightTheme) {
-    ComposeColor(0xFF0F5062)
-  } else {
-    ComposeColor(0xCCBEEEF5)
-  }
-  val segmentHorizontalPadding = if (showWaterWorldTab) 12.dp else 16.dp
-
-  Surface(
-    shape = RoundedCornerShape(26.dp),
-    color = containerColor,
-    border = BorderStroke(1.dp, borderColor),
-    shadowElevation = if (isLightTheme) 2.dp else 0.dp,
-    modifier = modifier.testTag("demo_tab_switcher"),
-  ) {
-    Row(
-      horizontalArrangement = Arrangement.spacedBy(4.dp),
-      verticalAlignment = Alignment.CenterVertically,
-      modifier = Modifier.padding(4.dp),
-    ) {
-      DemoTabSegment(
-        label = stringResource(R.string.tab_ai_orb),
-        selected = activeTab == DemoTab.AI_ORB,
-        activeBg = activePillColor,
-        activeText = activeTextColor,
-        inactiveText = inactiveTextColor,
-        horizontalPadding = segmentHorizontalPadding,
-        tag = "tab_ai_orb",
-        onClick = { onSelectTab(DemoTab.AI_ORB) },
-      )
-      DemoTabSegment(
-        label = stringResource(R.string.tab_task_perimeter),
-        selected = activeTab == DemoTab.TASK_PERIMETER,
-        activeBg = activePillColor,
-        activeText = activeTextColor,
-        inactiveText = inactiveTextColor,
-        horizontalPadding = segmentHorizontalPadding,
-        tag = "tab_task_perimeter",
-        onClick = { onSelectTab(DemoTab.TASK_PERIMETER) },
-      )
-      if (showWaterWorldTab) {
-        DemoTabSegment(
-          label = stringResource(R.string.tab_water_world),
-          selected = false,
-          activeBg = activePillColor,
-          activeText = activeTextColor,
-          inactiveText = inactiveTextColor,
-          horizontalPadding = segmentHorizontalPadding,
-          tag = "tab_water_world",
-          onClick = onOpenWaterWorld,
-        )
-      }
-    }
-  }
-}
-
-@Composable
-private fun DemoTabSegment(
-  label: String,
-  selected: Boolean,
-  activeBg: ComposeColor,
-  activeText: ComposeColor,
-  inactiveText: ComposeColor,
-  horizontalPadding: Dp,
-  tag: String,
-  onClick: () -> Unit,
-) {
-  Box(
-    contentAlignment = Alignment.Center,
-    modifier = Modifier
-      .heightIn(min = 48.dp)
-      .clip(RoundedCornerShape(22.dp))
-      .background(if (selected) activeBg else ComposeColor.Transparent)
-      .clickable(role = Role.Tab, onClick = onClick)
-      .padding(horizontal = horizontalPadding, vertical = 10.dp)
-      .testTag(tag),
-  ) {
-    Text(
-      text = label,
-      maxLines = 1,
-      softWrap = false,
-      overflow = TextOverflow.Ellipsis,
-      style = MaterialTheme.typography.labelLarge.copy(
-        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-      ),
-      color = if (selected) activeText else inactiveText,
-    )
   }
 }

@@ -30,6 +30,8 @@ class PhotoTextureRenderer {
   private var photoTextureId: Int = 0
   private var photoLoadAttempted: Boolean = false
   private var photoLoaded: Boolean = false
+  private var photoSourceWidthPx: Int = 0
+  private var photoSourceHeightPx: Int = 0
 
   private var cachedPhotoFrame: PhotoFrameGeometry? = null
   private var cachedSurfaceW: Int = -1
@@ -37,6 +39,8 @@ class PhotoTextureRenderer {
   private val photoQuadPadPx: Float = 16f
 
   val isPhotoTextureLoaded: Boolean get() = photoLoaded
+  val sourceWidthPx: Int get() = photoSourceWidthPx
+  val sourceHeightPx: Int get() = photoSourceHeightPx
 
   fun init() {
     release()
@@ -84,6 +88,8 @@ class PhotoTextureRenderer {
         GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bmp, 0)
         GLES30.glGenerateMipmap(GLES30.GL_TEXTURE_2D)
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
+        photoSourceWidthPx = bmp.width
+        photoSourceHeightPx = bmp.height
         photoLoaded = true
       } finally {
         bmp.recycle()
@@ -94,8 +100,8 @@ class PhotoTextureRenderer {
   }
 
   /**
-   * Replaces the photo texture on the GL thread with a caller-supplied bitmap (e.g. chosen via
-   * Android zero-permission PickVisualMedia). Does not recycle [bitmap] (caller owns lifecycle).
+   * Replaces the photo texture on the GL thread with a caller-supplied EXIF-normalized bitmap.
+   * Does not recycle [bitmap] (caller owns lifecycle).
    */
   fun uploadCustomPhotoBitmap(bitmap: Bitmap) {
     if (bitmap.isRecycled || bitmap.width <= 0 || bitmap.height <= 0) return
@@ -112,8 +118,17 @@ class PhotoTextureRenderer {
     GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0)
     GLES30.glGenerateMipmap(GLES30.GL_TEXTURE_2D)
     GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
+    photoSourceWidthPx = bitmap.width
+    photoSourceHeightPx = bitmap.height
     photoLoadAttempted = true
     photoLoaded = true
+  }
+
+  fun resetToDefaultDemoPhoto() {
+    photoLoadAttempted = false
+    photoLoaded = false
+    photoSourceWidthPx = 0
+    photoSourceHeightPx = 0
   }
 
   fun drawBackground(
@@ -145,6 +160,8 @@ class PhotoTextureRenderer {
     layout: TaskSceneLayoutSnapshot,
     hdrScale: Float,
     assetManager: AssetManager?,
+    colorMode: PhotoDisplayColorMode = PhotoDisplayColorMode.LEGACY_HDR_POST_COMP,
+    useCenterCropUv: Boolean = false,
   ) {
     ensurePhotoLoaded(assetManager)
     if (!photoLoaded || photoTextureId == 0 || photoVao == 0) return
@@ -153,6 +170,17 @@ class PhotoTextureRenderer {
     if (!photo.isValid()) return
 
     updatePhotoQuadIfNeeded(photo, layout.surfaceWidthPx, layout.surfaceHeightPx)
+
+    val uvRect = if (useCenterCropUv && photoSourceWidthPx > 0 && photoSourceHeightPx > 0) {
+      PhotoUvTransform.compute(
+        srcWidthPx = photoSourceWidthPx,
+        srcHeightPx = photoSourceHeightPx,
+        frameWidthPx = photo.widthPx,
+        frameHeightPx = photo.heightPx,
+      )
+    } else {
+      PhotoUvRect.IDENTITY
+    }
 
     GLES30.glDisable(GLES30.GL_DEPTH_TEST)
     GLES30.glDepthMask(false)
@@ -168,6 +196,8 @@ class PhotoTextureRenderer {
     prog.setFloat("uCornerRadiusPx", photo.clampedCornerRadiusPx)
     prog.setFloat("uPadPx", photoQuadPadPx)
     prog.setFloat("uHdrScale", hdrScale)
+    prog.setInt("uDirectDisplaySrgb", colorMode.shaderFlag)
+    prog.setVec4("uPhotoUvRect", uvRect.uMin, uvRect.vMin, uvRect.uMax, uvRect.vMax)
 
     GLES30.glBindVertexArray(photoVao)
     GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4)
@@ -232,6 +262,8 @@ class PhotoTextureRenderer {
     }
     photoLoadAttempted = false
     photoLoaded = false
+    photoSourceWidthPx = 0
+    photoSourceHeightPx = 0
     cachedPhotoFrame = null
   }
 

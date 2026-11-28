@@ -19,6 +19,11 @@ data class PerimeterWaterLightMaterial(
   val l2EmeraldAlphaScale: Float = 1.15f,
   val l3GoldAlphaScale: Float = 1.10f,
   val dropletCountPerSide: Int = 11,
+  val widthProfile: PerimeterRibbonWidthProfile = PerimeterRibbonWidthProfile.LEGACY_6KF_FROZEN,
+  val l1AlphaCapOverride: Float = 0f,
+  val l2AlphaCapOverride: Float = 0f,
+  val l3AlphaCapOverride: Float = 0f,
+  val directDisplayLdr: Boolean = false,
 ) {
   fun alphaScaleFor(layer: PerimeterRibbonLayer): Float = when (layer) {
     PerimeterRibbonLayer.L1_ICE_BLUE_BODY -> l1IceAlphaScale
@@ -26,10 +31,47 @@ data class PerimeterWaterLightMaterial(
     PerimeterRibbonLayer.L3_GOLD_FILAMENT -> l3GoldAlphaScale
   }
 
+  fun alphaCapOverrideFor(layer: PerimeterRibbonLayer): Float = when (layer) {
+    PerimeterRibbonLayer.L1_ICE_BLUE_BODY -> l1AlphaCapOverride
+    PerimeterRibbonLayer.L2_EMERALD_VEIL -> l2AlphaCapOverride
+    PerimeterRibbonLayer.L3_GOLD_FILAMENT -> l3AlphaCapOverride
+  }
+
+  fun effectiveAlphaCapFor(layer: PerimeterRibbonLayer): Float {
+    val override = alphaCapOverrideFor(layer)
+    val frozen = when (layer) {
+      PerimeterRibbonLayer.L1_ICE_BLUE_BODY -> FROZEN_CAP_L1_ALPHA
+      PerimeterRibbonLayer.L2_EMERALD_VEIL -> FROZEN_CAP_L2_ALPHA
+      PerimeterRibbonLayer.L3_GOLD_FILAMENT -> FROZEN_CAP_L3_ALPHA
+    }
+    return if (override > 0f) minOf(frozen, override) else frozen
+  }
+
   companion object {
     const val FROZEN_CAP_L1_ALPHA = 0.38f
     const val FROZEN_CAP_L2_ALPHA = 0.24f
     const val FROZEN_CAP_L3_ALPHA = 0.50f
+
+    const val TAB2_V22_CAP_L1_ALPHA = 0.30f
+    const val TAB2_V22_CAP_L2_ALPHA = 0.16f
+    const val TAB2_V22_CAP_L3_ALPHA = 0.28f
+
+    /**
+     * Independent Tab 2 V2.2 restrained slender material profile calibrated for direct sRGB
+     * framebuffer display (`L1 <= 0.8% / 0.30`, `L2 <= 1.8% / 0.16`, `L3 <= 0.45% / 0.28`,
+     * sparse irregular L4 droplets, soft LDR tone-fit).
+     */
+    val Tab2V22 = PerimeterWaterLightMaterial(
+      l1IceAlphaScale = 0.96f,
+      l2EmeraldAlphaScale = 0.86f,
+      l3GoldAlphaScale = 0.92f,
+      dropletCountPerSide = 8,
+      widthProfile = PerimeterRibbonWidthProfile.TAB2_V22_SLENDER,
+      l1AlphaCapOverride = TAB2_V22_CAP_L1_ALPHA,
+      l2AlphaCapOverride = TAB2_V22_CAP_L2_ALPHA,
+      l3AlphaCapOverride = TAB2_V22_CAP_L3_ALPHA,
+      directDisplayLdr = true,
+    )
   }
 }
 
@@ -46,6 +88,8 @@ data class PerimeterDrawStats(
   val sparkleDrawCalls: Int = 0,
   val usedQuadFallback: Boolean = false,
   val maxAliasedPointSizePx: Float = 64f,
+  val refractionEnabled: Boolean = false,
+  val refractionTexId: Int = 0,
 )
 
 /**
@@ -345,11 +389,11 @@ class PerimeterWaterLightRenderer(
     var drawnRibbonVerts = 0
     var drawnRibbonCalls = 0
 
+    val hasRefraction = refractionTexId != 0
     // 1. Draw L2 Emerald Veil -> L1 Icy-Blue Body -> L3 Champagne Gold Filament along unified arc-length strips
     val hasActivePerimeter = snapshot.leftProgress > 0.001f || snapshot.rightProgress > 0.001f || snapshot.coverageComplete
     if (hasActivePerimeter) {
       rProg.use()
-      val hasRefraction = refractionTexId != 0
       if (hasRefraction) {
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, refractionTexId)
@@ -365,6 +409,7 @@ class PerimeterWaterLightRenderer(
       // P0-1: Strictly driven from real snapshot.coverageComplete (left>=0.999 && right>=0.999), never stage label!
       rProg.setFloat("uCoverageComplete", if (snapshot.coverageComplete) 1f else 0f)
       rProg.setFloat("uHdrScale", hdrScale)
+      rProg.setInt("uDirectDisplayLdr", if (material.directDisplayLdr) 1 else 0)
 
       for (strip in strips) {
         if (strip.vertexCount <= 0 || strip.vao == 0) continue
@@ -381,6 +426,7 @@ class PerimeterWaterLightRenderer(
 
         rProg.setInt("uLayerKind", strip.layer.shaderLayerId)
         rProg.setFloat("uLayerAlphaScale", material.alphaScaleFor(strip.layer))
+        rProg.setFloat("uLayerAlphaCapOverride", material.alphaCapOverrideFor(strip.layer))
         rProg.setFloat("uSideSign", sideSign)
         rProg.setFloat("uRevealProgress", progress)
 
@@ -410,6 +456,7 @@ class PerimeterWaterLightRenderer(
         sProg.setInt("uUseQuad", if (useQuad) 1 else 0)
         sProg.setFloat("uHdrScale", hdrScale)
         sProg.setInt("uTaskVisualDebug", debugOptions.mode.shaderDebugId)
+        sProg.setInt("uDirectDisplayLdr", if (material.directDisplayLdr) 1 else 0)
 
         if (useQuad && quadVao != 0 && quadVbo != 0) {
           val quadVerts = particles.buildQuadVertices(sparkleCount, layout.surfaceWidthPx, layout.surfaceHeightPx)
@@ -472,6 +519,8 @@ class PerimeterWaterLightRenderer(
       sparkleDrawCalls = sparkleCalls,
       usedQuadFallback = usedQuadFallback,
       maxAliasedPointSizePx = maxAliasedPointSizePx,
+      refractionEnabled = hasRefraction,
+      refractionTexId = if (hasRefraction) refractionTexId else 0,
     )
   }
 
@@ -498,6 +547,7 @@ class PerimeterWaterLightRenderer(
         layer = strip.layer,
         surfaceWidthPx = layout.surfaceWidthPx,
         surfaceHeightPx = layout.surfaceHeightPx,
+        widthProfile = material.widthProfile,
       )
       strip.vertexCount = verts.size / PerimeterRibbonMeshBuilder.FLOATS_PER_VERTEX
 

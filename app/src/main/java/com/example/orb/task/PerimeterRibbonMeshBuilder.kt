@@ -17,6 +17,15 @@ enum class PerimeterRibbonLayer(val shaderLayerId: Int) {
 }
 
 /**
+ * Width profile selector keeping legacy 6KF frozen defaults 100% intact while providing Tab 2 V2.2's
+ * refined slender water-light perimeter bounds (`L1 <= 0.8%`, `L2 <= 1.8%`, `L3 <= 0.45%` PhotoW).
+ */
+enum class PerimeterRibbonWidthProfile {
+  LEGACY_6KF_FROZEN,
+  TAB2_V22_SLENDER,
+}
+
+/**
  * Builds GPU triangle-strip vertex data strictly from [PerimeterArcLengthTable] along `outwardNormal`
  * so ZERO liquid ribbon geometry ever crosses into the photo interior!
  *
@@ -78,12 +87,41 @@ object PerimeterRibbonMeshBuilder {
     layer: PerimeterRibbonLayer,
     sNorm: Float,
     sPx: Float,
+    widthProfile: PerimeterRibbonWidthProfile = PerimeterRibbonWidthProfile.LEGACY_6KF_FROZEN,
   ): Pair<Float, Float> {
     val photoW = geo.widthPx.coerceAtLeast(64f)
     val sideSign = if (side == PerimeterSide.LEFT) -1f else 1f
     val waveA = 0.5f + 0.5f * sin(sNorm * PI.toFloat() * 6.0f + sideSign * 0.7f)
     val waveB = 0.5f + 0.5f * sin(sNorm * PI.toFloat() * 11.0f - sideSign * 1.3f)
     val cornerFlare = evaluateCornerFlare(geo, sPx)
+
+    if (widthProfile == PerimeterRibbonWidthProfile.TAB2_V22_SLENDER) {
+      return when (layer) {
+        PerimeterRibbonLayer.L1_ICE_BLUE_BODY -> {
+          // Tab 2 V2.2 slender icy-blue liquid body: strictly <= 0.8% PhotoW
+          val rawW = photoW * (0.0032f + 0.0020f * waveA + 0.0024f * waveB) * (0.94f + 0.06f * cornerFlare)
+          val baseW = rawW.coerceIn(photoW * 0.0030f, photoW * 0.0080f)
+          val innerOffsetPx = 0.5f
+          innerOffsetPx to (innerOffsetPx + baseW)
+        }
+        PerimeterRibbonLayer.L2_EMERALD_VEIL -> {
+          // Tab 2 V2.2 delicate emerald veil: strictly <= 1.8% PhotoW
+          val flankMask = evaluateEmeraldFlankMask(geo, sPx)
+          val rawW = photoW * (0.0040f + 0.0085f * waveA * flankMask + 0.0035f * waveB) * (0.94f + 0.06f * cornerFlare)
+          val veilW = rawW.coerceIn(photoW * 0.0035f, photoW * 0.0180f)
+          val innerOffsetPx = 0.9f + photoW * 0.0014f * waveB
+          innerOffsetPx to (innerOffsetPx + veilW)
+        }
+        PerimeterRibbonLayer.L3_GOLD_FILAMENT -> {
+          // Tab 2 V2.2 slender champagne-gold filament: strictly <= 0.45% PhotoW
+          val centerOut = photoW * (0.0034f + 0.0024f * waveA)
+          val halfW = (photoW * 0.00225f).coerceAtMost(photoW * 0.00225f).coerceAtLeast(1.0f)
+          val clampedFullW = (halfW * 2.0f).coerceAtMost(photoW * 0.0045f)
+          val innerOffsetPx = (centerOut - clampedFullW * 0.5f).coerceAtLeast(0.5f)
+          innerOffsetPx to (innerOffsetPx + clampedFullW)
+        }
+      }
+    }
 
     return when (layer) {
       PerimeterRibbonLayer.L1_ICE_BLUE_BODY -> {
@@ -118,6 +156,7 @@ object PerimeterRibbonMeshBuilder {
     layer: PerimeterRibbonLayer,
     surfaceWidthPx: Int,
     surfaceHeightPx: Int,
+    widthProfile: PerimeterRibbonWidthProfile = PerimeterRibbonWidthProfile.LEGACY_6KF_FROZEN,
   ): FloatArray {
     val samples = table.rawSamples(side)
     val n = samples.size
@@ -140,6 +179,7 @@ object PerimeterRibbonMeshBuilder {
         layer = layer,
         sNorm = sNorm,
         sPx = sample.arcLengthPx,
+        widthProfile = widthProfile,
       )
 
       val pInner = pos + outN * innerOffsetPx

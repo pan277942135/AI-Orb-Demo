@@ -19,7 +19,6 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 /**
  * Readiness & health snapshot published from Tab 2's GLES 3.0 Water World runtime to Compose UI.
@@ -34,75 +33,23 @@ data class Tab2WaterWorldRuntimeStatus(
   val perimeterState: Tab2PhotoPerimeterState = Tab2PhotoPerimeterState.PHOTO_SELECTED,
   val dynamicTimeSeconds: Double = 0.0,
   val orbViewportSidePx: Int = 0,
+  val photoTextureLoaded: Boolean = false,
+  val refractionEnabled: Boolean = true,
+  val refractionTexId: Int = 0,
+  val perimeterShaderLinked: Boolean = true,
 )
 
 /**
- * Pure geometry helper computing Tab 2's lower Water World ecosystem square viewport so:
- * - Upper region holds the rounded photo + status caption with generous breathing room
- * - Lower region centers the 1:1 circular Water World ecosystem sphere without distortion,
- *   without clipping at the bottom edge, and without overlapping the photo frame.
- */
-data class Tab2OrbViewportRect(
-  val leftPx: Int,
-  val bottomPx: Int, // OpenGL bottom-left origin
-  val sidePx: Int,
-  val surfaceWidthPx: Int,
-  val surfaceHeightPx: Int,
-) {
-  val topPxFromTopOrigin: Int get() = surfaceHeightPx - (bottomPx + sidePx)
-  val bottomPxFromTopOrigin: Int get() = surfaceHeightPx - bottomPx
-
-  companion object {
-    /**
-     * Computes the centered lower square viewport for the 1254x1254 Water World ecosystem canvas
-     * (whose crystal sphere occupies diameter ~62.7% of the 1254px canvas, leaving room for the
-     * 5 orbiting Residents and 9 outer bubbles around the sphere!).
-     */
-    fun compute(
-      surfaceWidthPx: Int,
-      surfaceHeightPx: Int,
-      photoFrame: PhotoFrameGeometry,
-      bottomSafeInsetPx: Float = 0f,
-    ): Tab2OrbViewportRect {
-      val sw = max(1, surfaceWidthPx)
-      val sh = max(1, surfaceHeightPx)
-      val captionReservePx = max(44f, sh * 0.042f)
-      val topLimit = (photoFrame.bottomPx + captionReservePx).coerceIn(sh * 0.36f, sh * 0.68f)
-      val bottomLimit = (sh - bottomSafeInsetPx - sh * 0.012f).coerceAtLeast(topLimit + 120f)
-      val availH = (bottomLimit - topLimit).coerceAtLeast(120f)
-      // Scale square canvas generously so the crystal sphere (~62.7% of canvas) is rich and prominent,
-      // while all 5 orbiting Residents & outer bubbles remain cleanly visible in the lower region.
-      val maxSideW = sw * 0.94f
-      val maxSideH = availH * 1.12f
-      val side = min(maxSideW, maxSideH).roundToInt().coerceIn(96, sw)
-      val left = ((sw - side) / 2f).roundToInt().coerceAtLeast(0)
-      val centerYFromTop = topLimit + availH * 0.50f
-      val topFromTop = (centerYFromTop - side * 0.5f)
-        .coerceIn(photoFrame.bottomPx + 4f, (sh - side).toFloat().coerceAtLeast(0f))
-      val bottomGl = (sh - (topFromTop + side)).roundToInt().coerceIn(0, (sh - side).coerceAtLeast(0))
-      return Tab2OrbViewportRect(
-        leftPx = left,
-        bottomPx = bottomGl,
-        sidePx = side,
-        surfaceWidthPx = sw,
-        surfaceHeightPx = sh,
-      )
-    }
-  }
-}
-
-/**
- * Unified Tab 2 GLES 3.0 Renderer (`TAB2_WATER_WORLD_FULL_ECOSYSTEM_MIGRATION_V1`):
+ * Unified Tab 2 GLES 3.0 Renderer (`TAB2_V22_LAYOUT_PHOTO_PIPELINE_PERIMETER_RUNTIME_CLOSURE_V1`):
  *
  * Strictly reuses Tab 3's production [WaterWorldStaticRenderer] + [WaterWorldMotionRuntime]
- * (ZERO duplicated Water World shaders, physics, or assets!) and layers:
+ * and layers:
  *   1. Exact frozen underwater PNG background ([Tab2UnderwaterBackgroundRenderer])
  *   2. Lower full dynamic Water World V2.1 ecosystem sphere (11 Render Passes, 5 Optical Nodes,
- *      Core 3D 32 Z-slices, Work 3.2 Five Residents 3D Orbital Motion, 4 Fish, 2 Plants, 3 Rocks,
- *      9 Outer + 14 Inner Bubbles) composited seamlessly with zero dark square borders
- *   3. Upper rounded photo ([PhotoTextureRenderer]) + independent perimeter water-light
- *      ([PerimeterWaterLightRenderer] + [Tab2IndependentPerimeterController], strictly ZERO
- *      Orb-to-photo energy beam!)
+ *      Core 3D 32 Z-slices, Work 3.2 Five Residents 3D Orbital Motion, 4 Fish, 2 Plants, 3 Rocks)
+ *   3. Upper rounded photo ([PhotoTextureRenderer]) with direct sRGB display color mode and
+ *      aspect-locked CENTER_CROP UV transform + standalone RGBA8 perimeter refraction snapshot
+ *      ([PerimeterWaterLightRenderer] with Tab2 V2.2 slender material profile).
  */
 class Tab2WaterWorldSceneRenderer(
   private val appContext: Context,
@@ -112,7 +59,13 @@ class Tab2WaterWorldSceneRenderer(
 
   private val backgroundRenderer = Tab2UnderwaterBackgroundRenderer()
   private val photoRenderer = PhotoTextureRenderer()
-  private val perimeterRenderer = PerimeterWaterLightRenderer()
+  private val perimeterRenderer = PerimeterWaterLightRenderer(
+    material = PerimeterWaterLightMaterial(
+      l1IceAlphaScale = 0.95f,
+      l2EmeraldAlphaScale = 0.85f,
+      l3GoldAlphaScale = 0.90f,
+    ),
+  )
   private val perimeterController = Tab2IndependentPerimeterController()
 
   private var compositeProgram: GlShaderProgram? = null
@@ -134,7 +87,12 @@ class Tab2WaterWorldSceneRenderer(
     Thread(r, "Tab2WaterWorldStaging").apply { isDaemon = true }
   }
 
-  private val pendingCustomPhoto = AtomicReference<Bitmap?>(null)
+  // EXIF URI photo loader background coordinator
+  private val photoLoader = PhotoSourceLoadCoordinator(
+    decodeFn = { uri -> PhotoSourceDecoder.decodeFromUri(appContext, uri) },
+    onDecodedReady = { requestRenderCallback() },
+  )
+
   private val liveLayout = AtomicReference<TaskSceneLayoutSnapshot?>(null)
   @Volatile private var surfaceWidth: Int = 1080
   @Volatile private var surfaceHeight: Int = 2340
@@ -147,7 +105,14 @@ class Tab2WaterWorldSceneRenderer(
   @Volatile private var cachedPerimeterPhoto: PhotoFrameGeometry? = null
   @Volatile private var cachedPerimeterTable: PerimeterArcLengthTable? = null
 
+  // Dedicated standalone RGBA8 refraction snapshot texture for Tab 2 perimeter waterlight
+  private var refractionSnapshotTexId: Int = 0
+  private var refractionTexWidth: Int = 0
+  private var refractionTexHeight: Int = 0
+
   private var initializedStagingRoot: String? = null
+
+  @Volatile var debugOptions: Tab2DebugOptions = Tab2DebugOptions.Default
 
   fun startStagingIfNeeded() {
     if (!stagingStarted.compareAndSet(false, true)) return
@@ -175,11 +140,8 @@ class Tab2WaterWorldSceneRenderer(
     bottomSafeInsetPx = bottomInsetPx.coerceAtLeast(0f)
   }
 
-  fun onCustomPhotoSelected(bitmap: Bitmap) {
-    val previous = pendingCustomPhoto.getAndSet(bitmap)
-    if (previous != null && previous !== bitmap && !previous.isRecycled) {
-      previous.recycle()
-    }
+  fun onPhotoUriSelected(uri: android.net.Uri?) {
+    photoLoader.requestLoad(uri)
     perimeterController.onPhotoSelected(unpause = true)
     requestRenderCallback()
   }
@@ -219,9 +181,7 @@ class Tab2WaterWorldSceneRenderer(
     disposed.set(true)
     motionRuntime.onActivityPause()
     perimeterController.setPaused(true)
-    pendingCustomPhoto.getAndSet(null)?.let { bmp ->
-      if (!bmp.isRecycled) bmp.recycle()
-    }
+    photoLoader.dispose()
     ioExecutor.shutdownNow()
   }
 
@@ -238,6 +198,12 @@ class Tab2WaterWorldSceneRenderer(
       GLES30.glDeleteVertexArrays(1, intArrayOf(compositeVao), 0)
       compositeVao = 0
     }
+    if (refractionSnapshotTexId != 0) {
+      GLES30.glDeleteTextures(1, intArrayOf(refractionSnapshotTexId), 0)
+      refractionSnapshotTexId = 0
+    }
+    refractionTexWidth = 0
+    refractionTexHeight = 0
     hasPresentedFirstReadyFrame = false
   }
 
@@ -246,7 +212,6 @@ class Tab2WaterWorldSceneRenderer(
   internal fun currentPerimeterSnapshot(): Tab2PhotoPerimeterSnapshot = perimeterController.snapshot()
 
   override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-    // Handles fresh init AND EGL context loss recovery cleanly without leaking old handles
     waterWorldRenderer?.handleCoreContextLost()
     releaseGlResourcesOnGlThread()
 
@@ -272,6 +237,7 @@ class Tab2WaterWorldSceneRenderer(
     surfaceWidth = max(1, width)
     surfaceHeight = max(1, height)
     GLES30.glViewport(0, 0, surfaceWidth, surfaceHeight)
+    ensureRefractionSnapshotTexture(surfaceWidth, surfaceHeight)
   }
 
   override fun onDrawFrame(gl: GL10?) {
@@ -279,12 +245,12 @@ class Tab2WaterWorldSceneRenderer(
     val sw = surfaceWidth
     val sh = surfaceHeight
 
-    // Handle any user-selected custom photo bitmap uploaded on the GL thread
-    pendingCustomPhoto.getAndSet(null)?.let { customBmp ->
+    // Drain decoded photo source from background EXIF loader thread and upload on GL thread
+    photoLoader.drainPendingForGlUpload()?.let { decoded ->
       try {
-        photoRenderer.uploadCustomPhotoBitmap(customBmp)
+        photoRenderer.uploadCustomPhotoBitmap(decoded.bitmap)
       } finally {
-        if (!customBmp.isRecycled) customBmp.recycle()
+        if (!decoded.bitmap.isRecycled) decoded.bitmap.recycle()
       }
     }
 
@@ -318,11 +284,29 @@ class Tab2WaterWorldSceneRenderer(
       }
     }
 
-    // 4. Layer 3: Upper Rounded Photo + Independent Perimeter Light (ZERO Orb->Photo beam!)
+    // 4. Layer 3: Upper Rounded Photo (Direct sRGB display color mode + CENTER_CROP UV transform)
     GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
     GLES30.glViewport(0, 0, sw, sh)
-    photoRenderer.drawPhoto(resolvedLayout, hdrScale = 1.0f, assetManager = appContext.assets)
+    photoRenderer.drawPhoto(
+      layout = resolvedLayout,
+      hdrScale = 1.0f,
+      assetManager = appContext.assets,
+      colorMode = PhotoDisplayColorMode.DIRECT_DISPLAY_SRGB,
+      useCenterCropUv = true,
+    )
 
+    // 5. Capture Perimeter Refraction Snapshot (Zero feedback loop: copy default framebuffer 0 -> RGBA8 texture)
+    val activeRefractionTexId = if (debugOptions.enableRefraction) {
+      ensureRefractionSnapshotTexture(sw, sh)
+      GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, refractionSnapshotTexId)
+      GLES30.glCopyTexSubImage2D(GLES30.GL_TEXTURE_2D, 0, 0, 0, 0, 0, sw, sh)
+      GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
+      refractionSnapshotTexId
+    } else {
+      0
+    }
+
+    // 6. Layer 4: Independent Perimeter Water-Light (Tab 2 V2.2 Slender Material Profile + Refraction)
     val nowNs = System.nanoTime()
     val dtSec = if (lastPerimeterFrameNs > 0L) {
       ((nowNs - lastPerimeterFrameNs) / 1_000_000_000.0).coerceIn(0.0, 0.05)
@@ -337,9 +321,10 @@ class Tab2WaterWorldSceneRenderer(
       table = table,
       snapshot = perimeterSnap.toPerimeterRenderSnapshot(),
       hdrScale = 1.0f,
-      refractionTexId = 0,
+      refractionTexId = activeRefractionTexId,
       fboWidth = sw,
       fboHeight = sh,
+      debugOptions = debugOptions.toPerimeterDebugOptions(),
     )
 
     if (nowNs - lastUiReportNs >= 250_000_000L) {
@@ -351,6 +336,26 @@ class Tab2WaterWorldSceneRenderer(
         perimeterState = perimeterSnap.state,
       )
     }
+  }
+
+  private fun ensureRefractionSnapshotTexture(w: Int, h: Int) {
+    if (refractionSnapshotTexId != 0 && refractionTexWidth == w && refractionTexHeight == h) return
+    if (refractionSnapshotTexId != 0) {
+      GLES30.glDeleteTextures(1, intArrayOf(refractionSnapshotTexId), 0)
+      refractionSnapshotTexId = 0
+    }
+    val texArr = IntArray(1)
+    GLES30.glGenTextures(1, texArr, 0)
+    refractionSnapshotTexId = texArr[0]
+    GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, refractionSnapshotTexId)
+    GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR)
+    GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR)
+    GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE)
+    GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE)
+    GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA8, w, h, 0, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, null)
+    GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
+    refractionTexWidth = w
+    refractionTexHeight = h
   }
 
   private fun ensureWaterWorldInitialized(staged: WaterWorldAssetStaging.StagedScene) {
@@ -496,6 +501,10 @@ class Tab2WaterWorldSceneRenderer(
         perimeterState = perimeterState,
         dynamicTimeSeconds = motionRuntime.currentTimeSeconds,
         orbViewportSidePx = orbViewport?.sidePx ?: 0,
+        photoTextureLoaded = photoRenderer.isPhotoTextureLoaded,
+        refractionEnabled = debugOptions.enableRefraction,
+        refractionTexId = refractionSnapshotTexId,
+        perimeterShaderLinked = perimeterRenderer.lastDrawStats.shaderLinked,
       ),
     )
   }
@@ -508,19 +517,18 @@ class Tab2WaterWorldSceneRenderer(
       void main() {
         vec2 pos = vec2((gl_VertexID == 1) ? 3.0 : -1.0, (gl_VertexID == 2) ? 3.0 : -1.0);
         gl_Position = vec4(pos, 0.0, 1.0);
-        // GL texture UV (0,0 bottom-left -> 1,1 top-right) matching Water World FBO orientation
         vUv = pos * 0.5 + 0.5;
       }
     """.trimIndent()
 
     /**
-     * Seamlessly composites the 1254x1254 Water World final FBO onto Tab 2's sunlit underwater PNG:
+     * Seamlessly composites the 1254x1254 Water World final FBO onto Tab 2's sunlit underwater PNG with
+     * mathematically exact premultiplied Source-Over alpha (`GL_ONE, GL_ONE_MINUS_SRC_ALPHA`):
      * - Inside the crystal glass shell (`distPx <= uSphereOuterRadiusPx`): full opaque alpha = 1.0
      *   so the crystal sphere, Core 3D volume, 4 fish, 2 plants, 3 rocks, and caustics keep 100%
      *   Tab 3 fidelity with zero bright-background washout.
-     * - Outside the glass shell (`distPx > uSphereOuterRadiusPx`): preserves the 5 orbiting Resident
-     *   filaments, 9 rising outer bubbles, and soft golden/cyan bloom as luminous translucent energy
-     *   with smooth canvas-edge fade and zero dark square box!
+     * - Outside the glass shell (`distPx > uSphereOuterRadiusPx`): soft, non-overbright premultiplied
+     *   fusion of the 5 golden Residents and 9 outer bubbles over bright cyan water with zero harsh clipping.
      */
     val SPHERE_COMPOSITE_FRAG = """#version 300 es
       precision highp float;
@@ -533,25 +541,24 @@ class Tab2WaterWorldSceneRenderer(
       out vec4 fragColor;
       void main() {
         vec3 c = texture(uWaterWorldTex, vUv).rgb;
-        // Convert bottom-left GL UV to top-left Water World canvas pixel space
         vec2 canvasPx = vec2(vUv.x * uCanvasSize.x, (1.0 - vUv.y) * uCanvasSize.y);
         float distPx = length(canvasPx - uSphereCenterPx);
 
-        // Crisp anti-aliased sphere interior mask
         float sphereAlpha = 1.0 - smoothstep(uSphereOuterRadiusPx - 3.5, uSphereOuterRadiusPx + 4.5, distPx);
-
-        // Smooth edge feather near the 1254x1254 square canvas boundary so no square seam ever appears
         vec2 edgeDist = min(vUv, 1.0 - vUv);
         float edgeFade = smoothstep(0.0, 0.06, min(edgeDist.x, edgeDist.y));
 
-        // Luminous alpha for outer 5 Residents, 9 outer droplets, and bloom halo
         float peak = max(max(c.r, c.g), c.b);
-        float outerLumaAlpha = smoothstep(0.035, 0.58, peak) * 0.86 * edgeFade;
+        float outerCoverage = smoothstep(0.02, 0.72, peak) * 0.72 * edgeFade;
+        float safePeak = max(peak, 1e-4);
+        float chromaScale = mix(0.76, 0.96, smoothstep(0.15, 0.95, peak));
+        vec3 outerStraight = (c / safePeak) * chromaScale;
+        vec3 outerPremul = outerStraight * outerCoverage;
 
-        float outAlpha = max(sphereAlpha, outerLumaAlpha);
+        float outAlpha = mix(outerCoverage, 1.0, sphereAlpha);
         if (outAlpha < 0.002) discard;
 
-        vec3 premulRgb = mix(c * edgeFade, c, sphereAlpha);
+        vec3 premulRgb = mix(outerPremul, c, sphereAlpha);
         fragColor = vec4(premulRgb, outAlpha);
       }
     """.trimIndent()

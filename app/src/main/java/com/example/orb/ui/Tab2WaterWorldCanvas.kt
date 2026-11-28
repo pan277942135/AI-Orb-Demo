@@ -16,27 +16,27 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.orb.task.Tab2DebugOptions
 import com.example.orb.task.Tab2WaterWorldRuntimeStatus
 import com.example.orb.task.Tab2WaterWorldSceneRenderer
 import com.example.orb.task.TaskSceneLayoutSnapshot
 
 /**
- * Isolated GLES 3.0 [GLSurfaceView] host for Tab 2 (`TAB2_WATER_WORLD_FULL_ECOSYSTEM_MIGRATION_V1`).
+ * Isolated GLES 3.0 [GLSurfaceView] host for Tab 2 (`TAB2_V22_LAYOUT_PHOTO_PIPELINE_PERIMETER_RUNTIME_CLOSURE_V1`).
  *
  * Lifecycle & GPU Isolation Guarantees:
  * - Mounted ONLY while Tab 2 is active (Tab 1 pauses its own `AIOrbCanvas` when Tab 2 is visible).
- * - Owns its own isolated EGL context (`preserveEGLContextOnPause = true`) completely separate
- *   from Tab 1 (`AIOrbScene`) and Tab 3 (`WaterWorldPreviewActivity`).
+ * - Owns its own isolated EGL context completely separate from Tab 1 (`AIOrbScene`) and Tab 3.
  * - Automatically pauses rendering on `ON_PAUSE` and resumes without time jump on `ON_RESUME`.
- * - Releases GL resources cleanly on tab exit / disposal.
  */
 @Composable
 fun Tab2WaterWorldCanvas(
   layoutSnapshot: TaskSceneLayoutSnapshot?,
   bottomInsetPx: Float,
-  selectedPhotoBitmap: Bitmap?,
+  selectedPhotoUri: android.net.Uri?,
   restartToken: Int,
   togglePlayPauseToken: Int,
+  debugOptions: Tab2DebugOptions,
   onStatusChanged: (Tab2WaterWorldRuntimeStatus) -> Unit,
   onSurfaceWindowBoundsChanged: (left: Float, top: Float, width: Int, height: Int) -> Unit,
   modifier: Modifier = Modifier,
@@ -59,10 +59,12 @@ fun Tab2WaterWorldCanvas(
     }
   }
 
-  LaunchedEffect(selectedPhotoBitmap) {
-    if (selectedPhotoBitmap != null && !selectedPhotoBitmap.isRecycled) {
-      renderer.onCustomPhotoSelected(selectedPhotoBitmap)
-    }
+  LaunchedEffect(selectedPhotoUri) {
+    renderer.onPhotoUriSelected(selectedPhotoUri)
+  }
+
+  LaunchedEffect(debugOptions) {
+    renderer.debugOptions = debugOptions
   }
 
   LaunchedEffect(restartToken) {

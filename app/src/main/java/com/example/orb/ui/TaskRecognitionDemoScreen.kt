@@ -1,5 +1,6 @@
 package com.example.orb.ui
 
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
@@ -51,6 +52,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -65,13 +67,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.orb.task.PhotoFrameGeometry
+import com.example.orb.task.Tab2DebugOptions
+import com.example.orb.task.Tab2LayoutGeometry
+import com.example.orb.task.Tab2SafeInsetsPx
+import com.example.orb.task.Tab2ShaderDebugMode
 import com.example.orb.task.Tab2WaterWorldRuntimeStatus
-import com.example.orb.task.TaskEnergyEvidence
-import com.example.orb.task.TaskEnergyStage
-import com.example.orb.task.TaskGpuCaptureProgress
-import com.example.orb.task.TaskGpuCaptureState
-import com.example.orb.task.TaskRenderDebugOptions
-import com.example.orb.task.TaskVisualDebugMode
 import java.util.Locale
 
 private val AquaticInkPrimary = Color(0xFF0B4657)
@@ -81,37 +81,29 @@ private val FrostedDaylightBorder = Color(0x888ED7E6)
 private val AccentAquaticTeal = Color(0xFF0A8FA8)
 
 /**
- * Tab 2 (`照片水光`) transparent Compose overlay matching the frozen 6-keyframe overview:
- *  - Top bar: `<` back arrow + centered `拍照识鱼`
- *  - Transparent aspect-locked photo frame measuring REAL window pixels -> drives the single
- *    GPU `PhotoTextureRenderer`, `TaskEnergyRibbonRenderer`, and `PerimeterWaterLightRenderer`
- *  - Centered `正在理解照片` status caption cleanly positioned between photo bottom and shared Orb
- *  - Default-collapsed bottom-right floating control pill (Play/Pause, Restart, Stage+ms, KF01–KF06,
- *    V4 G1 GPU Diagnostic Modes, Layer Isolation toggles, real GPU draw telemetry, and Evidence Export)
+ * Tab 2 V2.2 (`照片水光`) transparent Compose overlay matching the high-fidelity closure spec:
+ *  - Top bar: `<` back arrow + centered `渔获识别` + `更换照片` action button (NO glass background/card container!)
+ *  - Transparent aspect-locked photo frame measuring real window pixels via [Tab2LayoutGeometry]
+ *  - Centered `正在识别鱼种` status caption between photo bottom and lower Water World ecosystem
+ *  - Default-collapsed bottom-right floating control pill (Play/Pause, Restart, L1–L4 toggles, Refraction toggle, Shader debug modes)
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TaskRecognitionDemoScreen(
-  evidence: TaskEnergyEvidence,
-  debugOptions: TaskRenderDebugOptions,
-  captureProgress: TaskGpuCaptureProgress,
+  debugOptions: Tab2DebugOptions,
   isControlsExpanded: Boolean,
   onBackToOrb: () -> Unit,
   onToggleControls: () -> Unit,
   onCloseControls: () -> Unit,
   onTogglePlayPause: () -> Unit,
   onRestart: () -> Unit,
-  onJumpKeyframe: (TaskEnergyStage) -> Unit,
-  onUpdateDebugOptions: (TaskRenderDebugOptions) -> Unit,
-  onExport6KfEvidence: () -> Unit,
+  onUpdateDebugOptions: (Tab2DebugOptions) -> Unit,
   onPhotoWindowBoundsChanged: (Float, Float, Float, Float, Float) -> Unit,
   waterWorldStatus: Tab2WaterWorldRuntimeStatus? = null,
   onPickPhoto: (() -> Unit)? = null,
   modifier: Modifier = Modifier,
 ) {
-  val density = LocalDensity.current
-  val snapshot = evidence.taskSnapshot
-  val drawStats = evidence.drawTelemetry
+  val density = LocalDensity.current.density
 
   BackHandler(enabled = true) {
     if (isControlsExpanded) {
@@ -128,30 +120,38 @@ fun TaskRecognitionDemoScreen(
       .displayCutoutPadding()
       .navigationBarsPadding(),
   ) {
-    val maxAvailHeight = maxHeight
-    val maxAvailWidth = maxWidth
-    // Keep upper photo gracefully proportioned (~72% width, max 43% height) so the lower
-    // full Water World V2.1 ecosystem sphere & 5 orbiting Residents have generous clearance!
-    val targetPhotoWidth = minOf(
-      maxAvailWidth * PhotoFrameGeometry.CANONICAL_WIDTH_RATIO,
-      (maxAvailHeight * 0.43f) * PhotoFrameGeometry.CANONICAL_ASPECT_W_OVER_H,
-      420.dp,
-    ).coerceAtLeast(140.dp)
-    val cornerRadiusDp = targetPhotoWidth * PhotoFrameGeometry.CANONICAL_CORNER_RADIUS_OF_W
+    val maxAvailHeight = maxHeight.value * density
+    val maxAvailWidth = maxWidth.value * density
+
+    val layoutSnapshot = Tab2LayoutGeometry.compute(
+      surfaceWidthPx = maxAvailWidth.toInt(),
+      surfaceHeightPx = maxAvailHeight.toInt(),
+      density = density,
+      safeInsets = Tab2SafeInsetsPx(),
+    )
+    val photo = layoutSnapshot.photoFrame
+    val cornerRadiusDp = (photo.clampedCornerRadiusPx / density).dp
+
+    // Notify GL renderer/coordinator of exact window bounds
+    LaunchedEffect(photo.leftPx, photo.topPx, photo.rightPx, photo.bottomPx, photo.clampedCornerRadiusPx) {
+      if (photo.isValid()) {
+        onPhotoWindowBoundsChanged(photo.leftPx, photo.topPx, photo.rightPx, photo.bottomPx, photo.clampedCornerRadiusPx)
+      }
+    }
 
     Column(
       horizontalAlignment = Alignment.CenterHorizontally,
       modifier = Modifier
         .fillMaxSize()
-        .padding(top = 56.dp), // Clean clearance below top floating Segmented Tab Switcher
+        .padding(top = 8.dp),
     ) {
-      // Top navigation row: `<` + centered `拍照识鱼`
+      // Top navigation row (48–52dp height, NO glass button/card/decorative container!)
       Box(
         modifier = Modifier
           .fillMaxWidth()
           .widthIn(max = 600.dp)
           .padding(horizontal = 8.dp)
-          .height(48.dp),
+          .height(50.dp),
       ) {
         IconButton(
           onClick = onBackToOrb,
@@ -208,25 +208,24 @@ fun TaskRecognitionDemoScreen(
         }
       }
 
-      Spacer(modifier = Modifier.height(6.dp))
+      Spacer(modifier = Modifier.height(8.dp))
 
-      // Transparent aspect-locked Photo Frame container: reports EXACT physical window pixels
-      // to AIOrbScene so GPU photo quad, Task contact point, and Perimeter WaterLight align to 0px!
+      // Transparent aspect-locked Photo Frame container: reports exact window pixels
       Box(
         modifier = Modifier
-          .width(targetPhotoWidth)
+          .width((photo.widthPx / density).dp)
           .aspectRatio(PhotoFrameGeometry.CANONICAL_ASPECT_W_OVER_H)
           .testTag("task_photo_frame_anchor")
           .onGloballyPositioned { coords ->
             val rect = coords.boundsInWindow()
             if (rect.width > 8f && rect.height > 8f) {
-              val cornerPx: Float = with(density) { cornerRadiusDp.toPx() }
+              val cornerPx = photo.clampedCornerRadiusPx
               onPhotoWindowBoundsChanged(rect.left, rect.top, rect.right, rect.bottom, cornerPx)
             }
           },
       )
 
-      Spacer(modifier = Modifier.height(18.dp))
+      Spacer(modifier = Modifier.height(16.dp))
 
       // Centered recognition status caption directly beneath photo & above lower Water World sphere
       Text(
@@ -278,7 +277,7 @@ fun TaskRecognitionDemoScreen(
       }
     }
 
-    // Default-collapsed bottom-right floating 6KF Playback & V4 GPU Diagnostic Panel
+    // Default-collapsed bottom-right floating Tab 2 Diagnostics & Debug Panel
     Box(
       modifier = Modifier
         .align(Alignment.BottomEnd)
@@ -308,7 +307,7 @@ fun TaskRecognitionDemoScreen(
             )
             Text(
               text = when {
-                waterWorldStatus == null -> snapshot.stage.code
+                waterWorldStatus == null -> "Tab 2 WW"
                 waterWorldStatus.isReady -> "WW · ${waterWorldStatus.passCount}P"
                 else -> "WW…"
               },
@@ -334,7 +333,7 @@ fun TaskRecognitionDemoScreen(
           shadowElevation = 6.dp,
           modifier = Modifier
             .widthIn(min = 280.dp, max = 344.dp)
-            .heightIn(max = maxAvailHeight * 0.72f)
+            .heightIn(max = (maxAvailHeight * 0.72f / density).dp)
             .testTag("task_controls_panel"),
         ) {
           Column(
@@ -343,14 +342,14 @@ fun TaskRecognitionDemoScreen(
               .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
           ) {
-            // Header row: Stage + Elapsed ms + Close
+            // Header row: Title + Close
             Row(
               verticalAlignment = Alignment.CenterVertically,
               modifier = Modifier.fillMaxWidth(),
             ) {
               Column(modifier = Modifier.weight(1f)) {
                 Text(
-                  text = "${snapshot.stage.code} · ${snapshot.stage.displayLabel}",
+                  text = stringResource(R.string.task_controls_title),
                   style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                   color = AquaticInkPrimary,
                   modifier = Modifier.testTag("task_stage_label"),
@@ -358,11 +357,10 @@ fun TaskRecognitionDemoScreen(
                 Text(
                   text = String.format(
                     Locale.US,
-                    "%dms · rel %.0f%% · L/R %.0f%% · Ev %d/11",
-                    snapshot.elapsedMs,
-                    snapshot.releaseProgress * 100f,
-                    snapshot.leftProgress * 100f,
-                    evidence.emittedEvents.size,
+                    "Passes %d · Optics %d · Core %s",
+                    waterWorldStatus?.passCount ?: 0,
+                    waterWorldStatus?.opticalNodeCount ?: 0,
+                    if (waterWorldStatus?.isCoreVolumeReady == true) "READY" else "INIT",
                   ),
                   style = MaterialTheme.typography.labelSmall,
                   color = AquaticInkSecondary,
@@ -371,11 +369,10 @@ fun TaskRecognitionDemoScreen(
                 Text(
                   text = String.format(
                     Locale.US,
-                    "GPU Vtx %d · Draws %d · FBO %s · GL 0x%x",
-                    drawStats.totalVertexCount,
-                    drawStats.totalDrawCalls,
-                    if (drawStats.fboComplete) "OK" else "WAIT",
-                    drawStats.glErrorCode,
+                    "Photo Tex %s · Refr %s · Sate %s",
+                    if (waterWorldStatus?.photoTextureLoaded == true) "OK" else "DEMO",
+                    if (waterWorldStatus?.refractionEnabled == true) "ON" else "OFF",
+                    waterWorldStatus?.perimeterState?.name ?: "READY",
                   ),
                   style = MaterialTheme.typography.labelSmall,
                   color = AquaticInkSecondary,
@@ -414,14 +411,14 @@ fun TaskRecognitionDemoScreen(
                   .testTag("task_play_pause_button"),
               ) {
                 Icon(
-                  imageVector = if (snapshot.isPaused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                  imageVector = if (waterWorldStatus?.isPlaying == true) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                   contentDescription = null,
                   modifier = Modifier.size(18.dp),
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                   text = stringResource(
-                    if (snapshot.isPaused) R.string.task_action_play else R.string.task_action_pause
+                    if (waterWorldStatus?.isPlaying == true) R.string.task_action_pause else R.string.task_action_play
                   ),
                   style = MaterialTheme.typography.labelLarge,
                 )
@@ -450,51 +447,9 @@ fun TaskRecognitionDemoScreen(
               }
             }
 
-            // Deterministic KF01–KF06 jump chips (drives live GPU renderers directly!)
-            Text(
-              text = stringResource(R.string.task_keyframe_jump_label),
-              style = MaterialTheme.typography.labelSmall,
-              color = AquaticInkSecondary,
-            )
-
-            FlowRow(
-              horizontalArrangement = Arrangement.spacedBy(6.dp),
-              verticalArrangement = Arrangement.spacedBy(6.dp),
-              modifier = Modifier.fillMaxWidth(),
-            ) {
-              TaskEnergyStage.entries.forEach { stage ->
-                val selected = snapshot.stage == stage
-                FilterChip(
-                  selected = selected,
-                  onClick = { onJumpKeyframe(stage) },
-                  label = {
-                    Text(
-                      text = stage.code,
-                      style = MaterialTheme.typography.labelMedium,
-                    )
-                  },
-                  colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentAquaticTeal,
-                    selectedLabelColor = Color.White,
-                    containerColor = Color.White.copy(alpha = 0.65f),
-                    labelColor = AquaticInkPrimary,
-                  ),
-                  border = FilterChipDefaults.filterChipBorder(
-                    enabled = true,
-                    selected = selected,
-                    borderColor = FrostedDaylightBorder,
-                    selectedBorderColor = AccentAquaticTeal,
-                  ),
-                  modifier = Modifier
-                    .heightIn(min = 48.dp)
-                    .testTag("task_jump_${stage.code.lowercase(Locale.US)}"),
-                )
-              }
-            }
-
             HorizontalDivider(color = FrostedDaylightBorder)
 
-            // G1 GPU Visibility Diagnostic Modes (never mutates TaskEnergyController!)
+            // Shader Debug Modes (Normal, Geometry Magenta, Alpha Heatmap)
             Text(
               text = stringResource(R.string.task_debug_mode_label),
               style = MaterialTheme.typography.labelSmall,
@@ -506,11 +461,11 @@ fun TaskRecognitionDemoScreen(
               verticalArrangement = Arrangement.spacedBy(6.dp),
               modifier = Modifier.fillMaxWidth(),
             ) {
-              TaskVisualDebugMode.entries.forEach { mode ->
-                val selected = debugOptions.mode == mode
+              Tab2ShaderDebugMode.entries.forEach { mode ->
+                val selected = debugOptions.shaderMode == mode
                 FilterChip(
                   selected = selected,
-                  onClick = { onUpdateDebugOptions(debugOptions.copy(mode = mode)) },
+                  onClick = { onUpdateDebugOptions(debugOptions.copy(shaderMode = mode)) },
                   label = { Text(text = mode.shortLabel, style = MaterialTheme.typography.labelSmall) },
                   colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = AccentAquaticTeal,
@@ -531,7 +486,7 @@ fun TaskRecognitionDemoScreen(
               }
             }
 
-            // Layer Isolation Toggles (Main, Sec, L1, L2, L3, L4)
+            // Layer & Refraction Toggles (L1, L2, L3, L4, Refr)
             Text(
               text = stringResource(R.string.task_layer_isolation_label),
               style = MaterialTheme.typography.labelSmall,
@@ -543,12 +498,6 @@ fun TaskRecognitionDemoScreen(
               verticalArrangement = Arrangement.spacedBy(6.dp),
               modifier = Modifier.fillMaxWidth(),
             ) {
-              TaskLayerToggleChip("Main", debugOptions.showMainStream, "task_layer_main") {
-                onUpdateDebugOptions(debugOptions.copy(showMainStream = !debugOptions.showMainStream))
-              }
-              TaskLayerToggleChip("Sec", debugOptions.showSecondaryStreams, "task_layer_sec") {
-                onUpdateDebugOptions(debugOptions.copy(showSecondaryStreams = !debugOptions.showSecondaryStreams))
-              }
               TaskLayerToggleChip("L1", debugOptions.showL1, "task_layer_l1") {
                 onUpdateDebugOptions(debugOptions.copy(showL1 = !debugOptions.showL1))
               }
@@ -561,50 +510,9 @@ fun TaskRecognitionDemoScreen(
               TaskLayerToggleChip("L4", debugOptions.showL4, "task_layer_l4") {
                 onUpdateDebugOptions(debugOptions.copy(showL4 = !debugOptions.showL4))
               }
-            }
-
-            // One-click Zero-UI GL-Thread 6KF V4 Evidence Export
-            val isCapturing = captureProgress.state == TaskGpuCaptureState.CAPTURING
-            FilledTonalButton(
-              onClick = onExport6KfEvidence,
-              enabled = !isCapturing,
-              colors = ButtonDefaults.filledTonalButtonColors(
-                containerColor = AccentAquaticTeal.copy(alpha = 0.18f),
-                contentColor = AquaticInkPrimary,
-              ),
-              contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
-              modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 48.dp)
-                .testTag("task_export_v4_evidence_button"),
-            ) {
-              Icon(
-                imageVector = Icons.Filled.CameraAlt,
-                contentDescription = stringResource(R.string.cd_export_task6kf_v4_evidence),
-                modifier = Modifier.size(18.dp),
-              )
-              Spacer(modifier = Modifier.width(6.dp))
-              Text(
-                text = if (isCapturing) {
-                  stringResource(
-                    R.string.qa_export_task6kf_capturing,
-                    captureProgress.completedSteps,
-                    captureProgress.totalSteps,
-                  )
-                } else {
-                  stringResource(R.string.qa_export_task6kf_evidence)
-                },
-                style = MaterialTheme.typography.labelLarge,
-              )
-            }
-
-            if (captureProgress.statusMessage.isNotBlank()) {
-              Text(
-                text = captureProgress.statusMessage,
-                style = MaterialTheme.typography.labelSmall,
-                color = AquaticInkSecondary,
-                modifier = Modifier.testTag("task_export_v4_status"),
-              )
+              TaskLayerToggleChip("Refr", debugOptions.enableRefraction, "task_layer_refr") {
+                onUpdateDebugOptions(debugOptions.copy(enableRefraction = !debugOptions.enableRefraction))
+              }
             }
           }
         }

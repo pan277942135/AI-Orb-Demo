@@ -12,6 +12,7 @@ import androidx.compose.ui.test.performClick
 import com.example.orb.config.OrbSceneMode
 import com.example.orb.ui.AIOrbViewModel
 import com.example.orb.ui.DemoTab
+import com.example.ui.DemoTabSwitcherBar
 import com.example.ui.theme.MyApplicationTheme
 import com.example.waterworld.WaterWorldDiagnosticsDrawer
 import com.example.waterworld.WaterWorldPreviewActivity
