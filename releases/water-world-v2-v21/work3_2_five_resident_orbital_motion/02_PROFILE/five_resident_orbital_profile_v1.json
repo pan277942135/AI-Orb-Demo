@@ -1,0 +1,172 @@
+{
+  "schemaVersion": "WATER_WORLD_V2_1_WORK3_2_FIVE_RESIDENT_ORBITAL_PROFILE_V1",
+  "taskId": "WATER_WORLD_V2_1_WORK3_2_FIVE_RESIDENT_TRUE_ORBITAL_MOTION_V2",
+  "provenance": "WORK3_2_AUTHORED_ORBITAL_RUNTIME_HYPOTHESIS",
+  "groundTruthStatus": "AUTHORED_RUNTIME_HYPOTHESIS_NOT_GROUND_TRUTH_MEASURED",
+  "coreCenterPx": [
+    626.4757504075296,
+    596.3441299453135,
+    0.0
+  ],
+  "coreInnerRadiusPx": 395.75,
+  "coreOuterRadiusPx": 422.2986621604988,
+  "canvasSizePx": 1254,
+  "timeLaw": "theta(t) = orbitalAngularVelocityRadPerSec * globalTimeSeconds",
+  "rotationLaw": "P'(t) = C + R(normalizedOrbitalAxis, theta(t)) * (P - C)",
+  "t0StaticIdentityRule": "At staticReferenceMode=true or globalTimeSeconds==0, uResidentOrbitEnabled=0 and vertex bypasses orbital matrix multiply.",
+  "residents": [
+    {
+      "residentId": "WW_RESIDENT_G01",
+      "groupKey": "G01",
+      "orbitalEnabled": true,
+      "provenance": "WORK3_2_AUTHORED_ORBITAL_RUNTIME_HYPOTHESIS",
+      "orbitalDirectionSign": 1,
+      "orbitalAngularVelocityDegPerSec": 16.0,
+      "orbitalAngularVelocityRadPerSec": 0.27925268,
+      "orbitalPeriodSec": 22.5,
+      "angleAtT0Deg": 0.0,
+      "angleAtT2Deg": 32.0,
+      "angleAtT5Deg": 80.0,
+      "rawOrbitalAxis": [
+        0.04,
+        0.03,
+        0.9987
+      ],
+      "normalizedOrbitalAxis": [
+        0.04000197,
+        0.03000147,
+        0.99874908
+      ],
+      "tiltFromCoreZDeg": 2.866,
+      "maxAllowedTiltDeg": 8.0,
+      "drawIds": [
+        "G01_back_arch",
+        "G01_back_outer_veil",
+        "G01_front_lower_sweep"
+      ],
+      "segmentCount": 3
+    },
+    {
+      "residentId": "WW_RESIDENT_G02",
+      "groupKey": "G02",
+      "orbitalEnabled": true,
+      "provenance": "WORK3_2_AUTHORED_ORBITAL_RUNTIME_HYPOTHESIS",
+      "orbitalDirectionSign": -1,
+      "orbitalAngularVelocityDegPerSec": -13.0,
+      "orbitalAngularVelocityRadPerSec": -0.2268928,
+      "orbitalPeriodSec": 27.6923,
+      "angleAtT0Deg": 0.0,
+      "angleAtT2Deg": -26.0,
+      "angleAtT5Deg": -65.0,
+      "rawOrbitalAxis": [
+        -0.04,
+        0.03,
+        0.9987
+      ],
+      "normalizedOrbitalAxis": [
+        -0.04000197,
+        0.03000147,
+        0.99874908
+      ],
+      "tiltFromCoreZDeg": 2.866,
+      "maxAllowedTiltDeg": 8.0,
+      "drawIds": [
+        "G02_back_upper_arc",
+        "G02_back_upper_hairline",
+        "G02_back_right_rim",
+        "G02_front_right_embrace"
+      ],
+      "segmentCount": 4
+    },
+    {
+      "residentId": "WW_RESIDENT_A01",
+      "groupKey": "A01",
+      "orbitalEnabled": true,
+      "provenance": "WORK3_2_AUTHORED_ORBITAL_RUNTIME_HYPOTHESIS",
+      "orbitalDirectionSign": 1,
+      "orbitalAngularVelocityDegPerSec": 11.0,
+      "orbitalAngularVelocityRadPerSec": 0.19198622,
+      "orbitalPeriodSec": 32.7273,
+      "angleAtT0Deg": 0.0,
+      "angleAtT2Deg": 22.0,
+      "angleAtT5Deg": 55.0,
+      "rawOrbitalAxis": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "normalizedOrbitalAxis": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "tiltFromCoreZDeg": 0.0,
+      "maxAllowedTiltDeg": 8.0,
+      "drawIds": [
+        "A01_back_upper_left",
+        "A01_front_left_embrace"
+      ],
+      "segmentCount": 2
+    },
+    {
+      "residentId": "WW_RESIDENT_A02",
+      "groupKey": "A02",
+      "orbitalEnabled": true,
+      "provenance": "WORK3_2_AUTHORED_ORBITAL_RUNTIME_HYPOTHESIS",
+      "orbitalDirectionSign": -1,
+      "orbitalAngularVelocityDegPerSec": -19.0,
+      "orbitalAngularVelocityRadPerSec": -0.33161256,
+      "orbitalPeriodSec": 18.9474,
+      "angleAtT0Deg": 0.0,
+      "angleAtT2Deg": -38.0,
+      "angleAtT5Deg": -95.0,
+      "rawOrbitalAxis": [
+        -0.03,
+        0.06,
+        0.9977
+      ],
+      "normalizedOrbitalAxis": [
+        -0.03000143,
+        0.06000286,
+        0.99774746
+      ],
+      "tiltFromCoreZDeg": 3.8444,
+      "maxAllowedTiltDeg": 8.0,
+      "drawIds": [
+        "A02_back_lower_halo",
+        "A02_front_lower_strand"
+      ],
+      "segmentCount": 2
+    },
+    {
+      "residentId": "WW_RESIDENT_C01",
+      "groupKey": "C01",
+      "orbitalEnabled": true,
+      "provenance": "WORK3_2_AUTHORED_ORBITAL_RUNTIME_HYPOTHESIS",
+      "orbitalDirectionSign": 1,
+      "orbitalAngularVelocityDegPerSec": 9.0,
+      "orbitalAngularVelocityRadPerSec": 0.15707963,
+      "orbitalPeriodSec": 40.0,
+      "angleAtT0Deg": 0.0,
+      "angleAtT2Deg": 18.0,
+      "angleAtT5Deg": 45.0,
+      "rawOrbitalAxis": [
+        0.05,
+        -0.02,
+        0.9985
+      ],
+      "normalizedOrbitalAxis": [
+        0.05000245,
+        -0.02000098,
+        0.99854896
+      ],
+      "tiltFromCoreZDeg": 3.0872,
+      "maxAllowedTiltDeg": 8.0,
+      "drawIds": [
+        "C01_back_lower_thread",
+        "C01_front_lower_right"
+      ],
+      "segmentCount": 2
+    }
+  ]
+}

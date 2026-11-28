@@ -1,0 +1,720 @@
+{
+  "schemaVersion": "WATER_WORLD_V2_1_WORK3_2_CORE_LOCAL_COORDINATE_AUDIT_V1",
+  "taskId": "WATER_WORLD_V2_1_WORK3_2_FIVE_RESIDENT_TRUE_ORBITAL_MOTION_V2",
+  "canvasSizePx": 1254,
+  "projectionFormula": "gl_Position = vec4(p.x / uCanvas.x * 2.0 - 1.0, 1.0 - p.y / uCanvas.y * 2.0, p.z / 2048.0, 1.0)",
+  "ndcDepthConvention": "GL_LEQUAL; z=-1.0 NEAR (front), z=+1.0 FAR (back); worldZ mapped via p.z / 2048.0",
+  "coreCenterPx": [
+    626.4757504075296,
+    596.3441299453135,
+    0.0
+  ],
+  "coreInnerRadiusPx": 395.75,
+  "coreOuterRadiusPx": 422.2986621604988,
+  "referencePassWorldZ": {
+    "background": 1900.0,
+    "resident_back_range": [
+      485.0,
+      520.0
+    ],
+    "sphere_back": 450.0,
+    "water_and_core_3d_center": [
+      320.0,
+      0.0
+    ],
+    "far_ecology": [
+      230.0,
+      240.0
+    ],
+    "fish": [
+      148.0,
+      154.0
+    ],
+    "near_ecology": [
+      106.0,
+      128.0
+    ],
+    "sphere_front": -450.0,
+    "resident_front_range": [
+      -520.0,
+      -505.0
+    ],
+    "outer_bubbles": [
+      -608.0,
+      -600.0
+    ]
+  },
+  "totalSegments": 13,
+  "backSegments": 8,
+  "frontSegments": 5,
+  "all13MeshesMatchV1FrozenSha256": true,
+  "all13ModelsArePureZTranslation": true,
+  "all13PreserveDepthSafetyAcross360Deg": true,
+  "a01SeamAudit": {
+    "backEndWorldPx": [
+      48.906,
+      570.57,
+      495.0
+    ],
+    "frontStartWorldPx": [
+      48.906,
+      570.57,
+      -510.0
+    ],
+    "maxScreenXySeamGapAcross360DegPx": 0.0,
+    "thresholdPx": 1.0,
+    "passesSeamGate": true
+  },
+  "segments": [
+    {
+      "segmentId": "G01_back_arch",
+      "parentResidentId": "WW_RESIDENT_G01",
+      "parentResidentGroup": "G01",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G01_back_arch_mesh.json",
+      "meshSha256": "314939e1ad29edee47c73919daeeb40305d3216eead6061e4face0682649740c",
+      "meshSha256MatchesV1Lock": true,
+      "vertexCount": 366,
+      "indexCount": 1092,
+      "rawVertexZRange": [
+        0.0,
+        0.0
+      ],
+      "rawVertexXRange": [
+        299.732,
+        1166.299
+      ],
+      "rawVertexYRange": [
+        64.199,
+        787.514
+      ],
+      "modelMatrixIsPureZTranslation": true,
+      "modelZ": 520.0,
+      "coreLocalRadius3DPxRange": [
+        686.053,
+        757.107
+      ],
+      "coreLocalRadius3DNormByInnerRRange": [
+        1.7336,
+        1.9131
+      ],
+      "rotated360DegZRange": [
+        391.106,
+        612.144
+      ],
+      "rotated360DegNdcZRange": [
+        0.19097,
+        0.2989
+      ],
+      "rotated360DegXRange": [
+        92.875,
+        1237.174
+      ],
+      "rotated360DegYRange": [
+        62.734,
+        1207.106
+      ],
+      "depthSignPreservedAcross360Deg": true
+    },
+    {
+      "segmentId": "G01_back_outer_veil",
+      "parentResidentId": "WW_RESIDENT_G01",
+      "parentResidentGroup": "G01",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G01_back_outer_veil_mesh.json",
+      "meshSha256": "9039ff8914dd05661248b11ffd2e948f4494bfff25c15dfd21156e5a69a8c888",
+      "meshSha256MatchesV1Lock": true,
+      "vertexCount": 210,
+      "indexCount": 624,
+      "rawVertexZRange": [
+        0.0,
+        0.0
+      ],
+      "rawVertexXRange": [
+        809.905,
+        1208.57
+      ],
+      "rawVertexYRange": [
+        182.453,
+        736.88
+      ],
+      "modelMatrixIsPureZTranslation": true,
+      "modelZ": 515.0,
+      "coreLocalRadius3DPxRange": [
+        671.415,
+        780.236
+      ],
+      "coreLocalRadius3DNormByInnerRRange": [
+        1.6966,
+        1.9715
+      ],
+      "rotated360DegZRange": [
+        436.677,
+        615.146
+      ],
+      "rotated360DegNdcZRange": [
+        0.21322,
+        0.30036
+      ],
+      "rotated360DegXRange": [
+        116.9,
+        1223.321
+      ],
+      "rotated360DegYRange": [
+        86.743,
+        1193.22
+      ],
+      "depthSignPreservedAcross360Deg": true
+    },
+    {
+      "segmentId": "G02_back_upper_arc",
+      "parentResidentId": "WW_RESIDENT_G02",
+      "parentResidentGroup": "G02",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G02_back_upper_arc_mesh.json",
+      "meshSha256": "87f45808443bea392c20b4e97e9b5a455f9a265400d01bd981b156257b19ff00",
+      "meshSha256MatchesV1Lock": true,
+      "vertexCount": 314,
+      "indexCount": 936,
+      "rawVertexZRange": [
+        0.0,
+        0.0
+      ],
+      "rawVertexXRange": [
+        75.118,
+        777.652
+      ],
+      "rawVertexYRange": [
+        116.016,
+        518.37
+      ],
+      "modelMatrixIsPureZTranslation": true,
+      "modelZ": 505.0,
+      "coreLocalRadius3DPxRange": [
+        635.033,
+        758.678
+      ],
+      "coreLocalRadius3DNormByInnerRRange": [
+        1.6046,
+        1.9171
+      ],
+      "rotated360DegZRange": [
+        409.12,
+        607.474
+      ],
+      "rotated360DegNdcZRange": [
+        0.19977,
+        0.29662
+      ],
+      "rotated360DegXRange": [
+        22.44,
+        1128.468
+      ],
+      "rotated360DegYRange": [
+        72.206,
+        1181.632
+      ],
+      "depthSignPreservedAcross360Deg": true
+    },
+    {
+      "segmentId": "G02_back_upper_hairline",
+      "parentResidentId": "WW_RESIDENT_G02",
+      "parentResidentGroup": "G02",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G02_back_upper_hairline_mesh.json",
+      "meshSha256": "8fadf5a9ef75eedeeb80f4f294b02e11c21039b53c3644adb437a780c3f4d1d0",
+      "meshSha256MatchesV1Lock": true,
+      "vertexCount": 210,
+      "indexCount": 624,
+      "rawVertexZRange": [
+        0.0,
+        0.0
+      ],
+      "rawVertexXRange": [
+        111.721,
+        683.946
+      ],
+      "rawVertexYRange": [
+        83.503,
+        454.458
+      ],
+      "modelMatrixIsPureZTranslation": true,
+      "modelZ": 502.0,
+      "coreLocalRadius3DPxRange": [
+        657.727,
+        780.355
+      ],
+      "coreLocalRadius3DNormByInnerRRange": [
+        1.662,
+        1.9718
+      ],
+      "rotated360DegZRange": [
+        408.007,
+        595.287
+      ],
+      "rotated360DegNdcZRange": [
+        0.19922,
+        0.29067
+      ],
+      "rotated360DegXRange": [
+        -17.83,
+        1170.494
+      ],
+      "rotated360DegYRange": [
+        30.25,
+        1222.524
+      ],
+      "depthSignPreservedAcross360Deg": true
+    },
+    {
+      "segmentId": "G02_back_right_rim",
+      "parentResidentId": "WW_RESIDENT_G02",
+      "parentResidentGroup": "G02",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G02_back_right_rim_mesh.json",
+      "meshSha256": "bdd13ed610b00b31ad0cfae6d11fcefd85fd45ad6f19c992434051aaae43433e",
+      "meshSha256MatchesV1Lock": true,
+      "vertexCount": 158,
+      "indexCount": 468,
+      "rawVertexZRange": [
+        0.0,
+        0.0
+      ],
+      "rawVertexXRange": [
+        1040.171,
+        1234.909
+      ],
+      "rawVertexYRange": [
+        295.312,
+        784.676
+      ],
+      "modelMatrixIsPureZTranslation": true,
+      "modelZ": 500.0,
+      "coreLocalRadius3DPxRange": [
+        710.697,
+        788.581
+      ],
+      "coreLocalRadius3DNormByInnerRRange": [
+        1.7958,
+        1.9926
+      ],
+      "rotated360DegZRange": [
+        350.426,
+        521.936
+      ],
+      "rotated360DegNdcZRange": [
+        0.17111,
+        0.25485
+      ],
+      "rotated360DegXRange": [
+        -73.118,
+        1239.781
+      ],
+      "rotated360DegYRange": [
+        -36.309,
+        1280.75
+      ],
+      "depthSignPreservedAcross360Deg": true
+    },
+    {
+      "segmentId": "A01_back_upper_left",
+      "parentResidentId": "WW_RESIDENT_A01",
+      "parentResidentGroup": "A01",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/A01_back_upper_left_mesh.json",
+      "meshSha256": "9bb3f706a883fc675d5110de3f457b04f56b90007ca7074b6ffff4bebb3e38d2",
+      "meshSha256MatchesV1Lock": true,
+      "vertexCount": 158,
+      "indexCount": 468,
+      "rawVertexZRange": [
+        0.0,
+        0.0
+      ],
+      "rawVertexXRange": [
+        19.047,
+        284.234
+      ],
+      "rawVertexYRange": [
+        240.804,
+        573.471
+      ],
+      "modelMatrixIsPureZTranslation": true,
+      "modelZ": 495.0,
+      "coreLocalRadius3DPxRange": [
+        691.475,
+        786.457
+      ],
+      "coreLocalRadius3DNormByInnerRRange": [
+        1.7473,
+        1.9873
+      ],
+      "rotated360DegZRange": [
+        495.0,
+        495.0
+      ],
+      "rotated360DegNdcZRange": [
+        0.2417,
+        0.2417
+      ],
+      "rotated360DegXRange": [
+        15.347,
+        1237.604
+      ],
+      "rotated360DegYRange": [
+        -14.785,
+        1207.473
+      ],
+      "depthSignPreservedAcross360Deg": true
+    },
+    {
+      "segmentId": "A02_back_lower_halo",
+      "parentResidentId": "WW_RESIDENT_A02",
+      "parentResidentGroup": "A02",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/A02_back_lower_halo_mesh.json",
+      "meshSha256": "4144ff29f09f2d1ef91562cb3033722cf0d7d5bf1fdb6d78b157b9a4445956e4",
+      "meshSha256MatchesV1Lock": true,
+      "vertexCount": 210,
+      "indexCount": 624,
+      "rawVertexZRange": [
+        0.0,
+        0.0
+      ],
+      "rawVertexXRange": [
+        416.797,
+        1060.278
+      ],
+      "rawVertexYRange": [
+        889.29,
+        1168.918
+      ],
+      "modelMatrixIsPureZTranslation": true,
+      "modelZ": 490.0,
+      "coreLocalRadius3DPxRange": [
+        689.081,
+        766.788
+      ],
+      "coreLocalRadius3DNormByInnerRRange": [
+        1.7412,
+        1.9376
+      ],
+      "rotated360DegZRange": [
+        329.826,
+        533.377
+      ],
+      "rotated360DegNdcZRange": [
+        0.16105,
+        0.26044
+      ],
+      "rotated360DegXRange": [
+        -54.5,
+        1224.007
+      ],
+      "rotated360DegYRange": [
+        -77.525,
+        1203.457
+      ],
+      "depthSignPreservedAcross360Deg": true
+    },
+    {
+      "segmentId": "C01_back_lower_thread",
+      "parentResidentId": "WW_RESIDENT_C01",
+      "parentResidentGroup": "C01",
+      "segmentPass": "02_RESIDENT_BACK",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/C01_back_lower_thread_mesh.json",
+      "meshSha256": "8236f4286d7178d0a114bbeed289d84f50855b61079900ccd854f3a587bfeba6",
+      "meshSha256MatchesV1Lock": true,
+      "vertexCount": 210,
+      "indexCount": 624,
+      "rawVertexZRange": [
+        0.0,
+        0.0
+      ],
+      "rawVertexXRange": [
+        153.096,
+        652.476
+      ],
+      "rawVertexYRange": [
+        692.97,
+        1186.306
+      ],
+      "modelMatrixIsPureZTranslation": true,
+      "modelZ": 485.0,
+      "coreLocalRadius3DPxRange": [
+        670.669,
+        763.835
+      ],
+      "coreLocalRadius3DNormByInnerRRange": [
+        1.6947,
+        1.9301
+      ],
+      "rotated360DegZRange": [
+        346.23,
+        533.575
+      ],
+      "rotated360DegNdcZRange": [
+        0.16906,
+        0.26053
+      ],
+      "rotated360DegXRange": [
+        75.553,
+        1287.566
+      ],
+      "rotated360DegYRange": [
+        -31.99,
+        1187.956
+      ],
+      "depthSignPreservedAcross360Deg": true
+    },
+    {
+      "segmentId": "G01_front_lower_sweep",
+      "parentResidentId": "WW_RESIDENT_G01",
+      "parentResidentGroup": "G01",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G01_front_lower_sweep_mesh.json",
+      "meshSha256": "1b3ce58e4dc47897c068290b2da951750c5cd7c5c04db77eb19060f7ef1d1dcb",
+      "meshSha256MatchesV1Lock": true,
+      "vertexCount": 262,
+      "indexCount": 780,
+      "rawVertexZRange": [
+        0.0,
+        0.0
+      ],
+      "rawVertexXRange": [
+        128.744,
+        707.753
+      ],
+      "rawVertexYRange": [
+        632.833,
+        1224.454
+      ],
+      "modelMatrixIsPureZTranslation": true,
+      "modelZ": -520.0,
+      "coreLocalRadius3DPxRange": [
+        699.417,
+        818.894
+      ],
+      "coreLocalRadius3DNormByInnerRRange": [
+        1.7673,
+        2.0692
+      ],
+      "rotated360DegZRange": [
+        -601.864,
+        -380.82
+      ],
+      "rotated360DegNdcZRange": [
+        -0.29388,
+        -0.18595
+      ],
+      "rotated360DegXRange": [
+        -85.384,
+        1264.674
+      ],
+      "rotated360DegYRange": [
+        -115.535,
+        1234.562
+      ],
+      "depthSignPreservedAcross360Deg": true
+    },
+    {
+      "segmentId": "G02_front_right_embrace",
+      "parentResidentId": "WW_RESIDENT_G02",
+      "parentResidentGroup": "G02",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/G02_front_right_embrace_mesh.json",
+      "meshSha256": "77fa953287fc513f6b13f14c380acc56cd48e049e9e14389bc7c08eb7df2129d",
+      "meshSha256MatchesV1Lock": true,
+      "vertexCount": 262,
+      "indexCount": 780,
+      "rawVertexZRange": [
+        0.0,
+        0.0
+      ],
+      "rawVertexXRange": [
+        606.909,
+        1202.278
+      ],
+      "rawVertexYRange": [
+        534.844,
+        995.662
+      ],
+      "modelMatrixIsPureZTranslation": true,
+      "modelZ": -505.0,
+      "coreLocalRadius3DPxRange": [
+        610.855,
+        790.713
+      ],
+      "coreLocalRadius3DNormByInnerRRange": [
+        1.5435,
+        1.998
+      ],
+      "rotated360DegZRange": [
+        -611.101,
+        -427.706
+      ],
+      "rotated360DegNdcZRange": [
+        -0.29839,
+        -0.20884
+      ],
+      "rotated360DegXRange": [
+        107.429,
+        1253.647
+      ],
+      "rotated360DegYRange": [
+        -11.022,
+        1138.81
+      ],
+      "depthSignPreservedAcross360Deg": true
+    },
+    {
+      "segmentId": "A01_front_left_embrace",
+      "parentResidentId": "WW_RESIDENT_A01",
+      "parentResidentGroup": "A01",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/A01_front_left_embrace_mesh.json",
+      "meshSha256": "1c7d5b8a886795974f7a88ea3b0e4e411565011dd96c9dd5d14edb9e8e337080",
+      "meshSha256MatchesV1Lock": true,
+      "vertexCount": 314,
+      "indexCount": 936,
+      "rawVertexZRange": [
+        0.0,
+        0.0
+      ],
+      "rawVertexXRange": [
+        26.104,
+        937.41
+      ],
+      "rawVertexYRange": [
+        554.319,
+        1012.331
+      ],
+      "modelMatrixIsPureZTranslation": true,
+      "modelZ": -510.0,
+      "coreLocalRadius3DPxRange": [
+        614.177,
+        787.805
+      ],
+      "coreLocalRadius3DNormByInnerRRange": [
+        1.5519,
+        1.9907
+      ],
+      "rotated360DegZRange": [
+        -510.0,
+        -510.0
+      ],
+      "rotated360DegNdcZRange": [
+        -0.24902,
+        -0.24902
+      ],
+      "rotated360DegXRange": [
+        26.104,
+        1226.848
+      ],
+      "rotated360DegYRange": [
+        -4.028,
+        1196.716
+      ],
+      "depthSignPreservedAcross360Deg": true
+    },
+    {
+      "segmentId": "A02_front_lower_strand",
+      "parentResidentId": "WW_RESIDENT_A02",
+      "parentResidentGroup": "A02",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/A02_front_lower_strand_mesh.json",
+      "meshSha256": "919f583bbd245b16d426264bcd93ec61f86a44ec35db63471507b928f79c657f",
+      "meshSha256MatchesV1Lock": true,
+      "vertexCount": 262,
+      "indexCount": 780,
+      "rawVertexZRange": [
+        0.0,
+        0.0
+      ],
+      "rawVertexXRange": [
+        75.195,
+        877.713
+      ],
+      "rawVertexYRange": [
+        507.682,
+        1020.558
+      ],
+      "modelMatrixIsPureZTranslation": true,
+      "modelZ": -508.0,
+      "coreLocalRadius3DPxRange": [
+        627.415,
+        753.987
+      ],
+      "coreLocalRadius3DNormByInnerRRange": [
+        1.5854,
+        1.9052
+      ],
+      "rotated360DegZRange": [
+        -607.964,
+        -360.457
+      ],
+      "rotated360DegNdcZRange": [
+        -0.29686,
+        -0.176
+      ],
+      "rotated360DegXRange": [
+        63.276,
+        1278.118
+      ],
+      "rotated360DegYRange": [
+        23.092,
+        1240.351
+      ],
+      "depthSignPreservedAcross360Deg": true
+    },
+    {
+      "segmentId": "C01_front_lower_right",
+      "parentResidentId": "WW_RESIDENT_C01",
+      "parentResidentGroup": "C01",
+      "segmentPass": "10_RESIDENT_FRONT",
+      "meshRelativePath": "02_SUPPLEMENTED_ASSETS/geometry/C01_front_lower_right_mesh.json",
+      "meshSha256": "06846fbd1db5b160090dd514c68d61a6b7f2d661c9c4730a4ddb2c4ab16379ec",
+      "meshSha256MatchesV1Lock": true,
+      "vertexCount": 262,
+      "indexCount": 780,
+      "rawVertexZRange": [
+        0.0,
+        0.0
+      ],
+      "rawVertexXRange": [
+        569.23,
+        1158.178
+      ],
+      "rawVertexYRange": [
+        601.823,
+        999.721
+      ],
+      "modelMatrixIsPureZTranslation": true,
+      "modelZ": -512.0,
+      "coreLocalRadius3DPxRange": [
+        608.715,
+        767.979
+      ],
+      "coreLocalRadius3DNormByInnerRRange": [
+        1.5381,
+        1.9406
+      ],
+      "rotated360DegZRange": [
+        -566.207,
+        -370.339
+      ],
+      "rotated360DegNdcZRange": [
+        -0.27647,
+        -0.18083
+      ],
+      "rotated360DegXRange": [
+        -41.176,
+        1184.886
+      ],
+      "rotated360DegYRange": [
+        -2.395,
+        1231.487
+      ],
+      "depthSignPreservedAcross360Deg": true
+    }
+  ]
+}

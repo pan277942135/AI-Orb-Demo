@@ -321,12 +321,27 @@ internal class WaterWorldStaticRenderer(
                     GLES30.glBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE_MINUS_SRC_COLOR)
                     s.residentRibbon.use()
                     GLES30.glUniform2f(s.residentRibbon.uniform("uCanvas"), canvasW, canvasH)
+                    GLES30.glUniform3f(
+                        s.residentRibbon.uniform("uCoreCenterPx"),
+                        opt.sphereCenterPx[0],
+                        opt.sphereCenterPx[1],
+                        0f,
+                    )
+                    GLES30.glUniform1f(s.residentRibbon.uniform("uCoreRadiusPx"), opt.sphereInnerRadiusPx)
                     for (item in stageDraws) {
                         val rState = item.residentGroupKey?.let { snapshot.residentStates[it] }
                         val segMap = item.residentSegmentMapping
                             ?: WaterWorldResidentContractV1.mappingForSegment(item.binding.objectId)
                         val deformMode = if (!snapshot.staticReferenceMode && rState != null) 3 else 0
+                        val orbitActive = !snapshot.staticReferenceMode && rState?.orbitalEnabled == true
+                        val orbitMat = if (orbitActive) {
+                            rState.orbitalRotationMat3
+                        } else {
+                            WaterWorldResidentOrbitalMath.IDENTITY_MAT3_READONLY
+                        }
                         GLES30.glUniform1i(s.residentRibbon.uniform("uDeformMode"), deformMode)
+                        GLES30.glUniform1i(s.residentRibbon.uniform("uResidentOrbitEnabled"), if (orbitActive) 1 else 0)
+                        GLES30.glUniformMatrix3fv(s.residentRibbon.uniform("uResidentOrbitMat"), 1, false, orbitMat, 0)
                         GLES30.glUniform4f(
                             s.residentRibbon.uniform("uSegmentArcRange"),
                             segMap.segmentArcLengthStart,

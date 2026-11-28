@@ -147,7 +147,11 @@
       "width_pulse_hz": 0.19,
       "brightness_pulse_amp": 0.09,
       "brightness_pulse_hz": 0.19,
-      "lateral_wave_px": 8.0
+      "lateral_wave_px": 8.0,
+      "orbital_enabled": true,
+      "orbital_angular_velocity_deg_per_sec": 16.0,
+      "orbital_axis": [0.04, 0.03, 0.9987],
+      "orbital_provenance": "WORK3_2_AUTHORED_ORBITAL_RUNTIME_HYPOTHESIS"
     },
     {
       "id": "WW_RESIDENT_G02",
@@ -164,7 +168,11 @@
       "width_pulse_hz": 0.18,
       "brightness_pulse_amp": 0.08,
       "brightness_pulse_hz": 0.16,
-      "lateral_wave_px": 7.0
+      "lateral_wave_px": 7.0,
+      "orbital_enabled": true,
+      "orbital_angular_velocity_deg_per_sec": -13.0,
+      "orbital_axis": [-0.04, 0.03, 0.9987],
+      "orbital_provenance": "WORK3_2_AUTHORED_ORBITAL_RUNTIME_HYPOTHESIS"
     },
     {
       "id": "WW_RESIDENT_A01",
@@ -181,7 +189,11 @@
       "width_pulse_hz": 0.21,
       "brightness_pulse_amp": 0.10,
       "brightness_pulse_hz": 0.22,
-      "lateral_wave_px": 9.0
+      "lateral_wave_px": 9.0,
+      "orbital_enabled": true,
+      "orbital_angular_velocity_deg_per_sec": 11.0,
+      "orbital_axis": [0.0, 0.0, 1.0],
+      "orbital_provenance": "WORK3_2_AUTHORED_ORBITAL_RUNTIME_HYPOTHESIS"
     },
     {
       "id": "WW_RESIDENT_A02",
@@ -198,7 +210,11 @@
       "width_pulse_hz": 0.25,
       "brightness_pulse_amp": 0.09,
       "brightness_pulse_hz": 0.21,
-      "lateral_wave_px": 8.0
+      "lateral_wave_px": 8.0,
+      "orbital_enabled": true,
+      "orbital_angular_velocity_deg_per_sec": -19.0,
+      "orbital_axis": [-0.03, 0.06, 0.9977],
+      "orbital_provenance": "WORK3_2_AUTHORED_ORBITAL_RUNTIME_HYPOTHESIS"
     },
     {
       "id": "WW_RESIDENT_C01",
@@ -215,7 +231,11 @@
       "width_pulse_hz": 0.17,
       "brightness_pulse_amp": 0.07,
       "brightness_pulse_hz": 0.15,
-      "lateral_wave_px": 6.5
+      "lateral_wave_px": 6.5,
+      "orbital_enabled": true,
+      "orbital_angular_velocity_deg_per_sec": 9.0,
+      "orbital_axis": [0.05, -0.02, 0.9985],
+      "orbital_provenance": "WORK3_2_AUTHORED_ORBITAL_RUNTIME_HYPOTHESIS"
     }
   ],
   "plants": [

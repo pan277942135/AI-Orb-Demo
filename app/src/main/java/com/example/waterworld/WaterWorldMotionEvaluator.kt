@@ -323,6 +323,9 @@ object WaterWorldMotionEvaluator {
     ): WaterWorldDynamicFrameSnapshot.ResidentMotionState {
         val flowSpeedPerSec = rp.flowDirection / rp.cyclePeriodSec
         val waveFreqHz = 3.0f / rp.cyclePeriodSec
+        val normAxis = WaterWorldResidentOrbitalMath.normalizeAxis(rp.orbitalAxisX, rp.orbitalAxisY, rp.orbitalAxisZ)
+        val omegaRadPerSecDouble = WaterWorldResidentOrbitalMath.degreesToRadians(rp.orbitalAngularVelocityDegPerSec.toDouble())
+        val omegaRadPerSec = omegaRadPerSecDouble.toFloat()
         if (isZero) {
             return WaterWorldDynamicFrameSnapshot.ResidentMotionState(
                 id = rp.id,
@@ -344,6 +347,14 @@ object WaterWorldMotionEvaluator {
                 brightnessTimePhaseRad = 0f,
                 waveFrequencyHz = waveFreqHz,
                 phaseOffsetRad = rp.phaseOffsetRad,
+                orbitalEnabled = false,
+                orbitalAngleRad = 0f,
+                orbitalAngularVelocityRadPerSec = omegaRadPerSec,
+                orbitalAxisX = normAxis[0],
+                orbitalAxisY = normAxis[1],
+                orbitalAxisZ = normAxis[2],
+                orbitalRotationMat3 = WaterWorldResidentOrbitalMath.identityMat3(),
+                orbitalProvenance = rp.orbitalProvenance,
             )
         }
         val cycle = (t / rp.cyclePeriodSec.toDouble()).toFloat()
@@ -356,6 +367,16 @@ object WaterWorldMotionEvaluator {
         val widthPulse = 1f + widthAmpActive * sin(widthTimePhase.toDouble()).toFloat()
         val brightness = 1f + brightnessAmpActive * sin(brightnessTimePhase.toDouble()).toFloat()
         val wavePhase = (TWO_PI * waveFreqHz.toDouble() * t + rp.phaseOffsetRad).toFloat()
+
+        // Work 3.2 unified timeline rigid orbital angle: theta(t) = omega * globalTimeSeconds (zero per-frame accumulation)
+        val orbitalActive = rp.orbitalEnabled
+        val orbitalAngleRad = if (orbitalActive) (omegaRadPerSecDouble * t).toFloat() else 0f
+        val orbitalMat3 = if (orbitalActive) {
+            WaterWorldResidentOrbitalMath.buildRodriguesMat3(normAxis, orbitalAngleRad)
+        } else {
+            WaterWorldResidentOrbitalMath.identityMat3()
+        }
+
         return WaterWorldDynamicFrameSnapshot.ResidentMotionState(
             id = rp.id,
             groupKey = rp.groupKey,
@@ -376,6 +397,14 @@ object WaterWorldMotionEvaluator {
             brightnessTimePhaseRad = brightnessTimePhase,
             waveFrequencyHz = waveFreqHz,
             phaseOffsetRad = rp.phaseOffsetRad,
+            orbitalEnabled = orbitalActive,
+            orbitalAngleRad = orbitalAngleRad,
+            orbitalAngularVelocityRadPerSec = omegaRadPerSec,
+            orbitalAxisX = normAxis[0],
+            orbitalAxisY = normAxis[1],
+            orbitalAxisZ = normAxis[2],
+            orbitalRotationMat3 = orbitalMat3,
+            orbitalProvenance = rp.orbitalProvenance,
         )
     }
 

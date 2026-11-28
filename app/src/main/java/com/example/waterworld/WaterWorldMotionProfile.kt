@@ -80,6 +80,13 @@ data class WaterWorldMotionProfile(
         val brightnessPulseAmp: Float,
         val brightnessPulseHz: Float,
         val lateralWavePx: Float,
+        // Work 3.2 true 3D Core-local rigid orbital motion parameters
+        val orbitalEnabled: Boolean = true,
+        val orbitalAngularVelocityDegPerSec: Float = WaterWorldResidentOrbitalMath.defaultOrbitalAngularVelocityDegPerSec(groupKey),
+        val orbitalAxisX: Float = WaterWorldResidentOrbitalMath.defaultOrbitalAxis(groupKey)[0],
+        val orbitalAxisY: Float = WaterWorldResidentOrbitalMath.defaultOrbitalAxis(groupKey)[1],
+        val orbitalAxisZ: Float = WaterWorldResidentOrbitalMath.defaultOrbitalAxis(groupKey)[2],
+        val orbitalProvenance: String = WaterWorldResidentOrbitalMath.PROVENANCE_WORK3_2_ORBITAL_HYPOTHESIS,
     )
 
     data class PlantProfile(
@@ -170,6 +177,26 @@ data class WaterWorldMotionProfile(
         require(residents.size == 5) { "Expected 5 resident profiles, got ${residents.size}" }
         require(residents.map { it.cyclePeriodSec }.toSet().size == 5) { "All 5 residents must have distinct periods" }
         require(residents.map { it.phaseOffsetRad }.toSet().size == 5) { "All 5 residents must have distinct initial phases" }
+        require(residents.map { it.orbitalAngularVelocityDegPerSec }.toSet().size == 5) {
+            "All 5 residents must have distinct Work 3.2 orbital angular velocities"
+        }
+        require(residents.all { it.orbitalProvenance == WaterWorldResidentOrbitalMath.PROVENANCE_WORK3_2_ORBITAL_HYPOTHESIS }) {
+            "All 5 residents must declare orbitalProvenance=${WaterWorldResidentOrbitalMath.PROVENANCE_WORK3_2_ORBITAL_HYPOTHESIS}"
+        }
+        for (rp in residents) {
+            require(rp.orbitalAngularVelocityDegPerSec != 0f && rp.orbitalAngularVelocityDegPerSec.isFinite()) {
+                "${rp.groupKey} orbitalAngularVelocityDegPerSec must be non-zero finite"
+            }
+            val tiltDeg = WaterWorldResidentOrbitalMath.axisTiltFromCoreZDeg(rp.orbitalAxisX, rp.orbitalAxisY, rp.orbitalAxisZ)
+            require(tiltDeg <= WaterWorldResidentOrbitalMath.MAX_ORBITAL_AXIS_TILT_DEG + 1e-3f) {
+                "${rp.groupKey} orbital axis tilt ${tiltDeg}deg exceeds max ${WaterWorldResidentOrbitalMath.MAX_ORBITAL_AXIS_TILT_DEG}deg"
+            }
+            if (rp.groupKey == "A01") {
+                require(tiltDeg <= 1e-3f) {
+                    "A01 must remain pure Core Z-axis (0,0,1) to guarantee <= 1px back-to-front seam, got tilt=${tiltDeg}deg"
+                }
+            }
+        }
         require(plants.size == 2) { "Expected 2 plant profiles, got ${plants.size}" }
         require(rocks.size == 3 && rocks.all { it.physicallyStationary }) { "All 3 rocks must be stationary" }
         require(bubbles.size == 9) { "Expected 9 outer bubble profiles, got ${bubbles.size}" }
@@ -235,9 +262,15 @@ data class WaterWorldMotionProfile(
             val resArr = root.getJSONArray("residents")
             val residents = (0 until resArr.length()).map { i ->
                 val o = resArr.getJSONObject(i)
+                val groupKey = o.getString("group_key")
+                val defaultAxis = WaterWorldResidentOrbitalMath.defaultOrbitalAxis(groupKey)
+                val orbitAxisArr = o.optJSONArray("orbital_axis")
+                val axisX = if (orbitAxisArr != null && orbitAxisArr.length() == 3) orbitAxisArr.getDouble(0).toFloat() else defaultAxis[0]
+                val axisY = if (orbitAxisArr != null && orbitAxisArr.length() == 3) orbitAxisArr.getDouble(1).toFloat() else defaultAxis[1]
+                val axisZ = if (orbitAxisArr != null && orbitAxisArr.length() == 3) orbitAxisArr.getDouble(2).toFloat() else defaultAxis[2]
                 ResidentProfile(
                     id = o.getString("id"),
-                    groupKey = o.getString("group_key"),
+                    groupKey = groupKey,
                     flowId = o.getString("flow_id"),
                     pulseId = o.getString("pulse_id"),
                     provenance = o.getString("provenance"),
@@ -251,6 +284,18 @@ data class WaterWorldMotionProfile(
                     brightnessPulseAmp = o.getDouble("brightness_pulse_amp").toFloat(),
                     brightnessPulseHz = o.getDouble("brightness_pulse_hz").toFloat(),
                     lateralWavePx = o.getDouble("lateral_wave_px").toFloat(),
+                    orbitalEnabled = o.optBoolean("orbital_enabled", true),
+                    orbitalAngularVelocityDegPerSec = o.optDouble(
+                        "orbital_angular_velocity_deg_per_sec",
+                        WaterWorldResidentOrbitalMath.defaultOrbitalAngularVelocityDegPerSec(groupKey).toDouble(),
+                    ).toFloat(),
+                    orbitalAxisX = axisX,
+                    orbitalAxisY = axisY,
+                    orbitalAxisZ = axisZ,
+                    orbitalProvenance = o.optString(
+                        "orbital_provenance",
+                        WaterWorldResidentOrbitalMath.PROVENANCE_WORK3_2_ORBITAL_HYPOTHESIS,
+                    ),
                 )
             }
 
@@ -435,6 +480,9 @@ data class WaterWorldMotionProfile(
                     drawIds = listOf("G01_back_arch", "G01_back_outer_veil", "G01_front_lower_sweep"),
                     cyclePeriodSec = 16.0f, flowDirection = 1f, phaseOffsetRad = 0.00f,
                     widthPulseAmp = 0.060f, widthPulseHz = 0.19f, brightnessPulseAmp = 0.090f, brightnessPulseHz = 0.19f, lateralWavePx = 8.0f,
+                    orbitalEnabled = true, orbitalAngularVelocityDegPerSec = +16.0f,
+                    orbitalAxisX = 0.04f, orbitalAxisY = 0.03f, orbitalAxisZ = 0.9987f,
+                    orbitalProvenance = WaterWorldResidentOrbitalMath.PROVENANCE_WORK3_2_ORBITAL_HYPOTHESIS,
                 ),
                 ResidentProfile(
                     id = "WW_RESIDENT_G02", groupKey = "G02", flowId = "WW_RESIDENT_G02_FLOW", pulseId = "WW_RESIDENT_G02_PULSE",
@@ -442,6 +490,9 @@ data class WaterWorldMotionProfile(
                     drawIds = listOf("G02_back_upper_arc", "G02_back_upper_hairline", "G02_back_right_rim", "G02_front_right_embrace"),
                     cyclePeriodSec = 18.0f, flowDirection = -1f, phaseOffsetRad = 1.24f,
                     widthPulseAmp = 0.050f, widthPulseHz = 0.18f, brightnessPulseAmp = 0.080f, brightnessPulseHz = 0.16f, lateralWavePx = 7.0f,
+                    orbitalEnabled = true, orbitalAngularVelocityDegPerSec = -13.0f,
+                    orbitalAxisX = -0.04f, orbitalAxisY = 0.03f, orbitalAxisZ = 0.9987f,
+                    orbitalProvenance = WaterWorldResidentOrbitalMath.PROVENANCE_WORK3_2_ORBITAL_HYPOTHESIS,
                 ),
                 ResidentProfile(
                     id = "WW_RESIDENT_A01", groupKey = "A01", flowId = "WW_RESIDENT_A01_FLOW", pulseId = "WW_RESIDENT_A01_PULSE",
@@ -449,6 +500,9 @@ data class WaterWorldMotionProfile(
                     drawIds = listOf("A01_back_upper_left", "A01_front_left_embrace"),
                     cyclePeriodSec = 20.0f, flowDirection = 1f, phaseOffsetRad = 2.41f,
                     widthPulseAmp = 0.070f, widthPulseHz = 0.21f, brightnessPulseAmp = 0.100f, brightnessPulseHz = 0.22f, lateralWavePx = 9.0f,
+                    orbitalEnabled = true, orbitalAngularVelocityDegPerSec = +11.0f,
+                    orbitalAxisX = 0.00f, orbitalAxisY = 0.00f, orbitalAxisZ = 1.0000f,
+                    orbitalProvenance = WaterWorldResidentOrbitalMath.PROVENANCE_WORK3_2_ORBITAL_HYPOTHESIS,
                 ),
                 ResidentProfile(
                     id = "WW_RESIDENT_A02", groupKey = "A02", flowId = "WW_RESIDENT_A02_FLOW", pulseId = "WW_RESIDENT_A02_PULSE",
@@ -456,6 +510,9 @@ data class WaterWorldMotionProfile(
                     drawIds = listOf("A02_back_lower_halo", "A02_front_lower_strand"),
                     cyclePeriodSec = 14.0f, flowDirection = -1f, phaseOffsetRad = 3.85f,
                     widthPulseAmp = 0.060f, widthPulseHz = 0.25f, brightnessPulseAmp = 0.090f, brightnessPulseHz = 0.21f, lateralWavePx = 8.0f,
+                    orbitalEnabled = true, orbitalAngularVelocityDegPerSec = -19.0f,
+                    orbitalAxisX = -0.03f, orbitalAxisY = 0.06f, orbitalAxisZ = 0.9977f,
+                    orbitalProvenance = WaterWorldResidentOrbitalMath.PROVENANCE_WORK3_2_ORBITAL_HYPOTHESIS,
                 ),
                 ResidentProfile(
                     id = "WW_RESIDENT_C01", groupKey = "C01", flowId = "WW_RESIDENT_C01_FLOW", pulseId = "WW_RESIDENT_C01_PULSE",
@@ -463,6 +520,9 @@ data class WaterWorldMotionProfile(
                     drawIds = listOf("C01_back_lower_thread", "C01_front_lower_right"),
                     cyclePeriodSec = 22.0f, flowDirection = 1f, phaseOffsetRad = 5.02f,
                     widthPulseAmp = 0.045f, widthPulseHz = 0.17f, brightnessPulseAmp = 0.070f, brightnessPulseHz = 0.15f, lateralWavePx = 6.5f,
+                    orbitalEnabled = true, orbitalAngularVelocityDegPerSec = +9.0f,
+                    orbitalAxisX = 0.05f, orbitalAxisY = -0.02f, orbitalAxisZ = 0.9985f,
+                    orbitalProvenance = WaterWorldResidentOrbitalMath.PROVENANCE_WORK3_2_ORBITAL_HYPOTHESIS,
                 ),
             ),
             plants = listOf(

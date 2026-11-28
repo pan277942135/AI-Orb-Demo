@@ -190,6 +190,11 @@ internal class WaterWorldShaders {
             uniform vec4 uDeformParams;
             // x = segmentArcLengthStart, y = segmentArcLengthEnd, z = localUvDirection (+1/-1), w = localFlowPhaseOffset
             uniform vec4 uSegmentArcRange;
+            // Work 3.2 true 3D Core-local rigid orbital motion: 0 = exact T=0 static bypass, 1 = active 3D orbit around Core center
+            uniform mat3 uResidentOrbitMat;
+            uniform vec3 uCoreCenterPx;
+            uniform float uCoreRadiusPx;
+            uniform int uResidentOrbitEnabled;
             out vec2 vUv;
             out vec2 vScreenUv;
             out vec3 vNormal;
@@ -224,8 +229,17 @@ internal class WaterWorldShaders {
                     localPos.xy += outwardDir * (aLocalHalfWidthPx * localWidthDelta);
                 }
                 vec4 p = uModel * vec4(localPos, 1.0);
+                vec3 worldNormal = normalize(transpose(inverse(mat3(uModel))) * aNormal);
+                if (uResidentOrbitEnabled == 1) {
+                    // Core-local normalized 3D rigid orbital rotation: P'(t) = C + R(axis, theta(t)) * (P - C)
+                    float safeCoreRadius = max(uCoreRadiusPx, 1.0);
+                    vec3 coreLocalNorm = (p.xyz - uCoreCenterPx) / safeCoreRadius;
+                    vec3 rotatedNorm = uResidentOrbitMat * coreLocalNorm;
+                    p.xyz = uCoreCenterPx + rotatedNorm * safeCoreRadius;
+                    worldNormal = normalize(uResidentOrbitMat * worldNormal);
+                }
                 gl_Position = vec4(p.x / uCanvas.x * 2.0 - 1.0, 1.0 - p.y / uCanvas.y * 2.0, p.z / 2048.0, 1.0);
-                vNormal = normalize(transpose(inverse(mat3(uModel))) * aNormal);
+                vNormal = worldNormal;
                 vUv = aUv;
                 vScreenUv = p.xy / uCanvas;
                 vCanonicalS = canonicalS;

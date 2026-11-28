@@ -1,0 +1,926 @@
+{
+  "taskId": "WATER_WORLD_V2_1_WORK3_2_FIVE_RESIDENT_TRUE_ORBITAL_MOTION_V2",
+  "evidenceLevel": "SOFTWARE_MOTION_VERIFIED",
+  "hardwareGpuVerified": false,
+  "glesShaderVerified": "NOT_RUN_NO_EGL_DRIVER_IN_CONTAINER",
+  "provenance": "WORK3_2_AUTHORED_ORBITAL_RUNTIME_HYPOTHESIS",
+  "canvasSizePx": [1254, 1254],
+  "coreCenterPx": [626.47577, 596.3441, 0.0],
+  "coreInnerRadiusPx": 395.75,
+  "sphereOuterRadiusPx": 422.29868,
+  "timestampsSec": [0, 1, 2, 4, 5, 8, 12, 20, 30, 40, 60],
+  "t0StaticParityMae255": 0.2578,
+  "t0StaticParityPass": true,
+  "t2DisplacementGatePass": true,
+  "t5DisplacementGatePass": true,
+  "t2Displacements": {
+    "G01": {
+      "orbitalAngleDeg": 32.0,
+      "p50VertexDisp3DPx": 280.042,
+      "p90VertexDisp3DPx": 312.21,
+      "p50InCoreInnerR": 0.7076,
+      "p90InCoreInnerR": 0.7889,
+      "p50InSphereOuterR": 0.6631,
+      "p90InSphereOuterR": 0.7393,
+      "backZRange": [502.234, 520.519],
+      "frontZRange": [-514.193, -503.674],
+      "offscreenVisibleAlphaRatio": 0.0
+    },
+    "G02": {
+      "orbitalAngleDeg": -26.0,
+      "p50VertexDisp3DPx": 233.383,
+      "p90VertexDisp3DPx": 267.372,
+      "p50InCoreInnerR": 0.5897,
+      "p90InCoreInnerR": 0.6756,
+      "p50InSphereOuterR": 0.5526,
+      "p90InSphereOuterR": 0.6331,
+      "backZRange": [488.555, 508.747],
+      "frontZRange": [-502.441, -493.655],
+      "offscreenVisibleAlphaRatio": 0.0
+    },
+    "A01": {
+      "orbitalAngleDeg": 22.0,
+      "p50VertexDisp3DPx": 182.442,
+      "p90VertexDisp3DPx": 223.291,
+      "p50InCoreInnerR": 0.461,
+      "p90InCoreInnerR": 0.5642,
+      "p50InSphereOuterR": 0.432,
+      "p90InSphereOuterR": 0.5288,
+      "backZRange": [495.0, 495.0],
+      "frontZRange": [-510.0, -510.0],
+      "offscreenVisibleAlphaRatio": 0.0
+    },
+    "A02": {
+      "orbitalAngleDeg": -38.0,
+      "p50VertexDisp3DPx": 319.618,
+      "p90VertexDisp3DPx": 362.545,
+      "p50InCoreInnerR": 0.8076,
+      "p90InCoreInnerR": 0.9161,
+      "p50InSphereOuterR": 0.7569,
+      "p90InSphereOuterR": 0.8585,
+      "backZRange": [497.147, 514.317],
+      "frontZRange": [-526.899, -487.458],
+      "offscreenVisibleAlphaRatio": 0.0
+    },
+    "C01": {
+      "orbitalAngleDeg": 18.0,
+      "p50VertexDisp3DPx": 160.02,
+      "p90VertexDisp3DPx": 181.478,
+      "p50InCoreInnerR": 0.4043,
+      "p90InCoreInnerR": 0.4586,
+      "p50InSphereOuterR": 0.3789,
+      "p90InSphereOuterR": 0.4297,
+      "backZRange": [482.334, 493.62],
+      "frontZRange": [-508.23, -503.199],
+      "offscreenVisibleAlphaRatio": 0.0
+    }
+  },
+  "t5Displacements": {
+    "G01": {
+      "orbitalAngleDeg": 80.0,
+      "p50VertexDisp3DPx": 652.643,
+      "p90VertexDisp3DPx": 731.256,
+      "p50InCoreInnerR": 1.6491,
+      "p90InCoreInnerR": 1.8478,
+      "p50InSphereOuterR": 1.5455,
+      "p90InSphereOuterR": 1.7316,
+      "backZRange": [485.185, 532.675],
+      "frontZRange": [-518.233, -478.368],
+      "offscreenVisibleAlphaRatio": 0.013095
+    },
+    "G02": {
+      "orbitalAngleDeg": -65.0,
+      "p50VertexDisp3DPx": 554.821,
+      "p90VertexDisp3DPx": 635.493,
+      "p50InCoreInnerR": 1.4019,
+      "p90InCoreInnerR": 1.6058,
+      "p50InSphereOuterR": 1.3138,
+      "p90InSphereOuterR": 1.5048,
+      "backZRange": [472.802, 511.628],
+      "frontZRange": [-505.892, -481.735],
+      "offscreenVisibleAlphaRatio": 7.9E-5
+    },
+    "A01": {
+      "orbitalAngleDeg": 55.0,
+      "p50VertexDisp3DPx": 440.613,
+      "p90VertexDisp3DPx": 544.899,
+      "p50InCoreInnerR": 1.1134,
+      "p90InCoreInnerR": 1.3769,
+      "p50InSphereOuterR": 1.0434,
+      "p90InSphereOuterR": 1.2903,
+      "backZRange": [495.0, 495.0],
+      "frontZRange": [-510.0, -510.0],
+      "offscreenVisibleAlphaRatio": 0.0
+    },
+    "A02": {
+      "orbitalAngleDeg": -95.0,
+      "p50VertexDisp3DPx": 720.178,
+      "p90VertexDisp3DPx": 820.186,
+      "p50InCoreInnerR": 1.8198,
+      "p90InCoreInnerR": 2.0725,
+      "p50InSphereOuterR": 1.7054,
+      "p90InSphereOuterR": 1.9422,
+      "backZRange": [524.05, 544.846],
+      "frontZRange": [-528.33, -460.972],
+      "offscreenVisibleAlphaRatio": 0.0
+    },
+    "C01": {
+      "orbitalAngleDeg": 45.0,
+      "p50VertexDisp3DPx": 389.764,
+      "p90VertexDisp3DPx": 443.942,
+      "p50InCoreInnerR": 0.9849,
+      "p90InCoreInnerR": 1.1218,
+      "p50InSphereOuterR": 0.923,
+      "p90InSphereOuterR": 1.0513,
+      "backZRange": [473.999, 502.591],
+      "frontZRange": [-503.468, -488.587],
+      "offscreenVisibleAlphaRatio": 0.0
+    }
+  },
+  "a01MaxSeamGapPx": 6.1E-5,
+  "a01SeamPass": true,
+  "globalBackZRange": [428.932, 565.329],
+  "globalFrontZRange": [-560.327, -447.277],
+  "depthSafetyPass": true,
+  "maxAll5OffscreenVisibleAlphaRatio": 0.009237,
+  "meanAll5OffscreenVisibleAlphaRatio": 0.001489,
+  "maxPerResidentOffscreenVisibleAlphaRatio": {
+    "G01": 0.023881,
+    "G02": 0.005146,
+    "A01": 0.013733,
+    "A02": 0.0,
+    "C01": 1.0E-5
+  },
+  "meanPerResidentOffscreenVisibleAlphaRatio": {
+    "G01": 0.003361,
+    "G02": 6.24E-4,
+    "A01": 0.001393,
+    "A02": 0.0,
+    "C01": 1.0E-6
+  },
+  "offscreenAlphaThreshold": 0.06,
+  "offscreenAlphaGatePass": true,
+  "allSoftwareGatesPass": true,
+  "renderElapsedSec": 40.35,
+  "timeline": [
+    {
+      "timeSec": 0.0,
+      "frameFile": "frames/work3_2_all5_t000s.png",
+      "maeVsWork2Static255": 0.2578,
+      "a01SeamGapPx": 6.1E-5,
+      "all5OffscreenVisibleAlphaRatio": 0.0,
+      "residents": {
+        "G01": {
+          "orbitalAngleDeg": 0.0,
+          "p50VertexDisp3DPx": 0.0,
+          "p90VertexDisp3DPx": 0.0,
+          "p50InCoreInnerR": 0.0,
+          "p90InCoreInnerR": 0.0,
+          "p50InSphereOuterR": 0.0,
+          "p90InSphereOuterR": 0.0,
+          "backZRange": [515.0, 520.0],
+          "frontZRange": [-520.0, -520.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "G02": {
+          "orbitalAngleDeg": 0.0,
+          "p50VertexDisp3DPx": 0.0,
+          "p90VertexDisp3DPx": 0.0,
+          "p50InCoreInnerR": 0.0,
+          "p90InCoreInnerR": 0.0,
+          "p50InSphereOuterR": 0.0,
+          "p90InSphereOuterR": 0.0,
+          "backZRange": [500.0, 505.0],
+          "frontZRange": [-505.0, -505.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A01": {
+          "orbitalAngleDeg": 0.0,
+          "p50VertexDisp3DPx": 0.0,
+          "p90VertexDisp3DPx": 0.0,
+          "p50InCoreInnerR": 0.0,
+          "p90InCoreInnerR": 0.0,
+          "p50InSphereOuterR": 0.0,
+          "p90InSphereOuterR": 0.0,
+          "backZRange": [495.0, 495.0],
+          "frontZRange": [-510.0, -510.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A02": {
+          "orbitalAngleDeg": 0.0,
+          "p50VertexDisp3DPx": 0.0,
+          "p90VertexDisp3DPx": 0.0,
+          "p50InCoreInnerR": 0.0,
+          "p90InCoreInnerR": 0.0,
+          "p50InSphereOuterR": 0.0,
+          "p90InSphereOuterR": 0.0,
+          "backZRange": [490.0, 490.0],
+          "frontZRange": [-508.0, -508.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "C01": {
+          "orbitalAngleDeg": 0.0,
+          "p50VertexDisp3DPx": 0.0,
+          "p90VertexDisp3DPx": 0.0,
+          "p50InCoreInnerR": 0.0,
+          "p90InCoreInnerR": 0.0,
+          "p50InSphereOuterR": 0.0,
+          "p90InSphereOuterR": 0.0,
+          "backZRange": [485.0, 485.0],
+          "frontZRange": [-512.0, -512.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        }
+      }
+    },
+    {
+      "timeSec": 1.0,
+      "frameFile": "frames/work3_2_all5_t001s.png",
+      "maeVsT0_255": 13.7214,
+      "a01SeamGapPx": 3.1E-5,
+      "all5OffscreenVisibleAlphaRatio": 0.0,
+      "residents": {
+        "G01": {
+          "orbitalAngleDeg": 16.0,
+          "p50VertexDisp3DPx": 141.67,
+          "p90VertexDisp3DPx": 158.289,
+          "p50InCoreInnerR": 0.358,
+          "p90InCoreInnerR": 0.4,
+          "p50InSphereOuterR": 0.3355,
+          "p90InSphereOuterR": 0.3748,
+          "backZRange": [508.248, 519.402],
+          "frontZRange": [-516.311, -512.002],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "G02": {
+          "orbitalAngleDeg": -13.0,
+          "p50VertexDisp3DPx": 117.745,
+          "p90VertexDisp3DPx": 134.642,
+          "p50InCoreInnerR": 0.2975,
+          "p90InCoreInnerR": 0.3402,
+          "p50InSphereOuterR": 0.2788,
+          "p90InSphereOuterR": 0.3188,
+          "backZRange": [495.227, 504.95],
+          "frontZRange": [-503.245, -499.019],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A01": {
+          "orbitalAngleDeg": 11.0,
+          "p50VertexDisp3DPx": 91.092,
+          "p90VertexDisp3DPx": 111.958,
+          "p50InCoreInnerR": 0.2302,
+          "p90InCoreInnerR": 0.2829,
+          "p50InSphereOuterR": 0.2157,
+          "p90InSphereOuterR": 0.2651,
+          "backZRange": [495.0, 495.0],
+          "frontZRange": [-510.0, -510.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A02": {
+          "orbitalAngleDeg": -19.0,
+          "p50VertexDisp3DPx": 161.321,
+          "p90VertexDisp3DPx": 184.403,
+          "p50InCoreInnerR": 0.4076,
+          "p90InCoreInnerR": 0.466,
+          "p50InSphereOuterR": 0.382,
+          "p90InSphereOuterR": 0.4367,
+          "backZRange": [492.038, 502.164],
+          "frontZRange": [-518.798, -498.205],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "C01": {
+          "orbitalAngleDeg": 9.0,
+          "p50VertexDisp3DPx": 81.467,
+          "p90VertexDisp3DPx": 91.654,
+          "p50InCoreInnerR": 0.2059,
+          "p90InCoreInnerR": 0.2316,
+          "p50InSphereOuterR": 0.1929,
+          "p90InSphereOuterR": 0.217,
+          "backZRange": [483.988, 489.511],
+          "frontZRange": [-510.37, -507.705],
+          "offscreenVisibleAlphaRatio": 0.0
+        }
+      }
+    },
+    {
+      "timeSec": 2.0,
+      "frameFile": "frames/work3_2_all5_t002s.png",
+      "maeVsT0_255": 14.5005,
+      "a01SeamGapPx": 1.5E-5,
+      "all5OffscreenVisibleAlphaRatio": 0.0,
+      "residents": {
+        "G01": {
+          "orbitalAngleDeg": 32.0,
+          "p50VertexDisp3DPx": 280.042,
+          "p90VertexDisp3DPx": 312.21,
+          "p50InCoreInnerR": 0.7076,
+          "p90InCoreInnerR": 0.7889,
+          "p50InSphereOuterR": 0.6631,
+          "p90InSphereOuterR": 0.7393,
+          "backZRange": [502.234, 520.519],
+          "frontZRange": [-514.193, -503.674],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "G02": {
+          "orbitalAngleDeg": -26.0,
+          "p50VertexDisp3DPx": 233.383,
+          "p90VertexDisp3DPx": 267.372,
+          "p50InCoreInnerR": 0.5897,
+          "p90InCoreInnerR": 0.6756,
+          "p50InSphereOuterR": 0.5526,
+          "p90InSphereOuterR": 0.6331,
+          "backZRange": [488.555, 508.747],
+          "frontZRange": [-502.441, -493.655],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A01": {
+          "orbitalAngleDeg": 22.0,
+          "p50VertexDisp3DPx": 182.442,
+          "p90VertexDisp3DPx": 223.291,
+          "p50InCoreInnerR": 0.461,
+          "p90InCoreInnerR": 0.5642,
+          "p50InSphereOuterR": 0.432,
+          "p90InSphereOuterR": 0.5288,
+          "backZRange": [495.0, 495.0],
+          "frontZRange": [-510.0, -510.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A02": {
+          "orbitalAngleDeg": -38.0,
+          "p50VertexDisp3DPx": 319.618,
+          "p90VertexDisp3DPx": 362.545,
+          "p50InCoreInnerR": 0.8076,
+          "p90InCoreInnerR": 0.9161,
+          "p50InSphereOuterR": 0.7569,
+          "p90InSphereOuterR": 0.8585,
+          "backZRange": [497.147, 514.317],
+          "frontZRange": [-526.899, -487.458],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "C01": {
+          "orbitalAngleDeg": 18.0,
+          "p50VertexDisp3DPx": 160.02,
+          "p90VertexDisp3DPx": 181.478,
+          "p50InCoreInnerR": 0.4043,
+          "p90InCoreInnerR": 0.4586,
+          "p50InSphereOuterR": 0.3789,
+          "p90InSphereOuterR": 0.4297,
+          "backZRange": [482.334, 493.62],
+          "frontZRange": [-508.23, -503.199],
+          "offscreenVisibleAlphaRatio": 0.0
+        }
+      }
+    },
+    {
+      "timeSec": 4.0,
+      "frameFile": "frames/work3_2_all5_t004s.png",
+      "maeVsT0_255": 16.0017,
+      "a01SeamGapPx": 4.6E-5,
+      "all5OffscreenVisibleAlphaRatio": 0.0,
+      "residents": {
+        "G01": {
+          "orbitalAngleDeg": 64.0,
+          "p50VertexDisp3DPx": 537.245,
+          "p90VertexDisp3DPx": 599.479,
+          "p50InCoreInnerR": 1.3575,
+          "p90InCoreInnerR": 1.5148,
+          "p50InSphereOuterR": 1.2722,
+          "p90InSphereOuterR": 1.4196,
+          "backZRange": [490.636, 527.423],
+          "frontZRange": [-515.193, -486.458],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "G02": {
+          "orbitalAngleDeg": -52.0,
+          "p50VertexDisp3DPx": 452.982,
+          "p90VertexDisp3DPx": 518.05,
+          "p50InCoreInnerR": 1.1446,
+          "p90InCoreInnerR": 1.309,
+          "p50InSphereOuterR": 1.0727,
+          "p90InSphereOuterR": 1.2267,
+          "backZRange": [477.091, 512.174],
+          "frontZRange": [-503.799, -484.951],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A01": {
+          "orbitalAngleDeg": 44.0,
+          "p50VertexDisp3DPx": 358.393,
+          "p90VertexDisp3DPx": 441.433,
+          "p50InCoreInnerR": 0.9056,
+          "p90InCoreInnerR": 1.1154,
+          "p50InSphereOuterR": 0.8487,
+          "p90InSphereOuterR": 1.0453,
+          "backZRange": [495.0, 495.0],
+          "frontZRange": [-510.0, -510.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A02": {
+          "orbitalAngleDeg": -76.0,
+          "p50VertexDisp3DPx": 601.172,
+          "p90VertexDisp3DPx": 686.068,
+          "p50InCoreInnerR": 1.5191,
+          "p90InCoreInnerR": 1.7336,
+          "p50InSphereOuterR": 1.4236,
+          "p90InSphereOuterR": 1.6246,
+          "backZRange": [514.075, 537.253],
+          "frontZRange": [-531.869, -467.769],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "C01": {
+          "orbitalAngleDeg": 36.0,
+          "p50VertexDisp3DPx": 314.693,
+          "p90VertexDisp3DPx": 358.159,
+          "p50InCoreInnerR": 0.7952,
+          "p90InCoreInnerR": 0.905,
+          "p50InSphereOuterR": 0.7452,
+          "p90InSphereOuterR": 0.8481,
+          "backZRange": [477.277, 500.242],
+          "frontZRange": [-504.509, -493.576],
+          "offscreenVisibleAlphaRatio": 0.0
+        }
+      }
+    },
+    {
+      "timeSec": 5.0,
+      "frameFile": "frames/work3_2_all5_t005s.png",
+      "maeVsT0_255": 16.5388,
+      "a01SeamGapPx": 3.1E-5,
+      "all5OffscreenVisibleAlphaRatio": 0.004487,
+      "residents": {
+        "G01": {
+          "orbitalAngleDeg": 80.0,
+          "p50VertexDisp3DPx": 652.643,
+          "p90VertexDisp3DPx": 731.256,
+          "p50InCoreInnerR": 1.6491,
+          "p90InCoreInnerR": 1.8478,
+          "p50InSphereOuterR": 1.5455,
+          "p90InSphereOuterR": 1.7316,
+          "backZRange": [485.185, 532.675],
+          "frontZRange": [-518.233, -478.368],
+          "offscreenVisibleAlphaRatio": 0.013095
+        },
+        "G02": {
+          "orbitalAngleDeg": -65.0,
+          "p50VertexDisp3DPx": 554.821,
+          "p90VertexDisp3DPx": 635.493,
+          "p50InCoreInnerR": 1.4019,
+          "p90InCoreInnerR": 1.6058,
+          "p50InSphereOuterR": 1.3138,
+          "p90InSphereOuterR": 1.5048,
+          "backZRange": [472.802, 511.628],
+          "frontZRange": [-505.892, -481.735],
+          "offscreenVisibleAlphaRatio": 7.9E-5
+        },
+        "A01": {
+          "orbitalAngleDeg": 55.0,
+          "p50VertexDisp3DPx": 440.613,
+          "p90VertexDisp3DPx": 544.899,
+          "p50InCoreInnerR": 1.1134,
+          "p90InCoreInnerR": 1.3769,
+          "p50InSphereOuterR": 1.0434,
+          "p90InSphereOuterR": 1.2903,
+          "backZRange": [495.0, 495.0],
+          "frontZRange": [-510.0, -510.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A02": {
+          "orbitalAngleDeg": -95.0,
+          "p50VertexDisp3DPx": 720.178,
+          "p90VertexDisp3DPx": 820.186,
+          "p50InCoreInnerR": 1.8198,
+          "p90InCoreInnerR": 2.0725,
+          "p50InSphereOuterR": 1.7054,
+          "p90InSphereOuterR": 1.9422,
+          "backZRange": [524.05, 544.846],
+          "frontZRange": [-528.33, -460.972],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "C01": {
+          "orbitalAngleDeg": 45.0,
+          "p50VertexDisp3DPx": 389.764,
+          "p90VertexDisp3DPx": 443.942,
+          "p50InCoreInnerR": 0.9849,
+          "p90InCoreInnerR": 1.1218,
+          "p50InSphereOuterR": 0.923,
+          "p90InSphereOuterR": 1.0513,
+          "backZRange": [473.999, 502.591],
+          "frontZRange": [-503.468, -488.587],
+          "offscreenVisibleAlphaRatio": 0.0
+        }
+      }
+    },
+    {
+      "timeSec": 8.0,
+      "frameFile": "frames/work3_2_all5_t008s.png",
+      "maeVsT0_255": 16.7651,
+      "a01SeamGapPx": 3.1E-5,
+      "all5OffscreenVisibleAlphaRatio": 4.23E-4,
+      "residents": {
+        "G01": {
+          "orbitalAngleDeg": 128.0,
+          "p50VertexDisp3DPx": 909.411,
+          "p90VertexDisp3DPx": 1013.271,
+          "p50InCoreInnerR": 2.2979,
+          "p90InCoreInnerR": 2.5604,
+          "p50InSphereOuterR": 2.1535,
+          "p90InSphereOuterR": 2.3994,
+          "backZRange": [472.353, 550.689],
+          "frontZRange": [-535.039, -464.613],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "G02": {
+          "orbitalAngleDeg": -104.0,
+          "p50VertexDisp3DPx": 816.522,
+          "p90VertexDisp3DPx": 934.91,
+          "p50InCoreInnerR": 2.0632,
+          "p90InCoreInnerR": 2.3624,
+          "p50InSphereOuterR": 1.9335,
+          "p90InSphereOuterR": 2.2139,
+          "backZRange": [465.897, 508.394],
+          "frontZRange": [-516.429, -475.272],
+          "offscreenVisibleAlphaRatio": 7.43E-4
+        },
+        "A01": {
+          "orbitalAngleDeg": 88.0,
+          "p50VertexDisp3DPx": 663.39,
+          "p90VertexDisp3DPx": 814.439,
+          "p50InCoreInnerR": 1.6763,
+          "p90InCoreInnerR": 2.058,
+          "p50InSphereOuterR": 1.5709,
+          "p90InSphereOuterR": 1.9286,
+          "backZRange": [495.0, 495.0],
+          "frontZRange": [-510.0, -510.0],
+          "offscreenVisibleAlphaRatio": 0.001595
+        },
+        "A02": {
+          "orbitalAngleDeg": -152.0,
+          "p50VertexDisp3DPx": 948.299,
+          "p90VertexDisp3DPx": 1082.771,
+          "p50InCoreInnerR": 2.3962,
+          "p90InCoreInnerR": 2.736,
+          "p50InSphereOuterR": 2.2456,
+          "p90InSphereOuterR": 2.564,
+          "backZRange": [511.439, 557.564],
+          "frontZRange": [-500.035, -451.106],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "C01": {
+          "orbitalAngleDeg": 72.0,
+          "p50VertexDisp3DPx": 600.527,
+          "p90VertexDisp3DPx": 680.691,
+          "p50InCoreInnerR": 1.5174,
+          "p90InCoreInnerR": 1.72,
+          "p50InSphereOuterR": 1.422,
+          "p90InSphereOuterR": 1.6119,
+          "backZRange": [462.156, 505.156],
+          "frontZRange": [-502.785, -475.021],
+          "offscreenVisibleAlphaRatio": 0.0
+        }
+      }
+    },
+    {
+      "timeSec": 12.0,
+      "frameFile": "frames/work3_2_all5_t012s.png",
+      "maeVsT0_255": 15.9071,
+      "a01SeamGapPx": 3.1E-5,
+      "all5OffscreenVisibleAlphaRatio": 0.009237,
+      "residents": {
+        "G01": {
+          "orbitalAngleDeg": 192.0,
+          "p50VertexDisp3DPx": 1012.125,
+          "p90VertexDisp3DPx": 1132.824,
+          "p50InCoreInnerR": 2.5575,
+          "p90InCoreInnerR": 2.8625,
+          "p50InSphereOuterR": 2.3967,
+          "p90InSphereOuterR": 2.6825,
+          "backZRange": [469.25, 565.329],
+          "frontZRange": [-557.766, -479.004],
+          "offscreenVisibleAlphaRatio": 0.023881
+        },
+        "G02": {
+          "orbitalAngleDeg": -156.0,
+          "p50VertexDisp3DPx": 1008.986,
+          "p90VertexDisp3DPx": 1160.26,
+          "p50InCoreInnerR": 2.5496,
+          "p90InCoreInnerR": 2.9318,
+          "p50InSphereOuterR": 2.3893,
+          "p90InSphereOuterR": 2.7475,
+          "backZRange": [447.274, 531.645],
+          "frontZRange": [-533.939, -474.452],
+          "offscreenVisibleAlphaRatio": 0.005146
+        },
+        "A01": {
+          "orbitalAngleDeg": 132.0,
+          "p50VertexDisp3DPx": 871.007,
+          "p90VertexDisp3DPx": 1076.128,
+          "p50InCoreInnerR": 2.2009,
+          "p90InCoreInnerR": 2.7192,
+          "p50InSphereOuterR": 2.0625,
+          "p90InSphereOuterR": 2.5483,
+          "backZRange": [495.0, 495.0],
+          "frontZRange": [-510.0, -510.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A02": {
+          "orbitalAngleDeg": -228.0,
+          "p50VertexDisp3DPx": 895.945,
+          "p90VertexDisp3DPx": 1018.209,
+          "p50InCoreInnerR": 2.2639,
+          "p90InCoreInnerR": 2.5729,
+          "p50InSphereOuterR": 2.1216,
+          "p90InSphereOuterR": 2.4111,
+          "backZRange": [469.18, 541.872],
+          "frontZRange": [-498.287, -447.682],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "C01": {
+          "orbitalAngleDeg": 108.0,
+          "p50VertexDisp3DPx": 826.968,
+          "p90VertexDisp3DPx": 938.71,
+          "p50InCoreInnerR": 2.0896,
+          "p90InCoreInnerR": 2.372,
+          "p50InSphereOuterR": 1.9583,
+          "p90InSphereOuterR": 2.2229,
+          "backZRange": [445.412, 497.865],
+          "frontZRange": [-507.487, -460.589],
+          "offscreenVisibleAlphaRatio": 0.0
+        }
+      }
+    },
+    {
+      "timeSec": 20.0,
+      "frameFile": "frames/work3_2_all5_t020s.png",
+      "maeVsT0_255": 15.5565,
+      "a01SeamGapPx": 0.0,
+      "all5OffscreenVisibleAlphaRatio": 1.0E-6,
+      "residents": {
+        "G01": {
+          "orbitalAngleDeg": 320.0,
+          "p50VertexDisp3DPx": 347.24,
+          "p90VertexDisp3DPx": 387.154,
+          "p50InCoreInnerR": 0.8774,
+          "p90InCoreInnerR": 0.9783,
+          "p50InSphereOuterR": 0.8223,
+          "p90InSphereOuterR": 0.9168,
+          "backZRange": [517.664, 538.188],
+          "frontZRange": [-538.219, -528.72],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "G02": {
+          "orbitalAngleDeg": -260.0,
+          "p50VertexDisp3DPx": 792.797,
+          "p90VertexDisp3DPx": 909.028,
+          "p50InCoreInnerR": 2.0033,
+          "p90InCoreInnerR": 2.297,
+          "p50InSphereOuterR": 1.8773,
+          "p90InSphereOuterR": 2.1526,
+          "backZRange": [451.762, 546.027],
+          "frontZRange": [-548.159, -503.566],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A01": {
+          "orbitalAngleDeg": 220.0,
+          "p50VertexDisp3DPx": 897.135,
+          "p90VertexDisp3DPx": 1106.563,
+          "p50InCoreInnerR": 2.2669,
+          "p90InCoreInnerR": 2.7961,
+          "p50InSphereOuterR": 2.1244,
+          "p90InSphereOuterR": 2.6203,
+          "backZRange": [495.0, 495.0],
+          "frontZRange": [-510.0, -510.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A02": {
+          "orbitalAngleDeg": -380.0,
+          "p50VertexDisp3DPx": 170.162,
+          "p90VertexDisp3DPx": 193.988,
+          "p50InCoreInnerR": 0.43,
+          "p90InCoreInnerR": 0.4902,
+          "p50InSphereOuterR": 0.4029,
+          "p90InSphereOuterR": 0.4594,
+          "backZRange": [492.234, 502.788],
+          "frontZRange": [-519.301, -497.653],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "C01": {
+          "orbitalAngleDeg": 180.0,
+          "p50VertexDisp3DPx": 1021.392,
+          "p90VertexDisp3DPx": 1160.673,
+          "p50InCoreInnerR": 2.5809,
+          "p90InCoreInnerR": 2.9328,
+          "p50InSphereOuterR": 2.4186,
+          "p90InSphereOuterR": 2.7485,
+          "backZRange": [428.932, 462.678],
+          "frontZRange": [-528.752, -461.597],
+          "offscreenVisibleAlphaRatio": 1.0E-5
+        }
+      }
+    },
+    {
+      "timeSec": 30.0,
+      "frameFile": "frames/work3_2_all5_t030s.png",
+      "maeVsT0_255": 15.5656,
+      "a01SeamGapPx": 0.0,
+      "all5OffscreenVisibleAlphaRatio": 0.0,
+      "residents": {
+        "G01": {
+          "orbitalAngleDeg": 480.0,
+          "p50VertexDisp3DPx": 875.467,
+          "p90VertexDisp3DPx": 975.601,
+          "p50InCoreInnerR": 2.2122,
+          "p90InCoreInnerR": 2.4652,
+          "p50InSphereOuterR": 2.0731,
+          "p90InSphereOuterR": 2.3102,
+          "backZRange": [474.408, 547.794],
+          "frontZRange": [-531.744, -465.504],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "G02": {
+          "orbitalAngleDeg": -390.0,
+          "p50VertexDisp3DPx": 267.378,
+          "p90VertexDisp3DPx": 306.89,
+          "p50InCoreInnerR": 0.6756,
+          "p90InCoreInnerR": 0.7755,
+          "p50InSphereOuterR": 0.6331,
+          "p90InSphereOuterR": 0.7267,
+          "backZRange": [486.691, 509.652],
+          "frontZRange": [-502.393, -492.111],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A01": {
+          "orbitalAngleDeg": 330.0,
+          "p50VertexDisp3DPx": 244.551,
+          "p90VertexDisp3DPx": 303.658,
+          "p50InCoreInnerR": 0.6179,
+          "p90InCoreInnerR": 0.7673,
+          "p50InSphereOuterR": 0.5791,
+          "p90InSphereOuterR": 0.7191,
+          "backZRange": [495.0, 495.0],
+          "frontZRange": [-510.0, -510.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A02": {
+          "orbitalAngleDeg": -570.0,
+          "p50VertexDisp3DPx": 948.52,
+          "p90VertexDisp3DPx": 1074.728,
+          "p50InCoreInnerR": 2.3968,
+          "p90InCoreInnerR": 2.7157,
+          "p50InSphereOuterR": 2.2461,
+          "p90InSphereOuterR": 2.5449,
+          "backZRange": [478.387, 548.396],
+          "frontZRange": [-488.438, -447.277],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "C01": {
+          "orbitalAngleDeg": 270.0,
+          "p50VertexDisp3DPx": 721.689,
+          "p90VertexDisp3DPx": 818.303,
+          "p50InCoreInnerR": 1.8236,
+          "p90InCoreInnerR": 2.0677,
+          "p50InSphereOuterR": 1.709,
+          "p90InSphereOuterR": 1.9377,
+          "backZRange": [442.694, 463.108],
+          "frontZRange": [-536.763, -498.342],
+          "offscreenVisibleAlphaRatio": 0.0
+        }
+      }
+    },
+    {
+      "timeSec": 40.0,
+      "frameFile": "frames/work3_2_all5_t040s.png",
+      "maeVsT0_255": 14.2721,
+      "a01SeamGapPx": 3.1E-5,
+      "all5OffscreenVisibleAlphaRatio": 0.002234,
+      "residents": {
+        "G01": {
+          "orbitalAngleDeg": 640.0,
+          "p50VertexDisp3DPx": 652.025,
+          "p90VertexDisp3DPx": 727.149,
+          "p50InCoreInnerR": 1.6476,
+          "p90InCoreInnerR": 1.8374,
+          "p50InSphereOuterR": 1.544,
+          "p90InSphereOuterR": 1.7219,
+          "backZRange": [504.319, 554.076],
+          "frontZRange": [-553.027, -522.723],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "G02": {
+          "orbitalAngleDeg": -520.0,
+          "p50VertexDisp3DPx": 1019.938,
+          "p90VertexDisp3DPx": 1162.607,
+          "p50InCoreInnerR": 2.5772,
+          "p90InCoreInnerR": 2.9377,
+          "p50InSphereOuterR": 2.4152,
+          "p90InSphereOuterR": 2.753,
+          "backZRange": [447.267, 533.414],
+          "frontZRange": [-535.94, -475.019],
+          "offscreenVisibleAlphaRatio": 8.94E-4
+        },
+        "A01": {
+          "orbitalAngleDeg": 440.0,
+          "p50VertexDisp3DPx": 613.561,
+          "p90VertexDisp3DPx": 754.414,
+          "p50InCoreInnerR": 1.5504,
+          "p90InCoreInnerR": 1.9063,
+          "p50InSphereOuterR": 1.4529,
+          "p90InSphereOuterR": 1.7864,
+          "backZRange": [495.0, 495.0],
+          "frontZRange": [-510.0, -510.0],
+          "offscreenVisibleAlphaRatio": 0.013733
+        },
+        "A02": {
+          "orbitalAngleDeg": -760.0,
+          "p50VertexDisp3DPx": 335.686,
+          "p90VertexDisp3DPx": 381.202,
+          "p50InCoreInnerR": 0.8482,
+          "p90InCoreInnerR": 0.9632,
+          "p50InSphereOuterR": 0.7949,
+          "p90InSphereOuterR": 0.9027,
+          "backZRange": [497.843, 515.905],
+          "frontZRange": [-527.555, -486.319],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "C01": {
+          "orbitalAngleDeg": 360.0,
+          "p50VertexDisp3DPx": 2.108,
+          "p90VertexDisp3DPx": 5.011,
+          "p50InCoreInnerR": 0.0053,
+          "p90InCoreInnerR": 0.0127,
+          "p50InSphereOuterR": 0.005,
+          "p90InSphereOuterR": 0.0119,
+          "backZRange": [485.0, 485.0],
+          "frontZRange": [-512.0, -512.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        }
+      }
+    },
+    {
+      "timeSec": 60.0,
+      "frameFile": "frames/work3_2_all5_t060s.png",
+      "maeVsT0_255": 16.9016,
+      "a01SeamGapPx": 6.1E-5,
+      "all5OffscreenVisibleAlphaRatio": 1.0E-6,
+      "residents": {
+        "G01": {
+          "orbitalAngleDeg": 960.0,
+          "p50VertexDisp3DPx": 879.518,
+          "p90VertexDisp3DPx": 983.071,
+          "p50InCoreInnerR": 2.2224,
+          "p90InCoreInnerR": 2.4841,
+          "p50InSphereOuterR": 2.0827,
+          "p90InSphereOuterR": 2.3279,
+          "backZRange": [485.871, 564.014],
+          "frontZRange": [-560.327, -504.814],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "G02": {
+          "orbitalAngleDeg": -780.0,
+          "p50VertexDisp3DPx": 516.283,
+          "p90VertexDisp3DPx": 593.231,
+          "p50InCoreInnerR": 1.3046,
+          "p90InCoreInnerR": 1.499,
+          "p50InSphereOuterR": 1.2226,
+          "p90InSphereOuterR": 1.4048,
+          "backZRange": [474.564, 512.018],
+          "frontZRange": [-504.983, -482.941],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A01": {
+          "orbitalAngleDeg": 660.0,
+          "p50VertexDisp3DPx": 478.081,
+          "p90VertexDisp3DPx": 587.302,
+          "p50InCoreInnerR": 1.208,
+          "p90InCoreInnerR": 1.484,
+          "p50InSphereOuterR": 1.1321,
+          "p90InSphereOuterR": 1.3907,
+          "backZRange": [495.0, 495.0],
+          "frontZRange": [-510.0, -510.0],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "A02": {
+          "orbitalAngleDeg": -1140.0,
+          "p50VertexDisp3DPx": 487.71,
+          "p90VertexDisp3DPx": 557.632,
+          "p50InCoreInnerR": 1.2324,
+          "p90InCoreInnerR": 1.4091,
+          "p50InSphereOuterR": 1.1549,
+          "p90InSphereOuterR": 1.3205,
+          "backZRange": [506.151, 528.683],
+          "frontZRange": [-531.769, -475.365],
+          "offscreenVisibleAlphaRatio": 0.0
+        },
+        "C01": {
+          "orbitalAngleDeg": 540.0,
+          "p50VertexDisp3DPx": 1020.989,
+          "p90VertexDisp3DPx": 1157.123,
+          "p50InCoreInnerR": 2.5799,
+          "p90InCoreInnerR": 2.9239,
+          "p50InSphereOuterR": 2.4177,
+          "p90InSphereOuterR": 2.7401,
+          "backZRange": [429.832, 462.35],
+          "frontZRange": [-528.752, -462.613],
+          "offscreenVisibleAlphaRatio": 6.0E-6
+        }
+      }
+    }
+  ]
+}

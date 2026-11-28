@@ -69,7 +69,79 @@ data class WaterWorldDynamicFrameSnapshot(
         val brightnessTimePhaseRad: Float = 0f,
         val waveFrequencyHz: Float = 0f,
         val phaseOffsetRad: Float = 0f,
-    )
+        // Work 3.2 true 3D Core-local rigid orbital motion state (computed once per Resident per frame)
+        val orbitalEnabled: Boolean = false,
+        val orbitalAngleRad: Float = 0f,
+        val orbitalAngularVelocityRadPerSec: Float = 0f,
+        val orbitalAxisX: Float = 0f,
+        val orbitalAxisY: Float = 0f,
+        val orbitalAxisZ: Float = 1f,
+        val orbitalRotationMat3: FloatArray = WaterWorldResidentOrbitalMath.identityMat3(),
+        val orbitalProvenance: String = WaterWorldResidentOrbitalMath.PROVENANCE_WORK3_2_ORBITAL_HYPOTHESIS,
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is ResidentMotionState) return false
+            return id == other.id &&
+                groupKey == other.groupKey &&
+                drawIds == other.drawIds &&
+                flowPhaseRad == other.flowPhaseRad &&
+                flowOffsetU == other.flowOffsetU &&
+                widthPulseScale == other.widthPulseScale &&
+                brightnessScale == other.brightnessScale &&
+                lateralWavePx == other.lateralWavePx &&
+                wavePhaseRad == other.wavePhaseRad &&
+                occlusionStatus == other.occlusionStatus &&
+                flowSpeedPerSec == other.flowSpeedPerSec &&
+                flowDirection == other.flowDirection &&
+                flowActive == other.flowActive &&
+                widthAmplitude == other.widthAmplitude &&
+                widthTimePhaseRad == other.widthTimePhaseRad &&
+                brightnessAmplitude == other.brightnessAmplitude &&
+                brightnessTimePhaseRad == other.brightnessTimePhaseRad &&
+                waveFrequencyHz == other.waveFrequencyHz &&
+                phaseOffsetRad == other.phaseOffsetRad &&
+                orbitalEnabled == other.orbitalEnabled &&
+                orbitalAngleRad == other.orbitalAngleRad &&
+                orbitalAngularVelocityRadPerSec == other.orbitalAngularVelocityRadPerSec &&
+                orbitalAxisX == other.orbitalAxisX &&
+                orbitalAxisY == other.orbitalAxisY &&
+                orbitalAxisZ == other.orbitalAxisZ &&
+                orbitalRotationMat3.contentEquals(other.orbitalRotationMat3) &&
+                orbitalProvenance == other.orbitalProvenance
+        }
+
+        override fun hashCode(): Int {
+            var result = id.hashCode()
+            result = 31 * result + groupKey.hashCode()
+            result = 31 * result + drawIds.hashCode()
+            result = 31 * result + flowPhaseRad.hashCode()
+            result = 31 * result + flowOffsetU.hashCode()
+            result = 31 * result + widthPulseScale.hashCode()
+            result = 31 * result + brightnessScale.hashCode()
+            result = 31 * result + lateralWavePx.hashCode()
+            result = 31 * result + wavePhaseRad.hashCode()
+            result = 31 * result + occlusionStatus.hashCode()
+            result = 31 * result + flowSpeedPerSec.hashCode()
+            result = 31 * result + flowDirection.hashCode()
+            result = 31 * result + flowActive.hashCode()
+            result = 31 * result + widthAmplitude.hashCode()
+            result = 31 * result + widthTimePhaseRad.hashCode()
+            result = 31 * result + brightnessAmplitude.hashCode()
+            result = 31 * result + brightnessTimePhaseRad.hashCode()
+            result = 31 * result + waveFrequencyHz.hashCode()
+            result = 31 * result + phaseOffsetRad.hashCode()
+            result = 31 * result + orbitalEnabled.hashCode()
+            result = 31 * result + orbitalAngleRad.hashCode()
+            result = 31 * result + orbitalAngularVelocityRadPerSec.hashCode()
+            result = 31 * result + orbitalAxisX.hashCode()
+            result = 31 * result + orbitalAxisY.hashCode()
+            result = 31 * result + orbitalAxisZ.hashCode()
+            result = 31 * result + orbitalRotationMat3.contentHashCode()
+            result = 31 * result + orbitalProvenance.hashCode()
+            return result
+        }
+    }
 
     data class PlantMotionState(
         val id: String,
