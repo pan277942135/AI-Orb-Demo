@@ -49,6 +49,8 @@ jobs:
           test "$ACTUAL" = "$EXPECTED"
 
       - name: Validate WebP Assets, Volume Continuity, Strict Fit Gates & 10 Negative CI Tests
+        id: validate_v32_gates
+        continue-on-error: true
         run: |
           python3 tools/orb-v3-generator/validate_webp_assets.py
           python3 tools/orb-v3-generator/validate_volume_continuity.py
@@ -145,3 +147,13 @@ jobs:
           name: tab2-v25-perimeter-exact-head
           path: dist/tab2-v25/*
           if-no-files-found: error
+
+      - name: Preserve V3.2 offline fidelity gates as required checks
+        if: always()
+        env:
+          V3_GATE_OUTCOME: ${{ steps.validate_v32_gates.outcome }}
+        run: |
+          if [ "$V3_GATE_OUTCOME" != "success" ]; then
+            echo "::error::The frozen V3.2 offline fidelity gates failed; see the validation step above."
+            exit 1
+          fi
